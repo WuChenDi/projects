@@ -1,0 +1,37 @@
+{
+  "name": "@cdlab996/projects-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "description": "A monorepo for my projects.",
+  "author": "wudi <wuchendi96@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/WuChenDi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WuChenDi/projects.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "clean": "bash ./scripts/clean.sh",
+    "lint": "turbo lint",
+    "format1": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "lint1": "biome check .",
+    "format": "biome format . --write"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.4",
+    "@cdlab996/tsconfig": "workspace:*",
+    "@types/node": "^25",
+    "turbo": "^2.8.11",
+    "typescript": "^5"
+  }
+}

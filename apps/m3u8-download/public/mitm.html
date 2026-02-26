@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>StreamSaver</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #f5f5f5;
+      font-family: system-ui, sans-serif;
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid #e0e0e0;
+      border-top-color: #333;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div style="text-align: center;">
+    <div class="spinner"></div>
+    <p style="margin-top: 16px; color: #666;">StreamSaver Service Worker</p>
+  </div>
+
+  <script>
+    // 保活
+    let keepAliveInterval = null
+    function keepAlive() {
+      if (keepAliveInterval) return
+      const ping = location.href.substring(0, location.href.lastIndexOf('/')) + '/ping'
+      keepAliveInterval = setInterval(() => {
+        if (serviceWorker) {
+          serviceWorker.postMessage('ping')
+        } else {
+          fetch(ping).catch(() => {})
+        }
+      }, 10000)
+    }
+
+    let scope = ''
+    let serviceWorker = null
+    let tempMessageStore = []
+
+    // 临时存储消息
+    window.onmessage = evt => tempMessageStore.push(evt)
+
+    // 注册 Service Worker
+    async function registerWorker() {
+      if (!('serviceWorker' in navigator)) {
+        keepAlive()
+        return
+      }
+
+      try {
+        let registration = await navigator.serviceWorker.getRegistration('./')
+        
+        if (!registration) {
+          registration = await navigator.serviceWorker.register('/sw.js', { scope: './' })
+        }
+
+        scope = registration.scope
+
+        if (registration.active) {
+          serviceWorker = registration.active
+          return
+        }
+
+        const swRegTmp = registration.installing || registration.waiting
+        if (swRegTmp) {
+          await new Promise(resolve => {
+            const onStateChange = () => {
+              if (swRegTmp.state === 'activated') {
+                swRegTmp.removeEventListener('statechange', onStateChange)
+                serviceWorker = registration.active
+                resolve()
+              }
+            }
+            swRegTmp.addEventListener('statechange', onStateChange)
+          })
+        }
+      } catch (error) {
+        console.error('Failed to register Service Worker:', error)
+        keepAlive()
+      }
+    }
+
+    // 消息处理
+    function onMessage(event) {
+      const { data, ports, origin } = event
+
+      if (!ports || !ports.length) {
+        console.error("[StreamSaver] You didn't send a messageChannel")
+        return
+      }
+
+      if (typeof data !== 'object') {
+        console.error("[StreamSaver] You didn't send an object")
+        return
+      }
+
+      if (!data.pathname) {
+        data.pathname = Math.random().toString().slice(-6) + '/' + (data.filename || 'download')
+      }
+
+      if (data.headers) {
+        try {
+          new Headers(data.headers)
+        } catch (error) {
+          console.error('[StreamSaver] Invalid headers:', error)
+          return
+        }
+      }
+
+      data.origin = origin
+      data.referrer = data.referrer || document.referrer || origin
+      data.pathname = data.pathname.replace(/^\/+/g, '')
+
+      const org = origin.replace(/(^\w+:|^)\/\//, '')
+      data.url = new URL(`${scope}${org}/${data.pathname}`).toString()
+
+      if (!data.url.startsWith(`${scope}${org}/`)) {
+        console.error('[StreamSaver] bad pathname')
+        return
+      }
+
+      const transferable = data.readableStream ? [ports[0], data.readableStream] : [ports[0]]
+
+      if (!(data.readableStream || data.transferringReadable)) {
+        keepAlive()
+      }
+
+      if (serviceWorker) {
+        serviceWorker.postMessage(data, transferable)
+      }
+    }
+
+    // 通知父窗口
+    if (window.opener) {
+      window.opener.postMessage('StreamSaver::loadedPopup', '*')
+    }
+
+    // 启动
+    registerWorker().then(() => {
+      window.onmessage = onMessage
+      tempMessageStore.forEach(evt => onMessage(evt))
+      tempMessageStore = []
+    })
+  </script>
+</body>
+</html>

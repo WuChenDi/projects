@@ -1,0 +1,3 @@
+{
+  "extends": "@cdlab996/tsconfig/base.json"
+}

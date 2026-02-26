@@ -1,0 +1,54 @@
+{
+  "name": "@cdlab996/securec",
+  "type": "module",
+  "version": "6.0.1",
+  "private": true,
+  "description": "SecureC is a client-side tool for secure file and text encryption/decryption using AES-GCM with Argon2id key derivation.",
+  "author": "wudi <wuchendi96@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/WuChenDi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WuChenDi/projects.git",
+    "directory": "apps/SecureC"
+  },
+  "scripts": {
+    "dev": "next dev --port 3009",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "typecheck": "tsc --noEmit",
+    "gk": "node ./scripts/generateKeys.js"
+  },
+  "dependencies": {
+    "@cdlab996/genid": "catalog:prod",
+    "@cdlab996/ui": "workspace:*",
+    "@next/third-parties": "catalog:prod",
+    "@noble/ciphers": "^2.1.1",
+    "@noble/curves": "^2.0.1",
+    "@noble/hashes": "^2.0.1",
+    "@scure/base": "^2.0.0",
+    "@scure/bip32": "^2.0.1",
+    "@scure/bip39": "^2.0.1",
+    "class-variance-authority": "catalog:prod",
+    "clsx": "catalog:prod",
+    "cmdk": "^1.1.1",
+    "eciesjs": "^0.4.17",
+    "lucide-react": "catalog:prod",
+    "next": "catalog:prod",
+    "next-themes": "catalog:prod",
+    "ogl": "catalog:prod",
+    "react": "catalog:prod",
+    "react-dom": "catalog:prod",
+    "sonner": "catalog:prod",
+    "zustand": "^5.0.11"
+  },
+  "devDependencies": {
+    "@cdlab996/tsconfig": "workspace:*",
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}
