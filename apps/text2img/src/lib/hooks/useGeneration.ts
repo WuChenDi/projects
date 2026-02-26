@@ -1,22 +1,12 @@
-
 import { useMutation } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { genid } from '@/lib/genid'
+import type { GenerateParams, GenerationResult } from '@/types'
+import { GenerationStatus } from '@/types'
 
 interface ErrorResponse {
   error?: string
-}
-
-export interface GenerateParams {
-  prompt: string
-  model: string
-  password?: string
-  negative_prompt?: string
-  width?: number
-  height?: number
-  num_steps?: number
-  guidance?: number
-  seed?: number
 }
 
 async function generateImage(params: GenerateParams): Promise<Blob> {
@@ -41,43 +31,92 @@ async function generateImage(params: GenerateParams): Promise<Blob> {
 }
 
 export function useGeneration() {
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null)
-  const [generationTime, setGenerationTime] = useState<number | null>(null)
-  const [currentParams, setCurrentParams] = useState<GenerateParams | null>(
-    null,
-  )
+  const [results, setResults] = useState<GenerationResult[]>([])
+  const currentIdRef = useRef('')
+  const startTimeRef = useRef(0)
 
   const mutation = useMutation({
     mutationFn: generateImage,
-    onMutate: () => {
-      setGenerationTime(null)
+    onMutate: (params) => {
+      const id = String(genid.nextId())
+      currentIdRef.current = id
+      startTimeRef.current = performance.now()
+
+      setResults((prev) => [
+        { id, status: GenerationStatus.PENDING, params },
+        ...prev,
+      ])
     },
     onSuccess: (blob) => {
+      const id = currentIdRef.current
       const imageUrl = URL.createObjectURL(blob)
-      setGeneratedImage(imageUrl)
+      const generationTime = (performance.now() - startTimeRef.current) / 1000
+
+      setResults((prev) =>
+        prev.map((r) =>
+          r.id === id
+            ? {
+                ...r,
+                status: GenerationStatus.COMPLETED,
+                imageUrl,
+                generationTime,
+              }
+            : r,
+        ),
+      )
       toast.success('图像生成成功！')
     },
     onError: (error: Error) => {
+      const id = currentIdRef.current
+
+      setResults((prev) =>
+        prev.map((r) =>
+          r.id === id
+            ? {
+                ...r,
+                status: GenerationStatus.FAILED,
+                error: error.message || '生成失败',
+              }
+            : r,
+        ),
+      )
       toast.error(error.message || '生成失败')
     },
   })
 
-  const handleGenerateClick = (params: GenerateParams) => {
-    const startTime = performance.now()
-    setCurrentParams(params)
-    mutation.mutate(params, {
-      onSuccess: () => {
-        const endTime = performance.now()
-        setGenerationTime((endTime - startTime) / 1000)
-      },
+  const handleGenerateClick = useCallback(
+    (params: GenerateParams) => {
+      mutation.mutate(params)
+    },
+    [mutation],
+  )
+
+  const handleRemove = useCallback((id: string) => {
+    setResults((prev) => {
+      const target = prev.find((r) => r.id === id)
+      if (target?.imageUrl) {
+        URL.revokeObjectURL(target.imageUrl)
+      }
+      return prev.filter((r) => r.id !== id)
     })
-  }
+  }, [])
+
+  const handleClearAll = useCallback(() => {
+    setResults((prev) => {
+      for (const r of prev) {
+        if (r.imageUrl) {
+          URL.revokeObjectURL(r.imageUrl)
+        }
+      }
+      return []
+    })
+  }, [])
 
   return {
     mutation,
-    generatedImage,
-    generationTime,
-    currentParams,
+    results,
     handleGenerateClick,
+    handleRemove,
+    handleClearAll,
   }
 }

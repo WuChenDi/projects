@@ -90,10 +90,19 @@ pnpm deploy
 
 ## 支持的模型
 
-- Stable Diffusion XL Base 1.0
-- FLUX.1 [schnell]
-- DreamShaper 8 LCM
-- Stable Diffusion XL Lightning
+| 厂商 | 模型 | 状态 |
+| --- | --- | --- |
+| Black Forest Labs | FLUX.2 [klein] 9B | ✅ |
+| Black Forest Labs | FLUX.2 [klein] 4B | ✅ |
+| Black Forest Labs | FLUX.2 [dev] | ✅ |
+| Black Forest Labs | FLUX.1 [schnell] | ✅ |
+| Leonardo AI | Lucid Origin | 🚫 |
+| Leonardo AI | Phoenix 1.0 | 🚫 |
+| ByteDance | Stable Diffusion XL Lightning | ✅ |
+| Lykon | DreamShaper 8 LCM | ✅ |
+| Stability AI | Stable Diffusion XL Base 1.0 | ✅ |
+| Runway ML | Stable Diffusion v1.5 img2img | 🚫 |
+| Runway ML | Stable Diffusion v1.5 Inpainting | 🚫 |
 
 ## 📜 License
 

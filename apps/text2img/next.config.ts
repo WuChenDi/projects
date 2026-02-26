@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'notes-wudi.pages.dev',
       },
+      {
+        protocol: 'https',
+        hostname: 'developers.cloudflare.com',
+      },
     ],
   },
 }

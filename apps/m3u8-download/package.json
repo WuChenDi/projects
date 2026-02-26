@@ -27,7 +27,7 @@
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",
     "cmdk": "^1.1.1",
-    "date-fns": "^4.1.0",
+    "date-fns": "catalog:prod",
     "lucide-react": "catalog:prod",
     "mux.js": "^6.3.0",
     "next": "catalog:prod",

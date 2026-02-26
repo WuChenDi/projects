@@ -3,7 +3,7 @@
 import { Toaster } from '@cdlab996/ui/components/sonner'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import { ClientProviders } from '@/components/client-providers'
+import { ClientProviders } from '@/components/layout/client-providers'
 import '@cdlab996/ui/globals.css'
 
 const geistSans = Geist({

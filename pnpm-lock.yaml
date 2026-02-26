@@ -34,6 +34,9 @@ catalogs:
     clsx:
       specifier: ^2.1.1
       version: 2.1.1
+    date-fns:
+      specifier: ^4.1.0
+      version: 4.1.0
     lucide-react:
       specifier: ^0.575.0
       version: 0.575.0
@@ -288,7 +291,7 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       date-fns:
-        specifier: ^4.1.0
+        specifier: catalog:prod
         version: 4.1.0
       lucide-react:
         specifier: catalog:prod
@@ -363,6 +366,9 @@ importers:
       clsx:
         specifier: catalog:prod
         version: 2.1.1
+      date-fns:
+        specifier: catalog:prod
+        version: 4.1.0
       lucide-react:
         specifier: catalog:prod
         version: 0.575.0(react@19.2.4)

@@ -1,7 +1,7 @@
 {
   "name": "@cdlab996/text2img",
   "type": "module",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "description": "免费的在线AI文生图工具，基于 Cloudflare Workers AI，支持 FLUX.1、Stable Diffusion XL 等多种模型。无需注册，即刻使用，快速生成高质量AI图像。",
   "author": "wudi <wuchendi96@gmail.com>",
@@ -30,6 +30,7 @@
     "@tanstack/react-query": "^5.90.21",
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",
+    "date-fns": "catalog:prod",
     "lucide-react": "catalog:prod",
     "next": "catalog:prod",
     "next-themes": "catalog:prod",
