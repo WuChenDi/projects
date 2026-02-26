@@ -1,12 +1,5 @@
 'use client'
 
-import JSZip from 'jszip'
-import type React from 'react'
-import { useCallback, useMemo, useState } from 'react'
-import { useDropzone } from 'react-dropzone'
-import { toast } from 'sonner'
-import { PageContainer } from '@/components/layout'
-import { ActionButtons, LeftPanel, RightPanel } from '@/components/pages/squish'
 import {
   Card,
   CardAction,
@@ -15,6 +8,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
+import JSZip from 'jszip'
+import type React from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { useDropzone } from 'react-dropzone'
+import { toast } from 'sonner'
+import { PageContainer } from '@/components/layout'
+import {
+  ActionButtons,
+  ImageComparisonModal,
+  LeftPanel,
+  RightPanel,
+} from '@/components/pages/squish'
 import { useImageQueue } from '@/hooks/useImageQueue'
 import { DEFAULT_QUALITY_SETTINGS, downloadImage, genid, logger } from '@/lib'
 import type {
@@ -150,6 +155,7 @@ export default function Squish() {
 
   // Handle comparing images
   const handleCompareImage = (image: ImageFile) => {
+    console.log('Comparing image:', image)
     setCompareImage(image)
   }
 
@@ -288,6 +294,14 @@ export default function Squish() {
             </CardContent>
           </Card>
         </div>
+
+        {compareImage && (
+          <ImageComparisonModal
+            image={compareImage}
+            isOpen={!!compareImage}
+            onClose={() => setCompareImage(null)}
+          />
+        )}
       </div>
     </PageContainer>
   )
