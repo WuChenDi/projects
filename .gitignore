@@ -109,6 +109,12 @@ apps/*/messages/en.d.json.ts
 .output
 dist
 
+# cloudflare workers build output
+.wrangler
+.open-next
+wrangler.jsonc:Zone.Identifier
+open-next.config.ts:Zone.Identifier
+
 # Gatsby files
 .cache/
 # Comment in the public line in if your project uses Gatsby and not Next.js
