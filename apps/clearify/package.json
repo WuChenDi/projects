@@ -37,7 +37,7 @@
     "clsx": "catalog:prod",
     "jszip": "^3.10.1",
     "lucide-react": "catalog:prod",
-    "motion": "^12.34.3",
+    "motion": "catalog:prod",
     "next": "catalog:prod",
     "next-themes": "catalog:prod",
     "ogl": "catalog:prod",

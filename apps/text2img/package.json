@@ -24,7 +24,6 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
   },
   "dependencies": {
-    "@base-ui/react": "catalog:prod",
     "@cdlab996/genid": "catalog:prod",
     "@cdlab996/ui": "workspace:*",
     "@tanstack/react-query": "^5.90.21",
@@ -34,13 +33,9 @@
     "lucide-react": "catalog:prod",
     "next": "catalog:prod",
     "next-themes": "catalog:prod",
-    "radix-ui": "catalog:prod",
     "react": "catalog:prod",
     "react-dom": "catalog:prod",
-    "shadcn": "catalog:prod",
-    "sonner": "catalog:prod",
-    "tailwind-merge": "catalog:prod",
-    "tw-animate-css": "catalog:prod"
+    "sonner": "catalog:prod"
   },
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",

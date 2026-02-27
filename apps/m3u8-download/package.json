@@ -34,13 +34,9 @@
     "next": "catalog:prod",
     "next-themes": "catalog:prod",
     "ogl": "catalog:prod",
-    "radix-ui": "catalog:prod",
     "react": "catalog:prod",
     "react-dom": "catalog:prod",
-    "shadcn": "catalog:prod",
-    "sonner": "catalog:prod",
-    "tailwind-merge": "catalog:prod",
-    "tw-animate-css": "catalog:prod"
+    "sonner": "catalog:prod"
   },
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",
