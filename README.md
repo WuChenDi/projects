@@ -13,12 +13,14 @@
 
 **图片 & 视频处理工具箱**
 
+https://clearify.pages.dev/
+
 - 一键移除背景、批量压缩（AVIF / WebP / JXL 等多种格式）、视频体积压缩（最高可达 90%）
 - 核心技术：Transformers.js + WebGPU（背景移除）、FFmpeg.wasm（压缩 & 转码）
 - 亮点：本地 WebGPU 加速、批量高效处理、完全无上传
 
 <details>
-  <summary>📸 预览（点击展开）</summary>
+  <summary>📸 Preview</summary>
   <br/>
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Clearify/index.png" alt="Clearify 主界面" />
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Clearify/bg-pages.png" alt="背景移除页面" />
@@ -30,28 +32,30 @@
 
 **M3U8 / HLS 视频下载助手**
 
+https://m3u8dw.pages.dev/
+
 - 解析 M3U8 链接、支持范围下载 / 流式下载 / AES-128 自动解密 / TS 转 MP4
 - 核心技术：mux.js + Streams API
 - 亮点：流式下载几乎零内存占用、支持暂停/续传/单片段重试
 
 <details>
-  <summary>📸 预览 & 在线演示（点击展开）</summary>
+  <summary>📸 Preview</summary>
   <br/>
-  <p>在线体验：https://m3u8dw.pages.dev/</p>
-  <!-- 如果后续补充截图，可在此添加 -->
-  <!-- <img src="..." alt="m3u8-download 主界面" /> -->
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/m3u8-download/index.png" alt="m3u8-download 主界面" />
 </details>
 
 ### SecureC
 
 **客户端文件 / 文本加解密工具**
 
+https://securec.pages.dev/
+
 - XChaCha20-Poly1305 加密、Argon2id 密码派生、ECIES 公钥加密、大文件分块处理
 - 核心技术：@noble/ciphers + Web Workers
 - 亮点：10MB 分块 + Web Worker 后台处理，UI 始终流畅
 
 <details>
-  <summary>📸 预览（点击展开）</summary>
+  <summary>📸 Preview</summary>
   <br/>
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/index.png" alt="SecureC 主界面" />
 </details>
@@ -60,12 +64,14 @@
 
 **浏览器端文本生成图像**
 
+https://text2img.cdlab.workers.dev/
+
 - 支持 FLUX、SDXL、DreamShaper 等模型，随机提示词、丰富参数调节
 - 核心技术：Next.js App Router + TanStack Query + Cloudflare AI
 - 亮点：实时预览、深色/浅色主题、一键下载
 
 <details>
-  <summary>📸 预览（点击展开）</summary>
+  <summary>📸 Preview</summary>
   <br/>
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/index.png" alt="text2img 主界面" />
 </details>
@@ -74,13 +80,14 @@
 
 **加密货币 / 法币 / 商品价值对比工具**
 
+https://values.pages.dev/
+
 - 将加密货币、法币与各类商品放在同一尺度下直观对比
 - 亮点：输入资产或金额后，一眼看出“能买什么”“价值相当于什么”
 
 <details>
-  <summary>📸 预览（点击展开）</summary>
+  <summary>📸 Preview</summary>
   <br/>
-  <p>在线体验：https://values.pages.dev/</p>
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/value-vision/og-image.png" alt="value-vision 主界面" />
 </details>
 
