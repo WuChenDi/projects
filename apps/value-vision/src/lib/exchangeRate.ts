@@ -1,7 +1,7 @@
 import { CURRENCY_CONFIG } from '@/lib/currencies'
-import {
-  ExchangeRates,
+import type {
   CryptoApiResponse,
+  ExchangeRates,
   FiatApiResponse,
 } from '@/types/currency'
 

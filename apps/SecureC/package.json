@@ -25,6 +25,7 @@
   "dependencies": {
     "@cdlab996/genid": "catalog:prod",
     "@cdlab996/ui": "workspace:*",
+    "@cdlab996/utils": "workspace:*",
     "@next/third-parties": "catalog:prod",
     "@noble/ciphers": "^2.1.1",
     "@noble/curves": "^2.0.1",

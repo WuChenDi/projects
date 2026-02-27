@@ -50,7 +50,7 @@ export function Header() {
             <ThemeToggle />
             <Button asChild variant="outline" size="icon" aria-label="GitHub">
               <Link
-                href="https://github.com/WuChenDi/text2img"
+                href="https://github.com/WuChenDi/projects/tree/main/apps/text2img"
                 target="_blank"
                 rel="noopener noreferrer"
               >

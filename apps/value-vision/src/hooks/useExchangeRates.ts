@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import { ExchangeRates } from '@/types/currency'
+import { useEffect, useState } from 'react'
 import { ExchangeRate } from '@/lib/exchangeRate'
 import { defaultRates } from '@/lib/rates'
+import type { ExchangeRates } from '@/types/currency'
 
 export const useExchangeRates = () => {
   const [rates, setRates] = useState<ExchangeRates>({})
@@ -25,12 +25,13 @@ export const useExchangeRates = () => {
     }
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
-    loadRates()
+    void loadRates()
   }, [])
 
   const refreshRates = () => {
-    loadRates()
+    void loadRates()
   }
 
   return {

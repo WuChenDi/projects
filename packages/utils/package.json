@@ -1,0 +1,39 @@
+{
+  "name": "@cdlab996/utils",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Shared utils for the workspace.",
+  "author": "wudi <wuchendi96@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/WuChenDi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WuChenDi/projects.git",
+    "directory": "packages/utils"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --project ./tsconfig.json --noEmit",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@cdlab996/tsconfig": "workspace:*",
+    "@types/node": "catalog:dev",
+    "tsdown": "^0.20.3",
+    "typescript": "catalog:dev"
+  }
+}

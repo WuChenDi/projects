@@ -179,6 +179,7 @@ export default function MitmPage() {
     window.addEventListener('message', tempMessageHandler)
 
     // 注册 Service Worker 并处理消息
+    // biome-ignore lint/nursery/noFloatingPromises: <explanation>
     registerWorker().then(() => {
       // 移除临时处理器
       window.removeEventListener('message', tempMessageHandler)

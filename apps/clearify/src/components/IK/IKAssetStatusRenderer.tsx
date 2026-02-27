@@ -1,6 +1,6 @@
+import { logger } from '@cdlab996/utils'
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
-import { logger } from '@/lib'
 import type { ImageFile } from '@/types'
 
 export interface IKAssetStatusRendererProps {

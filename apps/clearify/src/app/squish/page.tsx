@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
+import { logger } from '@cdlab996/utils'
 import JSZip from 'jszip'
 import type React from 'react'
 import { useCallback, useMemo, useState } from 'react'
@@ -21,7 +22,7 @@ import {
   RightPanel,
 } from '@/components/pages/squish'
 import { useImageQueue } from '@/hooks/useImageQueue'
-import { DEFAULT_QUALITY_SETTINGS, downloadImage, genid, logger } from '@/lib'
+import { DEFAULT_QUALITY_SETTINGS, downloadImage, genid } from '@/lib'
 import type {
   CompressionOptions as CompressionOptionsType,
   ImageFile,

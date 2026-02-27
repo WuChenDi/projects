@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
+import { logger } from '@cdlab996/utils'
 import { Trash2 } from 'lucide-react'
 import type React from 'react'
 import { useCallback, useEffect, useState } from 'react'
@@ -16,7 +17,7 @@ import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
 import { PageContainer } from '@/components/layout'
 import { LeftPanel, RightPanel } from '@/components/pages/bg'
-import { genid, logger } from '@/lib'
+import { genid } from '@/lib'
 import { getModelInfo, initializeModel, processImages } from '@/lib/process'
 import type { BgError, BgImageFile, ModelStatus, RemovalModel } from '@/types'
 

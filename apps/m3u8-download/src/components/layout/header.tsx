@@ -50,7 +50,7 @@ export function Header() {
             <ThemeToggle />
             <Button asChild variant="outline" size="icon" aria-label="GitHub">
               <Link
-                href="https://github.com/WuChenDi/m3u8-download"
+                href="https://github.com/WuChenDi/projects/tree/main/apps/m3u8-download"
                 target="_blank"
                 rel="noopener noreferrer"
               >

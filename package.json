@@ -23,9 +23,9 @@
     "dev": "turbo dev",
     "clean": "bash ./scripts/clean.sh",
     "lint": "turbo lint",
-    "format1": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "lint1": "biome check .",
-    "format": "biome format . --write"
+    "lint:biome": "biome check .",
+    "format": "biome format . --write",
+    "prepare": "turbo run build --filter=./packages/*"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.4",

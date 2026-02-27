@@ -1,7 +1,7 @@
+import { logger } from '@cdlab996/utils'
 import type React from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { decode, encode, getFileType } from '@/lib'
-import { logger } from '@/lib/logger'
 import type { CompressionOptions, ImageFile, OutputType } from '@/types'
 
 export function useImageQueue(

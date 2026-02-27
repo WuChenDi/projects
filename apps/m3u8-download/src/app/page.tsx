@@ -34,13 +34,14 @@ import {
   TooltipTrigger,
 } from '@cdlab996/ui/components/tooltip'
 import { cn } from '@cdlab996/ui/lib/utils'
+import { logger } from '@cdlab996/utils'
 import { format } from 'date-fns'
 import { Download, Pause, Play } from 'lucide-react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { PageContainer } from '@/components/layout'
 import { useStreamSaver } from '@/hooks/useStreamSaver'
-import { AESDecryptor, logger } from '@/lib'
+import { AESDecryptor } from '@/lib'
 
 // ============================================================
 // Types

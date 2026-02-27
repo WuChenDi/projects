@@ -48,7 +48,7 @@ export function Header() {
             {/* <ThemeToggle /> */}
             <Button asChild variant="outline" size="icon" aria-label="GitHub">
               <Link
-                href="https://github.com/WuChenDi/value-vision"
+                href="https://github.com/WuChenDi/projects/tree/main/apps/value-vision"
                 target="_blank"
                 rel="noopener noreferrer"
               >

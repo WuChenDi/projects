@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
+import { logger } from '@cdlab996/utils'
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile, toBlobURL } from '@ffmpeg/util'
 import { useEffect, useRef, useState } from 'react'
@@ -18,7 +19,6 @@ import {
   ProcessingView,
   UploadArea,
 } from '@/components/pages/compress'
-import { logger } from '@/lib'
 import type { ConversionSettings } from '@/types'
 import { defaultSettings } from '@/types'
 

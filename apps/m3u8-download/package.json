@@ -24,6 +24,7 @@
   "dependencies": {
     "@cdlab996/genid": "catalog:prod",
     "@cdlab996/ui": "workspace:*",
+    "@cdlab996/utils": "workspace:*",
     "@next/third-parties": "catalog:prod",
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",

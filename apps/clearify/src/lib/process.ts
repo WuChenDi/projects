@@ -1,3 +1,4 @@
+import { logger } from '@cdlab996/utils'
 import type { PreTrainedModel, Processor } from '@huggingface/transformers'
 import {
   AutoModel,
@@ -5,8 +6,6 @@ import {
   env,
   RawImage,
 } from '@huggingface/transformers'
-
-import { logger } from '@/lib'
 
 // Initialize different model configurations
 const WEBGPU_MODEL_ID = 'wuchendi/modnet'

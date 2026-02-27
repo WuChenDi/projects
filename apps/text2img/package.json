@@ -26,6 +26,7 @@
   "dependencies": {
     "@cdlab996/genid": "catalog:prod",
     "@cdlab996/ui": "workspace:*",
+    "@cdlab996/utils": "workspace:*",
     "@tanstack/react-query": "^5.90.21",
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",

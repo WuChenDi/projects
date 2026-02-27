@@ -1,7 +1,7 @@
 'use client'
 
+import { logger } from '@cdlab996/utils'
 import { useEffect, useState } from 'react'
-import { logger } from '@/lib'
 import { getStreamSaver, setupStreamSaver } from '@/lib/streamSaver'
 
 export function useStreamSaver(middleTransporterUrl = '/mitm.html') {

@@ -3,7 +3,6 @@ export * from './download'
 export * from './formatDefaults'
 export * from './genid'
 export * from './imageProcessing'
-export * from './logger'
 export * from './resize'
 export * from './wasm'
 

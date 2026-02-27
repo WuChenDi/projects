@@ -1,11 +1,10 @@
 'use client'
 
+// import { ThemeToggle } from '@/components/layout/theme-toggle'
+import { Button } from '@cdlab996/ui/components/button'
 import { ExternalLinkIcon, Github } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-
-// import { ThemeToggle } from '@/components/layout/theme-toggle'
-import { Button } from '@cdlab996/ui/components/button'
 
 export function Header() {
   return (
@@ -50,7 +49,7 @@ export function Header() {
             {/* <ThemeToggle /> */}
             <Button asChild variant="outline" size="icon" aria-label="GitHub">
               <Link
-                href="https://github.com/WuChenDi/clearify"
+                href="https://github.com/WuChenDi/projects/tree/main/apps/clearify"
                 target="_blank"
                 rel="noopener noreferrer"
               >
