@@ -70,6 +70,20 @@
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/index.png" alt="text2img 主界面" />
 </details>
 
+### value-vision
+
+**加密货币 / 法币 / 商品价值对比工具**
+
+- 将加密货币、法币与各类商品放在同一尺度下直观对比
+- 亮点：输入资产或金额后，一眼看出“能买什么”“价值相当于什么”
+
+<details>
+  <summary>📸 预览（点击展开）</summary>
+  <br/>
+  <p>在线体验：https://values.pages.dev/</p>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/value-vision/og-image.png" alt="value-vision 主界面" />
+</details>
+
 ## 🚀 快速开始
 
 ### 环境要求
@@ -94,15 +108,16 @@ pnpm install
 ### 常用命令（根目录执行）
 
 ```bash
-pnpm dev                     # 启动所有应用（并行开发）
-pnpm --filter clearify dev   # 只启动 Clearify
+pnpm dev                       # 启动所有应用（并行开发）
+pnpm --filter clearify dev     # 只启动 Clearify
 pnpm --filter m3u8-download dev
 pnpm --filter securec dev
 pnpm --filter text2img dev
-pnpm build                   # 构建所有应用
-pnpm lint                    # Biome 代码检查
-pnpm format                  # Biome 格式化全部代码
-pnpm clean                   # 清理 node_modules / 缓存 / 构建产物
+pnpm --filter value-vision dev
+pnpm build                     # 构建所有应用
+pnpm lint                      # Biome 代码检查
+pnpm format                    # Biome 格式化全部代码
+pnpm clean                     # 清理 node_modules / 缓存 / 构建产物
 ```
 
 ## 目录结构
@@ -113,7 +128,8 @@ pnpm clean                   # 清理 node_modules / 缓存 / 构建产物
 │   ├── clearify/         # 图像 & 视频工具箱
 │   ├── m3u8-download/    # M3U8 下载工具
 │   ├── securec/          # 加解密工具
-│   └── text2img/         # 文生图前端
+│   ├── text2img/         # 文生图前端
+│   └── value-vision/     # 价值对比 / 可视化工具
 ├── packages/
 │   └── tsconfig/         # 共享 TypeScript 配置 (@cdlab996/tsconfig)
 ├── scripts/
