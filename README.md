@@ -96,13 +96,7 @@ https://values.pages.dev/
 ### 环境要求
 
 - Node.js ≥ 20
-- pnpm ≥ 10（推荐使用 corepack 管理）
-
-```bash
-# 推荐：启用 corepack（现代 pnpm 最佳实践）
-corepack enable
-corepack prepare pnpm@10 --activate
-```
+- pnpm ≥ 10
 
 ### 克隆 & 安装
 
@@ -112,7 +106,7 @@ cd projects
 pnpm install
 ```
 
-### 常用命令（根目录执行）
+### 常用命令
 
 ```bash
 pnpm dev                       # 启动所有应用（并行开发）
