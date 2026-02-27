@@ -19,9 +19,6 @@ catalogs:
       specifier: ^5
       version: 5.9.3
   prod:
-    '@base-ui/react':
-      specifier: ^1.2.0
-      version: 1.2.0
     '@cdlab996/genid':
       specifier: ^1.2.1
       version: 1.2.1
@@ -40,6 +37,9 @@ catalogs:
     lucide-react:
       specifier: ^0.575.0
       version: 0.575.0
+    motion:
+      specifier: ^12.34.3
+      version: 12.34.3
     next:
       specifier: 16.1.6
       version: 16.1.6
@@ -137,7 +137,7 @@ importers:
         version: 0.575.0(react@19.2.4)
       next:
         specifier: catalog:prod
-        version: 16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       next-themes:
         specifier: catalog:prod
         version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -224,11 +224,11 @@ importers:
         specifier: catalog:prod
         version: 0.575.0(react@19.2.4)
       motion:
-        specifier: ^12.34.3
+        specifier: catalog:prod
         version: 12.34.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       next:
         specifier: catalog:prod
-        version: 16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       next-themes:
         specifier: catalog:prod
         version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -301,34 +301,22 @@ importers:
         version: 6.3.0
       next:
         specifier: catalog:prod
-        version: 16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       next-themes:
         specifier: catalog:prod
         version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       ogl:
         specifier: catalog:prod
         version: 1.0.11
-      radix-ui:
-        specifier: catalog:prod
-        version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react:
         specifier: catalog:prod
         version: 19.2.4
       react-dom:
         specifier: catalog:prod
         version: 19.2.4(react@19.2.4)
-      shadcn:
-        specifier: catalog:prod
-        version: 3.8.5(@types/node@25.3.2)(typescript@5.9.3)
       sonner:
         specifier: catalog:prod
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      tailwind-merge:
-        specifier: catalog:prod
-        version: 3.5.0
-      tw-animate-css:
-        specifier: catalog:prod
-        version: 1.4.0
     devDependencies:
       '@cdlab996/tsconfig':
         specifier: workspace:*
@@ -348,9 +336,6 @@ importers:
 
   apps/text2img:
     dependencies:
-      '@base-ui/react':
-        specifier: catalog:prod
-        version: 1.2.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@cdlab996/genid':
         specifier: catalog:prod
         version: 1.2.1
@@ -374,38 +359,26 @@ importers:
         version: 0.575.0(react@19.2.4)
       next:
         specifier: catalog:prod
-        version: 16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       next-themes:
         specifier: catalog:prod
         version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      radix-ui:
-        specifier: catalog:prod
-        version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react:
         specifier: catalog:prod
         version: 19.2.4
       react-dom:
         specifier: catalog:prod
         version: 19.2.4(react@19.2.4)
-      shadcn:
-        specifier: catalog:prod
-        version: 3.8.5(@types/node@25.3.2)(typescript@5.9.3)
       sonner:
         specifier: catalog:prod
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      tailwind-merge:
-        specifier: catalog:prod
-        version: 3.5.0
-      tw-animate-css:
-        specifier: catalog:prod
-        version: 1.4.0
     devDependencies:
       '@cdlab996/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
       '@opennextjs/cloudflare':
         specifier: ^1.17.1
-        version: 1.17.1(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.69.0)
+        version: 1.17.1(next@16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.69.0)
       '@types/node':
         specifier: catalog:dev
         version: 25.3.2
@@ -421,6 +394,64 @@ importers:
       wrangler:
         specifier: ^4.68.1
         version: 4.69.0
+
+  apps/value-vision:
+    dependencies:
+      '@cdlab996/genid':
+        specifier: catalog:prod
+        version: 1.2.1
+      '@cdlab996/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@next/third-parties':
+        specifier: catalog:prod
+        version: 16.1.6(next@16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
+      class-variance-authority:
+        specifier: catalog:prod
+        version: 0.7.1
+      clsx:
+        specifier: catalog:prod
+        version: 2.1.1
+      lucide-react:
+        specifier: catalog:prod
+        version: 0.575.0(react@19.2.4)
+      motion:
+        specifier: catalog:prod
+        version: 12.34.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next:
+        specifier: catalog:prod
+        version: 16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next-themes:
+        specifier: catalog:prod
+        version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      ogl:
+        specifier: catalog:prod
+        version: 1.0.11
+      react:
+        specifier: catalog:prod
+        version: 19.2.4
+      react-dom:
+        specifier: catalog:prod
+        version: 19.2.4(react@19.2.4)
+      sonner:
+        specifier: catalog:prod
+        version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+    devDependencies:
+      '@cdlab996/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@types/node':
+        specifier: catalog:dev
+        version: 25.3.2
+      '@types/react':
+        specifier: catalog:dev
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: catalog:dev
+        version: 19.2.3(@types/react@19.2.14)
+      typescript:
+        specifier: catalog:dev
+        version: 5.9.3
 
   packages/tsconfig: {}
 
@@ -6304,7 +6335,7 @@ snapshots:
 
   '@next/third-parties@16.1.6(next@16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)':
     dependencies:
-      next: 16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next: 16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react: 19.2.4
       third-party-capital: 1.0.20
 
@@ -6360,7 +6391,7 @@ snapshots:
 
   '@open-draft/until@2.1.0': {}
 
-  '@opennextjs/aws@3.9.16(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))':
+  '@opennextjs/aws@3.9.16(next@16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))':
     dependencies:
       '@ast-grep/napi': 0.40.5
       '@aws-sdk/client-cloudfront': 3.984.0
@@ -6376,7 +6407,7 @@ snapshots:
       cookie: 1.1.1
       esbuild: 0.25.4
       express: 5.2.1
-      next: 16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next: 16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       path-to-regexp: 6.3.0
       urlpattern-polyfill: 10.1.0
       yaml: 2.8.2
@@ -6384,16 +6415,16 @@ snapshots:
       - aws-crt
       - supports-color
 
-  '@opennextjs/cloudflare@1.17.1(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.69.0)':
+  '@opennextjs/cloudflare@1.17.1(next@16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.69.0)':
     dependencies:
       '@ast-grep/napi': 0.40.5
       '@dotenvx/dotenvx': 1.31.0
-      '@opennextjs/aws': 3.9.16(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
+      '@opennextjs/aws': 3.9.16(next@16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
       cloudflare: 4.5.0
       comment-json: 4.5.1
       enquirer: 2.4.1
       glob: 12.0.0
-      next: 16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next: 16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       ts-tqdm: 0.8.6
       wrangler: 4.69.0
       yargs: 18.0.0
@@ -8732,7 +8763,7 @@ snapshots:
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
 
-  next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  next@16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       '@next/env': 16.1.6
       '@swc/helpers': 0.5.15
@@ -8741,7 +8772,7 @@ snapshots:
       postcss: 8.4.31
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
-      styled-jsx: 5.1.6(@babel/core@7.29.0)(react@19.2.4)
+      styled-jsx: 5.1.6(react@19.2.4)
     optionalDependencies:
       '@next/swc-darwin-arm64': 16.1.6
       '@next/swc-darwin-x64': 16.1.6
@@ -9366,12 +9397,10 @@ snapshots:
 
   strnum@2.1.2: {}
 
-  styled-jsx@5.1.6(@babel/core@7.29.0)(react@19.2.4):
+  styled-jsx@5.1.6(react@19.2.4):
     dependencies:
       client-only: 0.0.1
       react: 19.2.4
-    optionalDependencies:
-      '@babel/core': 7.29.0
 
   supports-color@10.2.2: {}
 

@@ -1,0 +1,46 @@
+{
+  "name": "@cdlab996/values",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Powerful web-based tools for your image editing needs",
+  "author": "wudi <wuchendi96@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/WuChenDi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WuChenDi/projects.git",
+    "directory": "apps/value-vision"
+  },
+  "scripts": {
+    "dev": "next dev --port 3011",
+    "build": "next build",
+    "build:cf": "npx @cloudflare/next-on-pages@latest",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cdlab996/genid": "catalog:prod",
+    "@cdlab996/ui": "workspace:*",
+    "@next/third-parties": "catalog:prod",
+    "class-variance-authority": "catalog:prod",
+    "clsx": "catalog:prod",
+    "lucide-react": "catalog:prod",
+    "motion": "catalog:prod",
+    "next": "catalog:prod",
+    "next-themes": "catalog:prod",
+    "ogl": "catalog:prod",
+    "react": "catalog:prod",
+    "react-dom": "catalog:prod",
+    "sonner": "catalog:prod"
+  },
+  "devDependencies": {
+    "@cdlab996/tsconfig": "workspace:*",
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}
