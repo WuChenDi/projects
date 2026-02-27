@@ -113,7 +113,7 @@ pnpm --filter clearify dev     # 只启动 Clearify
 pnpm --filter m3u8-download dev
 pnpm --filter securec dev
 pnpm --filter text2img dev
-pnpm --filter value-vision dev
+pnpm --filter values dev
 pnpm build                     # 构建所有应用
 pnpm lint                      # Biome 代码检查
 pnpm format                    # Biome 格式化全部代码
