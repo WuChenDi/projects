@@ -28,12 +28,11 @@
     "typecheck": "tsc --project ./tsconfig.json --noEmit",
     "prepack": "pnpm build"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
-    "tsdown": "^0.20.3",
+    "tsdown": "catalog:dev",
     "typescript": "catalog:dev"
   }
 }
