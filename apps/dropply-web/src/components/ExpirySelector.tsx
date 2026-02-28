@@ -1,6 +1,11 @@
 'use client'
 
+import { Field } from '@cdlab996/ui/components/field'
 import { Label } from '@cdlab996/ui/components/label'
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@cdlab996/ui/components/toggle-group'
 import { cn } from '@cdlab996/ui/lib/utils'
 import type { ValidityDays } from '@/types'
 
@@ -39,40 +44,51 @@ const expiryOptions = [
 
 export function ExpirySelector({ value, onChange }: ExpirySelectorProps) {
   return (
-    <div className="space-y-4">
-      <Label className="text-sm font-medium">Expiry Time</Label>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-        {expiryOptions.map((option) => {
-          const isSelected = value === option.value
-
-          return (
-            <button
-              key={option.value}
-              onClick={() => onChange(option.value)}
+    <Field>
+      <Label>Expiry Time</Label>
+      <ToggleGroup
+        type="single"
+        value={String(value)}
+        onValueChange={(val) => {
+          if (val) onChange(Number(val) as ValidityDays)
+        }}
+        spacing={2}
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 w-full items-stretch"
+      >
+        {expiryOptions.map((option) => (
+          <ToggleGroupItem
+            key={option.value}
+            value={String(option.value)}
+            className={cn(
+              'group flex flex-col items-center justify-start gap-1.5',
+              'h-auto min-h-[4rem] py-3 px-2 rounded-xl border w-full',
+              'transition-all duration-200 ease-out',
+              'data-[state=off]:border-border data-[state=off]:bg-muted/40',
+              'data-[state=off]:hover:border-primary/50 data-[state=off]:hover:bg-muted/70',
+              'data-[state=on]:border-primary data-[state=on]:bg-primary/10',
+              'data-[state=on]:-translate-y-0.5 hover:-translate-y-0.5',
+            )}
+          >
+            <span
               className={cn(
-                'p-3 rounded-lg border text-center transition-all duration-200',
-                'focus:outline-none focus:ring-2 focus:ring-primary/20',
-                isSelected
-                  ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                  : 'border-border/30 bg-background/50 backdrop-blur-sm hover:border-primary/50 hover:bg-background/70',
+                'text-[11px] font-bold tracking-wide leading-none',
+                'group-data-[state=on]:text-primary',
               )}
             >
-              <div className="font-medium text-sm mb-1">{option.label}</div>
-              <div
-                className={cn(
-                  'text-xs',
-                  isSelected
-                    ? 'text-primary-foreground/80'
-                    : 'text-muted-foreground',
-                )}
-              >
-                {option.description}
-              </div>
-            </button>
-          )
-        })}
-      </div>
-    </div>
+              {option.label}
+            </span>
+            <span
+              className={cn(
+                'text-[10px] leading-tight text-muted-foreground text-center',
+                'w-full whitespace-normal break-words',
+                'group-data-[state=on]:text-primary/70',
+              )}
+            >
+              {option.description}
+            </span>
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    </Field>
   )
 }

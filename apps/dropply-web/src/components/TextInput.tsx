@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
+import { Field } from '@cdlab996/ui/components/field'
 import { Input } from '@cdlab996/ui/components/input'
 import { Label } from '@cdlab996/ui/components/label'
 import { Textarea } from '@cdlab996/ui/components/textarea'
@@ -61,32 +62,31 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
         </div>
 
         <div className="flex gap-3">
-          <div className="flex-1 space-y-2">
+          <Field>
             <Label htmlFor="text-label">Label (optional)</Label>
-            <Input
-              id="text-label"
-              type="text"
-              value={currentFilename}
-              onChange={(e) => setCurrentFilename(e.target.value)}
-              placeholder={`Text ${textItems.length + 1}`}
-            />
-          </div>
-          <div className="flex items-end">
-            <Button
-              onClick={addTextItem}
-              disabled={!currentText.trim()}
-              className={cn(
-                'px-6 bg-gradient-to-r from-emerald-500 to-teal-500',
-                'hover:from-emerald-600 hover:to-teal-600',
-                'text-white border-none shadow-md hover:shadow-lg',
-                'transition-all duration-200 hover:scale-[1.02]',
-                'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100',
-              )}
-            >
-              <Plus size={16} />
-              Add Text
-            </Button>
-          </div>
+            <div className="flex items-center gap-2">
+              <Input
+                id="text-label"
+                type="text"
+                value={currentFilename}
+                onChange={(e) => setCurrentFilename(e.target.value)}
+                placeholder={`Text ${textItems.length + 1}`}
+              />
+              <Button
+                onClick={addTextItem}
+                disabled={!currentText.trim()}
+                className={cn(
+                  'bg-gradient-to-r from-emerald-500 to-teal-500',
+                  'hover:from-emerald-600 hover:to-teal-600',
+                  'transition-all duration-200 hover:scale-[1.02]',
+                  'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100',
+                )}
+              >
+                <Plus className="size-4" />
+                Add Text
+              </Button>
+            </div>
+          </Field>
         </div>
       </div>
 
@@ -94,7 +94,7 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
       {textItems.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <FileText size={16} className="text-muted-foreground" />
+            <FileText className="size-4 text-muted-foreground" />
             <h4 className="font-semibold text-foreground">
               Text Items ({textItems.length})
             </h4>

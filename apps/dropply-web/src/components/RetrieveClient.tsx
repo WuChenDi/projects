@@ -5,11 +5,11 @@ import { Button } from '@cdlab996/ui/components/button'
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
 import { cn } from '@cdlab996/ui/lib/utils'
-import GradientText from '@cdlab996/ui/reactbits/GradientText'
 import { formatFileSize } from '@cdlab996/utils'
 import {
   AlertCircle,
@@ -91,91 +91,105 @@ export function RetrieveClient({ code, onBack }: RetrieveClientProps) {
 
   if (isRetrieving) {
     return (
-      <div className="w-full max-w-4xl space-y-12 relative flex items-center justify-center min-h-[400px]">
-        <Card className="border-none bg-card/30 backdrop-blur-xl shadow-lg max-w-md mx-auto">
-          <CardContent className="p-12 text-center">
-            <div className="space-y-6">
-              <Loader2
-                size={48}
-                className="mx-auto text-primary animate-spin"
-              />
-              <div>
-                <CardTitle className="text-2xl mb-2">
-                  Retrieving files...
-                </CardTitle>
-                <p className="text-muted-foreground">
-                  Please wait while we fetch your content
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="shadow-none max-w-md mx-auto">
+        <CardContent className="p-12 text-center">
+          <div className="space-y-4">
+            <Loader2 size={48} className="mx-auto text-primary animate-spin" />
+            <CardTitle className="text-2xl">Retrieving files...</CardTitle>
+            <p className="text-muted-foreground">
+              Please wait while we fetch your content
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     )
   }
 
   if (error) {
     return (
-      <div className="w-full max-w-4xl space-y-12 relative flex items-center justify-center min-h-[400px]">
-        <Card className="border-none bg-card/30 backdrop-blur-xl shadow-lg max-w-md mx-auto">
-          <CardContent className="p-12 text-center">
-            <div className="space-y-6">
-              <AlertCircle size={48} className="mx-auto text-red-500" />
-              <div>
-                <CardTitle className="text-2xl text-red-600 mb-2">
-                  Retrieval Failed
-                </CardTitle>
-                <p className="text-muted-foreground mb-6">{error}</p>
-                <Button
-                  onClick={() => (window.location.href = '/')}
-                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-none"
-                >
-                  Go Home
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="shadow-none max-w-md mx-auto">
+        <CardContent className="p-12 text-center">
+          <div className="space-y-4">
+            <AlertCircle size={48} className="mx-auto text-red-500" />
+            <CardTitle className="text-2xl text-red-600">
+              Retrieval Failed
+            </CardTitle>
+            <p className="text-muted-foreground mb-6">{error}</p>
+            <Button
+              onClick={() => (window.location.href = '/')}
+              className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-none"
+            >
+              Go Home
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     )
   }
 
   return (
-    <div className="w-full max-w-4xl space-y-6 relative">
-      {/* Header */}
-      <div className="text-center">
-        <GradientText className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r mb-6">
-          Retrieved Content
-        </GradientText>
-        <div className="flex items-center justify-center mt-6 gap-4">
-          <p className="text-base md:text-lg text-muted-foreground mb-2">
-            Retrieval Code:
-          </p>
-          <code className="text-xl md:text-2xl font-mono font-bold text-primary bg-background/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-border/50">
-            {code}
-          </code>
-        </div>
-      </div>
+    <div className="w-full space-y-4">
+      {/* Header card */}
+      <Card className="shadow-none">
+        <CardHeader>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <CardTitle>Retrieved Content</CardTitle>
+              <CardDescription className="flex items-center gap-2 mt-1">
+                Code:
+                <code className="font-mono font-bold text-primary px-1.5 py-0.5 rounded bg-muted border text-xs">
+                  {code}
+                </code>
+                {expiryDate && (
+                  <span className="flex items-center gap-1">
+                    <Clock size={12} />
+                    Expires: {formatDate(expiryDate)}
+                  </span>
+                )}
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              {onBack && (
+                <Button onClick={onBack} variant="outline" size="sm">
+                  <ArrowLeft size={16} />
+                  Enter Another Code
+                </Button>
+              )}
+              <Button
+                onClick={() => (window.location.href = '/')}
+                size="sm"
+                className="bg-gradient-to-r from-purple-500 to-blue-500 border-none text-white"
+              >
+                <Upload size={16} />
+                Upload Files
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
 
       {files.length > 0 && (
-        <div className="space-y-8">
+        <>
           {/* Text Content Section */}
           {files.some((f) => f.isText) && (
-            <Card className="border-none bg-card/30 backdrop-blur-xl shadow-lg">
-              <CardHeader className="border-b border-border/20 pb-4">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg">
-                    <FileText size={20} />
+            <Card className="shadow-none">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                    <FileText
+                      size={16}
+                      className="text-emerald-600 dark:text-emerald-400"
+                    />
                   </div>
                   <div>
-                    <CardTitle className="text-xl">Text Content</CardTitle>
-                    <p className="text-sm text-muted-foreground">
+                    <CardTitle>Text Content</CardTitle>
+                    <CardDescription>
                       {files.filter((f) => f.isText).length} text item(s)
-                    </p>
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {files
                     .filter((f) => f.isText)
@@ -186,7 +200,7 @@ export function RetrieveClient({ code, onBack }: RetrieveClientProps) {
                       return (
                         <div
                           key={file.fileId}
-                          className="p-4 rounded-lg border border-border/30 bg-background/30 backdrop-blur-sm"
+                          className="p-4 rounded-lg border border-border/50 bg-muted/20"
                         >
                           <div className="flex items-center gap-2 mb-3">
                             <div className="p-1.5 rounded-md bg-emerald-100 dark:bg-emerald-900/30">
@@ -206,7 +220,7 @@ export function RetrieveClient({ code, onBack }: RetrieveClientProps) {
 
                           {file.content && (
                             <div className="space-y-3">
-                              <div className="bg-muted/30 rounded-md p-3 max-h-32 overflow-y-auto border border-border/20">
+                              <div className="bg-muted/50 rounded-md p-3 max-h-32 overflow-y-auto border border-border/30">
                                 <pre className="text-xs whitespace-pre-wrap font-mono text-muted-foreground">
                                   {file.content}
                                 </pre>
@@ -246,7 +260,7 @@ export function RetrieveClient({ code, onBack }: RetrieveClientProps) {
                                 <Button
                                   onClick={() => handleDownload(file)}
                                   size="sm"
-                                  className="flex-1 text-xs bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+                                  className="flex-1 text-xs bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 border-none text-white"
                                 >
                                   <Download size={12} className="mr-1" />
                                   Download
@@ -264,35 +278,36 @@ export function RetrieveClient({ code, onBack }: RetrieveClientProps) {
 
           {/* Files Section */}
           {files.some((f) => !f.isText) && (
-            <Card className="border-none bg-card/30 backdrop-blur-xl shadow-lg">
-              <CardHeader className="border-b border-border/20 pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg">
-                      <File size={20} />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl">
-                        Files ({files.filter((f) => !f.isText).length})
-                      </CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Clock size={14} className="text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">
-                          Expires: {formatDate(expiryDate)}
-                        </p>
-                      </div>
-                    </div>
+            <Card className="shadow-none">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                    <File
+                      size={16}
+                      className="text-purple-600 dark:text-purple-400"
+                    />
+                  </div>
+                  <div>
+                    <CardTitle>
+                      Files ({files.filter((f) => !f.isText).length})
+                    </CardTitle>
+                    {expiryDate && (
+                      <CardDescription className="flex items-center gap-1">
+                        <Clock size={12} />
+                        Expires: {formatDate(expiryDate)}
+                      </CardDescription>
+                    )}
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
+              <CardContent>
+                <div className="space-y-3">
                   {files
                     .filter((f) => !f.isText)
                     .map((file) => (
                       <div
                         key={file.fileId}
-                        className="p-4 rounded-lg border border-border/30 bg-background/30 backdrop-blur-sm hover:bg-background/50 transition-all duration-200"
+                        className="p-4 rounded-lg border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors"
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -333,29 +348,8 @@ export function RetrieveClient({ code, onBack }: RetrieveClientProps) {
               </CardContent>
             </Card>
           )}
-        </div>
+        </>
       )}
-
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        {onBack && (
-          <Button
-            onClick={onBack}
-            variant="outline"
-            className="border-border/50 bg-background/50 backdrop-blur-sm hover:bg-background/80"
-          >
-            <ArrowLeft size={16} />
-            Enter Another Code
-          </Button>
-        )}
-        <Button
-          onClick={() => (window.location.href = '/')}
-          className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
-        >
-          <Upload size={16} />
-          Upload Files
-        </Button>
-      </div>
     </div>
   )
 }
