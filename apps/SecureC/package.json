@@ -13,7 +13,7 @@
     "directory": "apps/SecureC"
   },
   "scripts": {
-    "dev": "next dev --port 3009",
+    "dev": "next dev --hostname 0.0.0.0 --port 3009",
     "build": "next build",
     "build:cf": "npx @cloudflare/next-on-pages@latest",
     "start": "next start",

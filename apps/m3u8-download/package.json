@@ -13,7 +13,7 @@
     "directory": "apps/m3u8-download"
   },
   "scripts": {
-    "dev": "next dev --port 3010",
+    "dev": "next dev --hostname 0.0.0.0 --port 3010",
     "build": "next build",
     "build:cf": "npx @cloudflare/next-on-pages@latest",
     "start": "next start",

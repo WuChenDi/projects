@@ -12,7 +12,7 @@
     "directory": "apps/Clearify"
   },
   "scripts": {
-    "dev": "next dev --port 3008 --webpack",
+    "dev": "next dev --hostname 0.0.0.0 --port 3008 --webpack",
     "build": "next build --webpack",
     "build:cf": "npx @cloudflare/next-on-pages@latest",
     "start": "next start",
