@@ -3,10 +3,9 @@ import Aurora from '@cdlab996/ui/reactbits/Aurora'
 import Particles from '@cdlab996/ui/reactbits/Particles'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import { Providers } from '@/app/providers'
-import Footer from '@/components/footer'
-import Header from '@/components/header'
 import '@cdlab996/ui/globals.css'
+import { ClientProviders } from '@/components/layout/client-providers'
+import { Header } from '@/components/layout/header'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -104,17 +103,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>
-          <BackgroundEffects />
-          <main className="flex flex-col min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-white">
-            <Header />
-            <div className="container mx-auto px-4 py-12 flex flex-col items-center flex-1">
-              {children}
-            </div>
-            <Footer />
-            <Toaster richColors position="top-right" duration={3000} />
-          </main>
-        </Providers>
+        <ClientProviders>
+          <Header />
+          {children}
+          <Toaster richColors position="top-center" duration={3000} />
+        </ClientProviders>
       </body>
     </html>
   )
