@@ -1,0 +1,45 @@
+{
+  "name": "@cdlab996/dropply-web",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dropply is a secure, user-friendly file sharing platform built with Next.js and Cloudflare Workers, offering end-to-end encryption and seamless sharing.",
+  "author": "wudi <wuchendi96@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/WuChenDi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WuChenDi/projects.git",
+    "directory": "apps/dropply-web"
+  },
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0 --port 3013",
+    "build": "next build",
+    "build:cf": "npx @cloudflare/next-on-pages@latest",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cdlab996/genid": "catalog:prod",
+    "@cdlab996/ui": "workspace:*",
+    "@cdlab996/uncrypto": "workspace:*",
+    "@cdlab996/utils": "workspace:*",
+    "@next/third-parties": "catalog:prod",
+    "lucide-react": "catalog:prod",
+    "next": "catalog:prod",
+    "next-themes": "catalog:prod",
+    "react": "catalog:prod",
+    "react-dom": "catalog:prod",
+    "react-dropzone": "catalog:prod",
+    "sonner": "catalog:prod"
+  },
+  "devDependencies": {
+    "@cdlab996/tsconfig": "workspace:*",
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "dropply-web",
+  "compatibility_date": "2026-02-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./out",
+    "not_found_handling": "404-page"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dropply-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-02-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    // The Service runtime preset to use for deployment.
+    "DEPLOY_RUNTIME": "cf",
+    // Database Type
+    "DB_TYPE": "libsql",
+    // LibSQL Configuration
+    // The URL for connecting to the LibSQL database. Default is a local SQLite file.
+    "LIBSQL_URL": "libsql://dropply-cdhj996.aws-ap-northeast-1.turso.io",
+    // The authentication token for accessing the LibSQL
+    "LIBSQL_AUTH_TOKEN": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NjU4NTQ4ODMsImlkIjoiOTJiMWQ1ZmMtYTM3OS00NGE3LTg1ZDEtNWVjM2Q4MDJkOGExIiwicmlkIjoiNDg4Mjc5ZjktNzRlNy00ZWY1LTgwNmUtNzhhMjVjMTRjMDZmIn0.CQ_sY04UNHsNG7LUdTBavP9QsNkY7YuqPrInFCcE7rMZAcUV244oMmiyMVU5yaBXCOUqCvZ2F0vnsGnxigMMBg",
+
+    "REQUIRE_TOTP": "false",
+    "JWT_SECRET": "your_jwt_secret",
+    "TOTP_SECRETS": "your_totp_secrets",
+
+    // Email Configuration
+    "ENABLE_EMAIL_SHARE": "true",
+    "RESEND_API_KEY": "re_dLXSUAai_JZcEYEfEUQSPNUKnQzpVXJ12",
+    "RESEND_FROM_EMAIL": "noreply@resend.dev",
+    "RESEND_WEB_URL": "https://dropply.pages.dev"
+  },
+  "r2_buckets": [
+    {
+      "binding": "R2_STORAGE",
+      "bucket_name": "dropply"
+    }
+  ],
+  // "d1_databases": [
+  //   {
+  //     "binding": "DB",
+  //     "database_name": "dropply",
+  //     "migrations_dir": "./src/database",
+  //     "database_id": "your-d1-database-id"
+  //   }
+  // ],
+  "triggers": {
+    "crons": ["0 * * * *"]
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

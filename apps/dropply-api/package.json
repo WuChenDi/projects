@@ -1,0 +1,49 @@
+{
+  "name": "@cdlab996/dropply-api",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dropply is a secure, user-friendly file sharing platform built with Next.js and Cloudflare Workers, offering end-to-end encryption and seamless sharing.",
+  "author": "wudi <wuchendi96@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/WuChenDi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WuChenDi/projects.git",
+    "directory": "apps/dropply-api"
+  },
+  "scripts": {
+    "dev": "wrangler dev --ip 0.0.0.0 --port 3014 src/index.ts",
+    "deploy": "wrangler deploy --minify",
+    "build": "bun build src/index.ts --outdir dist --target browser",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "cf:localdb": "wrangler d1 migrations apply dropply",
+    "cf:remotedb": "wrangler d1 migrations apply dropply --remote",
+    "db:studio": "drizzle-kit studio --port 3015 --host 0.0.0.0",
+    "db:pull": "drizzle-kit pull",
+    "db:push": "drizzle-kit push",
+    "db:gen": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:up": "drizzle-kit up"
+  },
+  "dependencies": {
+    "@cdlab996/uncrypto": "workspace:*",
+    "@cdlab996/utils": "workspace:*",
+    "@hono/zod-validator": "^0.7.6",
+    "@libsql/client": "^0.17.0",
+    "@react-email/components": "^1.0.8",
+    "drizzle-orm": "^0.45.1",
+    "hono": "^4.12.3",
+    "resend": "^6.9.3",
+    "winston": "^3.19.0",
+    "winston-daily-rotate-file": "^5.0.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@cdlab996/tsconfig": "workspace:*",
+    "@cloudflare/workers-types": "^4.20260228.1",
+    "@types/node": "catalog:dev",
+    "drizzle-kit": "^0.31.9",
+    "wrangler": "^4.69.0"
+  }
+}
