@@ -16,5 +16,8 @@
     "hooks": "@cdlab996/ui/hooks",
     "lib": "@cdlab996/ui/lib",
     "ui": "@cdlab996/ui/components"
+  },
+  "registries": {
+    "@react-bits": "https://reactbits.dev/r/{name}.json"
   }
 }
