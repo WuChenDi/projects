@@ -87,7 +87,14 @@
       }
     },
     {
-      "includes": ["apps/clearify/**/*"],
+      "includes": [
+        "apps/clearify/**/*",
+        "apps/dropply-web/**/*",
+        "apps/m3u8-download/**/*",
+        "apps/SecureC/**/*",
+        "apps/txt2img/**/*",
+        "apps/value-vision/**/*"
+      ],
       "linter": {
         "domains": {
           "next": "recommended",
@@ -108,7 +115,7 @@
       "!**/.cache",
       "!apps/api/src/database/**/*.json",
       "!apps/api/src/database/**/*.sql",
-      "!packages/ui/src/components/reactbits/**/*.tsx",
+      "!packages/ui/src/reactbits/**/*.tsx",
       "!packages/ui/src/components/**/*.tsx"
     ]
   }
