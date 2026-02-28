@@ -1,7 +1,7 @@
 'use client'
 
-import GradientText from '@/components/reactbits/GradientText'
-import ShinyText from '@/components/reactbits/ShinyText'
+import GradientText from '@cdlab996/ui/reactbits/GradientText'
+import ShinyText from '@cdlab996/ui/reactbits/ShinyText'
 
 export function SCHeader() {
   return (

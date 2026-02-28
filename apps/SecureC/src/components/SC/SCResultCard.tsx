@@ -1,5 +1,6 @@
 import { Button } from '@cdlab996/ui/components/button'
 import { cn } from '@cdlab996/ui/lib/utils'
+import { formatFileSize } from '@cdlab996/utils'
 import {
   Clipboard,
   Download,
@@ -11,7 +12,7 @@ import {
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { copyToClipboard, formatFileSize, getFileIcon } from '@/lib'
+import { copyToClipboard, getFileIcon } from '@/lib'
 import type { ProcessResult } from '@/types'
 import { InputModeEnum, ModeEnum } from '@/types'
 import { SCAssetFailed } from './SCAssetFailed'

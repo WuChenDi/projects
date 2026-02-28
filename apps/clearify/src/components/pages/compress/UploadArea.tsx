@@ -1,8 +1,8 @@
+import { Button } from '@cdlab996/ui/components/button'
+import { formatFileSize } from '@cdlab996/utils'
 import { FileVideo, Loader2, Upload, X } from 'lucide-react'
 import type { DropzoneInputProps, DropzoneRootProps } from 'react-dropzone'
 import { IKMediaUpload } from '@/components/IK'
-import { Button } from '@cdlab996/ui/components/button'
-import { formatFileSize } from '@/lib'
 
 interface UploadAreaProps {
   video: File | null

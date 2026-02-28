@@ -9,6 +9,11 @@ import {
   CardTitle,
 } from '@cdlab996/ui/components/card'
 import { cn } from '@cdlab996/ui/lib/utils'
+import Aurora from '@cdlab996/ui/reactbits/Aurora'
+import GradientText from '@cdlab996/ui/reactbits/GradientText'
+import Particles from '@cdlab996/ui/reactbits/Particles'
+import ShinyText from '@cdlab996/ui/reactbits/ShinyText'
+import SplashCursor from '@cdlab996/ui/reactbits/SplashCursor'
 import type { LucideIcon } from 'lucide-react'
 import {
   ArrowRight,
@@ -19,11 +24,6 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { Footer, PageContainer } from '@/components/layout'
-import Aurora from '@/components/reactbits/Aurora'
-import GradientText from '@/components/reactbits/GradientText'
-import Particles from '@/components/reactbits/Particles'
-import ShinyText from '@/components/reactbits/ShinyText'
-import SplashCursor from '@/components/reactbits/SplashCursor'
 
 interface Task {
   id: string

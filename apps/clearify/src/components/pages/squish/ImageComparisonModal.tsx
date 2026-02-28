@@ -1,13 +1,12 @@
 'use client'
 
+import { Button } from '@cdlab996/ui/components/button'
+import { formatFileSize } from '@cdlab996/utils'
 import { X } from 'lucide-react'
 import {
   ReactCompareSlider,
   ReactCompareSliderImage,
 } from 'react-compare-slider'
-
-import { Button } from '@cdlab996/ui/components/button'
-import { formatFileSize } from '@/lib'
 import type { ImageFile } from '@/types'
 
 interface ImageComparisonModalProps {

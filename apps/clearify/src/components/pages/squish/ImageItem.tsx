@@ -2,6 +2,7 @@
 
 import { Button } from '@cdlab996/ui/components/button'
 import { cn } from '@cdlab996/ui/lib/utils'
+import { formatFileSize } from '@cdlab996/utils'
 import { ArrowRight, Download, Eye, RotateCcw, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -9,7 +10,6 @@ import { useCallback } from 'react'
 import { IKAssetFailed } from '@/components/IK/IKAssetFailed'
 import { IKAssetLoading } from '@/components/IK/IKAssetLoading'
 import { IKAssetStatusRenderer } from '@/components/IK/IKAssetStatusRenderer'
-import { formatFileSize } from '@/lib'
 import type { ImageFile } from '@/types'
 
 interface ImageItemProps {

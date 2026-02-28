@@ -1,4 +1,4 @@
-import { formatFileSize } from '@/lib/utils'
+import { formatFileSize } from '@cdlab996/utils'
 import type { FileInfo } from '@/types'
 
 interface SCFileInfoDisplayProps {

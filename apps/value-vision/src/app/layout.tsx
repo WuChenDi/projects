@@ -1,12 +1,12 @@
 /** biome-ignore-all lint/security/noDangerouslySetInnerHtml: Required for JSON-LD structured data */
 
 import { Toaster } from '@cdlab996/ui/components/sonner'
+import Particles from '@cdlab996/ui/reactbits/Particles'
+import Plasma from '@cdlab996/ui/reactbits/Plasma'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { ClientProviders, Footer, Header } from '@/components/layout'
-import Particles from '@/components/reactbits/Particles'
-import Plasma from '@/components/reactbits/Plasma'
 import '@cdlab996/ui/globals.css'
 
 const geistSans = Geist({

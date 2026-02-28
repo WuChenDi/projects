@@ -1,9 +1,9 @@
 'use client'
 
-import GradientText from '@/components/reactbits/GradientText'
-import ShinyText from '@/components/reactbits/ShinyText'
 import { Button } from '@cdlab996/ui/components/button'
 import { Card, CardContent, CardHeader } from '@cdlab996/ui/components/card'
+import GradientText from '@cdlab996/ui/reactbits/GradientText'
+import ShinyText from '@cdlab996/ui/reactbits/ShinyText'
 
 export default function Error({ reset }: { reset: () => void }) {
   return (

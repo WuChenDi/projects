@@ -30,8 +30,8 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.4",
     "@cdlab996/tsconfig": "workspace:*",
-    "@types/node": "^25",
-    "turbo": "^2.8.11",
-    "typescript": "^5"
+    "@types/node": "catalog:dev",
+    "turbo": "^2.8.12",
+    "typescript": "catalog:dev"
   }
 }
