@@ -1,0 +1,5 @@
+{
+  "extends": "@cdlab996/tsconfig/utils.json",
+  "include": ["."],
+  "exclude": ["node_modules", "dist"]
+}

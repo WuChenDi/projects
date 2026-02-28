@@ -1,0 +1,53 @@
+{
+  "name": "@cdlab996/uncrypto",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Uncrypto is a lightweight, fast, and secure encryption library for Node.js and the browser.",
+  "author": "wudi <wuchendi96@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/WuChenDi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WuChenDi/projects.git",
+    "directory": "packages/uncrypto"
+  },
+  "exports": {
+    ".": {
+      "browser": {
+        "types": "./dist/crypto.web.d.mts",
+        "import": "./dist/crypto.web.mjs",
+        "require": "./dist/crypto.web.cjs"
+      },
+      "node": {
+        "types": "./dist/crypto.node.d.mts",
+        "import": "./dist/crypto.node.mjs",
+        "require": "./dist/crypto.node.cjs"
+      },
+      "default": {
+        "types": "./dist/crypto.web.d.mts",
+        "import": "./dist/crypto.web.mjs"
+      }
+    }
+  },
+  "main": "./dist/crypto.node.cjs",
+  "module": "./dist/crypto.web.mjs",
+  "browser": "./dist/crypto.web.mjs",
+  "types": "./dist/crypto.web.d.mts",
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --project ./tsconfig.json --noEmit",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@cdlab996/tsconfig": "workspace:*",
+    "@types/node": "catalog:dev",
+    "tsdown": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vitest": "catalog:dev"
+  }
+}
