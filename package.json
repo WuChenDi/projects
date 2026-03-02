@@ -21,6 +21,7 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
+    "dev:dropply": "turbo dev --filter=./apps/dropply-*",
     "clean": "bash ./scripts/clean.sh",
     "lint": "turbo lint",
     "lint:biome": "biome check .",

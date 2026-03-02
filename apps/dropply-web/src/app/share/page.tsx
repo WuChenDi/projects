@@ -8,18 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
+import { Field } from '@cdlab996/ui/components/field'
+import { Label } from '@cdlab996/ui/components/label'
 import { cn } from '@cdlab996/ui/lib/utils'
-import {
-  ArrowLeft,
-  CheckCircle,
-  Clock,
-  Copy,
-  FileText,
-  Mail,
-  Upload,
-  X,
-} from 'lucide-react'
-import Link from 'next/link'
+import { copyToClipboard } from '@cdlab996/utils'
+import { CheckCircle, Copy, Mail, Upload, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { EmailShare } from '@/components/EmailShare'
 import { ExpirySelector } from '@/components/ExpirySelector'
@@ -71,7 +64,6 @@ export default function SharePage() {
   const api = new PocketChestAPI()
 
   // Fetch config and initialize session
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const initializeApp = async () => {
       try {
@@ -98,9 +90,8 @@ export default function SharePage() {
       }
     }
 
-    // biome-ignore lint/nursery/noFloatingPromises: <explanation>
-    initializeApp()
-  }, [])
+    void initializeApp()
+  }, [api.getConfig, api.createChest])
 
   const handleTOTPSubmit = async (totpToken: string) => {
     setTotpError('')
@@ -178,17 +169,19 @@ export default function SharePage() {
     setCopied(false)
   }
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const copy = async (text: string) => {
+    const success = await copyToClipboard(text)
+    if (success) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
   }
 
   // Loading / auth state
   if (!configLoaded || (requireTOTP && !isAuthenticated) || isAuthenticating) {
     return (
       <PageContainer>
-        <Card className="shadow-none max-w-md mx-auto">
+        <Card className="w-full max-w-md mx-auto">
           <CardHeader>
             <CardTitle>
               {!configLoaded
@@ -261,52 +254,19 @@ export default function SharePage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Text snippets */}
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                    <FileText
-                      size={16}
-                      className="text-emerald-600 dark:text-emerald-400"
-                    />
-                  </div>
-                  <span className="font-medium text-sm">Text Content</span>
-                </div>
-                <TextInput
-                  textItems={textItems}
-                  onTextItemsChange={setTextItems}
-                />
-              </div>
+              <TextInput
+                textItems={textItems}
+                onTextItemsChange={setTextItems}
+              />
 
               {/* File upload */}
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                    <Upload
-                      size={16}
-                      className="text-purple-600 dark:text-purple-400"
-                    />
-                  </div>
-                  <span className="font-medium text-sm">Files</span>
-                </div>
+              <Field>
+                <Label>Files</Label>
                 <FileUpload files={files} onFilesChange={setFiles} />
-              </div>
+              </Field>
 
               {/* Expiry settings */}
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                    <Clock
-                      size={16}
-                      className="text-amber-600 dark:text-amber-400"
-                    />
-                  </div>
-                  <span className="font-medium text-sm">Expiry Settings</span>
-                </div>
-                <ExpirySelector
-                  value={validityDays}
-                  onChange={setValidityDays}
-                />
-              </div>
+              <ExpirySelector value={validityDays} onChange={setValidityDays} />
 
               {/* Upload button */}
               <Button
@@ -374,7 +334,7 @@ export default function SharePage() {
                         {uploadResult}
                       </code>
                       <Button
-                        onClick={() => copyToClipboard(uploadResult)}
+                        onClick={() => copy(uploadResult)}
                         variant="outline"
                         size="icon"
                         className={cn(
@@ -406,11 +366,11 @@ export default function SharePage() {
                         clearError()
                       }}
                       className={cn(
-                        'flex-1 border-none text-white font-semibold rounded-xl h-12',
+                        'flex-1 border-none text-white font-semibold',
                         'bg-gradient-to-r from-purple-500 to-blue-500',
                       )}
                     >
-                      <Upload size={16} />
+                      <Upload className="size-4" />
                       Share More Files
                     </Button>
 
@@ -418,19 +378,12 @@ export default function SharePage() {
                       <Button
                         onClick={() => setShowEmailShare(true)}
                         variant="outline"
-                        className="flex-1 h-12"
+                        className="flex-1"
                       >
-                        <Mail size={16} />
+                        <Mail className="size-4" />
                         Share via Email
                       </Button>
                     )}
-
-                    <Button asChild variant="outline" className="flex-1 h-12">
-                      <Link href="/">
-                        <ArrowLeft size={16} />
-                        Back to Home
-                      </Link>
-                    </Button>
                   </div>
                 </div>
               ) : isUploading ? (

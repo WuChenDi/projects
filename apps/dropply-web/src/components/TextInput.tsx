@@ -1,12 +1,17 @@
 'use client'
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@cdlab996/ui/components/accordion'
 import { Button } from '@cdlab996/ui/components/button'
-import { Field } from '@cdlab996/ui/components/field'
+import { Field, FieldGroup } from '@cdlab996/ui/components/field'
 import { Input } from '@cdlab996/ui/components/input'
 import { Label } from '@cdlab996/ui/components/label'
 import { Textarea } from '@cdlab996/ui/components/textarea'
-import { cn } from '@cdlab996/ui/lib/utils'
-import { FileText, Hash, Plus, X } from 'lucide-react'
+import { FileText, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { TextItem } from '@/types'
 
@@ -48,8 +53,8 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
   return (
     <div className="w-full space-y-6">
       {/* Input Area */}
-      <div className="space-y-4">
-        <div className="space-y-2">
+      <FieldGroup>
+        <Field>
           <Label htmlFor="text-content">Text Content</Label>
           <Textarea
             id="text-content"
@@ -57,42 +62,30 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
             onChange={(e) => setCurrentText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Enter text content, code snippets, notes... (Ctrl/Cmd + Enter to add)"
-            className="h-32 font-mono text-sm resize-none"
           />
-        </div>
+        </Field>
 
-        <div className="flex gap-3">
-          <Field>
-            <Label htmlFor="text-label">Label (optional)</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                id="text-label"
-                type="text"
-                value={currentFilename}
-                onChange={(e) => setCurrentFilename(e.target.value)}
-                placeholder={`Text ${textItems.length + 1}`}
-              />
-              <Button
-                onClick={addTextItem}
-                disabled={!currentText.trim()}
-                className={cn(
-                  'bg-gradient-to-r from-emerald-500 to-teal-500',
-                  'hover:from-emerald-600 hover:to-teal-600',
-                  'transition-all duration-200 hover:scale-[1.02]',
-                  'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100',
-                )}
-              >
-                <Plus className="size-4" />
-                Add Text
-              </Button>
-            </div>
-          </Field>
-        </div>
-      </div>
+        <Field>
+          <Label htmlFor="text-label">Label (optional)</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              id="text-label"
+              type="text"
+              value={currentFilename}
+              onChange={(e) => setCurrentFilename(e.target.value)}
+              placeholder={`Text ${textItems.length + 1}`}
+            />
+            <Button onClick={addTextItem} disabled={!currentText.trim()}>
+              <Plus className="size-4" />
+              Add Text
+            </Button>
+          </div>
+        </Field>
+      </FieldGroup>
 
       {/* Text Items List */}
       {textItems.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
             <FileText className="size-4 text-muted-foreground" />
             <h4 className="font-semibold text-foreground">
@@ -100,71 +93,54 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
             </h4>
           </div>
 
-          <div className="space-y-3">
+          <Accordion
+            type="single"
+            collapsible
+            className="rounded-lg border divide-y"
+          >
             {textItems.map((item, index) => {
-              // Remove .txt extension for display
               const displayName = item.filename?.endsWith('.txt')
                 ? item.filename.slice(0, -4)
                 : item.filename || `Text ${index + 1}`
 
               return (
-                <div
+                <AccordionItem
                   // biome-ignore lint/suspicious/noArrayIndexKey: no unique identifier available
                   key={index}
-                  className={cn(
-                    'p-4 rounded-lg border border-border/30 bg-background/30 backdrop-blur-sm',
-                    'transition-all duration-200 hover:bg-background/50',
-                  )}
+                  value={`item-${index}`}
+                  className=" px-0 first:pt-0 last:pb-0"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1.5 rounded-md bg-emerald-100 dark:bg-emerald-900/30">
-                          <FileText
-                            size={14}
-                            className="text-emerald-600 dark:text-emerald-400"
-                          />
-                        </div>
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {displayName}
-                        </p>
-                      </div>
-
-                      <p
-                        className={cn(
-                          'text-xs text-muted-foreground font-mono leading-relaxed',
-                          'bg-muted/30 rounded-md p-2 border border-border/20',
-                        )}
-                      >
-                        {item.content.slice(0, 120)}
-                        {item.content.length > 120 ? '...' : ''}
-                      </p>
-
-                      <div className="flex items-center gap-3 mt-2">
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Hash size={12} />
-                          <span>{item.content.length} characters</span>
-                        </div>
-                      </div>
+                  <AccordionTrigger className="group flex items-center gap-3 px-4 py-3 hover:no-underline">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <span className="text-sm font-medium truncate">
+                        {displayName}
+                      </span>
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        ({item.content.length} chars)
+                      </span>
                     </div>
 
                     <Button
-                      onClick={() => removeTextItem(index)}
                       variant="ghost"
-                      size="sm"
-                      className={cn(
-                        'h-8 w-8 p-0 text-muted-foreground',
-                        'hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30',
-                        'transition-colors duration-200',
-                      )}
+                      size="icon-sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        removeTextItem(index)
+                      }}
+                      aria-label={`Delete ${displayName}`}
+                      className="shrink-0 text-destructive hover:text-destructive/80"
                     >
-                      <X size={14} />
+                      <Trash2 />
                     </Button>
-                  </div>
-                </div>
+                  </AccordionTrigger>
+
+                  <AccordionContent className="px-4 pb-4 pt-2 text-xs text-muted-foreground whitespace-pre-wrap break-words border-t">
+                    {item.content}
+                  </AccordionContent>
+                </AccordionItem>
               )
             })}
-          </div>
+          </Accordion>
         </div>
       )}
     </div>

@@ -1,11 +1,16 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@cdlab996/ui/components/dialog'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { formatFileSize } from '@cdlab996/utils'
-import { FolderOpen, HardDrive, Upload, X } from 'lucide-react'
-import { useCallback } from 'react'
+import { HardDrive, Upload, X } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { getFileIcon } from '@/lib'
 
@@ -14,7 +19,58 @@ interface FileUploadProps {
   files: File[]
 }
 
+function FilePreviewModal({
+  file,
+  onClose,
+}: {
+  file: File
+  onClose: () => void
+}) {
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!file.type.startsWith('image/')) return
+    const url = URL.createObjectURL(file)
+    setImageUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [file])
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-[600px] max-h-[80vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle>{file.name}</DialogTitle>
+        </DialogHeader>
+
+        <div className="overflow-auto max-h-[calc(80vh-56px)]">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={file.name}
+              className="max-w-full max-h-[60vh] rounded-lg object-contain mx-auto"
+            />
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center justify-center w-16 h-16 rounded-xl bg-muted/50 mx-auto">
+                {getFileIcon(file.name)}
+              </div>
+              <div className="text-center space-y-1">
+                <p className="text-sm font-medium truncate">{file.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {file.type} &middot; {formatFileSize(file.size)}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export function FileUpload({ onFilesChange, files }: FileUploadProps) {
+  const [previewFile, setPreviewFile] = useState<File | null>(null)
+
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const newFiles = [...files, ...acceptedFiles]
@@ -35,107 +91,101 @@ export function FileUpload({ onFilesChange, files }: FileUploadProps) {
   }
 
   return (
-    <div className="w-full space-y-4">
-      <div
-        {...getRootProps()}
-        className={cn(
-          'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-300 group',
-          'border-border/40',
-          'hover:border-blue-500/80 hover:bg-blue-500/10',
-          isDragActive && 'border-blue-500/80 bg-blue-500/10 scale-[1.02]',
-        )}
-      >
-        <input {...getInputProps()} />
-        <div className="space-y-4">
-          <div
-            className={cn(
-              'mx-auto w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300',
-              'bg-muted/50 group-hover:bg-blue-500/20 group-hover:scale-110',
-              isDragActive && 'bg-blue-500/20 scale-110',
-            )}
-          >
-            {isDragActive ? (
-              <Upload size={24} className="text-blue-500" />
-            ) : (
-              <FolderOpen
-                size={24}
-                className="text-muted-foreground group-hover:text-blue-400 transition-colors duration-300"
-              />
-            )}
-          </div>
-
-          <div>
-            <p className="text-lg font-medium text-foreground mb-1">
-              {isDragActive
-                ? 'Drop files here'
-                : 'Drop files here or click to browse'}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Select multiple files to share
-            </p>
+    <>
+      <div className="w-full space-y-4">
+        <div
+          {...getRootProps()}
+          className={cn(
+            'group relative overflow-hidden rounded-lg border border-dashed transition-all duration-300 cursor-pointer',
+            cn(
+              'border-gray-300 dark:border-gray-600',
+              'hover:border-blue-400 dark:hover:border-blue-500',
+            ),
+            isDragActive &&
+              'border-blue-400 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-900/30',
+          )}
+        >
+          <input {...getInputProps()} />
+          <div className="flex flex-col items-center justify-center space-y-3 p-8">
+            <Upload
+              className={cn(
+                'size-8 transition-colors duration-300',
+                isDragActive
+                  ? 'text-blue-500'
+                  : 'text-gray-400 group-hover:text-blue-500',
+              )}
+            />
+            <span
+              className={cn(
+                'text-sm text-center font-medium transition-colors duration-300',
+                isDragActive
+                  ? 'text-blue-600'
+                  : 'text-gray-500 group-hover:text-blue-600',
+              )}
+            >
+              {isDragActive ? 'Drop files here' : 'Click to select a file'}
+            </span>
           </div>
         </div>
-      </div>
 
-      {files.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <HardDrive size={16} className="text-muted-foreground" />
-            <h4 className="font-semibold text-foreground">
-              Selected Files ({files.length})
-            </h4>
-          </div>
+        {files.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <HardDrive className="size-4 text-muted-foreground" />
+              <h4 className="font-semibold text-foreground">
+                Selected Files ({files.length})
+              </h4>
+            </div>
 
-          <div className="space-y-2">
-            {files.map((file, index) => (
-              <div
-                // biome-ignore lint/suspicious/noArrayIndexKey: no unique identifier available
-                key={index}
-                className={cn(
-                  'flex items-center justify-between p-3 rounded-lg',
-                  'border border-border/30 bg-background/30 backdrop-blur-sm',
-                  'transition-all duration-200 hover:bg-background/50',
-                )}
-              >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="p-1.5 rounded-md bg-purple-100 dark:bg-purple-900/30">
-                    {getFileIcon(file.name)}
+            <div className="space-y-2">
+              {files.map((file, index) => (
+                <div
+                  // biome-ignore lint/suspicious/noArrayIndexKey: no unique identifier available
+                  key={index}
+                  className={cn(
+                    'flex items-center justify-between p-2 rounded-lg cursor-pointer',
+                    'border border-border/40 bg-blue-50/50 dark:bg-blue-900/30',
+                    'transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/40',
+                  )}
+                  onClick={() => setPreviewFile(file)}
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="p-1.5 rounded-md bg-blue-100 dark:bg-blue-900/30">
+                      {getFileIcon(file.name)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {file.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatFileSize(file.size)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {file.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatFileSize(file.size)}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    FILE
-                  </Badge>
                   <Button
                     onClick={(e) => {
                       e.stopPropagation()
                       removeFile(index)
                     }}
                     variant="ghost"
-                    size="sm"
-                    className={cn(
-                      'h-8 w-8 p-0 text-muted-foreground',
-                      'hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30',
-                      'transition-colors duration-200',
-                    )}
+                    size="icon-sm"
                   >
-                    <X size={14} />
+                    <X className="size-4" />
                   </Button>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+      </div>
+
+      {previewFile && (
+        <FilePreviewModal
+          file={previewFile}
+          onClose={() => setPreviewFile(null)}
+        />
       )}
-    </div>
+    </>
   )
 }
