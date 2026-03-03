@@ -1,6 +1,3 @@
-import { format } from 'date-fns'
-import { Download, ImageOff, Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
 import { Button } from '@cdlab996/ui/components/button'
 import {
   Card,
@@ -9,14 +6,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@cdlab996/ui/components/empty'
+import { IKEmpty } from '@cdlab996/ui/IK'
+import { format } from 'date-fns'
+import { Download, ImageOff, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 import type { GenerationResult, Model } from '@/types'
 import { GenerationStatus } from '@/types'
 import { ImageResultCard } from './ImageResultCard'
@@ -89,24 +82,14 @@ export function ImageResult({
             ))}
           </div>
         ) : (
-          <Empty className="min-h-65">
-            <EmptyMedia variant="icon">
-              <ImageOff className="size-5" />
-            </EmptyMedia>
-
-            <EmptyHeader>
-              <EmptyTitle>暂无生成结果</EmptyTitle>
-              <EmptyDescription>
-                输入提示词并点击生成按钮开始创建 AI 图像
-              </EmptyDescription>
-            </EmptyHeader>
-
-            <EmptyContent>
-              <p className="text-xs text-muted-foreground/80">
-                支持多种模型，可调节尺寸、步数、引导系数等参数
-              </p>
-            </EmptyContent>
-          </Empty>
+          <IKEmpty
+            className="min-h-65"
+            icon={ImageOff}
+            iconClassName="size-5"
+            title="暂无生成结果"
+            description="输入提示词并点击生成按钮开始创建 AI 图像"
+            hint="支持多种模型，可调节尺寸、步数、引导系数等参数"
+          />
         )}
       </CardContent>
     </Card>

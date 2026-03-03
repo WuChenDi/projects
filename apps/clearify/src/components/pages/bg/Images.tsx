@@ -1,13 +1,7 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@cdlab996/ui/components/empty'
+import { IKEmpty } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { CloudUpload, Download, Edit2, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
@@ -31,17 +25,12 @@ interface ImagesProps {
 export function Images({ images, onDelete }: ImagesProps) {
   if (images.length === 0) {
     return (
-      <Empty className="h-full min-h-[400px]">
-        <EmptyHeader>
-          <EmptyMedia>
-            <CloudUpload className="size-10" />
-          </EmptyMedia>
-          <EmptyTitle className="text-lg">No images yet</EmptyTitle>
-          <EmptyDescription>
-            Upload images to remove backgrounds
-          </EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+      <IKEmpty
+        icon={CloudUpload}
+        className="h-full min-h-[400px]"
+        title="No images yet"
+        description="Upload images to remove backgrounds"
+      />
     )
   }
 

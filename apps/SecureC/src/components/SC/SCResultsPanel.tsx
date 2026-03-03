@@ -6,14 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@cdlab996/ui/components/empty'
+import { IKEmpty } from '@cdlab996/ui/IK'
 import { Archive, Download, Trash2 } from 'lucide-react'
 import type { ProcessResult } from '@/types'
 import { StatusEnum } from '@/types'
@@ -76,24 +69,14 @@ export function SCResultsPanel({
             ))}
           </div>
         ) : (
-          <Empty className="min-h-65">
-            <EmptyMedia variant="icon">
-              <Archive className="size-5" />
-            </EmptyMedia>
-
-            <EmptyHeader>
-              <EmptyTitle>No results yet</EmptyTitle>
-              <EmptyDescription>
-                Your encrypted or decrypted files and messages will appear here
-              </EmptyDescription>
-            </EmptyHeader>
-
-            <EmptyContent>
-              <p className="text-xs text-muted-foreground/80">
-                Select a file or enter text, set a password, and click to start
-              </p>
-            </EmptyContent>
-          </Empty>
+          <IKEmpty
+            className="min-h-65"
+            icon={Archive}
+            iconClassName="size-5"
+            title="No results yet"
+            description="Your encrypted or decrypted files and messages will appear here"
+            hint="Select a file or enter text, set a password, and click to start"
+          />
         )}
       </CardContent>
     </Card>

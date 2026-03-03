@@ -1,13 +1,7 @@
 'use client'
 
+import { IKEmpty } from '@cdlab996/ui/IK'
 import { CloudUpload } from 'lucide-react'
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@cdlab996/ui/components/empty'
 import { downloadImage } from '@/lib'
 import type { ImageFile } from '@/types'
 import { ImageItem } from './ImageItem'
@@ -27,15 +21,12 @@ export const RightPanel = ({
 }: RightPanelProps) => {
   if (images.length === 0) {
     return (
-      <Empty className="h-full min-h-[400px]">
-        <EmptyHeader>
-          <EmptyMedia>
-            <CloudUpload className="size-10" />
-          </EmptyMedia>
-          <EmptyTitle className="text-lg">No images yet</EmptyTitle>
-          <EmptyDescription>Upload images to get started</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+      <IKEmpty
+        icon={CloudUpload}
+        className="h-full min-h-[400px]"
+        title="No images yet"
+        description="Upload images to get started"
+      />
     )
   }
 

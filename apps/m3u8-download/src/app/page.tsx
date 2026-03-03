@@ -15,14 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@cdlab996/ui/components/empty'
 import { Field } from '@cdlab996/ui/components/field'
 import { Input } from '@cdlab996/ui/components/input'
 import { Label } from '@cdlab996/ui/components/label'
@@ -33,6 +25,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@cdlab996/ui/components/tooltip'
+import { IKEmpty } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { logger } from '@cdlab996/utils'
 import { format } from 'date-fns'
@@ -998,24 +991,12 @@ export default function M3u8Downloader() {
                 </div>
               </>
             ) : (
-              <Empty className="flex-1">
-                <EmptyMedia variant="icon">
-                  <Download className="size-5" />
-                </EmptyMedia>
-
-                <EmptyHeader>
-                  <EmptyTitle>暂无下载任务</EmptyTitle>
-                  <EmptyDescription>
-                    输入 M3U8 链接开始下载视频片段
-                  </EmptyDescription>
-                </EmptyHeader>
-
-                <EmptyContent>
-                  <p className="text-xs text-muted-foreground/80">
-                    支持范围下载、流式下载、AES 解密和 MP4 转码
-                  </p>
-                </EmptyContent>
-              </Empty>
+              <IKEmpty
+                title="暂无下载任务"
+                description="输入 M3U8 链接开始下载视频片段"
+                hint="支持范围下载、流式下载、AES 解密和 MP4 转码"
+                icon={Download}
+              />
             )}
           </CardContent>
         </Card>
