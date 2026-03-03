@@ -26,6 +26,7 @@
     "dev:m3u8dw": "turbo dev --filter=./apps/m3u8-download",
     "dev:dropply": "turbo dev --filter=./apps/dropply-*",
     "dev:text2img": "turbo dev --filter=./apps/text2img",
+    "dev:byplay": "turbo dev --filter=./apps/byplay",
     "clean": "bash ./scripts/clean.sh",
     "lint": "turbo lint",
     "lint:biome": "biome check .",
