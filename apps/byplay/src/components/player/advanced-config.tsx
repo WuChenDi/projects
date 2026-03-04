@@ -22,13 +22,7 @@ import {
   InputGroupText,
 } from '@cdlab996/ui/components/input-group'
 import { Label } from '@cdlab996/ui/components/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@cdlab996/ui/components/select'
+import { Switch } from '@cdlab996/ui/components/switch'
 import { useCallback, useEffect, useState } from 'react'
 import type {
   FlvLowLatencyConfig,
@@ -59,11 +53,7 @@ function ConfigField({
   return (
     <Field>
       <FieldLabel>{label}</FieldLabel>
-      <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-8 text-sm"
-      />
+      <Input value={value} onChange={(e) => onChange(e.target.value)} />
     </Field>
   )
 }
@@ -129,7 +119,7 @@ export function AdvancedConfig({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Restart Timeout */}
-        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg border border-blue-100 dark:border-blue-800">
+        <div className="p-4 bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg border border-blue-100 dark:border-blue-800">
           <Label className="text-sm font-semibold mb-1">
             暂停恢复重启超时时间
           </Label>
@@ -149,20 +139,14 @@ export function AdvancedConfig({
         </div>
 
         {/* VConsole Toggle */}
-        <label className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all cursor-pointer group">
-          <span className="text-sm font-semibold group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-            VConsole 调试控制台
-          </span>
-          <div className="relative inline-flex items-center">
-            <input
-              type="checkbox"
-              checked={vConsoleEnabled}
-              onChange={(e) => toggleVConsole(e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-gray-300 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-blue-600 peer-checked:to-blue-700" />
-          </div>
-        </label>
+        <div className="flex items-center justify-between px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all">
+          <Label htmlFor="vconsole-switch">VConsole 调试控制台</Label>
+          <Switch
+            id="vconsole-switch"
+            checked={vConsoleEnabled}
+            onCheckedChange={toggleVConsole}
+          />
+        </div>
 
         {/* Accordion configs */}
         <Accordion type="multiple" className="space-y-3">
@@ -171,13 +155,13 @@ export function AdvancedConfig({
             value="hls-load-policy"
             className="border-2 border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
           >
-            <AccordionTrigger className="px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-950/30 dark:hover:to-indigo-950/30 font-semibold hover:no-underline">
+            <AccordionTrigger className="px-4 py-3">
               HLS 加载策略配置
             </AccordionTrigger>
             <AccordionContent className="p-4 space-y-4">
               <Button
                 onClick={() => onSetHlsLoadPolicy(hlsLoadPolicy)}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-10"
+                className="w-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
               >
                 应用 HLS 配置
               </Button>
@@ -261,30 +245,25 @@ export function AdvancedConfig({
             value="flv-low-latency"
             className="border-2 border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:border-purple-300 dark:hover:border-purple-600 transition-colors"
           >
-            <AccordionTrigger className="px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-950/30 dark:hover:to-pink-950/30 font-semibold hover:no-underline">
+            <AccordionTrigger className="px-4 py-3">
               FLV 超低延迟配置
             </AccordionTrigger>
             <AccordionContent className="p-4 space-y-4">
               <Button
                 onClick={() => onSetFlvLowLatency(flvLowLatency)}
-                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white h-10"
+                className="w-full bg-linear-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
               >
                 应用 FLV 配置
               </Button>
               <Field>
-                <FieldLabel>功能开关</FieldLabel>
-                <Select
-                  value={flvLowLatency.enable ? 'on' : 'off'}
-                  onValueChange={(v) => updateFlvConfig('enable', v === 'on')}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="on">开启</SelectItem>
-                    <SelectItem value="off">关闭</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center justify-between">
+                  <FieldLabel htmlFor="flv-enable-switch">功能开关</FieldLabel>
+                  <Switch
+                    id="flv-enable-switch"
+                    checked={flvLowLatency.enable}
+                    onCheckedChange={(v) => updateFlvConfig('enable', v)}
+                  />
+                </div>
               </Field>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <ConfigField
@@ -337,32 +316,25 @@ export function AdvancedConfig({
             value="hls-low-latency"
             className="border-2 border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:border-teal-300 dark:hover:border-teal-600 transition-colors"
           >
-            <AccordionTrigger className="px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 hover:from-teal-50 hover:to-cyan-50 dark:hover:from-teal-950/30 dark:hover:to-cyan-950/30 font-semibold hover:no-underline">
+            <AccordionTrigger className="px-4 py-3">
               HLS 超低延迟配置
             </AccordionTrigger>
             <AccordionContent className="p-4 space-y-4">
               <Button
                 onClick={() => onSetHlsLowLatency(hlsLowLatency)}
-                className="w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white h-10"
+                className="w-full bg-linear-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800"
               >
                 应用 HLS 超低延迟配置
               </Button>
               <Field>
-                <FieldLabel>功能开关</FieldLabel>
-                <Select
-                  value={hlsLowLatency.enable ? 'on' : 'off'}
-                  onValueChange={(v) =>
-                    updateHlsLowLatency('enable', v === 'on')
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="on">开启</SelectItem>
-                    <SelectItem value="off">关闭</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center justify-between">
+                  <FieldLabel htmlFor="hls-enable-switch">功能开关</FieldLabel>
+                  <Switch
+                    id="hls-enable-switch"
+                    checked={hlsLowLatency.enable}
+                    onCheckedChange={(v) => updateHlsLowLatency('enable', v)}
+                  />
+                </div>
               </Field>
               <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <ConfigField

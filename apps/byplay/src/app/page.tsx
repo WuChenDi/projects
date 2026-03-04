@@ -26,7 +26,7 @@ export default function App() {
       scrollable={false}
       className="flex-1 grid gap-4 lg:grid-cols-[clamp(440px,37%,600px)_1fr]"
     >
-      <ScrollArea className="order-2 lg:order-1 lg:h-[calc(100dvh-150px)]">
+      <ScrollArea className="order-2 lg:order-1 lg:h-[calc(100dvh-170px)]">
         <div className="space-y-5 pb-4">
           <Card>
             <CardHeader>
