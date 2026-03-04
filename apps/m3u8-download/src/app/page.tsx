@@ -7,11 +7,13 @@ import {
 } from '@cdlab996/ui/components/alert'
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
+import { ButtonGroup } from '@cdlab996/ui/components/button-group'
 import {
   Card,
   CardAction,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
@@ -721,163 +723,152 @@ export default function M3u8Downloader() {
 
   return (
     <IKPageContainer scrollable={false}>
-      <div className="w-full h-full grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-4">
-        {/* 左侧控制面板 */}
-        <div className="space-y-4">
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle>M3U8 在线下载工具</CardTitle>
-              <CardDescription>
-                支持范围下载、流式下载、AES 解密、转 MP4
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <Field>
-                  <Label htmlFor="m3u8-url">m3u8 链接</Label>
-                  <Input
-                    id="m3u8-url"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    disabled={downloadState.isDownloading}
-                    placeholder="https://example.com/playlist.m3u8"
-                    className="text-base"
-                  />
-                </Field>
+      <div className="w-full h-full flex flex-col gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>M3U8 在线下载工具</CardTitle>
+            <CardDescription>
+              支持范围下载、流式下载、AES 解密、转 MP4
+            </CardDescription>
+          </CardHeader>
 
-                {rangeDownload.isShowRange && (
-                  <div className="flex gap-3">
-                    <Field>
-                      <Label>起始片段</Label>
-                      <Input
-                        type="number"
-                        min={1}
-                        value={rangeDownload.startSegment}
-                        onChange={(e) =>
-                          setRangeDownload((prev) => ({
-                            ...prev,
-                            startSegment: e.target.value,
-                          }))
-                        }
-                        disabled={downloadState.isDownloading}
-                      />
-                    </Field>
-                    <Field>
-                      <Label>结束片段</Label>
-                      <Input
-                        type="number"
-                        min={1}
-                        value={rangeDownload.endSegment}
-                        onChange={(e) =>
-                          setRangeDownload((prev) => ({
-                            ...prev,
-                            endSegment: e.target.value,
-                          }))
-                        }
-                        disabled={downloadState.isDownloading}
-                      />
-                    </Field>
-                  </div>
-                )}
-              </div>
+          <CardContent>
+            <div className="flex gap-3 items-end flex-wrap">
+              <Field className="flex-1 min-w-60">
+                <Label htmlFor="m3u8-url">m3u8 链接</Label>
+                <Input
+                  id="m3u8-url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  disabled={downloadState.isDownloading}
+                  placeholder="https://example.com/playlist.m3u8"
+                  className="text-base"
+                />
+              </Field>
 
-              <div className="grid grid-cols-2 gap-2">
-                {!downloadState.isDownloading ? (
-                  <>
+              {rangeDownload.isShowRange && (
+                <>
+                  <Field className="w-28">
+                    <Label>起始片段</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={rangeDownload.startSegment}
+                      onChange={(e) =>
+                        setRangeDownload((prev) => ({
+                          ...prev,
+                          startSegment: e.target.value,
+                        }))
+                      }
+                      disabled={downloadState.isDownloading}
+                    />
+                  </Field>
+                  <Field className="w-28">
+                    <Label>结束片段</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={rangeDownload.endSegment}
+                      onChange={(e) =>
+                        setRangeDownload((prev) => ({
+                          ...prev,
+                          endSegment: e.target.value,
+                        }))
+                      }
+                      disabled={downloadState.isDownloading}
+                    />
+                  </Field>
+                </>
+              )}
+            </div>
+
+            {streamSaverLoaded && !isSupperStreamWrite && (
+              <Alert className="mt-4">
+                <AlertDescription>
+                  当前浏览器不支持流式下载（Safari），将使用普通下载方式。
+                  建议使用 Chrome、Firefox 或 Edge 浏览器以获得更好体验。
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+
+          <CardFooter className="gap-4">
+            {!downloadState.isDownloading ? (
+              <>
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs text-muted-foreground">
+                    普通下载
+                  </span>
+                  <ButtonGroup>
                     {!rangeDownload.isShowRange ? (
-                      <Button
-                        onClick={() => getM3U8(true)}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        选择范围下载
+                      <Button onClick={() => getM3U8(true)} variant="outline">
+                        选择范围
                       </Button>
                     ) : (
                       <Button
                         onClick={() => getM3U8(false)}
                         variant="secondary"
-                        className="w-full"
                       >
-                        取消范围选择
+                        取消范围
                       </Button>
                     )}
-
-                    <Button onClick={() => getM3U8(false)} className="w-full">
-                      原格式下载 (.ts)
+                    <Button variant="outline" onClick={() => getM3U8(false)}>
+                      原格式 (.ts)
                     </Button>
-
-                    <Button onClick={getMP4} className="w-full">
-                      转码 MP4 下载
+                    <Button variant="outline" onClick={getMP4}>
+                      转码 MP4
                     </Button>
-                  </>
-                ) : (
-                  <Button
-                    onClick={togglePause}
-                    size="lg"
-                    variant={downloadState.isPaused ? 'default' : 'destructive'}
-                    className="w-full"
-                  >
-                    {downloadState.isPaused ? (
-                      <>
-                        <Play className="size-4" />
-                        继续下载
-                      </>
-                    ) : (
-                      <>
-                        <Pause className="size-4" />
-                        暂停下载
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
+                  </ButtonGroup>
+                </div>
 
-              {!streamSaverLoaded && (
-                <div className="pt-4 border-t">
-                  <p className="text-sm text-muted-foreground">
+                {!streamSaverLoaded && (
+                  <p className="text-xs text-muted-foreground self-center">
                     正在加载流式下载功能...
                   </p>
-                </div>
-              )}
-
-              {!downloadState.isDownloading &&
-                streamSaverLoaded &&
-                isSupperStreamWrite && (
-                  <div className="pt-4 border-t space-y-3">
-                    <p className="text-sm text-muted-foreground">
-                      超大视频建议使用流式下载（占内存占用小）
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
+                )}
+                {streamSaverLoaded && isSupperStreamWrite && (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">
+                      流式下载（大文件推荐）
+                    </span>
+                    <ButtonGroup>
                       <Button
-                        onClick={() => streamDownload(false)}
                         variant="outline"
-                        className="w-full"
+                        onClick={() => streamDownload(false)}
                       >
-                        流式原格式下载 (.ts)
+                        原格式 (.ts)
                       </Button>
                       <Button
+                        variant="outline"
                         onClick={() => streamDownload(true)}
-                        className="w-full"
                       >
-                        流式 MP4 下载
+                        转码 MP4
                       </Button>
-                    </div>
+                    </ButtonGroup>
                   </div>
                 )}
-
-              {streamSaverLoaded && !isSupperStreamWrite && (
-                <div className="pt-4 border-t">
-                  <Alert>
-                    <AlertDescription>
-                      当前浏览器不支持流式下载（Safari），将使用普通下载方式。
-                      建议使用 Chrome、Firefox 或 Edge 浏览器以获得更好体验。
-                    </AlertDescription>
-                  </Alert>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+              </>
+            ) : (
+              <Button
+                onClick={togglePause}
+                size="lg"
+                variant={downloadState.isPaused ? 'default' : 'destructive'}
+              >
+                {downloadState.isPaused ? (
+                  <>
+                    <Play className="size-4" />
+                    继续下载
+                  </>
+                ) : (
+                  <>
+                    <Pause className="size-4" />
+                    暂停下载
+                  </>
+                )}
+              </Button>
+            )}
+          </CardFooter>
+        </Card>
 
         <Card className="flex flex-col p-4 border-none h-full">
           <CardHeader className="p-0">
