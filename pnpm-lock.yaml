@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   dev:
+    '@cloudflare/workers-types':
+      specifier: ^4.20260301.1
+      version: 4.20260301.1
     '@types/node':
       specifier: ^25
       version: 25.3.3
@@ -15,6 +18,9 @@ catalogs:
     '@types/react-dom':
       specifier: ^19
       version: 19.2.3
+    drizzle-kit:
+      specifier: ^0.31.9
+      version: 0.31.9
     tsdown:
       specifier: ^0.20.3
       version: 0.20.3
@@ -24,10 +30,19 @@ catalogs:
     vitest:
       specifier: ^4.0.18
       version: 4.0.18
+    wrangler:
+      specifier: ^4.70.0
+      version: 4.70.0
   prod:
     '@cdlab996/genid':
       specifier: ^1.2.1
       version: 1.2.1
+    '@hono/zod-validator':
+      specifier: ^0.7.6
+      version: 0.7.6
+    '@libsql/client':
+      specifier: ^0.17.0
+      version: 0.17.0
     '@next/third-parties':
       specifier: 16.1.6
       version: 16.1.6
@@ -40,6 +55,12 @@ catalogs:
     date-fns:
       specifier: ^4.1.0
       version: 4.1.0
+    drizzle-orm:
+      specifier: ^0.45.1
+      version: 0.45.1
+    hono:
+      specifier: ^4.12.3
+      version: 4.12.4
     lucide-react:
       specifier: ^0.575.0
       version: 0.575.0
@@ -79,6 +100,15 @@ catalogs:
     tw-animate-css:
       specifier: ^1.4.0
       version: 1.4.0
+    winston:
+      specifier: ^3.19.0
+      version: 3.19.0
+    winston-daily-rotate-file:
+      specifier: ^5.0.0
+      version: 5.0.0
+    zod:
+      specifier: ^4.3.6
+      version: 4.3.6
 
 importers:
 
@@ -252,41 +282,41 @@ importers:
         specifier: workspace:*
         version: link:../../packages/utils
       '@hono/zod-validator':
-        specifier: ^0.7.6
+        specifier: catalog:prod
         version: 0.7.6(hono@4.12.4)(zod@4.3.6)
       '@libsql/client':
-        specifier: ^0.17.0
+        specifier: catalog:prod
         version: 0.17.0
       drizzle-orm:
-        specifier: ^0.45.1
+        specifier: catalog:prod
         version: 0.45.1(@cloudflare/workers-types@4.20260301.1)(@libsql/client@0.17.0)
       hono:
-        specifier: ^4.12.3
+        specifier: catalog:prod
         version: 4.12.4
       winston:
-        specifier: ^3.19.0
+        specifier: catalog:prod
         version: 3.19.0
       winston-daily-rotate-file:
-        specifier: ^5.0.0
+        specifier: catalog:prod
         version: 5.0.0(winston@3.19.0)
       zod:
-        specifier: ^4.3.6
+        specifier: catalog:prod
         version: 4.3.6
     devDependencies:
       '@cdlab996/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
       '@cloudflare/workers-types':
-        specifier: ^4.20260228.1
+        specifier: catalog:dev
         version: 4.20260301.1
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
       drizzle-kit:
-        specifier: ^0.31.9
+        specifier: catalog:dev
         version: 0.31.9
       wrangler:
-        specifier: ^4.69.0
+        specifier: catalog:dev
         version: 4.70.0(@cloudflare/workers-types@4.20260301.1)
 
   apps/clearify:
@@ -392,47 +422,47 @@ importers:
         specifier: workspace:*
         version: link:../../packages/utils
       '@hono/zod-validator':
-        specifier: ^0.7.6
+        specifier: catalog:prod
         version: 0.7.6(hono@4.12.4)(zod@4.3.6)
       '@libsql/client':
-        specifier: ^0.17.0
+        specifier: catalog:prod
         version: 0.17.0
       '@react-email/components':
         specifier: ^1.0.8
         version: 1.0.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       drizzle-orm:
-        specifier: ^0.45.1
+        specifier: catalog:prod
         version: 0.45.1(@cloudflare/workers-types@4.20260301.1)(@libsql/client@0.17.0)
       hono:
-        specifier: ^4.12.3
+        specifier: catalog:prod
         version: 4.12.4
       resend:
         specifier: ^6.9.3
         version: 6.9.3(@react-email/render@2.0.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
       winston:
-        specifier: ^3.19.0
+        specifier: catalog:prod
         version: 3.19.0
       winston-daily-rotate-file:
-        specifier: ^5.0.0
+        specifier: catalog:prod
         version: 5.0.0(winston@3.19.0)
       zod:
-        specifier: ^4.3.6
+        specifier: catalog:prod
         version: 4.3.6
     devDependencies:
       '@cdlab996/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
       '@cloudflare/workers-types':
-        specifier: ^4.20260228.1
+        specifier: catalog:dev
         version: 4.20260301.1
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
       drizzle-kit:
-        specifier: ^0.31.9
+        specifier: catalog:dev
         version: 0.31.9
       wrangler:
-        specifier: ^4.69.0
+        specifier: catalog:dev
         version: 4.70.0(@cloudflare/workers-types@4.20260301.1)
 
   apps/dropply-web:

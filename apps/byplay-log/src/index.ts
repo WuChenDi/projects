@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { HTTPException } from 'hono/http-exception'
 import { logger as accesslog } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
-import { HTTPException } from 'hono/http-exception'
 import { requestId } from 'hono/request-id'
 import { monitorRoutes } from '@/routes'
 import './global'
@@ -17,10 +17,13 @@ export const customLogger = (message: string, ...rest: string[]) => {
 app.use(accesslog(customLogger))
 app.use('*', prettyJSON())
 app.use('*', requestId())
-app.use('*', cors({
-  origin: ['https://byplay.pages.dev', 'http://localhost:3000'],
-  credentials: true,
-}))
+app.use(
+  '*',
+  cors({
+    origin: ['https://byplay.pages.dev', 'http://localhost:3016'],
+    credentials: true,
+  }),
+)
 
 app.route('/', monitorRoutes)
 

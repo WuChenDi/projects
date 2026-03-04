@@ -1,14 +1,17 @@
-import type { LibSQLDatabase } from 'drizzle-orm/libsql'
-import type { DrizzleD1Database } from 'drizzle-orm/d1'
-import { drizzle as drizzleSqlite } from 'drizzle-orm/libsql'
-import { drizzle as drizzleD1 } from 'drizzle-orm/d1'
 import { createClient } from '@libsql/client'
-import * as schema from '@/database/schema'
+import type { DrizzleD1Database } from 'drizzle-orm/d1'
+import { drizzle as drizzleD1 } from 'drizzle-orm/d1'
+import type { LibSQLDatabase } from 'drizzle-orm/libsql'
+import { drizzle as drizzleSqlite } from 'drizzle-orm/libsql'
 import type { Context } from 'hono'
+import * as schema from '@/database/schema'
 
 class DatabaseManager {
   static instance: DatabaseManager
-  public db: LibSQLDatabase<typeof schema> | DrizzleD1Database<typeof schema> | undefined
+  public db:
+    | LibSQLDatabase<typeof schema>
+    | DrizzleD1Database<typeof schema>
+    | undefined
 
   constructor(c?: Context) {
     if (DatabaseManager.instance) {
@@ -37,7 +40,9 @@ class DatabaseManager {
       }
       case 'd1': {
         logger.info(
-          c ? 'Using context for D1 database' : 'No context provided for D1 database'
+          c
+            ? 'Using context for D1 database'
+            : 'No context provided for D1 database',
         )
         if (!c?.env?.DB) {
           throw new Error('D1 database not found in context')
