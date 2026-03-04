@@ -1,0 +1,51 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "byplay-log",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-02-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    // The Service runtime preset to use for deployment.
+    "DEPLOY_RUNTIME": "cf",
+    // Database Type
+    "DB_TYPE": "d1", // or libsql
+    // LibSQL Configuration
+    // The URL for connecting to the LibSQL database. Default is a local SQLite file.
+    "LIBSQL_URL": "your-libsql-database-url",
+    // The authentication token for accessing the LibSQL
+    "LIBSQL_AUTH_TOKEN": "your-libsql-auth-token",
+
+    // Cloudflare Configuration
+    // The Cloudflare account ID for accessing Cloudflare services.
+    "CLOUDFLARE_ACCOUNT_ID": "your-cloudflare-account-id",
+    // The Cloudflare API token for authentication and authorization.
+    "CLOUDFLARE_API_TOKEN": "your-cloudflare-api-token"
+  },
+  // "kv_namespaces": [
+  //   {
+  //     "binding": "MY_KV_NAMESPACE",
+  //     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  //   }
+  // ],
+  // "r2_buckets": [
+  //   {
+  //     "binding": "MY_BUCKET",
+  //     "bucket_name": "my-bucket"
+  //   }
+  // ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "byplay",
+      "migrations_dir": "./src/database",
+      "database_id": "your-d1-database-id"
+    }
+  ],
+  // "ai": {
+  //   "binding": "AI"
+  // },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}
