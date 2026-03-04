@@ -28,22 +28,6 @@ https://clearify.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Clearify/compress-pages.png" alt="视频压缩页面" />
 </details>
 
-### m3u8-download
-
-**M3U8 / HLS 视频下载助手**
-
-https://m3u8dw.pages.dev/
-
-- 解析 M3U8 链接、支持范围下载 / 流式下载 / AES-128 自动解密 / TS 转 MP4
-- 核心技术：mux.js + Streams API
-- 亮点：流式下载几乎零内存占用、支持暂停/续传/单片段重试
-
-<details>
-  <summary>📸 Preview</summary>
-  <br/>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/m3u8-download/index.png" alt="m3u8-download 主界面" />
-</details>
-
 ### SecureC
 
 **客户端文件 / 文本加解密工具**
@@ -60,6 +44,13 @@ https://securec.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/index.png" alt="SecureC 主界面" />
 </details>
 
+### Dropply
+
+**端到端加密的文件分享平台**
+
+- 基于 Next.js + Cloudflare Workers 构建，前后端分离：`dropply-web` 提供分享/管理界面，`dropply-api` 提供加密存储与链接管理
+- 特点：临时链接、到期失效、加密后再上传，适合安全地分享敏感文件
+
 ### text2img
 
 **浏览器端文本生成图像**
@@ -74,6 +65,44 @@ https://text2img.cdlab.workers.dev/
   <summary>📸 Preview</summary>
   <br/>
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/index.png" alt="text2img 主界面" />
+</details>
+
+### byplay
+
+**在线视频播放器 / Web Player 平台**
+
+https://byplay.pages.dev/
+
+- 支持 HLS、FLV、MP4 等多种格式的视频播放
+- 提供更好的视频播放体验，可扩展监控与数据上报能力
+
+<details>
+  <summary>📸 Preview</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byplay/og-image.png" alt="byplay 主界面" />
+</details>
+
+### byplay-log
+
+**ByPlay 播放器监控与分析服务**
+
+- 为 ByPlay 提供播放数据采集、日志上报与行为分析能力
+- 适合作为播放器日志后端或 A/B 实验/质量监控的数据基础设施
+
+### m3u8-download
+
+**M3U8 / HLS 视频下载助手**
+
+https://m3u8dw.pages.dev/
+
+- 解析 M3U8 链接、支持范围下载 / 流式下载 / AES-128 自动解密 / TS 转 MP4
+- 核心技术：mux.js + Streams API
+- 亮点：流式下载几乎零内存占用、支持暂停/续传/单片段重试
+
+<details>
+  <summary>📸 Preview</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/m3u8-download/index.png" alt="m3u8-download 主界面" />
 </details>
 
 ### value-vision
@@ -115,6 +144,9 @@ pnpm --filter m3u8-download dev
 pnpm --filter securec dev
 pnpm --filter text2img dev
 pnpm --filter values dev
+pnpm --filter byplay dev
+pnpm --filter byplay-log dev
+pnpm --filter dropply-web dev
 pnpm build                     # 构建所有应用
 pnpm lint                      # Biome 代码检查
 pnpm format                    # Biome 格式化全部代码
@@ -126,11 +158,15 @@ pnpm clean                     # 清理 node_modules / 缓存 / 构建产物
 ```text
 .
 ├── apps/
-│   ├── clearify/         # 图像 & 视频工具箱
-│   ├── m3u8-download/    # M3U8 下载工具
-│   ├── securec/          # 加解密工具
-│   ├── text2img/         # 文生图前端
-│   └── value-vision/     # 价值对比 / 可视化工具
+│   ├── clearify/          # 图像 & 视频工具箱
+│   ├── m3u8-download/     # M3U8 下载工具
+│   ├── securec/           # 加解密工具
+│   ├── text2img/          # 文生图前端
+│   ├── value-vision/      # 价值对比 / 可视化工具
+│   ├── byplay/            # 在线视频播放器 / Web Player
+│   ├── byplay-log/        # ByPlay 播放器监控与分析服务
+│   ├── dropply-web/       # Dropply 文件分享 Web 前端
+│   └── dropply-api/       # Dropply 文件分享 Cloudflare API
 ├── packages/
 │   └── tsconfig/         # 共享 TypeScript 配置 (@cdlab996/tsconfig)
 ├── scripts/
