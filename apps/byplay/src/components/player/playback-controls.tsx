@@ -51,25 +51,25 @@ export function PlaybackControls({
         <ButtonGroup className="w-full">
           <Button
             onClick={onLoad}
-            className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+            className="flex-1 bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
           >
             加载
           </Button>
           <Button
             onClick={onToggle}
-            className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+            className="flex-1 bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
           >
             {isPlaying ? '暂停' : '播放'}
           </Button>
           <Button
             onClick={onStop}
-            className="flex-1 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800"
+            className="flex-1 bg-linear-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800"
           >
             停止
           </Button>
           <Button
             onClick={onDestroy}
-            className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+            className="flex-1 bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
           >
             销毁
           </Button>
@@ -86,7 +86,7 @@ export function PlaybackControls({
           />
           <Button
             onClick={onSetPlayerSpeed}
-            className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 whitespace-nowrap"
+            className="bg-linear-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 whitespace-nowrap"
           >
             设置倍速
           </Button>
@@ -103,7 +103,7 @@ export function PlaybackControls({
           />
           <Button
             onClick={onSeek}
-            className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 whitespace-nowrap"
+            className="bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 whitespace-nowrap"
           >
             跳转
           </Button>
@@ -113,13 +113,13 @@ export function PlaybackControls({
         <ButtonGroup className="w-full">
           <Button
             onClick={onRestart}
-            className="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800"
+            className="flex-1 bg-linear-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800"
           >
             重启当前播放器
           </Button>
           <Button
             onClick={onSwitchNext}
-            className="flex-1 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800"
+            className="flex-1 bg-linear-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800"
           >
             切换至下一个播放源
           </Button>
