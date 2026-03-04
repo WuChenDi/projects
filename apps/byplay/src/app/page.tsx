@@ -22,69 +22,69 @@ export default function App() {
   const player = useVideoPlayer()
 
   return (
-    <IKPageContainer scrollable={false}>
+    <IKPageContainer
+      scrollable={false}
+      className="flex-1 grid gap-4 lg:grid-cols-[clamp(440px,37%,600px)_1fr]"
+    >
+      <ScrollArea className="order-2 lg:order-1 lg:h-[calc(100dvh-150px)]">
+        <div className="space-y-5 pb-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>播放地址</CardTitle>
+              <CardDescription>
+                请输入视频播放地址，支持 MP4、M3U8、FLV 等多种格式...
+                (多个链接请换行)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                rows={5}
+                value={player.urls}
+                onChange={(e) => player.setUrls(e.target.value)}
+                placeholder="请输入视频播放地址，支持 MP4、M3U8、FLV 等多种格式... (多个链接请换行)"
+                className="break-all resize-none"
+              />
+            </CardContent>
+          </Card>
+
+          <PlaybackControls
+            isPlaying={player.isPlaying}
+            speed={player.speed}
+            seekTime={player.seekTime}
+            onSetSpeed={player.setSpeed}
+            onSetSeekTime={player.setSeekTime}
+            onLoad={player.load}
+            onToggle={player.toggle}
+            onStop={player.stop}
+            onDestroy={player.destroy}
+            onSetPlayerSpeed={player.setPlayerSpeed}
+            onSeek={player.seek}
+            onRestart={player.restart}
+            onSwitchNext={player.switchNext}
+          />
+
+          <AdvancedConfig
+            restartTimeout={player.restartTimeout}
+            hlsLoadPolicy={player.hlsLoadPolicy}
+            flvLowLatency={player.flvLowLatency}
+            hlsLowLatency={player.hlsLowLatency}
+            onSetRestartTimeout={player.setRestartTimeout}
+            onSetHlsLoadPolicy={player.setHlsLoadPolicy}
+            onSetFlvLowLatency={player.setFlvLowLatency}
+            onSetHlsLowLatency={player.setHlsLowLatency}
+          />
+        </div>
+      </ScrollArea>
+
+      <div className="order-1 lg:order-2 min-h-[240px]">
+        <VideoDisplay videoRef={player.videoRef} />
+      </div>
+
       <Script
         src="/vplayer.js"
         strategy="beforeInteractive"
         onReady={player.onScriptReady}
       />
-
-      <div className="w-full h-full grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-4">
-        <ScrollArea>
-          <div className="space-y-4 pr-2 pb-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>播放地址</CardTitle>
-                <CardDescription>
-                  请输入视频播放地址，支持 MP4、M3U8、FLV 等多种格式...
-                  (多个链接请换行)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  rows={5}
-                  value={player.urls}
-                  onChange={(e) => player.setUrls(e.target.value)}
-                  placeholder="请输入视频播放地址，支持 MP4、M3U8、FLV 等多种格式... (多个链接请换行)"
-                  className="break-all"
-                />
-              </CardContent>
-            </Card>
-            {/* Playback Controls */}
-            <PlaybackControls
-              isPlaying={player.isPlaying}
-              speed={player.speed}
-              seekTime={player.seekTime}
-              onSetSpeed={player.setSpeed}
-              onSetSeekTime={player.setSeekTime}
-              onLoad={player.load}
-              onToggle={player.toggle}
-              onStop={player.stop}
-              onDestroy={player.destroy}
-              onSetPlayerSpeed={player.setPlayerSpeed}
-              onSeek={player.seek}
-              onRestart={player.restart}
-              onSwitchNext={player.switchNext}
-            />
-
-            {/* Advanced Config */}
-            <AdvancedConfig
-              restartTimeout={player.restartTimeout}
-              hlsLoadPolicy={player.hlsLoadPolicy}
-              flvLowLatency={player.flvLowLatency}
-              hlsLowLatency={player.hlsLowLatency}
-              onSetRestartTimeout={player.setRestartTimeout}
-              onSetHlsLoadPolicy={player.setHlsLoadPolicy}
-              onSetFlvLowLatency={player.setFlvLowLatency}
-              onSetHlsLowLatency={player.setHlsLowLatency}
-            />
-          </div>
-        </ScrollArea>
-
-        <div className="flex flex-col gap-4">
-          <VideoDisplay videoRef={player.videoRef} />
-        </div>
-      </div>
     </IKPageContainer>
   )
 }
