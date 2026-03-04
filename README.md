@@ -41,7 +41,7 @@ https://securec.pages.dev/
 <details>
   <summary>📸 Preview</summary>
   <br/>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/index.png" alt="SecureC 主界面" />
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/og-image.png" alt="SecureC 主界面" />
 </details>
 
 ### Dropply
@@ -50,6 +50,12 @@ https://securec.pages.dev/
 
 - 基于 Next.js + Cloudflare Workers 构建，前后端分离：`dropply-web` 提供分享/管理界面，`dropply-api` 提供加密存储与链接管理
 - 特点：临时链接、到期失效、加密后再上传，适合安全地分享敏感文件
+
+<details>
+  <summary>📸 Preview</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Dropply/og-image.png" alt="Dropply 主界面" />
+</details>
 
 ### text2img
 
@@ -64,7 +70,7 @@ https://text2img.cdlab.workers.dev/
 <details>
   <summary>📸 Preview</summary>
   <br/>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/index.png" alt="text2img 主界面" />
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/og-image.png" alt="text2img 主界面" />
 </details>
 
 ### byplay
@@ -102,7 +108,7 @@ https://m3u8dw.pages.dev/
 <details>
   <summary>📸 Preview</summary>
   <br/>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/m3u8-download/index.png" alt="m3u8-download 主界面" />
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/m3u8-download/og-image.png" alt="m3u8-download 主界面" />
 </details>
 
 ### value-vision

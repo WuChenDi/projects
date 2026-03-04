@@ -4,6 +4,10 @@
 
 > ⚠️ 所有视频处理均在浏览器本地完成，不会上传到任何服务器。
 
+Preview: https://m3u8dw.pages.dev/
+
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/m3u8-download/og-image.png)
+
 ## ✨ 功能特性
 
 - 📥 **M3U8 视频下载**

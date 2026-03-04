@@ -4,6 +4,8 @@ Powerful web-based tools for your image editing needs
 
 > ⚠️ All images are processed locally on your device and are not uploaded to any server.
 
+Preview: https://clearify.pages.dev/
+
 <details>
   <summary>🔍 Preview</summary>
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Clearify/index.png" />
