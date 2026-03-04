@@ -1,10 +1,10 @@
-# value-vision
+# byplay
 
-A simple tool to compare the value of cryptocurrencies, fiat currencies, and products.
+在线视频播放器 - 支持HLS、FLV、MP4等多种格式 | Web Player
 
-Preview: https://values.pages.dev/
+Preview: https://byplay.pages.dev/
 
-![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/value-vision/og-image.png)
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byplay/og-image.png)
 
 ## 📜 License
 
