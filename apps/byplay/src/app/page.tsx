@@ -9,8 +9,8 @@ import {
 } from '@cdlab996/ui/components/card'
 import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
 import { Textarea } from '@cdlab996/ui/components/textarea'
+import { IKPageContainer } from '@cdlab996/ui/IK'
 import Script from 'next/script'
-import { PageContainer } from '@/components/layout'
 import {
   AdvancedConfig,
   PlaybackControls,
@@ -22,7 +22,7 @@ export default function App() {
   const player = useVideoPlayer()
 
   return (
-    <PageContainer scrollable={false}>
+    <IKPageContainer scrollable={false}>
       <Script
         src="/vplayer.js"
         strategy="beforeInteractive"
@@ -85,6 +85,6 @@ export default function App() {
           <VideoDisplay videoRef={player.videoRef} />
         </div>
       </div>
-    </PageContainer>
+    </IKPageContainer>
   )
 }

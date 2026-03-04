@@ -12,12 +12,12 @@ import { Field } from '@cdlab996/ui/components/field'
 import { Input } from '@cdlab996/ui/components/input'
 import { Label } from '@cdlab996/ui/components/label'
 import { Separator } from '@cdlab996/ui/components/separator'
+import { IKPageContainer } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { CheckCircle, ChevronDown, Download, Info, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
-import { PageContainer } from '@/components/layout'
 import { RetrieveClient } from '@/components/RetrieveClient'
 
 const HOW_IT_WORKS = [
@@ -67,7 +67,7 @@ function RetrievePageContent() {
   }
 
   return (
-    <PageContainer scrollable={false}>
+    <IKPageContainer scrollable={false}>
       <div className="w-full">
         <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-4">
           {/* Left panel: input */}
@@ -204,7 +204,7 @@ function RetrievePageContent() {
           )}
         </div>
       </div>
-    </PageContainer>
+    </IKPageContainer>
   )
 }
 
@@ -212,7 +212,7 @@ export default function RetrievePage() {
   return (
     <Suspense
       fallback={
-        <PageContainer>
+        <IKPageContainer>
           <Card className="shadow-none max-w-md mx-auto">
             <CardContent className="p-12 text-center">
               <div className="space-y-6">
@@ -229,7 +229,7 @@ export default function RetrievePage() {
               </div>
             </CardContent>
           </Card>
-        </PageContainer>
+        </IKPageContainer>
       }
     >
       <RetrievePageContent />

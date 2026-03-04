@@ -1,13 +1,13 @@
 'use client'
 
 import { Card, CardContent } from '@cdlab996/ui/components/card'
+import { IKPageContainer } from '@cdlab996/ui/IK'
 import GradientText from '@cdlab996/ui/reactbits/GradientText'
 import ShinyText from '@cdlab996/ui/reactbits/ShinyText'
 import SpotlightCard from '@cdlab996/ui/reactbits/SpotlightCard'
 import { RefreshCw } from 'lucide-react'
 import AmountInput from '@/components/AmountInput'
 import CurrencySelector from '@/components/CurrencySelector'
-import { PageContainer } from '@/components/layout'
 import { useCurrencyConverter } from '@/hooks/useCurrencyConverter'
 import { useExchangeRates } from '@/hooks/useExchangeRates'
 
@@ -21,7 +21,7 @@ export default function App() {
   } = useCurrencyConverter(rates)
 
   return (
-    <PageContainer scrollable={false}>
+    <IKPageContainer scrollable={false}>
       <div className="mx-auto relative space-y-12 ">
         <div className="text-center mb-8">
           <GradientText className="text-3xl md:text-4xl font-bold bg-gradient-to-r">
@@ -69,6 +69,6 @@ export default function App() {
           </CardContent>
         </Card>
       </div>
-    </PageContainer>
+    </IKPageContainer>
   )
 }

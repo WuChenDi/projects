@@ -25,14 +25,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@cdlab996/ui/components/tooltip'
-import { IKEmpty } from '@cdlab996/ui/IK'
+import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { logger } from '@cdlab996/utils'
 import { format } from 'date-fns'
 import { Download, Pause, Play } from 'lucide-react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { PageContainer } from '@/components/layout'
 import { useStreamSaver } from '@/hooks/useStreamSaver'
 import { AESDecryptor } from '@/lib'
 
@@ -721,7 +720,7 @@ export default function M3u8Downloader() {
   }, [])
 
   return (
-    <PageContainer scrollable={false}>
+    <IKPageContainer scrollable={false}>
       <div className="w-full h-full grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-4">
         {/* 左侧控制面板 */}
         <div className="space-y-4">
@@ -1001,6 +1000,6 @@ export default function M3u8Downloader() {
           </CardContent>
         </Card>
       </div>
-    </PageContainer>
+    </IKPageContainer>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
+import { IKPageContainer } from '@cdlab996/ui/IK'
 import { toast } from 'sonner'
-import { PageContainer } from '@/components/layout'
 import {
   SCFeaturesSection,
   SCInputPanel,
@@ -40,7 +40,7 @@ export default function PasswordPage() {
   }
 
   return (
-    <PageContainer scrollable={false}>
+    <IKPageContainer scrollable={false}>
       <div className="w-full h-full grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-4">
         <div className="space-y-4">
           <SCInputPanel
@@ -68,6 +68,6 @@ export default function PasswordPage() {
           onClearAll={handleClearAll}
         />
       </div>
-    </PageContainer>
+    </IKPageContainer>
   )
 }

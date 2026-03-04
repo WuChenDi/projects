@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
+import { IKPageContainer } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
 import Aurora from '@cdlab996/ui/reactbits/Aurora'
 import GradientText from '@cdlab996/ui/reactbits/GradientText'
@@ -23,7 +24,7 @@ import {
   Video,
 } from 'lucide-react'
 import Link from 'next/link'
-import { Footer, PageContainer } from '@/components/layout'
+import { Footer } from '@/components/layout'
 
 interface Task {
   id: string
@@ -72,7 +73,7 @@ export default function Home() {
   return (
     <>
       <div className="h-[calc(100dvh-80px)] flex-1 flex flex-col">
-        <PageContainer scrollable={false} className="relative">
+        <IKPageContainer scrollable={false} className="relative">
           <div className="relative w-full max-w-4xl mx-auto space-y-12 z-1">
             <div className="text-center mb-8">
               <GradientText className="text-3xl md:text-4xl lg:text-5xl font-bold bg-linear-to-r">
@@ -145,7 +146,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </PageContainer>
+        </IKPageContainer>
         <Footer />
       </div>
       <div className="fixed inset-0">

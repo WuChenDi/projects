@@ -7,13 +7,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
+import { IKPageContainer } from '@cdlab996/ui/IK'
 import { logger } from '@cdlab996/utils'
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile, toBlobURL } from '@ffmpeg/util'
 import { useEffect, useRef, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
-import { PageContainer } from '@/components/layout'
 import {
   CompressionSettings,
   ProcessingView,
@@ -216,7 +216,7 @@ export default function Compress() {
   })
 
   return (
-    <PageContainer scrollable={false}>
+    <IKPageContainer scrollable={false}>
       <div className="w-full">
         <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-4">
           {/* Left Panel - Upload & Settings */}
@@ -280,6 +280,6 @@ export default function Compress() {
           </Card>
         </div>
       </div>
-    </PageContainer>
+    </IKPageContainer>
   )
 }

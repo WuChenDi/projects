@@ -9,13 +9,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
+import { IKPageContainer } from '@cdlab996/ui/IK'
 import { logger } from '@cdlab996/utils'
 import { Trash2 } from 'lucide-react'
 import type React from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
-import { PageContainer } from '@/components/layout'
 import { LeftPanel, RightPanel } from '@/components/pages/bg'
 import { genid } from '@/lib'
 import { getModelInfo, initializeModel, processImages } from '@/lib/process'
@@ -335,7 +335,7 @@ export default function BG() {
   )
 
   return (
-    <PageContainer scrollable={false}>
+    <IKPageContainer scrollable={false}>
       <div onPaste={handlePaste} className="w-full">
         <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-4">
           {/* Left Panel - Controls */}
@@ -391,6 +391,6 @@ export default function BG() {
           </Card>
         </div>
       </div>
-    </PageContainer>
+    </IKPageContainer>
   )
 }

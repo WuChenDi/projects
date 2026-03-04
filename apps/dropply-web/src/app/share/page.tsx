@@ -10,6 +10,7 @@ import {
 } from '@cdlab996/ui/components/card'
 import { Field } from '@cdlab996/ui/components/field'
 import { Label } from '@cdlab996/ui/components/label'
+import { IKPageContainer } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { copyToClipboard } from '@cdlab996/utils'
 import { CheckCircle, Copy, Mail, Upload, X } from 'lucide-react'
@@ -17,7 +18,6 @@ import { useEffect, useState } from 'react'
 import { EmailShare } from '@/components/EmailShare'
 import { ExpirySelector } from '@/components/ExpirySelector'
 import { FileUpload } from '@/components/FileUpload'
-import { PageContainer } from '@/components/layout'
 import { TextInput } from '@/components/TextInput'
 import { TOTPModal } from '@/components/TOTPModal'
 import { UploadProgress } from '@/components/UploadProgress'
@@ -180,7 +180,7 @@ export default function SharePage() {
   // Loading / auth state
   if (!configLoaded || (requireTOTP && !isAuthenticated) || isAuthenticating) {
     return (
-      <PageContainer>
+      <IKPageContainer>
         <Card className="w-full max-w-md mx-auto">
           <CardHeader>
             <CardTitle>
@@ -220,12 +220,12 @@ export default function SharePage() {
           error={totpError}
           allowCancel={false}
         />
-      </PageContainer>
+      </IKPageContainer>
     )
   }
 
   return (
-    <PageContainer>
+    <IKPageContainer>
       <div className="w-full">
         {error && (
           <div className="mb-4 flex items-center justify-between gap-3 p-4 rounded-lg border border-red-200/50 bg-red-50/80 dark:bg-red-950/30 dark:border-red-800/50">
@@ -420,6 +420,6 @@ export default function SharePage() {
         isVisible={showEmailShare}
         onClose={() => setShowEmailShare(false)}
       />
-    </PageContainer>
+    </IKPageContainer>
   )
 }

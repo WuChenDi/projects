@@ -1,10 +1,10 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
+import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2, Sparkles } from 'lucide-react'
 import { useState } from 'react'
-import { PageContainer } from '@/components/layout'
 import { AdvancedOptions } from '@/components/page/AdvancedOptions'
 import { BasicSettings } from '@/components/page/BasicSettings'
 import { ImageResult } from '@/components/page/ImageResult'
@@ -78,7 +78,7 @@ export default function Home() {
   }
 
   return (
-    <PageContainer scrollable={false}>
+    <IKPageContainer scrollable={false}>
       <div className="w-full h-full grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-4">
         <div className="space-y-4">
           <BasicSettings
@@ -135,6 +135,6 @@ export default function Home() {
           onClearAll={handleClearAll}
         />
       </div>
-    </PageContainer>
+    </IKPageContainer>
   )
 }
