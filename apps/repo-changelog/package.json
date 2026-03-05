@@ -1,0 +1,45 @@
+{
+  "name": "@cdlab996/repo-changelog",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Track the latest releases and changelogs from your favorite open source repositories",
+  "author": "wudi <wuchendi96@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/WuChenDi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WuChenDi/projects.git",
+    "directory": "apps/repo-changelog"
+  },
+  "scripts": {
+    "dev": "nuxt dev --port 3019",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck"
+  },
+  "dependencies": {
+    "@cdlab996/genid": "catalog:prod",
+    "@iconify-json/lucide": "^1.2.95",
+    "@iconify-json/simple-icons": "^1.2.72",
+    "@nuxt/ui": "^4.5.1",
+    "@nuxtjs/mdc": "0.20.1",
+    "@vercel/analytics": "^1.6.1",
+    "@vueuse/nuxt": "14.2.1",
+    "nuxt": "4.3.1",
+    "remark-mdc": "^3.10.0",
+    "vue": "^3.5.29"
+  },
+  "devDependencies": {
+    "@cdlab996/tsconfig": "workspace:*",
+    "@types/node": "catalog:dev",
+    "tailwindcss": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vue-tsc": "^3.2.5"
+  },
+  "resolutions": {
+    "unimport": "4.1.1"
+  }
+}

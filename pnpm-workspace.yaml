@@ -8,6 +8,7 @@ catalogs:
     '@types/react': ^19
     '@types/react-dom': ^19
     drizzle-kit: ^0.31.9
+    tailwindcss: ^4
     tsdown: ^0.20.3
     typescript: ^5
     vitest: ^4.0.18

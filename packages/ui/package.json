@@ -44,7 +44,7 @@
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
-    "tailwindcss": "^4",
+    "tailwindcss": "catalog:dev",
     "typescript": "catalog:dev"
   }
 }
