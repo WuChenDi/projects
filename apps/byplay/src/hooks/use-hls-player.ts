@@ -102,7 +102,13 @@ export function useHlsPlayer() {
   const addLog = useCallback(
     (type: HlsLogEntry['type'], event: string, detail: string) => {
       const entry: HlsLogEntry = {
-        time: new Date().toLocaleTimeString('zh-CN', { hour12: false }),
+        time: new Date().toLocaleTimeString('zh-CN', {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          fractionalSecondDigits: 3,
+        }),
         type,
         event,
         detail,
@@ -182,9 +188,7 @@ export function useHlsPlayer() {
       })
       addLog('info', 'LOAD', `Loading: ${src}`)
 
-      const isNativeHls = !!video.canPlayType(
-        'application/vnd.apple.mpegurl',
-      )
+      const isNativeHls = !!video.canPlayType('application/vnd.apple.mpegurl')
 
       if (Hls.isSupported()) {
         const hls = new Hls({
@@ -246,8 +250,7 @@ export function useHlsPlayer() {
             levels,
             ...(hasHEVC
               ? {
-                  error:
-                    'HEVC/H.265 detected, browser may not support it',
+                  error: 'HEVC/H.265 detected, browser may not support it',
                 }
               : {}),
           })
@@ -310,11 +313,7 @@ export function useHlsPlayer() {
 
         hls.on(Hls.Events.ERROR, (_event, data) => {
           if (!data.fatal) {
-            addLog(
-              'warn',
-              'ERROR (non-fatal)',
-              `${data.type}: ${data.details}`,
-            )
+            addLog('warn', 'ERROR (non-fatal)', `${data.type}: ${data.details}`)
             return
           }
 
@@ -384,7 +383,10 @@ export function useHlsPlayer() {
           { once: true },
         )
       } else {
-        update({ error: 'HLS is not supported in this browser', isLoading: false })
+        update({
+          error: 'HLS is not supported in this browser',
+          isLoading: false,
+        })
         addLog('error', 'NOT_SUPPORTED', 'HLS is not supported')
       }
     },
@@ -395,7 +397,11 @@ export function useHlsPlayer() {
     (level: number) => {
       if (hlsRef.current) {
         hlsRef.current.currentLevel = level
-        addLog('info', 'SET_LEVEL', `Manual level: ${level === -1 ? 'Auto' : level}`)
+        addLog(
+          'info',
+          'SET_LEVEL',
+          `Manual level: ${level === -1 ? 'Auto' : level}`,
+        )
       }
     },
     [addLog],
