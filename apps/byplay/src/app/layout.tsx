@@ -19,22 +19,23 @@ const geistMono = Geist_Mono({
 
 // --- SEO Metadata ---
 export const metadata: Metadata = {
-  title: '在线视频播放器 - 支持MP4、M3U8、FLV等多种格式 | ByPlay',
+  title: 'ByPlay - Online HLS Player | M3U8, MP4, WebM, TS Streaming',
   icons: 'https://notes-wudi.pages.dev/images/logo.png',
   description:
-    '功能强大的在线视频播放器，支持MP4、M3U8、FLV等多种视频格式，提供超低延迟播放、倍速控制、实时跳转等高级功能。免费、无需注册、即开即用。',
+    'Free online HLS streaming player powered by hls.js. Supports M3U8, MP4, WebM, OGG, TS, and MPD formats. Features adaptive bitrate (ABR), low-latency mode, buffer configuration, playback rate control, and quality switching.',
   keywords: [
-    '视频播放器',
-    '在线播放器',
-    'MP4播放器',
-    'M3U8播放器',
-    'FLV播放器',
-    'HTML5视频',
-    '流媒体播放',
-    '低延迟播放',
-    '视频工具',
-    'Web播放器',
-    '直播播放器',
+    'HLS player',
+    'M3U8 player',
+    'online video player',
+    'hls.js',
+    'streaming player',
+    'MP4 player',
+    'WebM player',
+    'adaptive bitrate',
+    'low latency streaming',
+    'web player',
+    'HTML5 video',
+    'live stream player',
   ],
   referrer: 'no-referrer-when-downgrade',
   authors: [{ name: 'wudi', url: 'https://github.com/WuChenDi' }],
@@ -51,31 +52,31 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
-  applicationName: 'Web Video Player',
+  applicationName: 'ByPlay',
   category: 'Media Player, Video Tools, Streaming Technology',
   classification: 'Media Player, Video Tools, Streaming Technology',
   openGraph: {
-    title: '在线视频播放器 - 支持HLS、FLV、MP4等多种格式',
+    title: 'ByPlay - Online HLS Player | M3U8, MP4, WebM, TS Streaming',
     description:
-      '功能强大的在线视频播放器，支持MP4、M3U8、FLV等多种视频格式，提供超低延迟播放、倍速控制、实时跳转等高级功能。',
+      'Free online HLS streaming player powered by hls.js. Supports M3U8, MP4, WebM, TS formats with adaptive bitrate, low-latency mode, buffer configuration, and playback rate control.',
     url: 'https://byplay.pages.dev/',
-    siteName: 'Web Video Player',
+    siteName: 'ByPlay',
     images: [
       {
         url: 'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byplay/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Web Video Player 界面预览',
+        alt: 'ByPlay HLS Player interface preview',
       },
     ],
-    locale: 'zh_CN',
+    locale: 'en_US',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: '在线视频播放器 - 支持MP4、M3U8、FLV等多种格式',
+    title: 'ByPlay - Online HLS Player | M3U8, MP4, WebM, TS Streaming',
     description:
-      '功能强大的在线视频播放器，支持MP4、M3U8、FLV等多种视频格式，提供超低延迟播放、倍速控制、实时跳转等高级功能。',
+      'Free online HLS streaming player powered by hls.js. Supports M3U8, MP4, WebM, TS formats with adaptive bitrate, low-latency mode, buffer configuration, and playback rate control.',
     images: [
       'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byplay/og-image.png',
     ],
@@ -87,7 +88,7 @@ export const metadata: Metadata = {
     distribution: 'global',
     rating: 'general',
     copyright: '© 2025 wudi. All rights reserved.',
-    language: 'zh-CN',
+    language: 'en',
     googlebot: 'index, follow',
   },
 }
@@ -98,7 +99,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="en">
       <head>
         {/* JSON-LD Structured Data - Website */}
         <script
@@ -107,11 +108,11 @@ export default function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
-              name: 'Web Video Player',
+              name: 'ByPlay',
               url: 'https://byplay.pages.dev/',
               description:
-                '功能强大的在线视频播放器，支持MP4、M3U8、FLV等多种视频格式',
-              inLanguage: 'zh-CN',
+                'Online HLS streaming player powered by hls.js. Supports M3U8, MP4, WebM, and TS formats.',
+              inLanguage: 'en',
               potentialAction: {
                 '@type': 'SearchAction',
                 target: 'https://byplay.pages.dev/?q={search_term_string}',
@@ -128,18 +129,18 @@ export default function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'WebApplication',
-              name: 'Web Video Player',
+              name: 'ByPlay',
               description:
-                '功能强大的在线视频播放器，支持MP4、M3U8、FLV等多种视频格式，提供超低延迟播放、倍速控制、实时跳转等高级功能。',
+                'Free online HLS streaming player powered by hls.js. Supports M3U8, MP4, WebM, TS formats with adaptive bitrate, low-latency mode, buffer configuration, and playback rate control.',
               url: 'https://byplay.pages.dev/',
               applicationCategory: 'MultimediaApplication',
               operatingSystem: 'Web',
               browserRequirements:
-                '需要启用 JavaScript。兼容 Chrome 90+, Firefox 88+, Safari 14+, Edge 90+',
+                'Requires JavaScript. Compatible with Chrome 90+, Firefox 88+, Safari 14+, Edge 90+',
               offers: {
                 '@type': 'Offer',
                 price: '0',
-                priceCurrency: 'CNY',
+                priceCurrency: 'USD',
                 availability: 'https://schema.org/InStock',
               },
               author: {
@@ -154,15 +155,15 @@ export default function RootLayout({
               },
               datePublished: '2023-01-01',
               dateModified: '2025-10-07',
-              inLanguage: 'zh-CN',
+              inLanguage: 'en',
               isAccessibleForFree: true,
               keywords:
-                '视频播放器, MP4播放, M3U8播放, FLV播放, 流媒体, 超低延迟, 倍速播放, 在线工具',
+                'HLS player, hls.js, M3U8 player, MP4 player, WebM player, TS streaming, adaptive bitrate, low latency, playback rate',
               screenshot: {
                 '@type': 'ImageObject',
                 contentUrl:
                   'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byplay/og-image.png',
-                description: 'Web Video Player 界面截图',
+                description: 'ByPlay HLS Player interface screenshot',
               },
               softwareVersion: '1.0.0',
               aggregateRating: {
@@ -173,13 +174,16 @@ export default function RootLayout({
                 worstRating: '1',
               },
               featureList: [
-                '支持 MP4、M3U8、FLV 等多种视频格式',
-                '超低延迟播放技术',
-                '可调节播放倍速（0-16倍）',
-                '精确时间点跳转',
-                '高级负载策略配置',
-                '响应式设计，适配所有设备',
-                '免费使用，无需注册',
+                'Supports M3U8, MP4, WebM, OGG, TS, and MPD formats',
+                'HLS streaming powered by hls.js',
+                'Adaptive Bitrate (ABR) quality switching',
+                'Low-latency live streaming mode',
+                'Adjustable playback rate (0.25x–4x)',
+                'Fine-grained buffer configuration',
+                'Loading timeout and retry policy settings',
+                'Real-time playback stats and event logs',
+                'Responsive design for all devices',
+                'Free to use, no registration required',
               ],
               interactionStatistic: {
                 '@type': 'InteractionCounter',
@@ -207,7 +211,7 @@ export default function RootLayout({
                 {
                   '@type': 'ListItem',
                   position: 1,
-                  name: '首页',
+                  name: 'Home',
                   item: 'https://byplay.pages.dev/',
                 },
               ],
@@ -222,14 +226,16 @@ export default function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'SoftwareApplication',
-              name: 'Web Video Player',
+              name: 'wudi',
+              url: 'https://github.com/WuChenDi',
+              logo: 'https://notes-wudi.pages.dev/images/logo.png',
               applicationCategory: 'MultimediaApplication',
               offers: {
                 '@type': 'Offer',
                 price: '0',
               },
               operatingSystem: 'Any',
-              permissions: '浏览器访问权限',
+              permissions: 'Browser access',
             }),
           }}
         />
