@@ -30,7 +30,7 @@ import { Slider } from '@cdlab996/ui/components/slider'
 import { Switch } from '@cdlab996/ui/components/switch'
 import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import type { HlsConfig, HlsLogEntry } from '@/hooks/use-hls-player'
 import { DEFAULT_HLS_CONFIG, useHlsPlayer } from '@/hooks/use-hls-player'
 
@@ -140,7 +140,7 @@ function LogBadge({ type }: { type: HlsLogEntry['type'] }) {
   )
 }
 
-export default function HlsTestPage() {
+function PageContent() {
   const searchParams = useSearchParams()
   const paramUrl = searchParams.get('url')
   const [url, setUrl] = useState(
@@ -529,7 +529,6 @@ export default function HlsTestPage() {
             className="w-full h-full object-contain"
             controls
             playsInline
-
           >
             Your browser does not support HTML5 video
           </video>
@@ -644,5 +643,13 @@ export default function HlsTestPage() {
         </Card>
       </div>
     </IKPageContainer>
+  )
+}
+
+export default function HlsPage() {
+  return (
+    <Suspense fallback={null}>
+      <PageContent />
+    </Suspense>
   )
 }
