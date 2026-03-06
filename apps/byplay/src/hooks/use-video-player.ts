@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { VPlayerInstance, VPlayerSource } from '@/types/vplayer'
 
-const DEFAULT_URLS = `https://media.w3.org/2010/05/sintel/trailer.mp4
-https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8
+const DEFAULT_URLS = `https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8
+https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8
 https://devstreaming-cdn.apple.com/videos/streaming/examples/adv_dv_atmos/main.m3u8
-https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc_video/flv/xgplayer-demo-720p.flv`
+https://media.w3.org/2010/05/sintel/trailer.mp4`
 
 export interface HlsLoadPolicyConfig {
   levelLoadingTimeOut: string

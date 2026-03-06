@@ -19,7 +19,7 @@ export function Header() {
               height={32}
               className="rounded-full mr-2"
             />
-            {'在线视频播放器'.split('').map((letter, index) => {
+            {'ByPlay'.split('').map((letter, index) => {
               return (
                 <span
                   // biome-ignore lint/suspicious/noArrayIndexKey: no unique identifier available
@@ -35,6 +35,12 @@ export function Header() {
 
         <div className="flex items-center gap-6">
           <nav className="hidden md:flex items-center gap-6">
+            {/* <Link
+              href="/vplayer"
+              className="transition-colors flex items-center gap-1 text-card-foreground"
+            >
+              VPlayer
+            </Link> */}
             <Link
               href="https://notes-wudi.pages.dev/projects/"
               className="transition-colors flex items-center gap-1 uppercase text-card-foreground"

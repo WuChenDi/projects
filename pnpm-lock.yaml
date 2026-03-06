@@ -235,6 +235,9 @@ importers:
       clsx:
         specifier: catalog:prod
         version: 2.1.1
+      hls.js:
+        specifier: ^1.6.15
+        version: 1.6.15
       lucide-react:
         specifier: catalog:prod
         version: 0.575.0(react@19.2.4)
@@ -6929,6 +6932,9 @@ packages:
 
   hey-listen@1.0.8:
     resolution: {integrity: sha512-COpmrF2NOg4TBWUJ5UVyaCU2A88wEMkUPK4hNqyCkqHbxT92BbvfjoSozkAIIm6XhicGlJHhFdullInrdhwU8Q==}
+
+  hls.js@1.6.15:
+    resolution: {integrity: sha512-E3a5VwgXimGHwpRGV+WxRTKeSp2DW5DI5MWv34ulL3t5UNmyJWCQ1KmLEHbYzcfThfXG8amBL+fCYPneGHC4VA==}
 
   hono@4.12.5:
     resolution: {integrity: sha512-3qq+FUBtlTHhtYxbxheZgY8NIFnkkC/MR8u5TTsr7YZ3wixryQ3cCwn3iZbg8p8B88iDBBAYSfZDS75t8MN7Vg==}
@@ -16463,6 +16469,8 @@ snapshots:
   headers-polyfill@4.0.3: {}
 
   hey-listen@1.0.8: {}
+
+  hls.js@1.6.15: {}
 
   hono@4.12.5: {}
 
