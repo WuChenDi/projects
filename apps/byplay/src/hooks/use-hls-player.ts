@@ -1,35 +1,29 @@
 'use client'
 
-import Hls from 'hls.js'
+import Hls, { type HlsConfig as HlsJsConfig } from 'hls.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-export interface HlsConfig {
-  // Player
-  autoPlay: boolean
-  // Performance
-  enableWorker: boolean
-  lowLatencyMode: boolean
-  // Buffer
-  maxBufferLength: number
-  maxMaxBufferLength: number
-  maxBufferSize: number
-  maxBufferHole: number
-  backBufferLength: number
-  startFragPrefetch: boolean
-  // ABR
-  abrEwmaDefaultEstimate: number
-  abrBandWidthFactor: number
-  abrBandWidthUpFactor: number
-  // Retry
-  fragLoadingMaxRetry: number
-  manifestLoadingMaxRetry: number
-  levelLoadingMaxRetry: number
-  fragLoadingRetryDelay: number
-  // Timeout
-  fragLoadingTimeOut: number
-  manifestLoadingTimeOut: number
-  levelLoadingTimeOut: number
-}
+export type HlsConfig = Pick<
+  HlsJsConfig,
+  | 'enableWorker'
+  | 'lowLatencyMode'
+  | 'maxBufferLength'
+  | 'maxMaxBufferLength'
+  | 'maxBufferSize'
+  | 'maxBufferHole'
+  | 'backBufferLength'
+  | 'startFragPrefetch'
+  | 'abrEwmaDefaultEstimate'
+  | 'abrBandWidthFactor'
+  | 'abrBandWidthUpFactor'
+  | 'fragLoadingMaxRetry'
+  | 'manifestLoadingMaxRetry'
+  | 'levelLoadingMaxRetry'
+  | 'fragLoadingRetryDelay'
+  | 'fragLoadingTimeOut'
+  | 'manifestLoadingTimeOut'
+  | 'levelLoadingTimeOut'
+> & { autoPlay: boolean }
 
 export const DEFAULT_HLS_CONFIG: HlsConfig = {
   autoPlay: true,
@@ -189,36 +183,20 @@ export function useHlsPlayer() {
       addLog('info', 'LOAD', `Loading: ${src}`)
 
       const isNativeHls = !!video.canPlayType('application/vnd.apple.mpegurl')
+      const { autoPlay, ...hlsConfig } = config
 
       if (Hls.isSupported()) {
         const hls = new Hls({
-          enableWorker: config.enableWorker,
-          lowLatencyMode: config.lowLatencyMode,
-          maxBufferLength: config.maxBufferLength,
-          maxMaxBufferLength: config.maxMaxBufferLength,
-          maxBufferSize: config.maxBufferSize,
-          maxBufferHole: config.maxBufferHole,
-          backBufferLength: config.backBufferLength,
-          startFragPrefetch: config.startFragPrefetch,
-          abrEwmaDefaultEstimate: config.abrEwmaDefaultEstimate,
+          ...hlsConfig,
           abrEwmaFastLive: 3,
           abrEwmaSlowLive: 9,
           abrEwmaFastVoD: 3,
           abrEwmaSlowVoD: 9,
-          abrBandWidthFactor: config.abrBandWidthFactor,
-          abrBandWidthUpFactor: config.abrBandWidthUpFactor,
-          fragLoadingMaxRetry: config.fragLoadingMaxRetry,
-          fragLoadingRetryDelay: config.fragLoadingRetryDelay,
           fragLoadingMaxRetryTimeout: 64000,
-          manifestLoadingMaxRetry: config.manifestLoadingMaxRetry,
           manifestLoadingRetryDelay: 1000,
           manifestLoadingMaxRetryTimeout: 64000,
-          levelLoadingMaxRetry: config.levelLoadingMaxRetry,
           levelLoadingRetryDelay: 1000,
           levelLoadingMaxRetryTimeout: 64000,
-          fragLoadingTimeOut: config.fragLoadingTimeOut,
-          manifestLoadingTimeOut: config.manifestLoadingTimeOut,
-          levelLoadingTimeOut: config.levelLoadingTimeOut,
         })
 
         hlsRef.current = hls
@@ -228,7 +206,7 @@ export function useHlsPlayer() {
         addLog(
           'info',
           'HLS_INIT',
-          `Worker: ${config.enableWorker}, LowLatency: ${config.lowLatencyMode}, Buffer: ${config.maxBufferLength}s`,
+          `Worker: ${hlsConfig.enableWorker}, LowLatency: ${hlsConfig.lowLatencyMode}, Buffer: ${hlsConfig.maxBufferLength}s`,
         )
 
         hls.on(Hls.Events.MANIFEST_PARSED, (_event, data) => {
@@ -261,7 +239,7 @@ export function useHlsPlayer() {
             `${data.levels.length} level(s), codecs: ${levels.map((l) => l.codec || 'unknown').join(', ')}`,
           )
 
-          if (config.autoPlay) {
+          if (autoPlay) {
             video.play().catch(() => {
               video.muted = true
               video.play().catch(console.warn)
@@ -370,7 +348,7 @@ export function useHlsPlayer() {
           () => {
             update({ isLoading: false })
             addLog('info', 'LOADED', 'Native HLS metadata loaded')
-            if (config.autoPlay) video.play().catch(console.warn)
+            if (autoPlay) video.play().catch(console.warn)
           },
           { once: true },
         )
