@@ -29,8 +29,7 @@ import {
 import { Slider } from '@cdlab996/ui/components/slider'
 import { Switch } from '@cdlab996/ui/components/switch'
 import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
-import { useSearchParams } from 'next/navigation'
-import { Suspense, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { HlsConfig, HlsLogEntry } from '@/hooks/use-hls-player'
 import { DEFAULT_HLS_CONFIG, useHlsPlayer } from '@/hooks/use-hls-player'
 
@@ -140,16 +139,10 @@ function LogBadge({ type }: { type: HlsLogEntry['type'] }) {
   )
 }
 
-function PageContent() {
-  const searchParams = useSearchParams()
-  const paramUrl = searchParams.get('url')
-  const [url, setUrl] = useState(
-    paramUrl && isVideoUrl(paramUrl) ? paramUrl : DEFAULT_URL,
-  )
+export default function HlsPage() {
+  const [url, setUrl] = useState(DEFAULT_URL)
   const [config, setConfig] = useState<HlsConfig>({ ...DEFAULT_HLS_CONFIG })
   const [playbackRate, setPlaybackRate] = useState(1)
-
-  const hasValidParam = !!(paramUrl && isVideoUrl(paramUrl))
 
   const {
     videoRef,
@@ -163,8 +156,11 @@ function PageContent() {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally load only on mount when valid param exists
   useEffect(() => {
-    if (hasValidParam) {
-      loadSource(url, config)
+    const params = new URLSearchParams(window.location.search)
+    const paramUrl = params.get('url')
+    if (paramUrl && isVideoUrl(paramUrl)) {
+      setUrl(paramUrl)
+      loadSource(paramUrl, config)
     }
   }, [])
 
@@ -643,13 +639,5 @@ function PageContent() {
         </Card>
       </div>
     </IKPageContainer>
-  )
-}
-
-export default function HlsPage() {
-  return (
-    <Suspense fallback={null}>
-      <PageContent />
-    </Suspense>
   )
 }
