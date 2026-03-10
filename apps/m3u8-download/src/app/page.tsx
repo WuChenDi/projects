@@ -17,10 +17,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import { Field } from '@cdlab996/ui/components/field'
+import {
+  Field,
+  FieldDescription,
+  FieldTitle,
+} from '@cdlab996/ui/components/field'
 import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
 import { Progress } from '@cdlab996/ui/components/progress'
+import { Slider } from '@cdlab996/ui/components/slider'
 import {
   Tooltip,
   TooltipContent,
@@ -31,7 +35,7 @@ import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { logger } from '@cdlab996/utils'
 import { format } from 'date-fns'
-import { Download, Pause, Play } from 'lucide-react'
+import { Download, Loader2, Pause, Play, Search, X } from 'lucide-react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useStreamSaver } from '@/hooks/useStreamSaver'
@@ -46,8 +50,15 @@ interface FinishItem {
   status: '' | 'downloading' | 'finish' | 'error'
 }
 
+interface VariantStream {
+  url: string
+  bandwidth: number
+  resolution: string
+  name: string
+  selected?: boolean
+}
+
 interface RangeDownload {
-  isShowRange: boolean
   startSegment: string
   endSegment: string
 }
@@ -73,12 +84,63 @@ interface DownloadState {
 // Helpers
 // ============================================================
 
-const fetchData = async (url: string, type?: 'file' | 'text'): Promise<any> => {
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`)
+const FETCH_TIMEOUT_MS = 30_000
+
+const fetchData = async (
+  url: string,
+  type?: 'file' | 'text',
+  signal?: AbortSignal,
+): Promise<any> => {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+
+  if (signal) {
+    signal.addEventListener('abort', () => controller.abort(), { once: true })
   }
-  return type === 'file' ? response.arrayBuffer() : response.text()
+
+  try {
+    const response = await fetch(url, { signal: controller.signal })
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+    return type === 'file'
+      ? await response.arrayBuffer()
+      : await response.text()
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+const isMasterPlaylist = (m3u8Str: string): boolean =>
+  m3u8Str.includes('#EXT-X-STREAM-INF')
+
+const parseMasterPlaylistContent = (
+  m3u8Str: string,
+  baseURL: string,
+): VariantStream[] => {
+  const lines = m3u8Str.split('\n')
+  const variants: VariantStream[] = []
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
+    if (!line.startsWith('#EXT-X-STREAM-INF')) continue
+
+    const bandwidth = parseInt((line.match(/BANDWIDTH=(\d+)/) || ['', '0'])[1])
+    const resolution = (line.match(/RESOLUTION=([^\s,]+)/) || ['', ''])[1]
+    const name = (line.match(/NAME="([^"]*)"/) || ['', ''])[1]
+
+    const nextLine = lines[i + 1]?.trim()
+    if (nextLine && !nextLine.startsWith('#')) {
+      variants.push({
+        url: applyURL(nextLine, baseURL),
+        bandwidth,
+        resolution,
+        name: name || resolution || `${Math.round(bandwidth / 1000)}kbps`,
+      })
+    }
+  }
+
+  return variants.sort((a, b) => b.bandwidth - a.bandwidth)
 }
 
 const applyURL = (targetURL: string, baseURL?: string) => {
@@ -131,9 +193,11 @@ export default function M3u8Downloader() {
   } = useStreamSaver()
 
   const [url, setUrl] = useState(
-    'https://vv.jisuzyv.com/play/hls/e5yy3ZRe/index.m3u8',
+    'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
   )
   const [title, setTitle] = useState('')
+  const [isParsing, setIsParsing] = useState(false)
+  const [isLoadingVariant, setIsLoadingVariant] = useState(false)
 
   const [downloadState, setDownloadState] = useState<DownloadState>({
     isDownloading: false,
@@ -145,13 +209,13 @@ export default function M3u8Downloader() {
 
   const [finishList, setFinishList] = useState<FinishItem[]>([])
   const [tsUrlList, setTsUrlList] = useState<string[]>([])
+  const [variants, setVariants] = useState<VariantStream[]>([])
 
   const streamWriter = useRef<WritableStreamDefaultWriter<Uint8Array> | null>(
     null,
   )
 
   const [rangeDownload, setRangeDownload] = useState<RangeDownload>({
-    isShowRange: false,
     startSegment: '',
     endSegment: '',
   })
@@ -169,6 +233,9 @@ export default function M3u8Downloader() {
   const beginTimeRef = useRef(new Date())
   const durationSecondRef = useRef(0)
   const mediaFileListRef = useRef<ArrayBuffer[]>([])
+  const downloadingTimestamps = useRef<Map<number, number>>(new Map())
+  const m3u8ContentRef = useRef('')
+  const downloadAbortRef = useRef<AbortController | null>(null)
 
   const downloadStateRef = useRef(downloadState)
   downloadStateRef.current = downloadState
@@ -200,6 +267,9 @@ export default function M3u8Downloader() {
   const isSupperStreamWrite = useMemo(() => {
     return streamSaverLoaded && streamSaverSupported
   }, [streamSaverLoaded, streamSaverSupported])
+
+  // 是否已解析出片段（可以下载）
+  const isParsed = tsUrlList.length > 0
 
   // ---- AES 解密 ----
   const aesDecrypt = (data: ArrayBuffer, index: number): ArrayBuffer => {
@@ -299,6 +369,7 @@ export default function M3u8Downloader() {
 
         if (currentStreamIndex >= targetSegment) {
           streamWriter.current.close()
+          setDownloadState((s) => ({ ...s, isDownloading: false }))
           toast.success(`流式下载完成，共 ${newFinishNum} 个片段`)
         }
       } else if (newFinishNum === targetSegment) {
@@ -308,6 +379,7 @@ export default function M3u8Downloader() {
           title || format(beginTimeRef.current, 'yyyy_MM_dd_HH_mm_ss'),
           downloadStateRef.current.isGetMP4,
         )
+        setDownloadState((s) => ({ ...s, isDownloading: false }))
         toast.success(`下载完成，共 ${newFinishNum} 个片段`)
       }
 
@@ -334,7 +406,8 @@ export default function M3u8Downloader() {
 
     const worker = async () => {
       while (true) {
-        if (downloadStateRef.current.isPaused) return
+        const state = downloadStateRef.current
+        if (state.isPaused || !state.isDownloading) return
 
         const index = next()
         if (index === null) return
@@ -346,11 +419,20 @@ export default function M3u8Downloader() {
           newList[index] = { ...newList[index], status: 'downloading' }
           return newList
         })
+        downloadingTimestamps.current.set(index, Date.now())
 
         try {
-          const file = await fetchData(urlList[index], 'file')
+          const file = await fetchData(
+            urlList[index],
+            'file',
+            downloadAbortRef.current?.signal,
+          )
+          downloadingTimestamps.current.delete(index)
+          if (!downloadStateRef.current.isDownloading) return
           await dealTS(file, index, startSegment, isGetMP4)
         } catch {
+          downloadingTimestamps.current.delete(index)
+          if (!downloadStateRef.current.isDownloading) return
           setFinishList((prev) => {
             const newList = [...prev]
             newList[index] = { ...newList[index], status: 'error' }
@@ -400,138 +482,235 @@ export default function M3u8Downloader() {
     }
   }
 
-  // ---- 主入口：解析 m3u8 并开始下载 ----
-  const getM3U8 = async (onlyGetRange: boolean) => {
-    if (!url) {
+  // ---- 解析媒体播放列表 ----
+  const parseMediaPlaylist = (m3u8Str: string, baseURL: string) => {
+    const newTsUrlList: string[] = []
+    const newFinishList: FinishItem[] = []
+
+    m3u8Str.split('\n').forEach((item) => {
+      if (/^[^#]/.test(item) && item.trim()) {
+        newTsUrlList.push(applyURL(item, baseURL))
+        newFinishList.push({ title: item, status: '' })
+      }
+    })
+
+    if (newTsUrlList.length === 0) {
+      toast.error('资源为空，请查看链接是否有效')
+      return
+    }
+
+    m3u8ContentRef.current = m3u8Str
+    setTsUrlList(newTsUrlList)
+    setFinishList(newFinishList)
+    setRangeDownload({
+      startSegment: '1',
+      endSegment: String(newTsUrlList.length),
+    })
+
+    toast.success(`解析成功，共 ${newTsUrlList.length} 个片段`)
+  }
+
+  // ---- 第一步：解析 m3u8 ----
+  const parseM3U8 = async (targetUrl?: string) => {
+    const fetchUrl = targetUrl || url
+    if (!fetchUrl) {
       toast.error('请输入链接')
       return
     }
-    if (url.toLowerCase().indexOf('m3u8') === -1) {
+    if (fetchUrl.toLowerCase().indexOf('m3u8') === -1) {
       toast.error('链接有误，请重新输入')
       return
     }
-    if (downloadState.isDownloading) {
-      toast.warning('资源下载中，请稍后')
-      return
+
+    setIsParsing(true)
+    // 重置之前的解析状态
+    setTsUrlList([])
+    setFinishList([])
+    setVariants([])
+    m3u8ContentRef.current = ''
+
+    try {
+      const m3u8Str: string = await fetchData(fetchUrl)
+
+      // 检测多码率主播放列表（Master Playlist）
+      if (isMasterPlaylist(m3u8Str)) {
+        const parsedVariants = parseMasterPlaylistContent(m3u8Str, fetchUrl)
+        if (parsedVariants.length > 0) {
+          setVariants(parsedVariants)
+          toast.info(`检测到 ${parsedVariants.length} 个清晰度，请选择`)
+          return
+        }
+      }
+
+      parseMediaPlaylist(m3u8Str, fetchUrl)
+    } catch (error) {
+      toast.error((error as any).message || '链接不正确，请查看链接是否有效')
+      logger.error('解析 m3u8 失败:', (error as any).message)
+    } finally {
+      setIsParsing(false)
     }
+  }
+
+  // ---- 选择清晰度（直接解析子播放列表） ----
+  const selectVariant = async (variant: VariantStream) => {
+    setIsLoadingVariant(true)
+    setVariants((prev) =>
+      prev.map((v) => ({ ...v, selected: v.url === variant.url })),
+    )
+
+    try {
+      const m3u8Str: string = await fetchData(variant.url)
+
+      // 极少数情况：子播放列表仍是 master playlist
+      if (isMasterPlaylist(m3u8Str)) {
+        const parsedVariants = parseMasterPlaylistContent(m3u8Str, variant.url)
+        if (parsedVariants.length > 0) {
+          setVariants(parsedVariants)
+          toast.info('请继续选择清晰度')
+          return
+        }
+      }
+
+      parseMediaPlaylist(m3u8Str, variant.url)
+    } catch (error) {
+      toast.error('解析所选清晰度失败，请重试')
+      logger.error('解析子播放列表失败:', (error as any).message)
+    } finally {
+      setIsLoadingVariant(false)
+    }
+  }
+
+  // ---- 第二步：开始下载 ----
+  const startDownload = async (isGetMP4: boolean) => {
+    if (!isParsed || downloadState.isDownloading) return
+
+    downloadAbortRef.current = new AbortController()
 
     const urlObj = new URL(url)
     const newTitle = urlObj.searchParams.get('title') || title
     setTitle(newTitle)
     beginTimeRef.current = new Date()
 
-    toast.info('正在解析 m3u8 文件')
+    // 计算有效范围
+    let startSeg = Math.max(parseInt(rangeDownload.startSegment) || 1, 1)
+    let endSeg = Math.max(
+      parseInt(rangeDownload.endSegment) || tsUrlList.length,
+      1,
+    )
+    startSeg = Math.min(startSeg, tsUrlList.length)
+    endSeg = Math.min(endSeg, tsUrlList.length)
+    const newStartSegment = Math.min(startSeg, endSeg)
+    const newEndSegment = Math.max(startSeg, endSeg)
 
-    try {
-      const m3u8Str: string = await fetchData(url)
+    setRangeDownload({
+      startSegment: String(newStartSegment),
+      endSegment: String(newEndSegment),
+    })
 
-      const newTsUrlList: string[] = []
-      const newFinishList: FinishItem[] = []
+    // 重置 finishList 状态
+    const newFinishList = finishList.map((item) => ({
+      ...item,
+      status: '' as const,
+    }))
+    setFinishList(newFinishList)
 
+    setDownloadState((prev) => ({
+      ...prev,
+      downloadIndex: newStartSegment - 1,
+      isDownloading: true,
+      isGetMP4,
+    }))
+    downloadStateRef.current = {
+      ...downloadStateRef.current,
+      downloadIndex: newStartSegment - 1,
+      isDownloading: true,
+      isGetMP4,
+    }
+
+    mediaFileListRef.current = new Array(newEndSegment - newStartSegment + 1)
+
+    const m3u8Str = m3u8ContentRef.current
+
+    // 获取 MP4 视频总时长
+    if (isGetMP4) {
+      let infoIndex = 0
+      let duration = 0
       m3u8Str.split('\n').forEach((item) => {
-        if (/^[^#]/.test(item) && item.trim()) {
-          newTsUrlList.push(applyURL(item, url))
-          newFinishList.push({ title: item, status: '' })
+        if (item.toUpperCase().indexOf('#EXTINF:') > -1) {
+          infoIndex++
+          if (newStartSegment <= infoIndex && infoIndex <= newEndSegment) {
+            duration += parseFloat(item.split('#EXTINF:')[1])
+          }
         }
       })
-
-      setTsUrlList(newTsUrlList)
-      setFinishList(newFinishList)
-
-      if (onlyGetRange) {
-        setRangeDownload({
-          isShowRange: true,
-          endSegment: String(newTsUrlList.length),
-          startSegment: '1',
-        })
-        return
-      }
-
-      // 计算有效范围
-      let startSeg = Math.max(parseInt(rangeDownload.startSegment) || 1, 1)
-      let endSeg = Math.max(
-        parseInt(rangeDownload.endSegment) || newTsUrlList.length,
-        1,
-      )
-      startSeg = Math.min(startSeg, newTsUrlList.length)
-      endSeg = Math.min(endSeg, newTsUrlList.length)
-      const newStartSegment = Math.min(startSeg, endSeg)
-      const newEndSegment = Math.max(startSeg, endSeg)
-
-      setRangeDownload((prev) => ({
-        ...prev,
-        startSegment: String(newStartSegment),
-        endSegment: String(newEndSegment),
-      }))
-      setDownloadState((prev) => ({
-        ...prev,
-        downloadIndex: newStartSegment - 1,
-        isDownloading: true,
-      }))
-
-      mediaFileListRef.current = new Array(newEndSegment - newStartSegment + 1)
-
-      const isGetMP4 = downloadStateRef.current.isGetMP4
-
-      // 获取 MP4 视频总时长
-      if (isGetMP4) {
-        let infoIndex = 0
-        let duration = 0
-        m3u8Str.split('\n').forEach((item) => {
-          if (item.toUpperCase().indexOf('#EXTINF:') > -1) {
-            infoIndex++
-            if (newStartSegment <= infoIndex && infoIndex <= newEndSegment) {
-              duration += parseFloat(item.split('#EXTINF:')[1])
-            }
-          }
-        })
-        durationSecondRef.current = duration
-      }
-
-      // 检测 AES 加密
-      if (m3u8Str.indexOf('#EXT-X-KEY') > -1) {
-        const method = (m3u8Str.match(/(.*METHOD=([^,\s]+))/) || [
-          '',
-          '',
-          '',
-        ])[2]
-        const uri = (m3u8Str.match(/(.*URI="([^"]+))"/) || ['', '', ''])[2]
-        const iv = (m3u8Str.match(/(.*IV=([^,\s]+))/) || ['', '', ''])[2]
-        const newAesConf: AesConf = {
-          ...aesConf,
-          method,
-          uri: applyURL(uri, url),
-          iv: iv ? aesConf.stringToBuffer(iv) : '',
-          decryptor: null,
-        }
-        setAesConf(newAesConf)
-        aesConfRef.current = newAesConf
-
-        await getAES(
-          newAesConf,
-          newTsUrlList,
-          newFinishList,
-          newStartSegment,
-          newEndSegment,
-          isGetMP4,
-        )
-      } else if (newTsUrlList.length > 0) {
-        await downloadTS(
-          newTsUrlList,
-          newFinishList,
-          newStartSegment,
-          newEndSegment,
-          isGetMP4,
-        )
-      } else {
-        toast.error('资源为空，请查看链接是否有效')
-        setDownloadState((prev) => ({ ...prev, isDownloading: false }))
-      }
-    } catch (error) {
-      toast.error((error as any).message || '链接不正确，请查看链接是否有效')
-      logger.error('解析 m3u8 失败:', (error as any).message)
-      setDownloadState((prev) => ({ ...prev, isDownloading: false }))
+      durationSecondRef.current = duration
     }
+
+    // 检测 AES 加密
+    if (m3u8Str.indexOf('#EXT-X-KEY') > -1) {
+      const method = (m3u8Str.match(/(.*METHOD=([^,\s]+))/) || ['', '', ''])[2]
+      const uri = (m3u8Str.match(/(.*URI="([^"]+))"/) || ['', '', ''])[2]
+      const iv = (m3u8Str.match(/(.*IV=([^,\s]+))/) || ['', '', ''])[2]
+      const newAesConf: AesConf = {
+        ...aesConf,
+        method,
+        uri: applyURL(uri, url),
+        iv: iv ? aesConf.stringToBuffer(iv) : '',
+        decryptor: null,
+      }
+      setAesConf(newAesConf)
+      aesConfRef.current = newAesConf
+
+      await getAES(
+        newAesConf,
+        tsUrlList,
+        newFinishList,
+        newStartSegment,
+        newEndSegment,
+        isGetMP4,
+      )
+    } else {
+      await downloadTS(
+        tsUrlList,
+        newFinishList,
+        newStartSegment,
+        newEndSegment,
+        isGetMP4,
+      )
+    }
+  }
+
+  // ---- 取消下载 ----
+  const cancelDownload = () => {
+    // 中断所有进行中的请求
+    downloadAbortRef.current?.abort()
+    downloadAbortRef.current = null
+
+    setDownloadState((prev) => ({
+      ...prev,
+      isDownloading: false,
+      isPaused: false,
+      downloadIndex: 0,
+      streamDownloadIndex: 0,
+    }))
+    downloadStateRef.current = {
+      ...downloadStateRef.current,
+      isDownloading: false,
+      isPaused: false,
+      downloadIndex: 0,
+      streamDownloadIndex: 0,
+    }
+    downloadingTimestamps.current.clear()
+
+    if (streamWriter.current) {
+      streamWriter.current.abort?.().catch(() => {})
+      streamWriter.current = null
+    }
+
+    setFinishList((prev) => prev.map((item) => ({ ...item, status: '' as const })))
+    mediaFileListRef.current = []
+
+    toast.info('已取消下载')
   }
 
   // ---- 流式下载 ----
@@ -539,12 +718,6 @@ export default function M3u8Downloader() {
     if (!streamSaver) {
       toast.error('流式下载功能未就绪，请刷新页面重试')
       return
-    }
-
-    setDownloadState((prev) => ({ ...prev, isGetMP4: isMp4 }))
-    downloadStateRef.current = {
-      ...downloadStateRef.current,
-      isGetMP4: isMp4,
     }
 
     const urlObj = new URL(url)
@@ -562,21 +735,11 @@ export default function M3u8Downloader() {
 
       streamWriter.current = writer
       toast.info('开始流式下载（边下边存）')
-      void getM3U8(false)
+      void startDownload(isMp4)
     } catch (error) {
       toast.error('创建流式下载失败')
       console.error(error)
     }
-  }
-
-  // ---- 转码 MP4 下载 ----
-  const getMP4 = () => {
-    setDownloadState((prev) => ({ ...prev, isGetMP4: true }))
-    downloadStateRef.current = {
-      ...downloadStateRef.current,
-      isGetMP4: true,
-    }
-    void getM3U8(false)
   }
 
   // ---- 暂停与恢复 ----
@@ -601,14 +764,17 @@ export default function M3u8Downloader() {
 
     setFinishList((prev) => {
       const newList = [...prev]
-      newList[index] = { ...newList[index], status: '' }
+      newList[index] = { ...newList[index], status: 'downloading' }
       return newList
     })
+    downloadingTimestamps.current.set(index, Date.now())
 
     try {
       const file = await fetchData(tsUrlList[index], 'file')
+      downloadingTimestamps.current.delete(index)
       await dealTS(file, index, startSegment, isGetMP4)
     } catch {
+      downloadingTimestamps.current.delete(index)
       setFinishList((prev) => {
         const newList = [...prev]
         newList[index] = { ...newList[index], status: 'error' }
@@ -630,11 +796,21 @@ export default function M3u8Downloader() {
     const endSegment = parseInt(rangeDownload.endSegment)
     const isGetMP4 = downloadStateRef.current.isGetMP4
     let firstErrorIndex = downloadState.downloadIndex
+    const now = Date.now()
 
     const newFinishList = finishList.map((item, index) => {
       if (item.status === 'error') {
         firstErrorIndex = Math.min(firstErrorIndex, index)
         return { ...item, status: '' as const }
+      }
+      // Reset stuck "downloading" segments
+      if (item.status === 'downloading') {
+        const startedAt = downloadingTimestamps.current.get(index)
+        if (startedAt && now - startedAt > FETCH_TIMEOUT_MS + 5_000) {
+          downloadingTimestamps.current.delete(index)
+          firstErrorIndex = Math.min(firstErrorIndex, index)
+          return { ...item, status: '' as const }
+        }
       }
       return item
     })
@@ -680,10 +856,6 @@ export default function M3u8Downloader() {
     }
   }
 
-  const onEnterKey = useEffectEvent(() => {
-    void getM3U8(false)
-  })
-
   const onRetryTick = useEffectEvent(() => {
     retryAll(false)
   })
@@ -696,17 +868,9 @@ export default function M3u8Downloader() {
       }
     }
 
-    const handleKeyup = (event: KeyboardEvent) => {
-      if (event.keyCode === 13) {
-        onEnterKey()
-      }
-    }
-    window.addEventListener('keyup', handleKeyup)
-
     const interval = setInterval(onRetryTick, 2000)
 
     return () => {
-      window.removeEventListener('keyup', handleKeyup)
       clearInterval(interval)
     }
   }, [])
@@ -732,55 +896,98 @@ export default function M3u8Downloader() {
             </CardDescription>
           </CardHeader>
 
-          <CardContent>
-            <div className="flex gap-3 items-end flex-wrap">
-              <Field className="flex-1 min-w-60">
-                <Label htmlFor="m3u8-url">m3u8 链接</Label>
+          <CardContent className="space-y-4">
+            <Field>
+              <FieldTitle>m3u8 链接</FieldTitle>
+              <div className="flex gap-2">
                 <Input
                   id="m3u8-url"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') void parseM3U8()
+                  }}
                   disabled={downloadState.isDownloading}
                   placeholder="https://example.com/playlist.m3u8"
                   className="text-base"
                 />
-              </Field>
+                <Button
+                  onClick={() => void parseM3U8()}
+                  disabled={
+                    isParsing || downloadState.isDownloading || !url.trim()
+                  }
+                >
+                  {isParsing ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      解析中
+                    </>
+                  ) : (
+                    <>
+                      <Search className="size-4" />
+                      解析
+                    </>
+                  )}
+                </Button>
+              </div>
+            </Field>
 
-              {rangeDownload.isShowRange && (
-                <>
-                  <Field className="w-28">
-                    <Label>起始片段</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={rangeDownload.startSegment}
-                      onChange={(e) =>
-                        setRangeDownload((prev) => ({
-                          ...prev,
-                          startSegment: e.target.value,
-                        }))
-                      }
-                      disabled={downloadState.isDownloading}
-                    />
-                  </Field>
-                  <Field className="w-28">
-                    <Label>结束片段</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={rangeDownload.endSegment}
-                      onChange={(e) =>
-                        setRangeDownload((prev) => ({
-                          ...prev,
-                          endSegment: e.target.value,
-                        }))
-                      }
-                      disabled={downloadState.isDownloading}
-                    />
-                  </Field>
-                </>
-              )}
-            </div>
+            {variants.length > 0 && (
+              <Field>
+                <FieldTitle>检测到多个清晰度，请选择：</FieldTitle>
+                <div className="flex gap-2 flex-wrap">
+                  {variants.map((v) => (
+                    <Button
+                      key={v.url}
+                      variant={v.selected ? 'default' : 'outline'}
+                      size="sm"
+                      disabled={isLoadingVariant || downloadState.isDownloading}
+                      onClick={() => selectVariant(v)}
+                    >
+                      {v.name}
+                      {v.resolution && ` (${v.resolution})`}
+                      {v.bandwidth > 0 &&
+                        ` · ${(v.bandwidth / 1_000_000).toFixed(1)}Mbps`}
+                    </Button>
+                  ))}
+                </div>
+              </Field>
+            )}
+
+            {isParsed && (
+              <Field>
+                <FieldTitle>下载范围</FieldTitle>
+                <FieldDescription>
+                  第{' '}
+                  <span className="font-medium tabular-nums">
+                    {rangeDownload.startSegment}
+                  </span>
+                  {' ~ '}
+                  <span className="font-medium tabular-nums">
+                    {rangeDownload.endSegment}
+                  </span>{' '}
+                  片段，共 {tsUrlList.length} 个
+                </FieldDescription>
+                <Slider
+                  value={[
+                    parseInt(rangeDownload.startSegment) || 1,
+                    parseInt(rangeDownload.endSegment) || tsUrlList.length,
+                  ]}
+                  onValueChange={(value) =>
+                    setRangeDownload({
+                      startSegment: String(value[0]),
+                      endSegment: String(value[1]),
+                    })
+                  }
+                  min={1}
+                  max={tsUrlList.length}
+                  step={1}
+                  disabled={downloadState.isDownloading}
+                  className="mt-2"
+                  aria-label="下载范围"
+                />
+              </Field>
+            )}
 
             {streamSaverLoaded && !isSupperStreamWrite && (
               <Alert className="mt-4">
@@ -792,82 +999,79 @@ export default function M3u8Downloader() {
             )}
           </CardContent>
 
-          <CardFooter className="gap-4">
-            {!downloadState.isDownloading ? (
-              <>
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs text-muted-foreground">
-                    普通下载
-                  </span>
-                  <ButtonGroup>
-                    {!rangeDownload.isShowRange ? (
-                      <Button onClick={() => getM3U8(true)} variant="outline">
-                        选择范围
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() => getM3U8(false)}
-                        variant="secondary"
-                      >
-                        取消范围
-                      </Button>
-                    )}
-                    <Button variant="outline" onClick={() => getM3U8(false)}>
-                      原格式 (.ts)
-                    </Button>
-                    <Button variant="outline" onClick={getMP4}>
-                      转码 MP4
-                    </Button>
-                  </ButtonGroup>
-                </div>
-
-                {!streamSaverLoaded && (
-                  <p className="text-xs text-muted-foreground self-center">
-                    正在加载流式下载功能...
-                  </p>
-                )}
-                {streamSaverLoaded && isSupperStreamWrite && (
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs text-muted-foreground">
-                      流式下载（大文件推荐）
-                    </span>
+          {isParsed && (
+            <CardFooter className="flex-col sm:flex-row gap-4 items-start">
+              {!downloadState.isDownloading ? (
+                <>
+                  <Field>
+                    <FieldTitle>普通下载</FieldTitle>
                     <ButtonGroup>
                       <Button
                         variant="outline"
-                        onClick={() => streamDownload(false)}
+                        onClick={() => void startDownload(false)}
                       >
                         原格式 (.ts)
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={() => streamDownload(true)}
+                        onClick={() => void startDownload(true)}
                       >
                         转码 MP4
                       </Button>
                     </ButtonGroup>
-                  </div>
-                )}
-              </>
-            ) : (
-              <Button
-                onClick={togglePause}
-                size="lg"
-                variant={downloadState.isPaused ? 'default' : 'destructive'}
-              >
-                {downloadState.isPaused ? (
-                  <>
-                    <Play className="size-4" />
-                    继续下载
-                  </>
-                ) : (
-                  <>
-                    <Pause className="size-4" />
-                    暂停下载
-                  </>
-                )}
-              </Button>
-            )}
-          </CardFooter>
+                  </Field>
+
+                  {!streamSaverLoaded && (
+                    <p className="text-xs text-muted-foreground self-center">
+                      正在加载流式下载功能...
+                    </p>
+                  )}
+                  {streamSaverLoaded && isSupperStreamWrite && (
+                    <Field>
+                      <FieldTitle>流式下载（大文件推荐）</FieldTitle>
+                      <ButtonGroup>
+                        <Button
+                          variant="outline"
+                          onClick={() => streamDownload(false)}
+                        >
+                          原格式 (.ts)
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => streamDownload(true)}
+                        >
+                          转码 MP4
+                        </Button>
+                      </ButtonGroup>
+                    </Field>
+                  )}
+                </>
+              ) : (
+                <ButtonGroup>
+                  <Button
+                    onClick={togglePause}
+                    variant={downloadState.isPaused ? 'default' : 'secondary'}
+                  >
+                    {downloadState.isPaused ? (
+                      <>
+                        <Play className="size-4" />
+                        继续下载
+                      </>
+                    ) : (
+                      <>
+                        <Pause className="size-4" />
+                        暂停下载
+                      </>
+                    )}
+                  </Button>
+                  <Button variant="destructive" onClick={cancelDownload}>
+                    <X className="size-4" />
+                    取消下载
+                  </Button>
+                </ButtonGroup>
+              )}
+            </CardFooter>
+          )}
         </Card>
 
         <Card className="flex flex-col p-4 border-none h-full">
@@ -983,7 +1187,7 @@ export default function M3u8Downloader() {
             ) : (
               <IKEmpty
                 title="暂无下载任务"
-                description="输入 M3U8 链接开始下载视频片段"
+                description="输入 M3U8 链接，点击解析按钮开始"
                 hint="支持范围下载、流式下载、AES 解密和 MP4 转码"
                 icon={Download}
               />
