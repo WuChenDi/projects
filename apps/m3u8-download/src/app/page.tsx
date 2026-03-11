@@ -41,6 +41,7 @@ import {
   Search,
   X,
 } from 'lucide-react'
+import Script from 'next/script'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AESDecryptor } from '@/lib'
@@ -906,26 +907,21 @@ export default function M3u8Downloader() {
     retryAll(false)
   })
 
+  const onStreamSaverReady = useEffectEvent(() => {
+    const streamSaver = (window as any).streamSaver
+    if (streamSaver && !streamSaver.useBlobFallback) {
+      streamSaver.middleTransporterUrl = `${window.location.origin}/static/mitm.html`
+      setIsStreamSupported(true)
+    }
+  })
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally load only on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search)
-      const paramUrl = params.get('url') || params.get('source')
-      if (paramUrl && paramUrl.toLowerCase().includes('m3u8')) {
-        setUrl(paramUrl)
-        void parseM3U8(paramUrl)
-      }
-
-      const script = document.createElement('script')
-      script.src = '/static/StreamSaver.js'
-      script.onload = () => {
-        const streamSaver = (window as any).streamSaver
-        if (streamSaver && !streamSaver.useBlobFallback) {
-          streamSaver.middleTransporterUrl = `${window.location.origin}/static/mitm.html`
-          setIsStreamSupported(true)
-        }
-      }
-      document.head.appendChild(script)
+    const params = new URLSearchParams(window.location.search)
+    const paramUrl = params.get('url') || params.get('source')
+    if (paramUrl && paramUrl.toLowerCase().includes('m3u8')) {
+      setUrl(paramUrl)
+      void parseM3U8(paramUrl)
     }
 
     const interval = setInterval(onRetryTick, 2000)
@@ -947,6 +943,11 @@ export default function M3u8Downloader() {
 
   return (
     <IKPageContainer scrollable={false}>
+      <Script
+        src="/static/StreamSaver.js"
+        strategy="afterInteractive"
+        onLoad={onStreamSaverReady}
+      />
       <div className="w-full h-full flex flex-col gap-4">
         <Card>
           <CardHeader>
