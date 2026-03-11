@@ -17,11 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import {
-  Field,
-  FieldDescription,
-  FieldTitle,
-} from '@cdlab996/ui/components/field'
+import { Field, FieldTitle } from '@cdlab996/ui/components/field'
 import { Input } from '@cdlab996/ui/components/input'
 import { Progress } from '@cdlab996/ui/components/progress'
 import { Slider } from '@cdlab996/ui/components/slider'
@@ -33,12 +29,20 @@ import {
 } from '@cdlab996/ui/components/tooltip'
 import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
-import { logger } from '@cdlab996/utils'
+import { formatFileSize, logger } from '@cdlab996/utils'
 import { format } from 'date-fns'
-import { Download, Loader2, Pause, Play, Search, X } from 'lucide-react'
+import {
+  CircleQuestionMark,
+  Download,
+  HardDriveDownload,
+  Loader2,
+  Pause,
+  Play,
+  Search,
+  X,
+} from 'lucide-react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { useStreamSaver } from '@/hooks/useStreamSaver'
 import { AESDecryptor } from '@/lib'
 
 // ============================================================
@@ -161,6 +165,31 @@ const applyURL = (targetURL: string, baseURL?: string) => {
   return `${domain.join('/')}/${targetURL}`
 }
 
+const estimateFileSize = async (urlList: string[]): Promise<number | null> => {
+  const total = urlList.length
+  if (total === 0) return null
+
+  // 抽样头、中、尾 3 个片段，用 HEAD 请求获取 Content-Length
+  const sampleIndices = [0, Math.floor(total / 2), total - 1].filter(
+    (v, i, a) => a.indexOf(v) === i,
+  )
+
+  const sizes: number[] = []
+  for (const idx of sampleIndices) {
+    try {
+      const res = await fetch(urlList[idx], { method: 'HEAD' })
+      const len = res.headers.get('Content-Length')
+      if (len) sizes.push(Number.parseInt(len, 10))
+    } catch {
+      // 忽略失败的采样
+    }
+  }
+
+  if (sizes.length === 0) return null
+  const avgSize = sizes.reduce((a, b) => a + b, 0) / sizes.length
+  return Math.round(avgSize * total)
+}
+
 const triggerBrowserDownload = (
   fileDataList: ArrayBuffer[],
   fileName: string,
@@ -186,12 +215,6 @@ const triggerBrowserDownload = (
 // ============================================================
 
 export default function M3u8Downloader() {
-  const {
-    isLoaded: streamSaverLoaded,
-    isSupported: streamSaverSupported,
-    streamSaver,
-  } = useStreamSaver()
-
   const [url, setUrl] = useState(
     'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
   )
@@ -210,6 +233,10 @@ export default function M3u8Downloader() {
   const [finishList, setFinishList] = useState<FinishItem[]>([])
   const [tsUrlList, setTsUrlList] = useState<string[]>([])
   const [variants, setVariants] = useState<VariantStream[]>([])
+
+  const [isStreamSupported, setIsStreamSupported] = useState(false)
+  const [estimatedSize, setEstimatedSize] = useState<number | null>(null)
+  const isStreamModeRef = useRef(false)
 
   const streamWriter = useRef<WritableStreamDefaultWriter<Uint8Array> | null>(
     null,
@@ -263,10 +290,6 @@ export default function M3u8Downloader() {
     const finalEnd = Math.max(validStart, validEnd)
     return finalEnd - finalStart + 1
   }, [rangeDownload.startSegment, rangeDownload.endSegment, tsUrlList.length])
-
-  const isSupperStreamWrite = useMemo(() => {
-    return streamSaverLoaded && streamSaverSupported
-  }, [streamSaverLoaded, streamSaverSupported])
 
   // 是否已解析出片段（可以下载）
   const isParsed = tsUrlList.length > 0
@@ -344,6 +367,7 @@ export default function M3u8Downloader() {
 
       // 流式写入
       if (streamWriter.current) {
+        // 直接从 ref 读取并同步更新，避免并发 updater 之间的竞态条件
         let currentStreamIndex = downloadStateRef.current.streamDownloadIndex
 
         for (
@@ -362,6 +386,11 @@ export default function M3u8Downloader() {
           }
         }
 
+        // 同步更新 ref，确保下一个批量执行的 updater 能读到最新值
+        downloadStateRef.current = {
+          ...downloadStateRef.current,
+          streamDownloadIndex: currentStreamIndex,
+        }
         setDownloadState((p) => ({
           ...p,
           streamDownloadIndex: currentStreamIndex,
@@ -369,14 +398,15 @@ export default function M3u8Downloader() {
 
         if (currentStreamIndex >= targetSegment) {
           streamWriter.current.close()
+          streamWriter.current = null
           setDownloadState((s) => ({ ...s, isDownloading: false }))
           toast.success(`流式下载完成，共 ${newFinishNum} 个片段`)
         }
-      } else if (newFinishNum === targetSegment) {
+      } else if (!isStreamModeRef.current && newFinishNum === targetSegment) {
         const completeMediaList = mediaFileListRef.current.filter(Boolean)
         triggerBrowserDownload(
           completeMediaList,
-          title || format(beginTimeRef.current, 'yyyy_MM_dd_HH_mm_ss'),
+          title || format(beginTimeRef.current, 'yyyyMMdd_HHmmss'),
           downloadStateRef.current.isGetMP4,
         )
         setDownloadState((s) => ({ ...s, isDownloading: false }))
@@ -508,6 +538,11 @@ export default function M3u8Downloader() {
     })
 
     toast.success(`解析成功，共 ${newTsUrlList.length} 个片段`)
+
+    setEstimatedSize(null)
+    void estimateFileSize(newTsUrlList).then((size) => {
+      if (size) setEstimatedSize(size)
+    })
   }
 
   // ---- 第一步：解析 m3u8 ----
@@ -527,6 +562,7 @@ export default function M3u8Downloader() {
     setTsUrlList([])
     setFinishList([])
     setVariants([])
+    setEstimatedSize(null)
     m3u8ContentRef.current = ''
 
     try {
@@ -537,7 +573,10 @@ export default function M3u8Downloader() {
         const parsedVariants = parseMasterPlaylistContent(m3u8Str, fetchUrl)
         if (parsedVariants.length > 0) {
           setVariants(parsedVariants)
-          toast.info(`检测到 ${parsedVariants.length} 个清晰度，请选择`)
+          toast.info(
+            `检测到 ${parsedVariants.length} 个清晰度，已默认选择最高码率`,
+          )
+          await selectVariant(parsedVariants[0])
           return
         }
       }
@@ -584,6 +623,11 @@ export default function M3u8Downloader() {
   const startDownload = async (isGetMP4: boolean) => {
     if (!isParsed || downloadState.isDownloading) return
 
+    // 仅在非流式调用时重置标记（streamDownload 会提前设置为 true）
+    if (!isStreamModeRef.current) {
+      isStreamModeRef.current = false
+    }
+
     downloadAbortRef.current = new AbortController()
 
     const urlObj = new URL(url)
@@ -617,12 +661,14 @@ export default function M3u8Downloader() {
     setDownloadState((prev) => ({
       ...prev,
       downloadIndex: newStartSegment - 1,
+      streamDownloadIndex: 0,
       isDownloading: true,
       isGetMP4,
     }))
     downloadStateRef.current = {
       ...downloadStateRef.current,
       downloadIndex: newStartSegment - 1,
+      streamDownloadIndex: 0,
       isDownloading: true,
       isGetMP4,
     }
@@ -706,40 +752,14 @@ export default function M3u8Downloader() {
       streamWriter.current.abort?.().catch(() => {})
       streamWriter.current = null
     }
+    isStreamModeRef.current = false
 
-    setFinishList((prev) => prev.map((item) => ({ ...item, status: '' as const })))
+    setFinishList((prev) =>
+      prev.map((item) => ({ ...item, status: '' as const })),
+    )
     mediaFileListRef.current = []
 
     toast.info('已取消下载')
-  }
-
-  // ---- 流式下载 ----
-  const streamDownload = (isMp4: boolean) => {
-    if (!streamSaver) {
-      toast.error('流式下载功能未就绪，请刷新页面重试')
-      return
-    }
-
-    const urlObj = new URL(url)
-    const newTitle = urlObj.searchParams.get('title') || title
-    setTitle(newTitle)
-
-    const fileName = newTitle || format(new Date(), 'yyyy_MM_dd HH_mm_ss')
-    const finalFileName =
-      document.title !== 'm3u8 downloader' ? document.title : fileName
-
-    try {
-      const writer = streamSaver
-        .createWriteStream(`${finalFileName}.${isMp4 ? 'mp4' : 'ts'}`)
-        .getWriter()
-
-      streamWriter.current = writer
-      toast.info('开始流式下载（边下边存）')
-      void startDownload(isMp4)
-    } catch (error) {
-      toast.error('创建流式下载失败')
-      console.error(error)
-    }
   }
 
   // ---- 暂停与恢复 ----
@@ -847,13 +867,39 @@ export default function M3u8Downloader() {
     if (currentMediaList.length) {
       triggerBrowserDownload(
         currentMediaList,
-        title || format(beginTimeRef.current, 'yyyy_MM_dd_HH_mm_ss'),
+        title || format(beginTimeRef.current, 'yyyyMMdd_HHmmss'),
         downloadState.isGetMP4,
       )
       toast.success('已触发浏览器下载现有片段')
     } else {
       toast.warning('当前无已下载片段')
     }
+  }
+
+  // ---- 流式下载（大文件） ----
+  const streamDownload = (isGetMP4: boolean) => {
+    if (!isParsed || downloadState.isDownloading) return
+
+    const streamSaver = (window as any).streamSaver
+    if (!streamSaver) {
+      toast.error('StreamSaver 未加载，无法使用流式下载')
+      return
+    }
+
+    const urlObj = new URL(url)
+    const newTitle = urlObj.searchParams.get('title') || title
+    setTitle(newTitle)
+
+    const fileName = newTitle || format(new Date(), 'yyyyMMdd_HHmmss')
+    const extension = isGetMP4 ? 'mp4' : 'ts'
+
+    const writableStream = streamSaver.createWriteStream(
+      `${fileName}.${extension}`,
+    )
+    streamWriter.current = writableStream.getWriter()
+    isStreamModeRef.current = true
+
+    void startDownload(isGetMP4)
   }
 
   const onRetryTick = useEffectEvent(() => {
@@ -866,6 +912,17 @@ export default function M3u8Downloader() {
       if (href.indexOf('?source=') > -1) {
         setUrl(href.split('?source=')[1])
       }
+
+      const script = document.createElement('script')
+      script.src = '/static/StreamSaver.js'
+      script.onload = () => {
+        const streamSaver = (window as any).streamSaver
+        if (streamSaver && !streamSaver.useBlobFallback) {
+          streamSaver.middleTransporterUrl = `${window.location.origin}/static/mitm.html`
+          setIsStreamSupported(true)
+        }
+      }
+      document.head.appendChild(script)
     }
 
     const interval = setInterval(onRetryTick, 2000)
@@ -956,18 +1013,28 @@ export default function M3u8Downloader() {
 
             {isParsed && (
               <Field>
-                <FieldTitle>下载范围</FieldTitle>
-                <FieldDescription>
-                  第{' '}
-                  <span className="font-medium tabular-nums">
-                    {rangeDownload.startSegment}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+                  <FieldTitle>
+                    下载范围
+                    {tsUrlList.length > 0 && (
+                      <span className="text-sm text-muted-foreground">
+                        (共 {tsUrlList.length} 个片段
+                        {estimatedSize !== null &&
+                          `，预估 ${formatFileSize(estimatedSize)}`}
+                        )
+                      </span>
+                    )}
+                  </FieldTitle>
+                  <span className="text-sm text-muted-foreground shrink-0">
+                    <span className="font-medium tabular-nums">
+                      {rangeDownload.startSegment}
+                    </span>
+                    {' ~ '}
+                    <span className="font-medium tabular-nums">
+                      {rangeDownload.endSegment}
+                    </span>
                   </span>
-                  {' ~ '}
-                  <span className="font-medium tabular-nums">
-                    {rangeDownload.endSegment}
-                  </span>{' '}
-                  片段，共 {tsUrlList.length} 个
-                </FieldDescription>
+                </div>
                 <Slider
                   value={[
                     parseInt(rangeDownload.startSegment) || 1,
@@ -988,15 +1055,6 @@ export default function M3u8Downloader() {
                 />
               </Field>
             )}
-
-            {streamSaverLoaded && !isSupperStreamWrite && (
-              <Alert className="mt-4">
-                <AlertDescription>
-                  当前浏览器不支持流式下载（Safari），将使用普通下载方式。
-                  建议使用 Chrome、Firefox 或 Edge 浏览器以获得更好体验。
-                </AlertDescription>
-              </Alert>
-            )}
           </CardContent>
 
           {isParsed && (
@@ -1008,38 +1066,55 @@ export default function M3u8Downloader() {
                     <ButtonGroup>
                       <Button
                         variant="outline"
+                        size="sm"
                         onClick={() => void startDownload(false)}
                       >
+                        <HardDriveDownload className="size-4" />
                         原格式 (.ts)
                       </Button>
                       <Button
                         variant="outline"
+                        size="sm"
                         onClick={() => void startDownload(true)}
                       >
+                        <HardDriveDownload className="size-4" />
                         转码 MP4
                       </Button>
                     </ButtonGroup>
                   </Field>
 
-                  {!streamSaverLoaded && (
-                    <p className="text-xs text-muted-foreground self-center">
-                      正在加载流式下载功能...
-                    </p>
-                  )}
-                  {streamSaverLoaded && isSupperStreamWrite && (
+                  {isStreamSupported && (
                     <Field>
-                      <FieldTitle>流式下载（大文件推荐）</FieldTitle>
+                      <FieldTitle>
+                        大文件流式下载
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <CircleQuestionMark className="size-4 cursor-help text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">
+                                边下载边保存，解决大文件内存不足问题
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </FieldTitle>
                       <ButtonGroup>
                         <Button
                           variant="outline"
+                          size="sm"
                           onClick={() => streamDownload(false)}
                         >
+                          <HardDriveDownload className="size-4" />
                           原格式 (.ts)
                         </Button>
                         <Button
                           variant="outline"
+                          size="sm"
                           onClick={() => streamDownload(true)}
                         >
+                          <HardDriveDownload className="size-4" />
                           转码 MP4
                         </Button>
                       </ButtonGroup>
