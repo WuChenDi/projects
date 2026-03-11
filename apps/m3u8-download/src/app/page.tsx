@@ -906,11 +906,14 @@ export default function M3u8Downloader() {
     retryAll(false)
   })
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally load only on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const href = window.location.href
-      if (href.indexOf('?source=') > -1) {
-        setUrl(href.split('?source=')[1])
+      const params = new URLSearchParams(window.location.search)
+      const paramUrl = params.get('url') || params.get('source')
+      if (paramUrl && paramUrl.toLowerCase().includes('m3u8')) {
+        setUrl(paramUrl)
+        void parseM3U8(paramUrl)
       }
 
       const script = document.createElement('script')
