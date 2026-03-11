@@ -157,7 +157,7 @@ export default function HlsPage() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally load only on mount when valid param exists
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const paramUrl = params.get('url')
+    const paramUrl = params.get('url') || params.get('source')
     if (paramUrl && isVideoUrl(paramUrl)) {
       setUrl(paramUrl)
       loadSource(paramUrl, config)
