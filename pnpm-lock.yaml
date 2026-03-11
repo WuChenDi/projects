@@ -62,8 +62,8 @@ catalogs:
       specifier: ^0.45.1
       version: 0.45.1
     hono:
-      specifier: ^4.12.3
-      version: 4.12.5
+      specifier: ^4.12.7
+      version: 4.12.7
     lucide-react:
       specifier: ^0.575.0
       version: 0.575.0
@@ -289,7 +289,7 @@ importers:
         version: link:../../packages/utils
       '@hono/zod-validator':
         specifier: catalog:prod
-        version: 0.7.6(hono@4.12.5)(zod@4.3.6)
+        version: 0.7.6(hono@4.12.7)(zod@4.3.6)
       '@libsql/client':
         specifier: catalog:prod
         version: 0.17.0
@@ -298,7 +298,7 @@ importers:
         version: 0.45.1(@cloudflare/workers-types@4.20260305.1)(@libsql/client@0.17.0)
       hono:
         specifier: catalog:prod
-        version: 4.12.5
+        version: 4.12.7
       winston:
         specifier: catalog:prod
         version: 3.19.0
@@ -429,7 +429,7 @@ importers:
         version: link:../../packages/utils
       '@hono/zod-validator':
         specifier: catalog:prod
-        version: 0.7.6(hono@4.12.5)(zod@4.3.6)
+        version: 0.7.6(hono@4.12.7)(zod@4.3.6)
       '@libsql/client':
         specifier: catalog:prod
         version: 0.17.0
@@ -441,7 +441,7 @@ importers:
         version: 0.45.1(@cloudflare/workers-types@4.20260305.1)(@libsql/client@0.17.0)
       hono:
         specifier: catalog:prod
-        version: 4.12.5
+        version: 4.12.7
       resend:
         specifier: ^6.9.3
         version: 6.9.3(@react-email/render@2.0.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
@@ -6940,6 +6940,10 @@ packages:
     resolution: {integrity: sha512-3qq+FUBtlTHhtYxbxheZgY8NIFnkkC/MR8u5TTsr7YZ3wixryQ3cCwn3iZbg8p8B88iDBBAYSfZDS75t8MN7Vg==}
     engines: {node: '>=16.9.0'}
 
+  hono@4.12.7:
+    resolution: {integrity: sha512-jq9l1DM0zVIvsm3lv9Nw9nlJnMNPOcAtsbsgiUhWcFzPE99Gvo6yRTlszSLLYacMeQ6quHD6hMfId8crVHvexw==}
+    engines: {node: '>=16.9.0'}
+
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
 
@@ -11384,9 +11388,9 @@ snapshots:
     dependencies:
       hono: 4.12.5
 
-  '@hono/zod-validator@0.7.6(hono@4.12.5)(zod@4.3.6)':
+  '@hono/zod-validator@0.7.6(hono@4.12.7)(zod@4.3.6)':
     dependencies:
-      hono: 4.12.5
+      hono: 4.12.7
       zod: 4.3.6
 
   '@huggingface/jinja@0.5.5': {}
@@ -16473,6 +16477,8 @@ snapshots:
   hls.js@1.6.15: {}
 
   hono@4.12.5: {}
+
+  hono@4.12.7: {}
 
   hookable@5.5.3: {}
 

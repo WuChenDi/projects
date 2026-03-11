@@ -23,7 +23,7 @@ catalogs:
     clsx: ^2.1.1
     date-fns: ^4.1.0
     drizzle-orm: ^0.45.1
-    hono: ^4.12.3
+    hono: ^4.12.7
     lucide-react: ^0.575.0
     motion: ^12.34.3
     next: 16.1.6
