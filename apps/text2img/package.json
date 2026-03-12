@@ -45,6 +45,6 @@
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
     "typescript": "catalog:dev",
-    "wrangler": "^4.68.1"
+    "wrangler": "catalog:dev"
   }
 }

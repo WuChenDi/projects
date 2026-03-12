@@ -9,10 +9,10 @@ catalogs:
     '@types/react-dom': ^19
     drizzle-kit: ^0.31.9
     tailwindcss: ^4
-    tsdown: ^0.20.3
+    tsdown: ^0.21.1
     typescript: ^5
     vitest: ^4.0.18
-    wrangler: ^4.70.0
+    wrangler: ^4.72.0
   prod:
     '@base-ui/react': ^1.2.0
     '@cdlab996/genid': ^1.2.1
@@ -23,7 +23,7 @@ catalogs:
     clsx: ^2.1.1
     date-fns: ^4.1.0
     drizzle-orm: ^0.45.1
-    hono: ^4.12.3
+    hono: ^4.12.7
     lucide-react: ^0.575.0
     motion: ^12.34.3
     next: 16.1.6
