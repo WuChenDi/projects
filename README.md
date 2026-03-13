@@ -1,13 +1,17 @@
 # @cdlab996/projects-monorepo
 
-现代浏览器本地工具集合 monorepo  
-基于 **Turborepo + pnpm + Next.js + shadcn/ui + Tailwind CSS**
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Node](https://img.shields.io/badge/node-%E2%89%A5%2020-brightgreen.svg)](https://nodejs.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-%E2%89%A5%2010-f69220.svg)](https://pnpm.io/)
+[![Turborepo](https://img.shields.io/badge/built%20with-Turborepo-cc00ff.svg)](https://turbo.build/)
+
+现代 Web 工具集合 monorepo —— 基于 **Turborepo + pnpm**，涵盖 Next.js、Nuxt、Hono 等多技术栈
 
 > [!IMPORTANT]
-> 所有应用**完全在浏览器端运行**，**零服务器上传**，数据永不离开你的设备。  
+> 大多数应用**完全在浏览器端运行**，**零服务器上传**，数据永不离开你的设备。
 > 隐私优先 · 本地优先 · 性能优先
 
-## ✨ 当前应用
+## ✨ 应用详情
 
 ### Clearify
 
@@ -36,7 +40,7 @@ https://securec.pages.dev/
 
 - XChaCha20-Poly1305 加密、Argon2id 密码派生、ECIES 公钥加密、大文件分块处理
 - 核心技术：@noble/ciphers + Web Workers
-- 亮点：10MB 分块 + Web Worker 后台处理，UI 始终流畅
+- 亮点：10 MB 分块 + Web Worker 后台处理，UI 始终流畅
 
 <details>
   <summary>📸 Preview</summary>
@@ -48,7 +52,7 @@ https://securec.pages.dev/
 
 **端到端加密的文件分享平台**
 
-- 基于 Next.js + Cloudflare Workers 构建，前后端分离：`dropply-web` 提供分享/管理界面，`dropply-api` 提供加密存储与链接管理
+- 前后端分离架构：`dropply-web` 提供分享/管理界面，`dropply-api` 提供加密存储与链接管理
 - 特点：临时链接、到期失效、加密后再上传，适合安全地分享敏感文件
 
 <details>
@@ -118,7 +122,7 @@ https://m3u8dw.pages.dev/
 https://values.pages.dev/
 
 - 将加密货币、法币与各类商品放在同一尺度下直观对比
-- 亮点：输入资产或金额后，一眼看出“能买什么”“价值相当于什么”
+- 亮点：输入资产或金额后，一眼看出"能买什么""价值相当于什么"
 
 <details>
   <summary>📸 Preview</summary>
@@ -160,39 +164,51 @@ pnpm install
 ### 常用命令
 
 ```bash
-pnpm dev                       # 启动所有应用（并行开发）
-pnpm --filter clearify dev     # 只启动 Clearify
+pnpm dev                         # 启动所有应用（并行开发）
+pnpm --filter clearify dev       # 只启动 Clearify
 pnpm --filter m3u8-download dev
 pnpm --filter securec dev
 pnpm --filter text2img dev
-pnpm --filter values dev
+pnpm --filter value-vision dev
 pnpm --filter byplay dev
 pnpm --filter byplay-log dev
 pnpm --filter dropply-web dev
 pnpm --filter repo-changelog dev
-pnpm build                     # 构建所有应用
-pnpm lint                      # Biome 代码检查
-pnpm format                    # Biome 格式化全部代码
-pnpm clean                     # 清理 node_modules / 缓存 / 构建产物
+pnpm build                       # 构建所有应用
+pnpm --filter clearify run build
+pnpm --filter m3u8-download run build
+pnpm --filter securec run build
+pnpm --filter text2img run build
+pnpm --filter value-vision run build
+pnpm --filter byplay run build
+pnpm --filter byplay-log run build
+pnpm --filter dropply-web run build
+pnpm --filter repo-changelog run build
+pnpm lint                        # Biome 代码检查
+pnpm format                      # Biome 格式化全部代码
+pnpm clean                       # 清理 node_modules / 缓存 / 构建产物
 ```
 
-## 目录结构
+## 📁 目录结构
 
 ```text
 .
 ├── apps/
-│   ├── clearify/          # 图像 & 视频工具箱
-│   ├── m3u8-download/     # M3U8 下载工具
-│   ├── securec/           # 加解密工具
-│   ├── text2img/          # 文生图前端
-│   ├── value-vision/      # 价值对比 / 可视化工具
 │   ├── byplay/            # 在线视频播放器 / Web Player
 │   ├── byplay-log/        # ByPlay 播放器监控与分析服务
-│   ├── dropply-web/       # Dropply 文件分享 Web 前端
+│   ├── clearify/          # 图像 & 视频工具箱
 │   ├── dropply-api/       # Dropply 文件分享 Cloudflare API
-│   └── repo-changelog/    # GitHub 仓库 Release / Changelog 聚合工具
+│   ├── dropply-web/       # Dropply 文件分享 Web 前端
+│   ├── m3u8-download/     # M3U8 下载工具
+│   ├── repo-changelog/    # GitHub Release / Changelog 聚合工具
+│   ├── SecureC/           # 加解密工具
+│   ├── text2img/          # 文生图前端
+│   └── value-vision/      # 价值对比 / 可视化工具
 ├── packages/
-│   └── tsconfig/         # 共享 TypeScript 配置 (@cdlab996/tsconfig)
+│   ├── tsconfig/          # 共享 TypeScript 配置 (@cdlab996/tsconfig)
+│   ├── ui/                # 共享 UI 组件库 (@cdlab996/ui)
+│   ├── uncrypto/          # 轻量加密库 (@cdlab996/uncrypto)
+│   └── utils/             # 通用工具函数 (@cdlab996/utils)
 ├── scripts/
 │   └── clean.sh
 ├── turbo.json
@@ -200,22 +216,17 @@ pnpm clean                     # 清理 node_modules / 缓存 / 构建产物
 └── package.json
 ```
 
-## 技术栈
+## 🛠 技术栈
 
-- **前端应用**
-  - React + TypeScript + Next.js 16+（App Router）—— Clearify / SecureC / text2img / value-vision / byplay / Dropply Web 等
-  - Vue 3 + TypeScript + Nuxt 4 —— repo-changelog（基于 Nuxt UI、VueUse、MDC）
-  - UI 体系：shadcn/ui、Tailwind CSS v4、@nuxt/ui（按应用选择）
-  - 能力扩展：WebAssembly（FFmpeg.wasm）、WebGPU、Web Workers 等
-- **后端 / API**
-  - Cloudflare Workers（Dropply API 等）
-  - Hono + Zod Validator 作为 HTTP 路由与入参校验
-  - Drizzle ORM + LibSQL / Cloudflare D1 作为数据库访问层
-  - Resend 等第三方服务用于邮件通知
-- **工程体系**
-  - Turborepo 2.x 任务编排与缓存
-  - pnpm 10 workspaces 统一依赖管理
-  - Biome 作为 Lint + Format 一体化工具
+| 层级           | 技术                                                           |
+| -------------- | -------------------------------------------------------------- |
+| **前端框架**   | React + Next.js 16+（App Router） / Vue 3 + Nuxt 4             |
+| **类型系统**   | TypeScript 5                                                   |
+| **UI**         | shadcn/ui · Tailwind CSS v4 · Nuxt UI                          |
+| **浏览器能力** | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API |
+| **后端 / API** | Cloudflare Workers · Hono + Zod Validator                      |
+| **数据库**     | Drizzle ORM + LibSQL / Cloudflare D1                           |
+| **工程**       | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format)     |
 
 ## 📜 License
 
