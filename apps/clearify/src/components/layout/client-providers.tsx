@@ -1,8 +1,10 @@
 'use client'
 
+import { IKVersionInfo } from '@cdlab996/ui/IK'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { ThemeProvider } from '@/components/layout/theme-provider'
+import pkg from '../../../package.json'
 
 function ThemedBackground({ children }: { children: React.ReactNode }) {
   const { resolvedTheme } = useTheme()
@@ -57,6 +59,11 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
     >
       <ThemedBackground>{children}</ThemedBackground>
+      <IKVersionInfo
+        name={pkg.name}
+        version={pkg.version}
+        buildTime={process.env.BUILD_TIME}
+      />
     </ThemeProvider>
   )
 }

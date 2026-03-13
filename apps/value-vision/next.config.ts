@@ -3,6 +3,9 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   /* config options here */
   output: 'export',
+  env: {
+    BUILD_TIME: new Date().toLocaleString(),
+  },
   images: {
     unoptimized: true,
     qualities: [50, 75, 100],
