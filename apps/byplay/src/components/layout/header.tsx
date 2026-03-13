@@ -4,9 +4,12 @@ import { Button } from '@cdlab996/ui/components/button'
 import { ExternalLinkIcon, Github } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ThemeToggle } from '@/components/layout'
+import { useTranslations } from 'next-intl'
+import { LanguageSelector, ThemeToggle } from '@/components/layout'
 
 export function Header() {
+  const t = useTranslations('header')
+
   return (
     <header className="relative w-full z-10">
       <div className="flex h-20 px-4 md:px-6 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear">
@@ -35,22 +38,17 @@ export function Header() {
 
         <div className="flex items-center gap-6">
           <nav className="hidden md:flex items-center gap-6">
-            {/* <Link
-              href="/vplayer"
-              className="transition-colors flex items-center gap-1 text-card-foreground"
-            >
-              VPlayer
-            </Link> */}
             <Link
               href="https://notes-wudi.pages.dev/projects/"
               className="transition-colors flex items-center gap-1 uppercase text-card-foreground"
             >
-              more
+              {t('more')}
               <ExternalLinkIcon className="size-4" />
             </Link>
           </nav>
 
           <div className="flex items-center gap-2">
+            <LanguageSelector />
             <ThemeToggle />
             <Button asChild variant="outline" size="icon" aria-label="GitHub">
               <Link

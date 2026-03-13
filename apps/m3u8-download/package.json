@@ -1,7 +1,7 @@
 {
   "name": "@cdlab996/m3u8-download",
   "type": "module",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "description": "M3U8 在线下载工具",
   "author": "wudi <wuchendi96@gmail.com>",
@@ -33,6 +33,7 @@
     "lucide-react": "catalog:prod",
     "mux.js": "^6.3.0",
     "next": "catalog:prod",
+    "next-intl": "catalog:prod",
     "next-themes": "catalog:prod",
     "react": "catalog:prod",
     "react-dom": "catalog:prod",

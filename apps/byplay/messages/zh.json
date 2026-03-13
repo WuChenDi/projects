@@ -1,0 +1,141 @@
+{
+  "theme": {
+    "toggle": "切换主题"
+  },
+  "language": {
+    "label": "切换语言"
+  },
+  "header": {
+    "more": "更多"
+  },
+  "footer": {
+    "copyright": "Copyright © 2023-PRESENT |"
+  },
+  "video": {
+    "notSupported": "您的浏览器不支持 HTML5 视频播放"
+  },
+  "source": {
+    "title": "播放源",
+    "description": "输入 M3U8 / HLS 流地址开始播放",
+    "placeholder": "https://example.com/stream.m3u8",
+    "loading": "加载中...",
+    "load": "加载"
+  },
+  "playback": {
+    "title": "播放控制",
+    "resetConfig": "重置配置",
+    "autoPlay": "自动播放",
+    "autoPlayDesc": "加载后自动播放视频",
+    "playbackRate": "播放速度",
+    "qualityLevel": "画质等级",
+    "qualityLevelDesc": "共 {count} 个等级可选，'自动'为自适应码率",
+    "auto": "自动",
+    "pause": "暂停",
+    "play": "播放",
+    "stop": "停止",
+    "destroy": "销毁",
+    "speedPlaceholder": "播放速度 (0-16]",
+    "setSpeed": "设置倍速",
+    "seekPlaceholder": "时间点(秒)",
+    "seek": "跳转",
+    "restartPlayer": "重启当前播放器",
+    "switchNext": "切换至下一个播放源"
+  },
+  "performance": {
+    "title": "性能",
+    "enableWorker": "启用 Worker",
+    "enableWorkerDesc": "使用 Web Worker 进行转封装",
+    "lowLatencyMode": "低延迟模式",
+    "lowLatencyModeDesc": "优化低延迟直播流",
+    "startFragPrefetch": "分片预加载",
+    "startFragPrefetchDesc": "在加载过程中预取下一个分片"
+  },
+  "buffer": {
+    "title": "缓冲区",
+    "description": "缓冲区大小和时长设置（下次加载时生效）",
+    "maxBufferLength": "最大缓冲时长",
+    "maxBufferLengthDesc": "最大缓冲区长度（秒）",
+    "maxMaxBufferLength": "最大缓冲上限",
+    "maxMaxBufferLengthDesc": "缓冲区长度绝对上限",
+    "maxBufferSize": "最大缓冲大小",
+    "maxBufferSizeDesc": "内存中最大缓冲区大小",
+    "maxBufferHole": "最大缓冲间隙",
+    "maxBufferHoleDesc": "缓冲区中允许的最大间隙",
+    "backBufferLength": "回退缓冲时长",
+    "backBufferLengthDesc": "保留已播放内容在缓冲区中"
+  },
+  "abr": {
+    "title": "ABR（自适应码率）",
+    "description": "带宽估算和画质切换（下次加载时生效）",
+    "defaultEstimate": "默认带宽估算",
+    "defaultEstimateDesc": "测量前的初始带宽估算",
+    "bandwidthFactorDown": "ABR 带宽系数（降级）",
+    "bandwidthFactorDownDesc": "画质降级的安全系数",
+    "bandwidthFactorUp": "ABR 带宽系数（升级）",
+    "bandwidthFactorUpDesc": "画质升级的安全系数"
+  },
+  "loading": {
+    "title": "加载与重试",
+    "description": "超时和重试设置（下次加载时生效）",
+    "fragTimeout": "分片加载超时",
+    "fragTimeoutDesc": "每个视频分片的超时时间",
+    "manifestTimeout": "清单加载超时",
+    "manifestTimeoutDesc": "播放列表清单的超时时间",
+    "levelTimeout": "级别加载超时",
+    "levelTimeoutDesc": "级别/变体播放列表的超时时间",
+    "fragMaxRetry": "分片最大重试",
+    "fragMaxRetryDesc": "分片加载失败的最大重试次数",
+    "manifestMaxRetry": "清单最大重试",
+    "manifestMaxRetryDesc": "清单加载失败的最大重试次数",
+    "levelMaxRetry": "级别最大重试",
+    "levelMaxRetryDesc": "级别播放列表加载失败的最大重试次数",
+    "fragRetryDelay": "分片重试延迟",
+    "fragRetryDelayDesc": "分片重试之间的延迟"
+  },
+  "stats": {
+    "title": "统计信息",
+    "status": "状态",
+    "playing": "播放中",
+    "paused": "已暂停",
+    "hlsjs": "HLS.js",
+    "supported": "支持",
+    "notSupported": "不支持",
+    "time": "时间",
+    "buffered": "已缓冲",
+    "bandwidth": "带宽",
+    "droppedFrames": "丢帧数",
+    "levels": "等级数",
+    "currentLevel": "当前等级"
+  },
+  "logs": {
+    "title": "事件日志",
+    "clear": "清空",
+    "emptyTitle": "暂无事件",
+    "emptyDesc": "加载视频以查看 HLS 事件"
+  },
+  "advancedConfig": {
+    "title": "高级配置",
+    "restartTimeout": "暂停恢复重启超时时间",
+    "restartTimeoutHint": "修改后点击'加载'按钮生效",
+    "vconsole": "VConsole 调试控制台",
+    "hlsLoadPolicy": "HLS 加载策略配置",
+    "applyHlsConfig": "应用 HLS 配置",
+    "flvLowLatency": "FLV 超低延迟配置",
+    "applyFlvConfig": "应用 FLV 配置",
+    "featureToggle": "功能开关",
+    "maxTargetBuffer": "最大目标缓存时长",
+    "minTargetBuffer": "最小目标缓存时长",
+    "expectedAdjustTime": "预期调整时间",
+    "maxPlaybackRate": "最大播放速率",
+    "normalToAccelInterval": "常速到加速最小间隔",
+    "maxAccelPeriod": "最大加速次数周期",
+    "maxAccelCount": "周期内最大加速次数",
+    "hlsLowLatency": "HLS 超低延迟配置",
+    "applyHlsLowLatency": "应用 HLS 超低延迟配置",
+    "slidingWindowInit": "滑动窗口初始值 (TS个数)",
+    "slidingWindowMax": "滑动窗口最大值 (TS个数)",
+    "slidingWindowStep": "滑动窗口步长 (TS个数)",
+    "minPlaybackRate": "最小播放速率",
+    "slowDownloadThreshold": "慢下载阈值 (秒)"
+  }
+}

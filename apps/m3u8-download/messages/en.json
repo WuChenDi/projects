@@ -1,0 +1,76 @@
+{
+  "theme": {
+    "toggle": "Toggle theme"
+  },
+  "language": {
+    "label": "Switch language"
+  },
+  "header": {
+    "title": "M3U8 Downloader",
+    "more": "more"
+  },
+  "footer": {
+    "copyright": "Copyright © 2025-PRESENT |"
+  },
+  "tool": {
+    "title": "M3U8 Online Downloader",
+    "description": "Supports range download, streaming download, AES decryption, MP4 conversion"
+  },
+  "parse": {
+    "urlLabel": "M3U8 URL",
+    "placeholder": "https://example.com/playlist.m3u8",
+    "parsing": "Parsing",
+    "parse": "Parse",
+    "enterUrl": "Please enter a URL",
+    "invalidUrl": "Invalid URL, please re-enter",
+    "success": "Parsed successfully, {count} segments found",
+    "variantsDetected": "Detected {count} quality levels, highest bitrate selected by default",
+    "invalidLink": "Incorrect URL, please check if the link is valid",
+    "selectVariant": "Multiple quality levels detected, please select:",
+    "continueSelect": "Please continue to select a quality level",
+    "variantFailed": "Failed to parse selected quality, please retry",
+    "emptyResource": "Resource is empty, please check if the link is valid",
+    "encryptedError": "Video is encrypted and cannot be downloaded"
+  },
+  "download": {
+    "range": "Download Range",
+    "totalSegments": "({count} segments{size})",
+    "estimatedSize": ", est. {size}",
+    "normalDownload": "Normal Download",
+    "originalFormat": "Original (.ts)",
+    "convertMp4": "Convert MP4",
+    "streamDownload": "Stream Download (Large Files)",
+    "streamTooltip": "Download and save simultaneously, solves memory issues for large files",
+    "resume": "Resume",
+    "pause": "Pause",
+    "cancel": "Cancel",
+    "cancelled": "Download cancelled",
+    "mp4Failed": "MP4 conversion failed, using original TS format",
+    "streamSaverNotLoaded": "StreamSaver not loaded, streaming download unavailable",
+    "streamComplete": "Stream download complete, {count} segments",
+    "downloadComplete": "Download complete, {count} segments",
+    "retryWarning": "{count} segments failed, auto-retrying",
+    "forceDownload": "Download completed segments",
+    "forceDownloadSuccess": "Browser download triggered for existing segments",
+    "noSegments": "No downloaded segments available"
+  },
+  "progress": {
+    "title": "Download Progress",
+    "totalSegments": "Total segments: {count}",
+    "finished": "Done {count}",
+    "failed": "Failed {count}",
+    "overall": "Overall Progress",
+    "partialFailed": "Some segments failed to download",
+    "retryHint": "Red blocks can be clicked to retry - auto-retry every 2 seconds",
+    "segment": "Segment {index}",
+    "statusFinish": "Completed",
+    "statusError": "Click to retry",
+    "statusDownloading": "Downloading...",
+    "statusPending": "Waiting"
+  },
+  "empty": {
+    "title": "No download tasks",
+    "description": "Enter an M3U8 URL and click Parse to start",
+    "hint": "Supports range download, streaming download, AES decryption, and MP4 conversion"
+  }
+}
