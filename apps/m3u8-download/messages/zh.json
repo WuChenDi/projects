@@ -1,0 +1,76 @@
+{
+  "theme": {
+    "toggle": "切换主题"
+  },
+  "language": {
+    "label": "切换语言"
+  },
+  "header": {
+    "title": "M3U8 下载工具",
+    "more": "更多"
+  },
+  "footer": {
+    "copyright": "Copyright © 2025-PRESENT |"
+  },
+  "tool": {
+    "title": "M3U8 在线下载工具",
+    "description": "支持范围下载、流式下载、AES 解密、转 MP4"
+  },
+  "parse": {
+    "urlLabel": "m3u8 链接",
+    "placeholder": "https://example.com/playlist.m3u8",
+    "parsing": "解析中",
+    "parse": "解析",
+    "enterUrl": "请输入链接",
+    "invalidUrl": "链接有误，请重新输入",
+    "success": "解析成功，共 {count} 个片段",
+    "variantsDetected": "检测到 {count} 个清晰度，已默认选择最高码率",
+    "invalidLink": "链接不正确，请查看链接是否有效",
+    "selectVariant": "检测到多个清晰度，请选择：",
+    "continueSelect": "请继续选择清晰度",
+    "variantFailed": "解析所选清晰度失败，请重试",
+    "emptyResource": "资源为空，请查看链接是否有效",
+    "encryptedError": "视频已加密，无法下载"
+  },
+  "download": {
+    "range": "下载范围",
+    "totalSegments": "(共 {count} 个片段{size})",
+    "estimatedSize": "，预估 {size}",
+    "normalDownload": "普通下载",
+    "originalFormat": "原格式 (.ts)",
+    "convertMp4": "转码 MP4",
+    "streamDownload": "大文件流式下载",
+    "streamTooltip": "边下载边保存，解决大文件内存不足问题",
+    "resume": "继续下载",
+    "pause": "暂停下载",
+    "cancel": "取消下载",
+    "cancelled": "已取消下载",
+    "mp4Failed": "MP4 转码失败，将使用原始 TS 格式",
+    "streamSaverNotLoaded": "StreamSaver 未加载，无法使用流式下载",
+    "streamComplete": "流式下载完成，共 {count} 个片段",
+    "downloadComplete": "下载完成，共 {count} 个片段",
+    "retryWarning": "已有 {count} 个片段下载失败，正在自动重试",
+    "forceDownload": "下载已完成片段",
+    "forceDownloadSuccess": "已触发浏览器下载现有片段",
+    "noSegments": "当前无已下载片段"
+  },
+  "progress": {
+    "title": "下载进度",
+    "totalSegments": "总片段数：{count}",
+    "finished": "已完成 {count}",
+    "failed": "失败 {count}",
+    "overall": "整体进度",
+    "partialFailed": "部分片段下载失败",
+    "retryHint": "红色格子可点击重试 · 系统每 2 秒自动重试一次",
+    "segment": "片段 {index}",
+    "statusFinish": "已完成",
+    "statusError": "点击重试",
+    "statusDownloading": "下载中...",
+    "statusPending": "等待下载"
+  },
+  "empty": {
+    "title": "暂无下载任务",
+    "description": "输入 M3U8 链接，点击解析按钮开始",
+    "hint": "支持范围下载、流式下载、AES 解密和 MP4 转码"
+  }
+}

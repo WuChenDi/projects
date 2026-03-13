@@ -1,0 +1,141 @@
+{
+  "theme": {
+    "toggle": "Toggle theme"
+  },
+  "language": {
+    "label": "Switch language"
+  },
+  "header": {
+    "more": "more"
+  },
+  "footer": {
+    "copyright": "Copyright © 2023-PRESENT |"
+  },
+  "video": {
+    "notSupported": "Your browser does not support HTML5 video"
+  },
+  "source": {
+    "title": "Source",
+    "description": "Enter a M3U8 / HLS stream URL to start playback",
+    "placeholder": "https://example.com/stream.m3u8",
+    "loading": "Loading...",
+    "load": "Load"
+  },
+  "playback": {
+    "title": "Playback",
+    "resetConfig": "Reset Config",
+    "autoPlay": "Auto Play",
+    "autoPlayDesc": "Load after auto play video",
+    "playbackRate": "Playback Rate",
+    "qualityLevel": "Quality Level",
+    "qualityLevelDesc": "{count} level(s) available, \"Auto\" for adaptive bitrate",
+    "auto": "Auto",
+    "pause": "Pause",
+    "play": "Play",
+    "stop": "Stop",
+    "destroy": "Destroy",
+    "speedPlaceholder": "Speed (0-16]",
+    "setSpeed": "Set Speed",
+    "seekPlaceholder": "Time (seconds)",
+    "seek": "Seek",
+    "restartPlayer": "Restart Player",
+    "switchNext": "Switch to Next Source"
+  },
+  "performance": {
+    "title": "Performance",
+    "enableWorker": "Enable Worker",
+    "enableWorkerDesc": "Use Web Worker for transmuxing",
+    "lowLatencyMode": "Low Latency Mode",
+    "lowLatencyModeDesc": "Optimize for low-latency live streams",
+    "startFragPrefetch": "Start Frag Prefetch",
+    "startFragPrefetchDesc": "Prefetch next fragment during loading"
+  },
+  "buffer": {
+    "title": "Buffer",
+    "description": "Buffer size and duration settings (apply on next load)",
+    "maxBufferLength": "Max Buffer Length",
+    "maxBufferLengthDesc": "Maximum buffer length in seconds",
+    "maxMaxBufferLength": "Max Max Buffer Length",
+    "maxMaxBufferLengthDesc": "Absolute maximum buffer length cap",
+    "maxBufferSize": "Max Buffer Size",
+    "maxBufferSizeDesc": "Maximum buffer size in memory",
+    "maxBufferHole": "Max Buffer Hole",
+    "maxBufferHoleDesc": "Maximum gap allowed in buffer",
+    "backBufferLength": "Back Buffer Length",
+    "backBufferLengthDesc": "Keep played content in buffer"
+  },
+  "abr": {
+    "title": "ABR (Adaptive Bitrate)",
+    "description": "Bandwidth estimation and quality switching (apply on next load)",
+    "defaultEstimate": "Default Bandwidth Estimate",
+    "defaultEstimateDesc": "Initial bandwidth estimate before measurement",
+    "bandwidthFactorDown": "ABR Bandwidth Factor (Down)",
+    "bandwidthFactorDownDesc": "Safety factor for quality downgrade",
+    "bandwidthFactorUp": "ABR Bandwidth Factor (Up)",
+    "bandwidthFactorUpDesc": "Safety factor for quality upgrade"
+  },
+  "loading": {
+    "title": "Loading & Retry",
+    "description": "Timeout and retry settings (apply on next load)",
+    "fragTimeout": "Fragment Load Timeout",
+    "fragTimeoutDesc": "Timeout for each video fragment",
+    "manifestTimeout": "Manifest Load Timeout",
+    "manifestTimeoutDesc": "Timeout for playlist manifest",
+    "levelTimeout": "Level Load Timeout",
+    "levelTimeoutDesc": "Timeout for level/variant playlist",
+    "fragMaxRetry": "Fragment Max Retry",
+    "fragMaxRetryDesc": "Max retries for failed fragments",
+    "manifestMaxRetry": "Manifest Max Retry",
+    "manifestMaxRetryDesc": "Max retries for failed manifest",
+    "levelMaxRetry": "Level Max Retry",
+    "levelMaxRetryDesc": "Max retries for failed level playlist",
+    "fragRetryDelay": "Fragment Retry Delay",
+    "fragRetryDelayDesc": "Delay between fragment retries"
+  },
+  "stats": {
+    "title": "Stats",
+    "status": "Status",
+    "playing": "Playing",
+    "paused": "Paused",
+    "hlsjs": "HLS.js",
+    "supported": "Supported",
+    "notSupported": "Not Supported",
+    "time": "Time",
+    "buffered": "Buffered",
+    "bandwidth": "Bandwidth",
+    "droppedFrames": "Dropped Frames",
+    "levels": "Levels",
+    "currentLevel": "Current Level"
+  },
+  "logs": {
+    "title": "Event Logs",
+    "clear": "Clear",
+    "emptyTitle": "No Events",
+    "emptyDesc": "Load a video to see HLS events"
+  },
+  "advancedConfig": {
+    "title": "Advanced Config",
+    "restartTimeout": "Pause/Resume Restart Timeout",
+    "restartTimeoutHint": "Click \"Load\" to apply after modification",
+    "vconsole": "VConsole Debug Console",
+    "hlsLoadPolicy": "HLS Load Policy Config",
+    "applyHlsConfig": "Apply HLS Config",
+    "flvLowLatency": "FLV Ultra-Low Latency Config",
+    "applyFlvConfig": "Apply FLV Config",
+    "featureToggle": "Feature Toggle",
+    "maxTargetBuffer": "Max Target Buffer Duration",
+    "minTargetBuffer": "Min Target Buffer Duration",
+    "expectedAdjustTime": "Expected Adjustment Time",
+    "maxPlaybackRate": "Max Playback Rate",
+    "normalToAccelInterval": "Normal to Accelerated Min Interval",
+    "maxAccelPeriod": "Max Acceleration Period",
+    "maxAccelCount": "Max Acceleration Count in Period",
+    "hlsLowLatency": "HLS Ultra-Low Latency Config",
+    "applyHlsLowLatency": "Apply HLS Low Latency Config",
+    "slidingWindowInit": "Sliding Window Init (TS count)",
+    "slidingWindowMax": "Sliding Window Max (TS count)",
+    "slidingWindowStep": "Sliding Window Step (TS count)",
+    "minPlaybackRate": "Min Playback Rate",
+    "slowDownloadThreshold": "Slow Download Threshold (seconds)"
+  }
+}

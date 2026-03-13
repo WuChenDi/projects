@@ -54,7 +54,7 @@ export interface HlsLogEntry {
   detail: string
 }
 
-interface HlsPlayerState {
+export interface HlsPlayerState {
   isSupported: boolean
   isLoading: boolean
   isPlaying: boolean
