@@ -26,10 +26,7 @@ https://clearify.pages.dev/
 <details>
   <summary>📸 Preview</summary>
   <br/>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Clearify/index.png" alt="Clearify 主界面" />
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Clearify/bg-pages.png" alt="背景移除页面" />
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Clearify/squish-pages.png" alt="批量压缩页面" />
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Clearify/compress-pages.png" alt="视频压缩页面" />
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Clearify/og-image.png" alt="Clearify" />
 </details>
 
 ### SecureC
@@ -45,7 +42,7 @@ https://securec.pages.dev/
 <details>
   <summary>📸 Preview</summary>
   <br/>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/og-image.png" alt="SecureC 主界面" />
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/og-image.png" alt="SecureC" />
 </details>
 
 ### Dropply
@@ -58,7 +55,7 @@ https://securec.pages.dev/
 <details>
   <summary>📸 Preview</summary>
   <br/>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Dropply/og-image.png" alt="Dropply 主界面" />
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Dropply/og-image.png" alt="Dropply" />
 </details>
 
 ### text2img
@@ -74,7 +71,7 @@ https://text2img.cdlab.workers.dev/
 <details>
   <summary>📸 Preview</summary>
   <br/>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/og-image.png" alt="text2img 主界面" />
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/og-image.png" alt="text2img" />
 </details>
 
 ### byplay
@@ -89,7 +86,7 @@ https://byplay.pages.dev/
 <details>
   <summary>📸 Preview</summary>
   <br/>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byplay/og-image.png" alt="byplay 主界面" />
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byplay/og-image.png" alt="byplay" />
 </details>
 
 ### byplay-log
@@ -112,7 +109,7 @@ https://m3u8dw.pages.dev/
 <details>
   <summary>📸 Preview</summary>
   <br/>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/m3u8-download/og-image.png" alt="m3u8-download 主界面" />
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/m3u8-download/og-image.png" alt="m3u8-download" />
 </details>
 
 ### value-vision
@@ -127,7 +124,7 @@ https://values.pages.dev/
 <details>
   <summary>📸 Preview</summary>
   <br/>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/value-vision/og-image.png" alt="value-vision 主界面" />
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/value-vision/og-image.png" alt="value-vision" />
 </details>
 
 ### repo-changelog
@@ -142,8 +139,7 @@ https://repo-changelog.vercel.app/
 <details>
   <summary>📸 Preview</summary>
   <br/>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/repo-changelog/index.png" alt="repo-changelog 主界面" />
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/repo-changelog/repos.png" alt="repo-changelog 仓库列表" />
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/repo-changelog/og-image.png" alt="repo-changelog" />
 </details>
 
 ## 🚀 快速开始
