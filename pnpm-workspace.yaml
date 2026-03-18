@@ -3,30 +3,30 @@ packages:
   - packages/*
 catalogs:
   dev:
-    '@cloudflare/workers-types': ^4.20260301.1
+    '@cloudflare/workers-types': ^4.20260317.1
     '@types/node': ^25
     '@types/react': ^19
     '@types/react-dom': ^19
-    drizzle-kit: ^0.31.9
+    drizzle-kit: ^0.31.10
     tailwindcss: ^4
     tsdown: ^0.21.1
     typescript: ^5
     vitest: ^4.0.18
-    wrangler: ^4.72.0
+    wrangler: ^4.75.0
   prod:
     '@base-ui/react': ^1.2.0
     '@cdlab996/genid': ^1.2.1
     '@hono/zod-validator': ^0.7.6
     '@libsql/client': ^0.17.0
-    '@next/third-parties': 16.1.6
+    '@next/third-parties': 16.1.7
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
     date-fns: ^4.1.0
     drizzle-orm: ^0.45.1
-    hono: ^4.12.7
-    lucide-react: ^0.575.0
+    hono: ^4.12.8
+    lucide-react: ^0.577.0
     motion: ^12.34.3
-    next: 16.1.6
+    next: 16.1.7
     next-intl: ^4.8.3
     next-themes: ^0.4.6
     ogl: ^1.0.11
