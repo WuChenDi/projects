@@ -38,8 +38,8 @@ catalogs:
       version: 4.75.0
   prod:
     '@cdlab996/genid':
-      specifier: ^1.2.1
-      version: 1.2.1
+      specifier: ^1.3.0
+      version: 1.3.0
     '@hono/zod-validator':
       specifier: ^0.7.6
       version: 0.7.6
@@ -140,7 +140,7 @@ importers:
     dependencies:
       '@cdlab996/genid':
         specifier: catalog:prod
-        version: 1.2.1
+        version: 1.3.0
       '@cdlab996/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -222,7 +222,7 @@ importers:
     dependencies:
       '@cdlab996/genid':
         specifier: catalog:prod
-        version: 1.2.1
+        version: 1.3.0
       '@cdlab996/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -329,7 +329,7 @@ importers:
     dependencies:
       '@cdlab996/genid':
         specifier: catalog:prod
-        version: 1.2.1
+        version: 1.3.0
       '@cdlab996/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -475,7 +475,7 @@ importers:
     dependencies:
       '@cdlab996/genid':
         specifier: catalog:prod
-        version: 1.2.1
+        version: 1.3.0
       '@cdlab996/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -530,7 +530,7 @@ importers:
     dependencies:
       '@cdlab996/genid':
         specifier: catalog:prod
-        version: 1.2.1
+        version: 1.3.0
       '@cdlab996/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -597,7 +597,7 @@ importers:
     dependencies:
       '@cdlab996/genid':
         specifier: catalog:prod
-        version: 1.2.1
+        version: 1.3.0
       '@iconify-json/lucide':
         specifier: ^1.2.95
         version: 1.2.95
@@ -649,7 +649,7 @@ importers:
     dependencies:
       '@cdlab996/genid':
         specifier: catalog:prod
-        version: 1.2.1
+        version: 1.3.0
       '@cdlab996/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -713,7 +713,7 @@ importers:
     dependencies:
       '@cdlab996/genid':
         specifier: catalog:prod
-        version: 1.2.1
+        version: 1.3.0
       '@cdlab996/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -1387,8 +1387,8 @@ packages:
     resolution: {integrity: sha512-VERIM64vtTP1C4mxQ5thVT9fK0apjPFobqybMtA1UdUujWka24ERHbRHFGmpbbhp73MhV+KSsHQH9C6uOTdEQA==}
     engines: {node: '>=18'}
 
-  '@cdlab996/genid@1.2.1':
-    resolution: {integrity: sha512-YY5YOdB+bj/Hvr6RWEA28BdIq16tjGZqYb7WfkABzYETZZBIN4pbC1E8zOtUieg5Ap6iqBvHR6QWyZJD7NQdBg==}
+  '@cdlab996/genid@1.3.0':
+    resolution: {integrity: sha512-fehhCdsZM+V/8Oyzn97Q39cleOqaNFmPMgmSwS2/gF34lasCJzhoYdQ0pCIOjqo/IDgYpg36ydzwHQJjT1MPbA==}
     engines: {node: '>=20'}
 
   '@clack/core@1.1.0':
@@ -10980,7 +10980,7 @@ snapshots:
     dependencies:
       fontkitten: 1.0.2
 
-  '@cdlab996/genid@1.2.1': {}
+  '@cdlab996/genid@1.3.0': {}
 
   '@clack/core@1.1.0':
     dependencies:
