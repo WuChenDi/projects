@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@cdlab996/ui/components/dropdown-menu'
-import { LanguagesIcon } from 'lucide-react'
+import { Check, LanguagesIcon } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { startTransition, useTransition } from 'react'
 import { usePathname, useRouter } from '@/i18n/navigation'
@@ -47,7 +47,7 @@ export function LanguageSelector() {
           size="icon"
           className="size-8 cursor-pointer"
           disabled={isPending}
-          aria-label={t('label')}
+          aria-label={t('language.label')}
         >
           <LanguagesIcon
             className={`size-4 ${isPending ? 'animate-spin' : ''}`}
@@ -69,7 +69,8 @@ export function LanguageSelector() {
             <span className="text-base">{language.flag}</span>
             <span className="flex-1">{language.name}</span>
             {locale === language.code && (
-              <span className="ml-2 text-xs opacity-60">✓</span>
+              // <span className="ml-2 text-xs opacity-60">✓</span>
+              <Check className="size-3.5" />
             )}
           </DropdownMenuItem>
         ))}

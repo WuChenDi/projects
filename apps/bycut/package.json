@@ -1,0 +1,62 @@
+{
+  "name": "@cdlab996/bycut",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "",
+  "author": "wudi <wuchendi96@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/WuChenDi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WuChenDi/projects.git",
+    "directory": "apps/bycut"
+  },
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0 --port 3019",
+    "build": "next build",
+    "build:cf": "npx @cloudflare/next-on-pages@latest",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cdlab996/genid": "catalog:prod",
+    "@cdlab996/ui": "workspace:*",
+    "@cdlab996/utils": "workspace:*",
+    "@next/third-parties": "catalog:prod",
+    "@ffmpeg/core": "^0.12.10",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
+    "@huggingface/transformers": "^3.8.1",
+    "class-variance-authority": "catalog:prod",
+    "clsx": "catalog:prod",
+    "eventemitter3": "^5.0.4",
+    "lucide-react": "catalog:prod",
+    "mediabunny": "^1.29.1",
+    "motion": "catalog:prod",
+    "next": "catalog:prod",
+    "next-intl": "catalog:prod",
+    "next-themes": "catalog:prod",
+    "radix-ui": "catalog:prod",
+    "react": "catalog:prod",
+    "react-dom": "catalog:prod",
+    "react-resizable-panels": "^2.1.7",
+    "sonner": "catalog:prod",
+    "streamdown": "^2.3.0",
+    "tailwindcss-animate": "^1.0.7",
+    "use-deep-compare-effect": "^1.8.1",
+    "wavesurfer.js": "^7.12.4",
+    "zod": "catalog:prod",
+    "zustand": "catalog:prod"
+  },
+  "devDependencies": {
+    "@cdlab996/tsconfig": "workspace:*",
+    "@tailwindcss/typography": "^0.5.19",
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}

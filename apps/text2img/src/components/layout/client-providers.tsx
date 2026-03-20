@@ -1,5 +1,6 @@
 'use client'
 
+import { TooltipProvider } from '@cdlab996/ui/components/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useTheme } from 'next-themes'
 import { useEffect, useMemo, useState } from 'react'
@@ -60,7 +61,9 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
         enableSystem
         disableTransitionOnChange
       >
-        <ThemedBackground>{children}</ThemedBackground>
+        <TooltipProvider>
+          <ThemedBackground>{children}</ThemedBackground>
+        </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
   )
