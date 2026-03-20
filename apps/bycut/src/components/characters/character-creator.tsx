@@ -30,7 +30,7 @@ import {
   useCharacterStore,
 } from '@/stores/character-store'
 import type { AICharacter, CharacterImage } from '@/types/character'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 import type { ImageSource } from './image-lightbox'
 import { ImageLightbox, useImageLightbox } from './image-lightbox'
 import { generateCharacterPortrait } from './turnaround-generator'
@@ -103,13 +103,13 @@ export function CharacterCreatorDialog({
       const response = await fetch(result.url)
       const blob = await response.blob()
 
-      const blobKey = generateUUID()
+      const blobKey = String(genid.nextId())
       await storeCharacterImageBlob({ id: blobKey, blob })
       const thumbnailDataUrl = await createImageThumbnailDataUrl({
         blob,
       })
 
-      const imageId = generateUUID()
+      const imageId = String(genid.nextId())
       const characterImage: CharacterImage = {
         id: imageId,
         label: 'Character Portrait',
@@ -153,13 +153,13 @@ export function CharacterCreatorDialog({
         const blob = new Blob([await file.arrayBuffer()], {
           type: file.type,
         })
-        const blobKey = generateUUID()
+        const blobKey = String(genid.nextId())
         await storeCharacterImageBlob({ id: blobKey, blob })
         const thumbnailDataUrl = await createImageThumbnailDataUrl({
           blob,
         })
 
-        const imageId = generateUUID()
+        const imageId = String(genid.nextId())
         const characterImage: CharacterImage = {
           id: imageId,
           label: file.name.replace(/\.\w+$/, ''),

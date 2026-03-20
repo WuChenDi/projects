@@ -27,7 +27,7 @@ import type {
   TProjectSortOption,
   TTimelineViewState,
 } from '@/types/project'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 
 export interface MigrationState {
   isMigrating: boolean
@@ -76,7 +76,7 @@ export class ProjectManager {
     const mainScene = buildDefaultScene({ name: 'Main scene', isMain: true })
     const newProject: TProject = {
       metadata: {
-        id: generateUUID(),
+        id: String(genid.nextId()),
         name,
         duration: getProjectDurationFromScenes({ scenes: [mainScene] }),
         createdAt: new Date(),
@@ -371,7 +371,7 @@ export class ProjectManager {
         const nextNumber = nextNumberByBaseName.get(baseName) ?? 1
         nextNumberByBaseName.set(baseName, nextNumber + 1)
 
-        const newProjectId = generateUUID()
+        const newProjectId = String(genid.nextId())
         const newProject: TProject = {
           ...project,
           metadata: {

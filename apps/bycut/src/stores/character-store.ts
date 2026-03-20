@@ -6,7 +6,7 @@ import type {
   CharacterGeneration,
   CharacterImage,
 } from '@/types/character'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 
 const CHARACTER_IMAGES_DB = 'ai-character-images'
 const CHARACTER_IMAGES_STORE = 'images'
@@ -167,7 +167,7 @@ export const useCharacterStore = create<CharacterStoreState>()(
 
       addCharacter: ({ name, description }) => {
         const now = new Date().toISOString()
-        const id = generateUUID()
+        const id = String(genid.nextId())
         const character: AICharacter = {
           id,
           name,

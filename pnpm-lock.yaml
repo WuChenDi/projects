@@ -253,6 +253,9 @@ importers:
       clsx:
         specifier: catalog:prod
         version: 2.1.1
+      date-fns:
+        specifier: catalog:prod
+        version: 4.1.0
       eventemitter3:
         specifier: ^5.0.4
         version: 5.0.4

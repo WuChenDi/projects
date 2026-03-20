@@ -5,7 +5,7 @@ import {
   getDefaultInsertIndexForTrack,
 } from '@/lib/timeline/track-utils'
 import type { TimelineTrack, TrackType } from '@/types/timeline'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 
 export class AddTrackCommand extends Command {
   private trackId: string
@@ -16,7 +16,7 @@ export class AddTrackCommand extends Command {
     private index?: number,
   ) {
     super()
-    this.trackId = generateUUID()
+    this.trackId = String(genid.nextId())
   }
 
   execute(): void {

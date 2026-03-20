@@ -1,7 +1,7 @@
 import { calculateTotalDuration } from '@/lib/timeline'
 import { ensureMainTrack } from '@/lib/timeline/track-utils'
 import type { TScene } from '@/types/timeline'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 
 export function getMainScene({ scenes }: { scenes: TScene[] }): TScene | null {
   return scenes.find((scene) => scene.isMain) || null
@@ -25,7 +25,7 @@ export function buildDefaultScene({
 }): TScene {
   const tracks = ensureMainTrack({ tracks: [] })
   return {
-    id: generateUUID(),
+    id: String(genid.nextId()),
     name,
     isMain,
     tracks,

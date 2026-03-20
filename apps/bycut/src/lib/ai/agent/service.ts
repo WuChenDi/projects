@@ -1,4 +1,4 @@
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 import type { ExpertRoleId } from './expert-roles'
 import {
   DEFAULT_EXPERT_ROLE,
@@ -100,7 +100,7 @@ function pushToolResult({
   result: AgentToolResult
 }): void {
   conversationMessages.push({
-    id: generateUUID(),
+    id: String(genid.nextId()),
     role: 'tool',
     content: JSON.stringify(result),
     toolCallId,
@@ -287,7 +287,7 @@ export async function runAgentLoop({
     if (signal.aborted) break
 
     const assistantMessage: AgentMessage = {
-      id: generateUUID(),
+      id: String(genid.nextId()),
       role: 'assistant',
       content: result.content,
       timestamp: Date.now(),

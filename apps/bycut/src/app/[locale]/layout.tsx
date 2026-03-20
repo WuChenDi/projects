@@ -45,22 +45,20 @@ export async function generateMetadata({
 
   if (locale === 'zh') {
     return {
-      title: 'ByCut - 开源浏览器视频编辑器 | AI 驱动的免费剪辑工具',
+      title: 'ByCut - 开源浏览器视频编辑器',
       description:
-        '基于浏览器的开源视频编辑器，支持 AI 智能剪辑、时间轴编辑、字幕生成、文字转语音、角色管理等功能。完全免费，无需安装，数据本地处理保护隐私。',
+        '纯浏览器运行的开源免费视频编辑器，支持多轨时间轴编辑、字幕生成、文字转语音等功能。无需安装，所有数据本地处理，保护隐私。',
       keywords: [
         '视频编辑器',
-        '在线剪辑',
+        '在线视频剪辑',
         '浏览器视频编辑',
-        'AI 视频剪辑',
         '开源视频编辑器',
         '免费视频编辑',
+        '时间轴编辑',
+        '多轨编辑',
         '字幕生成',
         '文字转语音',
-        '时间轴编辑',
         '本地视频处理',
-        'CapCut 替代',
-        '剪映替代',
       ],
       referrer: 'no-referrer-when-downgrade',
       authors: [{ name: 'wudi', url: 'https://github.com/WuChenDi' }],
@@ -81,9 +79,9 @@ export async function generateMetadata({
       applicationName: 'ByCut',
       icons: 'https://notes-wudi.pages.dev/images/logo.png',
       openGraph: {
-        title: 'ByCut - 开源浏览器视频编辑器 | AI 驱动的免费剪辑工具',
+        title: 'ByCut - 开源浏览器视频编辑器',
         description:
-          '基于浏览器的开源视频编辑器，支持 AI 智能剪辑、时间轴编辑、字幕生成、文字转语音等功能。完全免费，数据本地处理保护隐私。',
+          '纯浏览器运行的开源免费视频编辑器，支持多轨时间轴编辑、字幕生成、文字转语音等功能。无需安装，所有数据本地处理，保护隐私。',
         url: 'https://bycut.pages.dev/',
         siteName: 'ByCut',
         images: [
@@ -99,9 +97,9 @@ export async function generateMetadata({
       },
       twitter: {
         card: 'summary_large_image',
-        title: 'ByCut - 开源浏览器视频编辑器 | AI 驱动的免费剪辑工具',
+        title: 'ByCut - 开源浏览器视频编辑器',
         description:
-          '基于浏览器的开源视频编辑器，支持 AI 智能剪辑、时间轴编辑、字幕生成、文字转语音等功能。完全免费，数据本地处理保护隐私。',
+          '纯浏览器运行的开源免费视频编辑器，支持多轨时间轴编辑、字幕生成、文字转语音等功能。无需安装，所有数据本地处理，保护隐私。',
         images: [
           'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/ByCut/index.png',
         ],
@@ -124,22 +122,24 @@ export async function generateMetadata({
   }
 
   return {
-    title: 'ByCut - Open Source Browser Video Editor | AI-Powered Free Editing',
+    title: 'ByCut - Open Source Browser Video Editor | Free AI-Powered Editing',
     description:
-      'Open-source browser-based video editor with AI-powered editing, timeline editing, caption generation, text-to-speech, character management and more. Completely free, no installation needed, all data processed locally for privacy.',
+      'A fully browser-based, open-source, and free video editor. Features multi-track timeline editing, AI caption generation, text-to-speech, character management, and more. No installation, no uploads — everything runs locally in your browser to protect your privacy.',
     keywords: [
       'video editor',
-      'online video editor',
       'browser video editor',
-      'AI video editing',
+      'online video editor',
       'open source video editor',
       'free video editor',
-      'caption generation',
+      'AI video editing',
+      'multi-track timeline',
+      'caption generator',
       'text to speech',
-      'timeline editor',
       'local video processing',
       'CapCut alternative',
-      'privacy-focused video editor',
+      'privacy focused video editor',
+      'web-based video editor',
+      'no install video editor',
     ],
     referrer: 'no-referrer-when-downgrade',
     authors: [{ name: 'wudi', url: 'https://github.com/WuChenDi' }],
@@ -163,9 +163,9 @@ export async function generateMetadata({
     icons: 'https://notes-wudi.pages.dev/images/logo.png',
     openGraph: {
       title:
-        'ByCut - Open Source Browser Video Editor | AI-Powered Free Editing',
+        'ByCut - Open Source Browser Video Editor | Free AI-Powered Editing',
       description:
-        'Open-source browser-based video editor with AI-powered editing, timeline editing, caption generation, text-to-speech and more. Free, private, no installation.',
+        'Fully browser-based open source video editor with multi-track timeline, AI captions, text-to-speech, and local processing. Free, private, no installation required.',
       url: 'https://bycut.pages.dev/',
       siteName: 'ByCut',
       images: [
@@ -182,9 +182,9 @@ export async function generateMetadata({
     twitter: {
       card: 'summary_large_image',
       title:
-        'ByCut - Open Source Browser Video Editor | AI-Powered Free Editing',
+        'ByCut - Open Source Browser Video Editor | Free AI-Powered Editing',
       description:
-        'Open-source browser-based video editor with AI-powered editing, timeline editing, caption generation, text-to-speech and more. Free, private, no installation.',
+        'Fully browser-based open source video editor with multi-track timeline, AI captions, text-to-speech, and local processing. Free, private, no installation required.',
       images: [
         'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/ByCut/index.png',
       ],

@@ -2,7 +2,7 @@ import { EditorCore } from '@/core'
 import { Command } from '@/lib/commands/base-command'
 import { storageService } from '@/services/storage/service'
 import type { MediaAsset } from '@/types/assets'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 
 export class AddMediaAssetCommand extends Command {
   private assetId: string
@@ -14,7 +14,7 @@ export class AddMediaAssetCommand extends Command {
     private asset: Omit<MediaAsset, 'id'>,
   ) {
     super()
-    this.assetId = generateUUID()
+    this.assetId = String(genid.nextId())
   }
 
   execute(): void {

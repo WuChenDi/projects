@@ -20,7 +20,7 @@ import type {
   TimelineTrack,
   TrackType,
 } from '@/types/timeline'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 
 type InsertElementPlacement =
   | { mode: 'explicit'; trackId: string }
@@ -38,7 +38,7 @@ export class InsertElementCommand extends Command {
 
   constructor({ element, placement }: InsertElementParams) {
     super()
-    this.elementId = generateUUID()
+    this.elementId = String(genid.nextId())
     this.element = element
     this.placement = placement
   }
@@ -274,7 +274,7 @@ export class InsertElementCommand extends Command {
       return { updatedTracks, targetTrackId: existingTrack.id }
     }
 
-    const newTrackId = generateUUID()
+    const newTrackId = String(genid.nextId())
     const newTrack = buildEmptyTrack({
       id: newTrackId,
       type: trackType,

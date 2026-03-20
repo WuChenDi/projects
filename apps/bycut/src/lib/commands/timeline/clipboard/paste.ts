@@ -12,7 +12,7 @@ import type {
   TimelineElement,
   TimelineTrack,
 } from '@/types/timeline'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 
 export class PasteCommand extends Command {
   private savedState: TimelineTrack[] | null = null
@@ -168,7 +168,7 @@ function buildPastedElements({
   for (const item of items) {
     const relativeOffset = item.element.startTime - minStart
     const startTime = Math.max(0, time + relativeOffset)
-    const newElementId = generateUUID()
+    const newElementId = String(genid.nextId())
 
     elementsToAdd.push({
       ...item.element,
@@ -277,7 +277,7 @@ function buildTrackWithElements({
   trackType: ClipboardItem['trackType']
   elements: TimelineElement[]
 }): TimelineTrack {
-  const newTrackId = generateUUID()
+  const newTrackId = String(genid.nextId())
   const newTrackBase = buildEmptyTrack({ id: newTrackId, type: trackType })
   return {
     ...newTrackBase,

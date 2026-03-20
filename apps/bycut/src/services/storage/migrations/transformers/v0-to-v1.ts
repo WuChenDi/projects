@@ -1,5 +1,5 @@
 import type { SerializedScene } from '@/services/storage/types'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 import type { MigrationResult, ProjectRecord } from './types'
 import { isRecord } from './utils'
 
@@ -21,7 +21,7 @@ export function transformProjectV0ToV1({
     return { project, skipped: true, reason: 'already has scenes' }
   }
 
-  const sceneId = generateUUID()
+  const sceneId = String(genid.nextId())
   const sceneCreatedAt = now.toISOString()
   const sceneUpdatedAt = now.toISOString()
 

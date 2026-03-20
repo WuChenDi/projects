@@ -5,7 +5,7 @@ import {
   getDefaultInsertIndexForTrack,
 } from '@/lib/timeline/track-utils'
 import type { TimelineTrack } from '@/types/timeline'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 
 export class DetachAudioCommand extends Command {
   private savedState: TimelineTrack[] | null = null
@@ -34,7 +34,7 @@ export class DetachAudioCommand extends Command {
       if (!mediaAsset || mediaAsset.type !== 'video') continue
 
       const audioElement = {
-        id: generateUUID(),
+        id: String(genid.nextId()),
         type: 'audio' as const,
         sourceType: 'upload' as const,
         mediaId: element.mediaId,
@@ -69,7 +69,7 @@ export class DetachAudioCommand extends Command {
         })
       } else {
         const newTrack = buildEmptyTrack({
-          id: generateUUID(),
+          id: String(genid.nextId()),
           type: 'audio',
         })
         const trackWithElement = {

@@ -8,10 +8,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@cdlab996/ui/components/dialog'
+import { format } from 'date-fns'
 import { useTranslations } from 'next-intl'
 import { formatTimeCode } from '@/lib/time'
 import type { TProjectMetadata } from '@/types/project'
-import { formatDate } from '@/utils/date'
 
 function InfoRow({
   label,
@@ -56,29 +56,31 @@ export function ProjectInfoDialog({
         </DialogHeader>
 
         <div className="flex flex-col">
-          <InfoRow label={t("common.duration")} value={durationFormatted} />
+          <InfoRow label={t('common.duration')} value={durationFormatted} />
           <InfoRow
-            label={t("common.created")}
-            value={formatDate({ date: project.createdAt })}
+            label={t('common.created')}
+            value={format(new Date(project.createdAt), 'yyyy-MM-dd HH:mm:ss')}
           />
           <InfoRow
-            label={t("common.modified")}
-            value={formatDate({ date: project.updatedAt })}
+            label={t('common.modified')}
+            value={format(new Date(project.updatedAt), 'yyyy-MM-dd HH:mm:ss')}
           />
           <InfoRow
-            label={t("projects.id")}
+            label={t('projects.id')}
             value={
               <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                {project.id.slice(0, 8)}
+                {project.id}
               </code>
             }
           />
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {t("common.close")}
+            {t('common.close')}
           </Button>
-          <Button onClick={() => onOpenChange(false)}>{t("common.done")}</Button>
+          <Button onClick={() => onOpenChange(false)}>
+            {t('common.done')}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

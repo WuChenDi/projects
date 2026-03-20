@@ -9,7 +9,7 @@ import type {
   AgentStatus,
   PendingToolConfirmation,
 } from '@/lib/ai/agent/types'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 
 interface AgentPersistedState {
   config: AgentLLMConfig
@@ -81,7 +81,7 @@ export const useAgentStore = create<AgentState>()(
         if (!state.config.apiKey) return
 
         const userMessage: AgentMessage = {
-          id: generateUUID(),
+          id: String(genid.nextId()),
           role: 'user',
           content,
           timestamp: Date.now(),
@@ -161,7 +161,7 @@ export const useAgentStore = create<AgentState>()(
           }
 
           const errorMessage: AgentMessage = {
-            id: generateUUID(),
+            id: String(genid.nextId()),
             role: 'assistant',
             content: `Error: ${error instanceof Error ? error.message : 'Something went wrong'}`,
             timestamp: Date.now(),

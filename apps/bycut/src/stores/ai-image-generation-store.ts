@@ -10,7 +10,7 @@ import { i18next } from '@/lib/i18n'
 import { processMediaAssets } from '@/lib/media/processing'
 import { uploadReferenceImage } from '@/lib/media/upload-reference'
 import type { CharacterGeneration } from '@/types/character'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 import {
   createThumbnailDataUrl,
   storeHistoryImage,
@@ -183,7 +183,7 @@ async function addImageToHistory({
   prompt: string
   providerName: string
 }): Promise<void> {
-  const entryId = generateUUID()
+  const entryId = String(genid.nextId())
   const createdAt = new Date().toISOString()
 
   let thumbnailUrl: string | undefined
@@ -284,7 +284,7 @@ export const useAIImageGenerationStore = create<AIImageGenerationState>()(
           })
           const blobUrl = URL.createObjectURL(file)
           const newImage: GeneratedImage = {
-            id: generateUUID(),
+            id: String(genid.nextId()),
             url: blobUrl,
             prompt: trimmedPrompt,
             assetStatus: 'pending' as const,
@@ -346,7 +346,7 @@ export const useAIImageGenerationStore = create<AIImageGenerationState>()(
         })
 
         const newImages: GeneratedImage[] = results.map((result) => ({
-          id: generateUUID(),
+          id: String(genid.nextId()),
           url: result.url,
           prompt: trimmedPrompt,
           assetStatus: 'pending' as const,
@@ -376,7 +376,7 @@ export const useAIImageGenerationStore = create<AIImageGenerationState>()(
 
           if (selectedCharacterId) {
             const generation: CharacterGeneration = {
-              id: generateUUID(),
+              id: String(genid.nextId()),
               type: 'image',
               prompt: trimmedPrompt,
               url: image.url,

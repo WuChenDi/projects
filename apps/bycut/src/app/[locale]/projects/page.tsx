@@ -19,6 +19,7 @@ import {
 import { Label } from '@cdlab996/ui/components/label'
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { cn } from '@cdlab996/ui/lib/utils'
+import { format } from 'date-fns'
 import {
   AlignStartVertical,
   ArrowDown,
@@ -52,7 +53,6 @@ import { useEditor } from '@/hooks/use-editor'
 import { Link, useRouter } from '@/lib/navigation'
 import { formatTimeCode } from '@/lib/time'
 import type { TProjectMetadata, TProjectSortOption } from '@/types/project'
-import { formatDate } from '@/utils/date'
 import { StorageIndicator } from './storage-indicator'
 import { useProjectsStore } from './store'
 
@@ -590,7 +590,10 @@ function ProjectItem({
             <Calendar className="size-3.5" />
             <span>
               {t('projects.createdDate', {
-                date: formatDate({ date: project.createdAt }),
+                date: format(
+                  new Date(project.createdAt),
+                  'yyyy-MM-dd HH:mm:ss',
+                ),
               })}
             </span>
           </div>
@@ -626,7 +629,7 @@ function ProjectItem({
       </span>
 
       <span className="text-muted-foreground text-sm shrink-0 w-auto pl-8 text-right hidden xs:block">
-        {formatDate({ date: project.createdAt })}
+        {format(new Date(project.createdAt), 'yyyy-MM-dd HH:mm:ss')}
       </span>
     </div>
   )

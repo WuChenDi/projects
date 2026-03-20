@@ -13,7 +13,7 @@ import type {
   TimelineElement,
   TimelineTrack,
 } from '@/types/timeline'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 
 const DRAG_THRESHOLD_PX = 5
 
@@ -460,7 +460,7 @@ export function useElementInteraction({
           timeDelta,
         })
       } else if (dropTarget.isNewTrack) {
-        const newTrackId = generateUUID()
+        const newTrackId = String(genid.nextId())
 
         editor.timeline.moveElement({
           sourceTrackId: dragState.trackId,

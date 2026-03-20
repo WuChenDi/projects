@@ -3,7 +3,7 @@ import { hasMediaId } from '@/lib/timeline/element-utils'
 import { storageService } from '@/services/storage/service'
 import { videoCache } from '@/services/video-cache/service'
 import type { MediaAsset } from '@/types/assets'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 
 export class MediaManager {
   private assets: MediaAsset[] = []
@@ -21,7 +21,7 @@ export class MediaManager {
   }): Promise<string> {
     const newAsset: MediaAsset = {
       ...asset,
-      id: generateUUID(),
+      id: String(genid.nextId()),
     }
 
     this.assets = [...this.assets, newAsset]

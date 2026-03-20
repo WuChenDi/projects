@@ -1,7 +1,7 @@
 import { EditorCore } from '@/core'
 import { Command } from '@/lib/commands/base-command'
 import type { TimelineTrack } from '@/types/timeline'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 
 export class SplitElementsCommand extends Command {
   private savedState: TimelineTrack[] | null = null
@@ -72,7 +72,7 @@ export class SplitElementsCommand extends Command {
           }
 
           if (this.retainSide === 'right') {
-            const newId = generateUUID()
+            const newId = String(genid.nextId())
             this.rightSideElements.push({
               trackId: track.id,
               elementId: newId,
@@ -90,7 +90,7 @@ export class SplitElementsCommand extends Command {
           }
 
           // "both" - split into two pieces
-          const secondElementId = generateUUID()
+          const secondElementId = String(genid.nextId())
           this.rightSideElements.push({
             trackId: track.id,
             elementId: secondElementId,

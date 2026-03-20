@@ -21,7 +21,7 @@ import {
   useCharacterStore,
 } from '@/stores/character-store'
 import type { CharacterGeneration } from '@/types/character'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 import type { AgentTool } from './types'
 
 function getConfiguredImageProvider() {
@@ -99,7 +99,7 @@ async function addImageToHistory({
   prompt: string
   providerName: string
 }): Promise<void> {
-  const entryId = generateUUID()
+  const entryId = String(genid.nextId())
   const createdAt = new Date().toISOString()
 
   let thumbnailUrl: string | undefined
@@ -296,7 +296,7 @@ export const generateImageTool: AgentTool = {
       }> = []
 
       for (const result of results) {
-        const id = generateUUID().slice(0, 8)
+        const id = String(genid.nextId())
         const file = await urlToFile({
           url: result.url,
           filename: `ai-image-${id}.png`,
@@ -314,7 +314,7 @@ export const generateImageTool: AgentTool = {
 
         if (resolvedCharacterId) {
           const generation: CharacterGeneration = {
-            id: generateUUID(),
+            id: String(genid.nextId()),
             type: 'image',
             prompt,
             url: result.url,
@@ -489,7 +489,7 @@ export const generateVideoTool: AgentTool = {
         }
       }
 
-      const id = generateUUID().slice(0, 8)
+      const id = String(genid.nextId())
       const file = await urlToFile({
         url: finalResult.videoUrl,
         filename: `ai-video-${id}.mp4`,
@@ -499,7 +499,7 @@ export const generateVideoTool: AgentTool = {
       const added = await addFileToProject({ file })
 
       useAIGenerationHistoryStore.getState().addEntry({
-        id: generateUUID(),
+        id: String(genid.nextId()),
         type: 'video',
         prompt,
         url: finalResult.videoUrl,
@@ -508,7 +508,7 @@ export const generateVideoTool: AgentTool = {
 
       if (resolvedCharacterId) {
         const generation: CharacterGeneration = {
-          id: generateUUID(),
+          id: String(genid.nextId()),
           type: 'video',
           prompt,
           url: finalResult.videoUrl,

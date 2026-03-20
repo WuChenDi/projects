@@ -13,7 +13,7 @@ import { processMediaAssets } from '@/lib/media/processing'
 import { uploadReferenceImage } from '@/lib/media/upload-reference'
 import { fetchWithProxyFallback } from '@/lib/media/url-import'
 import type { CharacterGeneration } from '@/types/character'
-import { generateUUID } from '@/utils/id'
+import { genid } from '@/utils/genid'
 import { useAIGenerationHistoryStore } from './ai-generation-history-store'
 import { useAISettingsStore } from './ai-settings-store'
 import {
@@ -204,7 +204,7 @@ export const useAIVideoGenerationStore = create<AIVideoGenerationState>()(
             })
           }
 
-          const videoId = generateUUID()
+          const videoId = String(genid.nextId())
           const newVideo: GeneratedVideo = {
             id: videoId,
             prompt: trimmedPrompt,
@@ -266,7 +266,7 @@ export const useAIVideoGenerationStore = create<AIVideoGenerationState>()(
           apiKey: videoApiKey,
         })
 
-        const videoId = generateUUID()
+        const videoId = String(genid.nextId())
         const newVideo: GeneratedVideo = {
           id: videoId,
           prompt: trimmedPrompt,
@@ -361,7 +361,7 @@ async function pollAndUpdate({
       toast.success(i18next.t('ai.videoComplete'))
 
       useAIGenerationHistoryStore.getState().addEntry({
-        id: generateUUID(),
+        id: String(genid.nextId()),
         type: 'video',
         prompt: currentVideo?.prompt ?? '',
         url: finalResult.videoUrl,
@@ -375,7 +375,7 @@ async function pollAndUpdate({
 
       if (characterId) {
         const generation: CharacterGeneration = {
-          id: generateUUID(),
+          id: String(genid.nextId()),
           type: 'video',
           prompt: currentVideo?.prompt ?? '',
           url: finalResult.videoUrl,
