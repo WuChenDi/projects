@@ -43,7 +43,7 @@
     "react": "catalog:prod",
     "react-dom": "catalog:prod",
     "sonner": "catalog:prod",
-    "zustand": "^5.0.11"
+    "zustand": "catalog:prod"
   },
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",

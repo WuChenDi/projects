@@ -33,5 +33,12 @@
   "[mdx]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css",
+  "i18n-ally.dirStructure": "auto",
+  "i18n-ally.localesPaths": [
+    "apps/bycut/messages",
+    "apps/byplay/messages",
+    "apps/byplay/src/i18n"
+  ],
+  "i18n-ally.enabledFrameworks": ["react-i18next"],
+  "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css"
 }

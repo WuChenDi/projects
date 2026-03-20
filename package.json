@@ -27,6 +27,7 @@
     "dev:dropply": "turbo dev --filter=./apps/dropply-*",
     "dev:text2img": "turbo dev --filter=./apps/text2img",
     "dev:byplay": "turbo dev --filter=./apps/byplay",
+    "dev:bycut": "turbo dev --filter=./apps/bycut",
     "dev:repo-changelog": "turbo dev --filter=./apps/repo-changelog",
     "clean": "bash ./scripts/clean.sh",
     "lint": "turbo lint",
@@ -35,10 +36,10 @@
     "prepare": "turbo run build --filter=./packages/*"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.7",
+    "@biomejs/biome": "^2.4.8",
     "@cdlab996/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
-    "turbo": "^2.8.17",
+    "turbo": "^2.8.20",
     "typescript": "catalog:dev"
   }
 }
