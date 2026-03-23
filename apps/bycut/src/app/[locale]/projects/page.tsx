@@ -18,6 +18,7 @@ import {
 } from '@cdlab996/ui/components/input-group'
 import { Label } from '@cdlab996/ui/components/label'
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
+import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { format } from 'date-fns'
 import {
@@ -94,7 +95,7 @@ export default function ProjectsPage() {
   const isInitialized = editor.project.getIsInitialized()
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="min-h-screen">
       <MigrationDialog />
       <ProjectsHeader />
       <ProjectsToolbar projectIds={projectsToDisplay.map((p) => p.id)} />
@@ -130,7 +131,7 @@ function ProjectsHeader() {
   const { viewMode, isHydrated, setViewMode } = useProjectsStore()
 
   return (
-    <header className="sticky top-0 z-20 px-8 bg-background flex flex-col gap-2">
+    <header className="sticky top-0 z-20 px-8 flex flex-col gap-2">
       <div className="flex items-center justify-between h-16 pt-2">
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-2.5">
@@ -208,7 +209,7 @@ function ProjectsToolbar({ projectIds }: { projectIds: string[] }) {
   }
 
   return (
-    <div className="sticky top-16 z-10 flex items-center justify-between px-6 h-14 pt-2 bg-background">
+    <div className="sticky top-16 z-10 flex items-center justify-between px-6 h-14 pt-2">
       <div className="flex items-center gap-2">
         <Label
           className="flex items-center gap-3 cursor-pointer px-2"
@@ -911,18 +912,12 @@ function EmptyState() {
 
   if (savedProjects.length > 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-5 py-16 text-center">
-        <div className="flex flex-col items-center gap-8">
-          <Search className="text-muted-foreground size-16 bg-accent/35 border rounded-md p-4" />
-          <div className="flex flex-col items-center gap-3">
-            <h3 className="text-lg font-medium">{t('common.noResults')}</h3>
-            <p className="text-muted-foreground max-w-md">
-              {t('projects.searchNoResults', {
-                query: searchQuery,
-              })}
-            </p>
-          </div>
-        </div>
+      <IKEmpty
+        icon={Search}
+        title={t('common.noResults')}
+        description={t('projects.searchNoResults', { query: searchQuery })}
+        className="py-16"
+      >
         <Button
           onClick={() => setSearchQuery({ query: '' })}
           variant="outline"
@@ -930,25 +925,21 @@ function EmptyState() {
         >
           {t('projects.clearSearch')}
         </Button>
-      </div>
+      </IKEmpty>
     )
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-6 py-16 text-center">
-      <div className="flex flex-col items-center gap-2">
-        <div className="bg-muted/30 flex size-16 items-center justify-center rounded-full">
-          <Video className="text-muted-foreground size-8" />
-        </div>
-        <h3 className="text-lg font-medium">{t('projects.noProjects')}</h3>
-        <p className="text-muted-foreground max-w-md">
-          {t('projects.createFirstDesc')}
-        </p>
-      </div>
+    <IKEmpty
+      icon={Video}
+      title={t('projects.noProjects')}
+      description={t('projects.createFirstDesc')}
+      className="py-16"
+    >
       <Button size="lg" onClick={handleCreateProject}>
         <Plus />
         {t('projects.createFirst')}
       </Button>
-    </div>
+    </IKEmpty>
   )
 }

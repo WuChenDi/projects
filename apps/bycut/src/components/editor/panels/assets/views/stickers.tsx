@@ -89,13 +89,22 @@ export function StickersView() {
         <TabsContent value="all" className="mt-0 flex min-h-0 flex-1 flex-col">
           <StickersContentView category="all" />
         </TabsContent>
-        <TabsContent value="general" className="mt-0 flex min-h-0 flex-1 flex-col">
+        <TabsContent
+          value="general"
+          className="mt-0 flex min-h-0 flex-1 flex-col"
+        >
           <StickersContentView category="general" />
         </TabsContent>
-        <TabsContent value="brands" className="mt-0 flex min-h-0 flex-1 flex-col">
+        <TabsContent
+          value="brands"
+          className="mt-0 flex min-h-0 flex-1 flex-col"
+        >
           <StickersContentView category="brands" />
         </TabsContent>
-        <TabsContent value="emoji" className="mt-0 flex min-h-0 flex-1 flex-col">
+        <TabsContent
+          value="emoji"
+          className="mt-0 flex min-h-0 flex-1 flex-col"
+        >
           <StickersContentView category="emoji" />
         </TabsContent>
       </Tabs>

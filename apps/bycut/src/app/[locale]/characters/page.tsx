@@ -17,6 +17,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@cdlab996/ui/components/input-group'
+import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
 import { ArrowLeft, Plus, Search, User } from 'lucide-react'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
@@ -75,8 +76,8 @@ export default function CharactersPage() {
   }
 
   return (
-    <div className="bg-background min-h-screen">
-      <header className="sticky top-0 z-20 px-8 bg-background flex flex-col gap-2">
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-20 px-8 flex flex-col gap-2">
         <div className="flex items-center justify-between h-16 pt-2">
           <div className="flex items-center gap-5">
             <Link href="/" className="flex items-center gap-2">
@@ -232,38 +233,30 @@ function EmptyState({
 
   if (hasSearch) {
     return (
-      <div className="flex flex-col items-center justify-center gap-5 py-16 text-center">
-        <Search className="text-muted-foreground size-16 bg-accent/35 border rounded-md p-4" />
-        <div className="flex flex-col items-center gap-3">
-          <h3 className="text-lg font-medium">{t('common.noResults')}</h3>
-          <p className="text-muted-foreground max-w-md">
-            {t('projects.searchNoResults', {
-              query: searchQuery,
-            })}
-          </p>
-        </div>
+      <IKEmpty
+        icon={Search}
+        title={t('common.noResults')}
+        description={t('projects.searchNoResults', { query: searchQuery })}
+        className="py-16"
+      >
         <Button onClick={onClearSearch} variant="outline" size="lg">
           {t('projects.clearSearch')}
         </Button>
-      </div>
+      </IKEmpty>
     )
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-6 py-16 text-center">
-      <div className="flex flex-col items-center gap-2">
-        <div className="bg-muted/30 flex size-16 items-center justify-center rounded-full">
-          <User className="text-muted-foreground size-8" />
-        </div>
-        <h3 className="text-lg font-medium">{t('characters.noCharacters')}</h3>
-        <p className="text-muted-foreground max-w-md">
-          {t('characters.description')}
-        </p>
-      </div>
+    <IKEmpty
+      icon={User}
+      title={t('characters.noCharacters')}
+      description={t('characters.description')}
+      className="py-16"
+    >
       <Button size="lg" className="gap-2" onClick={onCreateNew}>
         <Plus />
         {t('characters.createFirst')}
       </Button>
-    </div>
+    </IKEmpty>
   )
 }

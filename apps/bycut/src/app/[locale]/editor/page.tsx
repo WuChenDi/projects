@@ -35,7 +35,7 @@ export default function Editor() {
 
   return (
     <EditorProvider projectId={projectId}>
-      <div className="bg-background flex h-screen w-screen flex-col overflow-hidden">
+      <div className="flex h-screen w-screen flex-col overflow-hidden">
         <EditorHeader />
         <div className="min-h-0 min-w-0 flex-1 px-3 pb-3">
           <EditorLayout />

@@ -8,6 +8,7 @@ import {
 } from '@cdlab996/ui/components/empty'
 import type { LucideIcon } from 'lucide-react'
 import { Download } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 interface IKEmptyProps {
   title: string
@@ -17,6 +18,7 @@ interface IKEmptyProps {
   iconClassName?: string
   className?: string
   showIcon?: boolean
+  children?: ReactNode
 }
 
 export function IKEmpty({
@@ -27,6 +29,7 @@ export function IKEmpty({
   iconClassName = 'size-5',
   className = '',
   showIcon = true,
+  children,
 }: IKEmptyProps) {
   return (
     <Empty className={`flex-1 ${className}`}>
@@ -46,6 +49,8 @@ export function IKEmpty({
           <p className="text-xs text-muted-foreground/80">{hint}</p>
         </EmptyContent>
       )}
+
+      {children}
     </Empty>
   )
 }
