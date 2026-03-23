@@ -3,6 +3,7 @@
  * https://github.com/nsiod/share
  */
 
+import { getRandomValues } from '@cdlab996/uncrypto'
 import { xchacha20poly1305 as gcm } from '@noble/ciphers/chacha.js'
 import {
   bytesToUtf8,
@@ -145,7 +146,7 @@ class EncryptionError extends CryptoError {
 // Helper functions
 function secureClear(buffer: ArrayBufferLike): void {
   const view = new Uint8Array(buffer)
-  crypto.getRandomValues(view)
+  getRandomValues(view)
   view.fill(0)
 }
 

@@ -1,6 +1,6 @@
 import nodeCrypto from 'node:crypto'
 
-// @ts-ignore
+// @ts-expect-error
 export const subtle: Crypto['subtle'] = nodeCrypto.webcrypto?.subtle || {}
 
 export const randomUUID: Crypto['randomUUID'] = () => {
