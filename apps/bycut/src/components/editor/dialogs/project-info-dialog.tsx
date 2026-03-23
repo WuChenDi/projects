@@ -8,8 +8,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@cdlab996/ui/components/dialog'
+import { copyToClipboard } from '@cdlab996/utils'
 import { format } from 'date-fns'
+import { Check, Copy } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 import { formatTimeCode } from '@/lib/time'
 import type { TProjectMetadata } from '@/types/project'
 
@@ -25,6 +28,35 @@ function InfoRow({
       <span className="text-muted-foreground text-sm">{label}</span>
       <span className="text-sm font-medium">{value}</span>
     </div>
+  )
+}
+
+function ProjectIdWithCopy({ id }: { id: string }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    const success = await copyToClipboard(id)
+    if (success) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  return (
+    <span className="inline-flex items-center gap-1">
+      <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{id}</code>
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+      >
+        {copied ? (
+          <Check className="size-3.5 text-green-500" />
+        ) : (
+          <Copy className="size-3.5" />
+        )}
+      </button>
+    </span>
   )
 }
 
@@ -67,11 +99,7 @@ export function ProjectInfoDialog({
           />
           <InfoRow
             label={t('projects.id')}
-            value={
-              <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                {project.id}
-              </code>
-            }
+            value={<ProjectIdWithCopy id={project.id} />}
           />
         </div>
         <DialogFooter>

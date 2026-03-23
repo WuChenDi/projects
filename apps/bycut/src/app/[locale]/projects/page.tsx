@@ -45,6 +45,7 @@ import { toast } from 'sonner'
 import { DeleteProjectDialog } from '@/components/editor/dialogs/delete-project-dialog'
 import { MigrationDialog } from '@/components/editor/dialogs/migration-dialog'
 import { ProjectInfoDialog } from '@/components/editor/dialogs/project-info-dialog'
+import { CreateProjectDialog } from '@/components/editor/dialogs/create-project-dialog'
 import { RenameProjectDialog } from '@/components/editor/dialogs/rename-project-dialog'
 import {
   LanguageSelector as LanguageToggle,
@@ -498,11 +499,11 @@ function NewProjectButton() {
   const t = useTranslations()
   const editor = useEditor()
   const router = useRouter()
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const handleCreateProject = async () => {
-    const projectId = await editor.project.createNewProject({
-      name: t('projects.new'),
-    })
+  const handleCreateProject = async (name: string) => {
+    setIsDialogOpen(false)
+    const projectId = await editor.project.createNewProject({ name })
     router.push({
       pathname: '/editor',
       query: { projectId },
@@ -510,14 +511,21 @@ function NewProjectButton() {
   }
 
   return (
-    <Button onClick={handleCreateProject}>
-      <span className="text-sm font-medium hidden md:block">
-        {t('projects.new')}
-      </span>
-      <span className="text-sm font-medium block md:hidden">
-        {t('common.new')}
-      </span>
-    </Button>
+    <>
+      <Button onClick={() => setIsDialogOpen(true)}>
+        <span className="text-sm font-medium hidden md:block">
+          {t('projects.new')}
+        </span>
+        <span className="text-sm font-medium block md:hidden">
+          {t('common.new')}
+        </span>
+      </Button>
+      <CreateProjectDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onConfirm={handleCreateProject}
+      />
+    </>
   )
 }
 
@@ -892,12 +900,12 @@ function EmptyState() {
   const router = useRouter()
   const editor = useEditor()
   const savedProjects = editor.project.getSavedProjects()
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const handleCreateProject = async () => {
+  const handleCreateProject = async (name: string) => {
     try {
-      const projectId = await editor.project.createNewProject({
-        name: t('projects.new'),
-      })
+      setIsDialogOpen(false)
+      const projectId = await editor.project.createNewProject({ name })
       router.push({
         pathname: '/editor',
         query: { projectId },
@@ -936,10 +944,15 @@ function EmptyState() {
       description={t('projects.createFirstDesc')}
       className="py-16"
     >
-      <Button size="lg" onClick={handleCreateProject}>
+      <Button size="lg" onClick={() => setIsDialogOpen(true)}>
         <Plus />
         {t('projects.createFirst')}
       </Button>
+      <CreateProjectDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onConfirm={handleCreateProject}
+      />
     </IKEmpty>
   )
 }
