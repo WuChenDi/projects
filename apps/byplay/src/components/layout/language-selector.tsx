@@ -22,7 +22,7 @@ export function LanguageSelector() {
   const router = useRouter()
   const [isPending] = useTransition()
   const pathname = usePathname()
-  const t = useTranslations('language')
+  const t = useTranslations()
 
   const handleLanguageChange = (
     newLocale: (typeof languages)[number]['code'],

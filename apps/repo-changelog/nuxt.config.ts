@@ -44,5 +44,11 @@ export default defineNuxtConfig({
     host: '0.0.0.0',
   },
 
+  vite: {
+    optimizeDeps: {
+      include: ['@vercel/analytics'],
+    },
+  },
+
   compatibilityDate: '2025-06-01',
 })

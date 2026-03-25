@@ -13,7 +13,7 @@
     "directory": "apps/bycut"
   },
   "scripts": {
-    "dev": "next dev --hostname 0.0.0.0 --port 3019",
+    "dev": "next dev --hostname 0.0.0.0 --port 3020",
     "build": "next build",
     "build:cf": "npx @cloudflare/next-on-pages@latest",
     "start": "next start",
@@ -48,7 +48,7 @@
     "streamdown": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "use-deep-compare-effect": "^1.8.1",
-    "wavesurfer.js": "^7.12.4",
+    "wavesurfer.js": "^7.12.5",
     "zod": "catalog:prod",
     "zustand": "catalog:prod"
   },

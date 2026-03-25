@@ -22,23 +22,23 @@
   },
   "dependencies": {
     "@cdlab996/genid": "catalog:prod",
-    "@iconify-json/lucide": "^1.2.95",
-    "@iconify-json/simple-icons": "^1.2.72",
-    "@nuxt/ui": "^4.5.1",
-    "@nuxtjs/mdc": "0.20.1",
-    "@vercel/analytics": "^1.6.1",
+    "@iconify-json/lucide": "^1.2.98",
+    "@iconify-json/simple-icons": "^1.2.75",
+    "@nuxt/ui": "^4.6.0",
+    "@nuxtjs/mdc": "0.20.2",
+    "@vercel/analytics": "^2.0.1",
     "@vueuse/core": "14.2.1",
     "@vueuse/nuxt": "14.2.1",
-    "nuxt": "4.3.1",
+    "nuxt": "4.4.2",
     "remark-mdc": "^3.10.0",
-    "vue": "^3.5.29"
+    "vue": "^3.5.31"
   },
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
     "tailwindcss": "catalog:dev",
     "typescript": "catalog:dev",
-    "vue-tsc": "^3.2.5"
+    "vue-tsc": "^3.2.6"
   },
   "resolutions": {
     "unimport": "4.1.1"
