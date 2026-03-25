@@ -18,12 +18,13 @@
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
     "./IK/*": "./src/IK/*.tsx",
+    "./icon/*": "./src/icon/*.tsx",
     "./reactbits/*": "./src/reactbits/*.tsx",
     "./hooks/*": "./src/hooks/*.ts"
   },
   "scripts": {},
   "dependencies": {
-    "@base-ui/react": "^1.3.0",
+    "@base-ui/react": "catalog:prod",
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",
     "lucide-react": "catalog:prod",

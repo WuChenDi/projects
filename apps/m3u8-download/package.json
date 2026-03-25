@@ -28,7 +28,7 @@
     "@next/third-parties": "catalog:prod",
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",
-    "cmdk": "^1.1.1",
+    "cmdk": "catalog:prod",
     "date-fns": "catalog:prod",
     "lucide-react": "catalog:prod",
     "mux.js": "^6.3.0",

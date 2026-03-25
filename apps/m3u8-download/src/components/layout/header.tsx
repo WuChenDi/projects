@@ -1,7 +1,8 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
-import { ExternalLinkIcon, Github } from 'lucide-react'
+import { GitHubIcon as Github } from '@cdlab996/ui/icon'
+import { ExternalLinkIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
