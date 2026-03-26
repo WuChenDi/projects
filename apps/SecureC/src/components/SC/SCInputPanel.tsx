@@ -13,6 +13,7 @@ import { PasswordInput } from '@cdlab996/ui/components/password-input'
 import { Textarea } from '@cdlab996/ui/components/textarea'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { FileText, Lock, Unlock, Upload } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import type { RefObject } from 'react'
 import type { FileInfo } from '@/types'
 import { InputModeEnum, ModeEnum } from '@/types'
@@ -51,15 +52,18 @@ export function SCInputPanel({
   isProcessDisabled,
 }: SCInputPanelProps) {
   const isEncrypt = activeTab === ModeEnum.ENCRYPT
+  const t = useTranslations()
 
   return (
     <Card className="shadow-none ">
       <CardHeader>
-        <CardTitle>{isEncrypt ? 'Encrypt' : 'Decrypt'}</CardTitle>
+        <CardTitle>
+          {isEncrypt ? t('input.encryptTitle') : t('input.decryptTitle')}
+        </CardTitle>
         <CardDescription>
           {isEncrypt
-            ? 'Encrypt your files or messages securely'
-            : 'Decrypt your encrypted files or messages'}
+            ? t('input.encryptDescription')
+            : t('input.decryptDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -73,7 +77,7 @@ export function SCInputPanel({
 
         <div className="space-y-4">
           <Field>
-            <Label>Input Mode</Label>
+            <Label>{t('input.inputMode')}</Label>
             <div className="flex gap-2">
               <Button
                 variant={
@@ -83,7 +87,7 @@ export function SCInputPanel({
                 className="flex-1 flex items-center justify-center gap-2"
               >
                 <Upload className="size-4" />
-                File
+                {t('common.file')}
               </Button>
               <Button
                 variant={
@@ -93,24 +97,24 @@ export function SCInputPanel({
                 className="flex-1 flex items-center justify-center gap-2"
               >
                 <FileText className="size-4" />
-                Messages
+                {t('common.messages')}
               </Button>
             </div>
           </Field>
 
           <Field>
-            <Label>Password</Label>
+            <Label>{t('input.password')}</Label>
             <PasswordInput
               value={password}
               onChange={(e) => onPasswordChange(e.target.value)}
-              placeholder="Enter password"
+              placeholder={t('input.passwordPlaceholder')}
             />
           </Field>
 
           <Field>
             {inputMode === InputModeEnum.FILE ? (
               <>
-                <Label>Select File</Label>
+                <Label>{t('input.selectFile')}</Label>
                 <div
                   className={cn(
                     'group relative overflow-hidden rounded-lg border border-dashed transition-all duration-300 cursor-pointer',
@@ -153,8 +157,8 @@ export function SCInputPanel({
                       )}
                     >
                       {fileInfo
-                        ? `Selected: ${fileInfo.name}`
-                        : 'Click to select a file'}
+                        ? t('input.selected', { filename: fileInfo.name })
+                        : t('input.clickToSelect')}
                     </span>
                   </div>
                 </div>
@@ -162,14 +166,14 @@ export function SCInputPanel({
               </>
             ) : (
               <>
-                <Label>Message</Label>
+                <Label>{t('input.message')}</Label>
                 <Textarea
                   value={textInput}
                   onChange={(e) => onTextInputChange(e.target.value)}
                   placeholder={
                     isEncrypt
-                      ? 'Enter the message to be encrypted'
-                      : 'Enter the message to be decrypted'
+                      ? t('input.encryptPlaceholder')
+                      : t('input.decryptPlaceholder')
                   }
                   className="min-h-37 max-h-75 text-sm"
                 />
@@ -192,12 +196,12 @@ export function SCInputPanel({
               {isEncrypt ? (
                 <>
                   <Lock />
-                  Encrypt
+                  {t('common.encrypt')}
                 </>
               ) : (
                 <>
                   <Unlock />
-                  Decrypt
+                  {t('common.decrypt')}
                 </>
               )}
             </Button>

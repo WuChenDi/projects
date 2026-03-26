@@ -40,6 +40,7 @@
     "eciesjs": "^0.4.18",
     "lucide-react": "catalog:prod",
     "next": "catalog:prod",
+    "next-intl": "catalog:prod",
     "next-themes": "catalog:prod",
     "react": "catalog:prod",
     "react-dom": "catalog:prod",

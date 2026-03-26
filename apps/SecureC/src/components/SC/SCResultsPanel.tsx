@@ -8,6 +8,7 @@ import {
 } from '@cdlab996/ui/components/card'
 import { IKEmpty } from '@cdlab996/ui/IK'
 import { Archive, Download, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import type { ProcessResult } from '@/types'
 import { StatusEnum } from '@/types'
 import { SCResultCard } from './SCResultCard'
@@ -25,10 +26,12 @@ export function SCResultsPanel({
   onRemove,
   onClearAll,
 }: SCResultsPanelProps) {
+  const t = useTranslations('results')
+
   return (
     <Card className="flex flex-col p-4 border-none h-full">
       <CardHeader className="p-0 flex flex-row items-center justify-between">
-        <CardTitle>Processing Results</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
         <CardAction>
           {results.length > 0 && (
             <div className="flex gap-2">
@@ -46,11 +49,11 @@ export function SCResultsPanel({
                 }
               >
                 <Download />
-                Download All
+                {t('downloadAll')}
               </Button>
               <Button onClick={onClearAll} size="sm" variant="secondary">
                 <Trash2 />
-                Clear All
+                {t('clearAll')}
               </Button>
             </div>
           )}
@@ -73,9 +76,9 @@ export function SCResultsPanel({
             className="min-h-65"
             icon={Archive}
             iconClassName="size-5"
-            title="No results yet"
-            description="Your encrypted or decrypted files and messages will appear here"
-            hint="Select a file or enter text, set a password, and click to start"
+            title={t('emptyTitle')}
+            description={t('emptyDescription')}
+            hint={t('emptyHint')}
           />
         )}
       </CardContent>

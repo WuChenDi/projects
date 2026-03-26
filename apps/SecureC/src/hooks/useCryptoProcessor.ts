@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { useShallow } from 'zustand/react/shallow'
 import { downloadFile, genid } from '@/lib'
@@ -10,6 +11,7 @@ import type { FileInfo, ProcessResult } from '@/types'
 import { InputModeEnum, ModeEnum, StatusEnum } from '@/types'
 
 export function useCryptoProcessor() {
+  const t = useTranslations('toast')
   const [password, setPassword] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null)
@@ -85,33 +87,36 @@ export function useCryptoProcessor() {
     [clearInput],
   )
 
-  const handleDownloadResult = useCallback((result: ProcessResult) => {
-    if (result.status !== StatusEnum.COMPLETED) return
-    if (result.inputMode === InputModeEnum.MESSAGE) {
-      const filename =
-        result.mode === ModeEnum.ENCRYPT
-          ? `encrypted_text_${result.timestamp}.enc`
-          : `${result.timestamp}.txt`
-      downloadFile(result.data, filename)
-    } else if (result.fileInfo) {
-      downloadFile(result.data, result.fileInfo.name)
-    }
-    toast.success('File downloaded successfully')
-  }, [])
+  const handleDownloadResult = useCallback(
+    (result: ProcessResult) => {
+      if (result.status !== StatusEnum.COMPLETED) return
+      if (result.inputMode === InputModeEnum.MESSAGE) {
+        const filename =
+          result.mode === ModeEnum.ENCRYPT
+            ? `encrypted_text_${result.timestamp}.enc`
+            : `${result.timestamp}.txt`
+        downloadFile(result.data, filename)
+      } else if (result.fileInfo) {
+        downloadFile(result.data, result.fileInfo.name)
+      }
+      toast.success(t('downloadSuccess'))
+    },
+    [t],
+  )
 
   const processInput = useCallback(async () => {
     const mode = activeTab
 
     if (inputMode === InputModeEnum.FILE && !selectedFile) {
-      toast.error('Please select a file first')
+      toast.error(t('selectFile'))
       return
     }
     if (inputMode === InputModeEnum.MESSAGE && !textInput.trim()) {
-      toast.error('Please input the message for processing')
+      toast.error(t('enterMessage'))
       return
     }
     if (!password) {
-      toast.error('Please enter a password')
+      toast.error(t('enterPassword'))
       return
     }
 
@@ -131,7 +136,9 @@ export function useCryptoProcessor() {
 
     addResult(initialResult)
     toast.info(
-      `${mode === ModeEnum.ENCRYPT ? 'Encryption' : 'Decryption'} started`,
+      mode === ModeEnum.ENCRYPT
+        ? t('encryptionStarted')
+        : t('decryptionStarted'),
     )
 
     try {
@@ -188,7 +195,9 @@ export function useCryptoProcessor() {
         })
 
         toast.success(
-          `File ${mode === ModeEnum.ENCRYPT ? 'encrypted' : 'decrypted'} successfully!`,
+          mode === ModeEnum.ENCRYPT
+            ? t('fileEncrypted')
+            : t('fileDecrypted'),
         )
 
         clearInput()
@@ -231,7 +240,9 @@ export function useCryptoProcessor() {
         })
 
         toast.success(
-          `Text ${mode === ModeEnum.ENCRYPT ? 'encrypted' : 'decrypted'} successfully! Check the history to view result.`,
+          mode === ModeEnum.ENCRYPT
+            ? t('textEncrypted')
+            : t('textDecrypted'),
         )
 
         clearInput()
@@ -260,6 +271,7 @@ export function useCryptoProcessor() {
     addResult,
     updateResult,
     clearInput,
+    t,
   ])
 
   const isProcessDisabled =

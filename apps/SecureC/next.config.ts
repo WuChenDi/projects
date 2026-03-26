@@ -1,4 +1,11 @@
 import type { NextConfig } from 'next'
+import createNextIntlPlugin from 'next-intl/plugin'
+
+const withNextIntl = createNextIntlPlugin({
+  experimental: {
+    createMessagesDeclaration: './messages/en.json',
+  },
+})
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -8,7 +15,8 @@ const nextConfig: NextConfig = {
   },
   images: {
     unoptimized: true,
-    formats: ['image/avif', 'image/webp'],
+    qualities: [50, 75, 100],
+    formats: ['image/webp', 'image/avif'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -18,4 +26,4 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withNextIntl(nextConfig)

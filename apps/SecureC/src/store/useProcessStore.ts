@@ -1,3 +1,4 @@
+import { logger } from '@cdlab996/utils'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import {
@@ -125,20 +126,12 @@ export const useProcessStore = create<ProcessStore>()(
         )
 
         // Merge with current state to avoid overwriting concurrent mutations
-        set((state) => {
-          const merged = state.processResults.map(
+        set((state) => ({
+          processResults: state.processResults.map(
             (r) => restoredMap.get(r.id) ?? r,
-          )
-          const existingIds = new Set(state.processResults.map((r) => r.id))
-          // Keep any new results added during rehydration
-          return {
-            processResults: [
-              ...merged,
-              ...state.processResults.filter((r) => !existingIds.has(r.id)),
-            ],
-            isHydrated: true,
-          }
-        })
+          ),
+          isHydrated: true,
+        }))
       },
     }),
     {
@@ -153,11 +146,14 @@ export const useProcessStore = create<ProcessStore>()(
       }),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
-          console.error('Failed to rehydrate store:', error)
+          logger.error('Failed to rehydrate store:', error)
           useProcessStore.setState({ isHydrated: true })
           return
         }
-        state?.rehydrateBlobs()
+        state?.rehydrateBlobs().catch((err) => {
+          logger.error('Blob rehydration failed:', err)
+          useProcessStore.setState({ isHydrated: true })
+        })
       },
     },
   ),

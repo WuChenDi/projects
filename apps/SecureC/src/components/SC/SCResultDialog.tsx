@@ -11,6 +11,7 @@ import {
 import { Label } from '@cdlab996/ui/components/label'
 import { Textarea } from '@cdlab996/ui/components/textarea'
 import { Clipboard, Download } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { copyToClipboard } from '@/lib'
 import type { ProcessResult } from '@/types'
 import { ModeEnum } from '@/types'
@@ -28,19 +29,21 @@ export function SCResultDialog({
   result,
   onDownload,
 }: SCResultDialogProps) {
+  const t = useTranslations('dialog')
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>
             {result?.mode === ModeEnum.ENCRYPT
-              ? 'Encrypted Text'
-              : 'Decrypted Text'}
+              ? t('encryptedText')
+              : t('decryptedText')}
           </DialogTitle>
           <DialogDescription>
             {result?.mode === ModeEnum.ENCRYPT
-              ? 'Your message has been encrypted successfully'
-              : 'Your message has been decrypted successfully'}
+              ? t('encryptedSuccess')
+              : t('decryptedSuccess')}
           </DialogDescription>
         </DialogHeader>
 
@@ -49,8 +52,8 @@ export function SCResultDialog({
             <div className="flex items-center justify-between mb-2">
               <Label className="text-sm font-medium">
                 {result?.mode === ModeEnum.ENCRYPT
-                  ? 'Encrypted Content'
-                  : 'Decrypted Content'}
+                  ? t('encryptedContent')
+                  : t('decryptedContent')}
               </Label>
               <div className="flex gap-2">
                 <Button

@@ -10,6 +10,7 @@ import {
   Unlock,
   X,
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { copyToClipboard, getFileIcon } from '@/lib'
@@ -40,6 +41,7 @@ export function SCResultCard({
 }: SCResultCardProps) {
   const isMessage = result.inputMode === InputModeEnum.MESSAGE
   const [dialogOpen, setDialogOpen] = useState(false)
+  const t = useTranslations()
 
   const mediaType =
     result.mode === ModeEnum.DECRYPT ? isMediaType(result.fileInfo?.type) : null
@@ -65,51 +67,30 @@ export function SCResultCard({
           <>
             <div className="relative flex items-center justify-center rounded-sm shadow-none shrink-0 aspect-square overflow-hidden group border border-border/60">
               <div className="flex items-center justify-center w-full h-full">
-                {
-                  // previewUrl && mediaType === 'image' ? (
-                  //   <img
-                  //     src={previewUrl}
-                  //     alt={result.fileInfo?.name || 'Decrypted image'}
-                  //     className="w-full h-full object-cover"
-                  //   />
-                  // ) : previewUrl && mediaType === 'video' ? (
-                  //   <video
-                  //     src={previewUrl}
-                  //     className="w-full h-full object-cover"
-                  //     muted
-                  //     playsInline
-                  //     onMouseEnter={(e) => e.currentTarget.play()}
-                  //     onMouseLeave={(e) => {
-                  //       e.currentTarget.pause()
-                  //       e.currentTarget.currentTime = 0
-                  //     }}
-                  //   />
-                  // ) :
-                  isMessage ? (
-                    <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30">
-                      <FileText className="size-8 text-primary" />
-                    </div>
-                  ) : result.fileInfo ? (
-                    (() => {
-                      const config = getFileIcon(
-                        result.fileInfo.name,
-                        result.fileInfo.type,
-                      )
-                      const Icon = config.icon
-                      return (
-                        <div
-                          className={cn(
-                            'p-3 rounded-lg transition-transform duration-500 group-hover:scale-110',
-                            config.bgColor,
-                            config.darkBgColor,
-                          )}
-                        >
-                          <Icon className={cn('size-8', config.color)} />
-                        </div>
-                      )
-                    })()
-                  ) : null
-                }
+                {isMessage ? (
+                  <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30">
+                    <FileText className="size-8 text-primary" />
+                  </div>
+                ) : result.fileInfo ? (
+                  (() => {
+                    const config = getFileIcon(
+                      result.fileInfo.name,
+                      result.fileInfo.type,
+                    )
+                    const Icon = config.icon
+                    return (
+                      <div
+                        className={cn(
+                          'p-3 rounded-lg transition-transform duration-500 group-hover:scale-110',
+                          config.bgColor,
+                          config.darkBgColor,
+                        )}
+                      >
+                        <Icon className={cn('size-8', config.color)} />
+                      </div>
+                    )
+                  })()
+                ) : null}
               </div>
 
               <div className="absolute top-2 left-2">
@@ -134,7 +115,7 @@ export function SCResultCard({
                     size="icon"
                     className="size-6 bg-black/40 backdrop-blur-[2px]"
                     onClick={() => setDialogOpen(true)}
-                    title="View"
+                    title={t('common.view')}
                   >
                     <Eye className="size-4 text-white" />
                   </Button>
@@ -146,9 +127,9 @@ export function SCResultCard({
                     className="size-6 bg-black/40 backdrop-blur-[2px]"
                     onClick={() => {
                       void copyToClipboard(result.text!)
-                      toast.success('Copied to clipboard')
+                      toast.success(t('toast.copiedToClipboard'))
                     }}
-                    title="Copy"
+                    title={t('common.copy')}
                   >
                     <Clipboard className="size-4 text-white" />
                   </Button>
@@ -158,7 +139,7 @@ export function SCResultCard({
                   size="icon"
                   className="size-6 bg-black/40 backdrop-blur-[2px]"
                   onClick={() => onDownload(result)}
-                  title="Download"
+                  title={t('common.download')}
                 >
                   <Download className="size-4 text-white" />
                 </Button>
@@ -168,9 +149,9 @@ export function SCResultCard({
                   className="size-6 bg-black/40 backdrop-blur-[2px]"
                   onClick={() => {
                     onRemove(result.id)
-                    toast.success('Result removed')
+                    toast.success(t('toast.resultRemoved'))
                   }}
-                  title="Remove"
+                  title={t('common.remove')}
                 >
                   <X className="size-4 text-white" />
                 </Button>
@@ -180,8 +161,8 @@ export function SCResultCard({
             <div className="space-y-2 mt-3 text-xs text-muted-foreground">
               <p className="flex-1 truncate">
                 {isMessage
-                  ? 'Message Result'
-                  : result.fileInfo?.name || 'Unnamed File'}
+                  ? t('results.messageResult')
+                  : result.fileInfo?.name || t('results.unnamedFile')}
               </p>
               <p>
                 {formatFileSize(

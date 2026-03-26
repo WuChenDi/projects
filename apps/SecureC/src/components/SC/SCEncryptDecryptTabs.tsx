@@ -2,6 +2,7 @@
 
 import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
 import { Lock, Unlock } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { ModeEnum } from '@/types'
 
 interface SCEncryptDecryptTabsProps {
@@ -15,6 +16,8 @@ export function SCEncryptDecryptTabs({
   onTabChange,
   className,
 }: SCEncryptDecryptTabsProps) {
+  const t = useTranslations('common')
+
   return (
     <Tabs
       value={activeTab}
@@ -24,11 +27,11 @@ export function SCEncryptDecryptTabs({
       <TabsList className="w-full h-9! mb-6">
         <TabsTrigger value={ModeEnum.ENCRYPT}>
           <Lock />
-          Encrypt
+          {t('encrypt')}
         </TabsTrigger>
         <TabsTrigger value={ModeEnum.DECRYPT}>
           <Unlock />
-          Decrypt
+          {t('decrypt')}
         </TabsTrigger>
       </TabsList>
     </Tabs>

@@ -2,16 +2,18 @@ import { Card } from '@cdlab996/ui/components/card'
 import { Separator } from '@cdlab996/ui/components/separator'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { ChevronDown, Info } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
 export function SCFeaturesSection() {
   const [showFeatures, setShowFeatures] = useState(true)
+  const t = useTranslations('features')
 
   const features = [
-    'Encrypt and decrypt files or text securely with AES-GCM.',
-    'Derive secure keys from passwords using Argon2id.',
-    'Process large files efficiently with chunked encryption.',
-    'Download encrypted or decrypted results with one click.',
+    t('aesEncrypt'),
+    t('argon2id'),
+    t('chunked'),
+    t('download'),
   ]
 
   return (
@@ -23,7 +25,7 @@ export function SCFeaturesSection() {
         <div className="flex items-center gap-2.5">
           <Info className="size-4 text-primary" />
           <span className="text-base font-medium text-gray-800 dark:text-gray-200">
-            Features
+            {t('title')}
           </span>
         </div>
         <ChevronDown
@@ -47,7 +49,7 @@ export function SCFeaturesSection() {
           ))}
           <Separator />
           <p className="text-muted-foreground text-xs text-center">
-            All encryption happens locally in your browser
+            {t('localNote')}
           </p>
         </div>
       )}

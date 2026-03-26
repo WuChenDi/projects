@@ -1,16 +1,18 @@
 'use client'
 
-// import { ThemeToggle } from '@/components/layout/theme-toggle'
 import { Button } from '@cdlab996/ui/components/button'
 import { GitHubIcon as Github } from '@cdlab996/ui/icon'
 import { ExternalLinkIcon } from 'lucide-react'
 import Image from 'next/image'
-import Link from 'next/link'
-import { ThemeToggle } from './theme-toggle'
+import NextLink from 'next/link'
+import { useTranslations } from 'next-intl'
+import { LanguageSelector, ThemeToggle } from '@/components/layout'
+import { Link } from '@/i18n/navigation'
 
 export function Header() {
+  const t = useTranslations('header')
+
   return (
-    //
     <header className="relative w-full z-10">
       <div className="flex h-20 px-4 md:px-6 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear">
         <div className="flex items-center">
@@ -38,25 +40,26 @@ export function Header() {
 
         <div className="flex items-center gap-6">
           <nav className="hidden md:flex items-center gap-6">
-            <Link
+            <NextLink
               href="https://notes-wudi.pages.dev/projects/"
               className="transition-colors flex items-center gap-1 uppercase text-card-foreground"
             >
-              more
+              {t('more')}
               <ExternalLinkIcon className="size-4" />
-            </Link>
+            </NextLink>
           </nav>
 
           <div className="flex items-center gap-2">
+            <LanguageSelector />
             <ThemeToggle />
             <Button asChild variant="outline" size="icon" aria-label="GitHub">
-              <Link
+              <NextLink
                 href="https://github.com/WuChenDi/projects/tree/main/apps/SecureC"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <Github className="size-4" />
-              </Link>
+              </NextLink>
             </Button>
           </div>
         </div>
