@@ -7,7 +7,7 @@ import { useTheme } from 'next-themes'
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
-  const t = useTranslations('theme')
+  const t = useTranslations()
 
   return (
     <Button
