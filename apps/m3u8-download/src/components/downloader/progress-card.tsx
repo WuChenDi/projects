@@ -26,7 +26,7 @@ import { IKEmpty } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { Download } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import type { FinishItem } from '@/hooks/use-m3u8-downloader'
+import type { FinishItem } from '@/hooks/use-video-downloader'
 
 interface ProgressCardProps {
   finishList: FinishItem[]
@@ -75,11 +75,7 @@ export function ProgressCard({
               </div>
 
               {hasMediaData && !hasStreamWriter && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={onForceDownload}
-                >
+                <Button variant="secondary" size="sm" onClick={onForceDownload}>
                   <Download className="size-4" />
                   {t('download.forceDownload')}
                 </Button>
@@ -108,9 +104,7 @@ export function ProgressCard({
             {errorNum > 0 && (
               <Alert variant="destructive">
                 <AlertTitle>{t('progress.partialFailed')}</AlertTitle>
-                <AlertDescription>
-                  {t('progress.retryHint')}
-                </AlertDescription>
+                <AlertDescription>{t('progress.retryHint')}</AlertDescription>
               </Alert>
             )}
 

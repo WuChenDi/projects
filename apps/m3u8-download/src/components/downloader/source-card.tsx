@@ -34,7 +34,7 @@ import type {
   DownloadState,
   RangeDownload,
   VariantStream,
-} from '@/hooks/use-m3u8-downloader'
+} from '@/hooks/use-video-downloader'
 
 interface SourceCardProps {
   url: string
@@ -45,6 +45,7 @@ interface SourceCardProps {
   variants: VariantStream[]
   tsUrlList: string[]
   isParsed: boolean
+  isDirectVideo: boolean
   rangeDownload: RangeDownload
   estimatedSize: number | null
   isStreamSupported: boolean
@@ -52,6 +53,7 @@ interface SourceCardProps {
   onParse: () => void
   onSelectVariant: (variant: VariantStream) => void
   onStartDownload: (isGetMP4: boolean) => void
+  onDirectDownload: () => void
   onStreamDownload: (isGetMP4: boolean) => void
   onTogglePause: () => void
   onCancel: () => void
@@ -66,6 +68,7 @@ export function SourceCard({
   variants,
   tsUrlList,
   isParsed,
+  isDirectVideo,
   rangeDownload,
   estimatedSize,
   isStreamSupported,
@@ -73,6 +76,7 @@ export function SourceCard({
   onParse,
   onSelectVariant,
   onStartDownload,
+  onDirectDownload,
   onStreamDownload,
   onTogglePause,
   onCancel,
@@ -88,7 +92,7 @@ export function SourceCard({
 
       <CardContent className="space-y-4">
         <Field>
-          <FieldTitle>{t('parse.urlLabel')}</FieldTitle>
+          <FieldTitle>{t('parse.videoUrlLabel')}</FieldTitle>
           <div className="flex gap-2">
             <Input
               id="m3u8-url"
@@ -98,14 +102,12 @@ export function SourceCard({
                 if (e.key === 'Enter') onParse()
               }}
               disabled={downloadState.isDownloading}
-              placeholder={t('parse.placeholder')}
+              placeholder={t('parse.videoPlaceholder')}
               className="text-base"
             />
             <Button
               onClick={onParse}
-              disabled={
-                isParsing || downloadState.isDownloading || !url.trim()
-              }
+              disabled={isParsing || downloadState.isDownloading || !url.trim()}
             >
               {isParsing ? (
                 <>
@@ -144,7 +146,18 @@ export function SourceCard({
           </Field>
         )}
 
-        {isParsed && (
+        {isDirectVideo && estimatedSize !== null && (
+          <Field>
+            <FieldTitle>
+              {t('download.fileInfo')}
+              <span className="text-sm text-muted-foreground">
+                {formatFileSize(estimatedSize)}
+              </span>
+            </FieldTitle>
+          </Field>
+        )}
+
+        {isParsed && !isDirectVideo && (
           <Field>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
               <FieldTitle>
@@ -195,54 +208,23 @@ export function SourceCard({
         )}
       </CardContent>
 
-      {isParsed && (
+      {(isParsed || isDirectVideo) && (
         <CardFooter className="flex-col sm:flex-row gap-4 items-start">
           {!downloadState.isDownloading ? (
-            <>
-              <Field>
-                <FieldTitle>{t('download.normalDownload')}</FieldTitle>
-                <ButtonGroup>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onStartDownload(false)}
-                  >
-                    <HardDriveDownload className="size-4" />
-                    {t('download.originalFormat')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onStartDownload(true)}
-                  >
-                    <HardDriveDownload className="size-4" />
-                    {t('download.convertMp4')}
-                  </Button>
-                </ButtonGroup>
-              </Field>
-
-              {isStreamSupported && (
+            isDirectVideo ? (
+              <Button onClick={onDirectDownload}>
+                <HardDriveDownload className="size-4" />
+                {t('download.directDownload')}
+              </Button>
+            ) : (
+              <>
                 <Field>
-                  <FieldTitle>
-                    {t('download.streamDownload')}
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <CircleQuestionMark className="size-4 cursor-help text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">
-                            {t('download.streamTooltip')}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </FieldTitle>
+                  <FieldTitle>{t('download.normalDownload')}</FieldTitle>
                   <ButtonGroup>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onStreamDownload(false)}
+                      onClick={() => onStartDownload(false)}
                     >
                       <HardDriveDownload className="size-4" />
                       {t('download.originalFormat')}
@@ -250,15 +232,58 @@ export function SourceCard({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onStreamDownload(true)}
+                      onClick={() => onStartDownload(true)}
                     >
                       <HardDriveDownload className="size-4" />
                       {t('download.convertMp4')}
                     </Button>
                   </ButtonGroup>
                 </Field>
-              )}
-            </>
+
+                {isStreamSupported && (
+                  <Field>
+                    <FieldTitle>
+                      {t('download.streamDownload')}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <CircleQuestionMark className="size-4 cursor-help text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">
+                              {t('download.streamTooltip')}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </FieldTitle>
+                    <ButtonGroup>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onStreamDownload(false)}
+                      >
+                        <HardDriveDownload className="size-4" />
+                        {t('download.originalFormat')}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onStreamDownload(true)}
+                      >
+                        <HardDriveDownload className="size-4" />
+                        {t('download.convertMp4')}
+                      </Button>
+                    </ButtonGroup>
+                  </Field>
+                )}
+              </>
+            )
+          ) : isDirectVideo ? (
+            <Button variant="destructive" onClick={onCancel}>
+              <X className="size-4" />
+              {t('download.cancel')}
+            </Button>
           ) : (
             <ButtonGroup>
               <Button

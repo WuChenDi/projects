@@ -6,19 +6,22 @@
     "label": "Switch language"
   },
   "header": {
-    "title": "M3U8 Downloader",
+    "title": "Video Downloader",
     "more": "more"
   },
   "footer": {
     "copyright": "Copyright © 2025-PRESENT |"
   },
   "tool": {
-    "title": "M3U8 Online Downloader",
-    "description": "Supports range download, streaming download, AES decryption, MP4 conversion"
+    "title": "Video Downloader",
+    "description": "Supports M3U8/HLS, MP4, and other video formats with range download, streaming, AES decryption, MP4 conversion"
   },
   "parse": {
+    "videoUrlLabel": "Video URL",
+    "videoPlaceholder": "https://example.com/video.m3u8 or .mp4",
     "urlLabel": "M3U8 URL",
     "placeholder": "https://example.com/playlist.m3u8",
+    "directVideoDetected": "{format} video detected, click download to start",
     "parsing": "Parsing",
     "parse": "Parse",
     "enterUrl": "Please enter a URL",
@@ -36,6 +39,10 @@
     "range": "Download Range",
     "totalSegments": "({count} segments{size})",
     "estimatedSize": ", est. {size}",
+    "fileInfo": "File Size: ",
+    "directDownload": "Download Video",
+    "directComplete": "Download complete",
+    "directFailed": "Download failed, please check the URL and try again",
     "normalDownload": "Normal Download",
     "originalFormat": "Original (.ts)",
     "convertMp4": "Convert MP4",
@@ -70,7 +77,7 @@
   },
   "empty": {
     "title": "No download tasks",
-    "description": "Enter an M3U8 URL and click Parse to start",
-    "hint": "Supports range download, streaming download, AES decryption, and MP4 conversion"
+    "description": "Enter a video URL and click Parse to start",
+    "hint": "Supports M3U8/HLS, MP4, and other video formats"
   }
 }

@@ -3,7 +3,7 @@
 import { IKPageContainer } from '@cdlab996/ui/IK'
 import Script from 'next/script'
 import { ProgressCard, SourceCard } from '@/components/downloader'
-import { useM3u8Downloader } from '@/hooks/use-m3u8-downloader'
+import { useVideoDownloader } from '@/hooks/use-video-downloader'
 
 export default function M3u8Downloader() {
   const {
@@ -25,16 +25,18 @@ export default function M3u8Downloader() {
     isParsed,
     mediaFileListRef,
     streamWriter,
+    isDirectVideo,
     parseM3U8,
     selectVariant,
     startDownload,
+    directDownload,
     cancelDownload,
     togglePause,
     retry,
     forceDownload,
     streamDownload,
     onStreamSaverReady,
-  } = useM3u8Downloader()
+  } = useVideoDownloader()
 
   return (
     <IKPageContainer scrollable={false}>
@@ -53,6 +55,7 @@ export default function M3u8Downloader() {
           variants={variants}
           tsUrlList={tsUrlList}
           isParsed={isParsed}
+          isDirectVideo={isDirectVideo}
           rangeDownload={rangeDownload}
           estimatedSize={estimatedSize}
           isStreamSupported={isStreamSupported}
@@ -60,6 +63,7 @@ export default function M3u8Downloader() {
           onParse={() => void parseM3U8()}
           onSelectVariant={selectVariant}
           onStartDownload={(isGetMP4) => void startDownload(isGetMP4)}
+          onDirectDownload={() => void directDownload()}
           onStreamDownload={streamDownload}
           onTogglePause={togglePause}
           onCancel={cancelDownload}

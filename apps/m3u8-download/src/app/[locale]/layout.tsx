@@ -40,29 +40,31 @@ export async function generateMetadata({
 
   if (locale === 'zh') {
     return {
-      title: 'M3U8 在线下载工具 | 支持范围下载、流式下载、AES 解密',
+      title: '视频在线下载工具 | 支持 M3U8/HLS、MP4 等格式下载',
       icons: 'https://notes-wudi.pages.dev/images/logo.png',
       description:
-        'M3U8 在线下载工具，支持范围下载、流式下载、AES-128 解密、转 MP4 格式。完全免费，无需注册，浏览器端处理，保护隐私。',
+        '在线视频下载工具，支持 M3U8/HLS、MP4、FLV、MKV 等多种视频格式。提供范围下载、流式下载、AES-128 解密、转 MP4 功能。完全免费，无需注册，浏览器端处理，保护隐私。',
       keywords: [
+        '视频下载',
+        '视频下载器',
         'M3U8下载',
         'M3U8下载器',
         'HLS下载',
-        '视频下载',
+        'MP4下载',
         'TS合并',
         'MP4转换',
         'AES解密',
         '流式下载',
         '范围下载',
         '在线工具',
-        'M3U8 downloader',
+        'video downloader',
         'HLS video download',
         '视频片段下载',
       ],
       referrer: 'no-referrer-when-downgrade',
       authors: [{ name: 'wudi', url: 'https://github.com/WuChenDi' }],
       creator: 'wudi',
-      publisher: 'M3U8 Download Tool',
+      publisher: 'Video Download Tool',
       robots: {
         index: true,
         follow: true,
@@ -72,19 +74,19 @@ export async function generateMetadata({
       },
       metadataBase: new URL('https://m3u8dw.pages.dev/'),
       alternates: { canonical: '/' },
-      applicationName: 'M3U8 在线下载工具',
+      applicationName: '视频在线下载工具',
       openGraph: {
-        title: 'M3U8 在线下载工具 - 支持范围下载、流式下载、AES 解密',
+        title: '视频在线下载工具 - 支持 M3U8/HLS、MP4 等多格式下载',
         description:
-          '强大的 M3U8 在线下载工具，支持范围下载、流式下载、AES-128 解密、转 MP4 格式。完全免费，浏览器端处理，保护隐私。',
+          '强大的在线视频下载工具，支持 M3U8/HLS、MP4、FLV、MKV 等格式，提供范围下载、流式下载、AES-128 解密、转 MP4 功能。完全免费，浏览器端处理，保护隐私。',
         url: 'https://m3u8dw.pages.dev/',
-        siteName: 'M3U8 Download Tool',
+        siteName: 'Video Download Tool',
         images: [
           {
             url: 'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/m3u8dw/index.png',
             width: 1200,
             height: 630,
-            alt: 'M3U8 在线下载工具界面预览',
+            alt: '视频在线下载工具界面预览',
           },
         ],
         locale: 'zh_CN',
@@ -92,9 +94,9 @@ export async function generateMetadata({
       },
       twitter: {
         card: 'summary_large_image',
-        title: 'M3U8 在线下载工具 - 支持范围下载、流式下载、AES 解密',
+        title: '视频在线下载工具 - 支持 M3U8/HLS、MP4 等多格式下载',
         description:
-          '强大的 M3U8 在线下载工具，支持范围下载、流式下载、AES-128 解密、转 MP4 格式。完全免费，浏览器端处理。',
+          '强大的在线视频下载工具，支持 M3U8/HLS、MP4、FLV、MKV 等格式，提供范围下载、流式下载、AES-128 解密、转 MP4 功能。完全免费，浏览器端处理。',
         images: [
           'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/m3u8dw/index.png',
         ],
@@ -105,15 +107,17 @@ export async function generateMetadata({
   }
 
   return {
-    title: 'M3U8 Online Downloader | Range Download, Streaming, AES Decryption',
+    title: 'Video Downloader Online | M3U8/HLS, MP4, and More Formats',
     icons: 'https://notes-wudi.pages.dev/images/logo.png',
     description:
-      'M3U8 online download tool with range download, streaming download, AES-128 decryption, and MP4 conversion. Completely free, no registration, browser-based processing.',
+      'Online video download tool supporting M3U8/HLS, MP4, FLV, MKV, and more. Features range download, streaming, AES-128 decryption, and MP4 conversion. Completely free, no registration, browser-based.',
     keywords: [
+      'video download',
+      'video downloader',
       'M3U8 download',
       'M3U8 downloader',
       'HLS download',
-      'video download',
+      'MP4 download',
       'TS merge',
       'MP4 convert',
       'AES decrypt',
@@ -125,7 +129,7 @@ export async function generateMetadata({
     referrer: 'no-referrer-when-downgrade',
     authors: [{ name: 'wudi', url: 'https://github.com/WuChenDi' }],
     creator: 'wudi',
-    publisher: 'M3U8 Download Tool',
+    publisher: 'Video Download Tool',
     robots: {
       index: true,
       follow: true,
@@ -135,20 +139,19 @@ export async function generateMetadata({
     },
     metadataBase: new URL('https://m3u8dw.pages.dev/'),
     alternates: { canonical: '/' },
-    applicationName: 'M3U8 Online Downloader',
+    applicationName: 'Video Downloader Online',
     openGraph: {
-      title:
-        'M3U8 Online Downloader - Range Download, Streaming, AES Decryption',
+      title: 'Video Downloader Online - M3U8/HLS, MP4, and More Formats',
       description:
-        'Powerful M3U8 online download tool with range download, streaming download, AES-128 decryption, and MP4 conversion. Completely free, browser-based.',
+        'Powerful online video download tool supporting M3U8/HLS, MP4, FLV, MKV, and more. Features range download, streaming, AES-128 decryption, and MP4 conversion. Completely free, browser-based.',
       url: 'https://m3u8dw.pages.dev/',
-      siteName: 'M3U8 Download Tool',
+      siteName: 'Video Download Tool',
       images: [
         {
           url: 'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/m3u8dw/index.png',
           width: 1200,
           height: 630,
-          alt: 'M3U8 Online Downloader Preview',
+          alt: 'Video Downloader Online Preview',
         },
       ],
       locale: 'en_US',
@@ -156,10 +159,9 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title:
-        'M3U8 Online Downloader - Range Download, Streaming, AES Decryption',
+      title: 'Video Downloader Online - M3U8/HLS, MP4, and More Formats',
       description:
-        'Powerful M3U8 online download tool with range download, streaming download, AES-128 decryption, and MP4 conversion. Completely free.',
+        'Powerful online video download tool supporting M3U8/HLS, MP4, FLV, MKV, and more. Features range download, streaming, AES-128 decryption, and MP4 conversion. Completely free.',
       images: [
         'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/m3u8dw/index.png',
       ],
