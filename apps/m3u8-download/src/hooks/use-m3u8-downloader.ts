@@ -51,6 +51,8 @@ export interface DownloadState {
 // ============================================================
 
 const FETCH_TIMEOUT_MS = 30_000
+const MAX_SEGMENT_RETRIES = 3
+const RETRY_BASE_DELAY_MS = 1_000
 
 const fetchData = async (
   url: string,
@@ -127,8 +129,15 @@ const applyURL = (targetURL: string, baseURL?: string) => {
   return `${domain.join('/')}/${targetURL}`
 }
 
-const estimateFileSize = async (urlList: string[]): Promise<number | null> => {
-  const total = urlList.length
+const estimateFileSize = async (
+  urlList: string[],
+  startSegment: number,
+  endSegment: number,
+): Promise<number | null> => {
+  const start = Math.max(startSegment - 1, 0)
+  const end = Math.min(endSegment, urlList.length)
+  const sliced = urlList.slice(start, end)
+  const total = sliced.length
   if (total === 0) return null
 
   const sampleIndices = [0, Math.floor(total / 2), total - 1].filter(
@@ -138,7 +147,7 @@ const estimateFileSize = async (urlList: string[]): Promise<number | null> => {
   const sizes: number[] = []
   for (const idx of sampleIndices) {
     try {
-      const res = await fetch(urlList[idx], { method: 'HEAD' })
+      const res = await fetch(sliced[idx], { method: 'HEAD' })
       const len = res.headers.get('Content-Length')
       if (len) sizes.push(Number.parseInt(len, 10))
     } catch {
@@ -226,6 +235,7 @@ export function useM3u8Downloader() {
   const downloadingTimestamps = useRef<Map<number, number>>(new Map())
   const m3u8ContentRef = useRef('')
   const downloadAbortRef = useRef<AbortController | null>(null)
+  const isRetryingRef = useRef(false)
 
   const downloadStateRef = useRef(downloadState)
   downloadStateRef.current = downloadState
@@ -355,13 +365,30 @@ export function useM3u8Downloader() {
           streamDownloadIndex: currentStreamIndex,
         }))
 
-        if (currentStreamIndex >= targetSegment) {
+        if (
+          currentStreamIndex >= targetSegment &&
+          downloadStateRef.current.isDownloading
+        ) {
+          downloadStateRef.current = {
+            ...downloadStateRef.current,
+            isDownloading: false,
+          }
           streamWriter.current.close()
           streamWriter.current = null
           setDownloadState((s) => ({ ...s, isDownloading: false }))
           toast.success(t('download.streamComplete', { count: newFinishNum }))
         }
-      } else if (!isStreamModeRef.current && newFinishNum === targetSegment) {
+      } else if (
+        !isStreamModeRef.current &&
+        newFinishNum === targetSegment &&
+        downloadStateRef.current.isDownloading
+      ) {
+        // Immediately mark as not downloading to prevent retryAll from
+        // spawning a second downloadTS before React re-renders
+        downloadStateRef.current = {
+          ...downloadStateRef.current,
+          isDownloading: false,
+        }
         const completeMediaList = mediaFileListRef.current.filter(Boolean)
         triggerBrowserDownload(
           completeMediaList,
@@ -410,16 +437,32 @@ export function useM3u8Downloader() {
         })
         downloadingTimestamps.current.set(index, Date.now())
 
-        try {
-          const file = await fetchData(
-            urlList[index],
-            'file',
-            downloadAbortRef.current?.signal,
-          )
-          downloadingTimestamps.current.delete(index)
-          if (!downloadStateRef.current.isDownloading) return
-          await dealTS(file, index, startSegment, isGetMP4)
-        } catch {
+        let success = false
+        for (let attempt = 0; attempt < MAX_SEGMENT_RETRIES; attempt++) {
+          const currentState = downloadStateRef.current
+          if (currentState.isPaused || !currentState.isDownloading) return
+
+          try {
+            const file = await fetchData(
+              urlList[index],
+              'file',
+              downloadAbortRef.current?.signal,
+            )
+            downloadingTimestamps.current.delete(index)
+            if (!downloadStateRef.current.isDownloading) return
+            await dealTS(file, index, startSegment, isGetMP4)
+            success = true
+            break
+          } catch {
+            if (!downloadStateRef.current.isDownloading) return
+            if (attempt < MAX_SEGMENT_RETRIES - 1) {
+              const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt)
+              await new Promise((resolve) => setTimeout(resolve, delay))
+            }
+          }
+        }
+
+        if (!success) {
           downloadingTimestamps.current.delete(index)
           if (!downloadStateRef.current.isDownloading) return
           setFinishList((prev) => {
@@ -438,7 +481,8 @@ export function useM3u8Downloader() {
       }
     }
 
-    const concurrency = Math.min(6, targetSegment - finishNum)
+    const pendingCount = finishItems.filter((item) => item.status === '').length
+    const concurrency = Math.min(6, pendingCount || targetSegment)
     await Promise.all(Array.from({ length: concurrency }, () => worker()))
   }
 
@@ -499,7 +543,7 @@ export function useM3u8Downloader() {
     toast.success(t('parse.success', { count: newTsUrlList.length }))
 
     setEstimatedSize(null)
-    void estimateFileSize(newTsUrlList).then((size) => {
+    void estimateFileSize(newTsUrlList, 1, newTsUrlList.length).then((size) => {
       if (size) setEstimatedSize(size)
     })
   }
@@ -681,6 +725,7 @@ export function useM3u8Downloader() {
   const cancelDownload = () => {
     downloadAbortRef.current?.abort()
     downloadAbortRef.current = null
+    isRetryingRef.current = false
 
     setDownloadState((prev) => ({
       ...prev,
@@ -761,39 +806,54 @@ export function useM3u8Downloader() {
     ) {
       return
     }
+    if (!downloadStateRef.current.isDownloading) return
+    if (isRetryingRef.current && !forceRestart) return
 
     const startSegment = parseInt(rangeDownload.startSegment)
     const endSegment = parseInt(rangeDownload.endSegment)
     const isGetMP4 = downloadStateRef.current.isGetMP4
-    let firstErrorIndex = downloadState.downloadIndex
+    let firstPendingIndex = endSegment
     const now = Date.now()
+    let hasPending = false
 
     const newFinishList = finishList.map((item, index) => {
+      if (index < startSegment - 1 || index >= endSegment) return item
+
       if (item.status === 'error') {
-        firstErrorIndex = Math.min(firstErrorIndex, index)
+        firstPendingIndex = Math.min(firstPendingIndex, index)
+        hasPending = true
         return { ...item, status: '' as const }
+      }
+      // Also handle items stuck at '' that are not actively downloading
+      if (item.status === '' && !downloadingTimestamps.current.has(index)) {
+        firstPendingIndex = Math.min(firstPendingIndex, index)
+        hasPending = true
       }
       if (item.status === 'downloading') {
         const startedAt = downloadingTimestamps.current.get(index)
         if (startedAt && now - startedAt > FETCH_TIMEOUT_MS + 5_000) {
           downloadingTimestamps.current.delete(index)
-          firstErrorIndex = Math.min(firstErrorIndex, index)
+          firstPendingIndex = Math.min(firstPendingIndex, index)
+          hasPending = true
           return { ...item, status: '' as const }
         }
       }
       return item
     })
 
+    if (!hasPending) return
+
     setFinishList(newFinishList)
 
-    if (downloadState.downloadIndex >= endSegment || forceRestart) {
+    if (downloadStateRef.current.downloadIndex >= endSegment || forceRestart) {
+      isRetryingRef.current = true
       setDownloadState((prev) => ({
         ...prev,
-        downloadIndex: firstErrorIndex,
+        downloadIndex: firstPendingIndex,
       }))
       downloadStateRef.current = {
         ...downloadStateRef.current,
-        downloadIndex: firstErrorIndex,
+        downloadIndex: firstPendingIndex,
       }
       void downloadTS(
         tsUrlList,
@@ -801,12 +861,9 @@ export function useM3u8Downloader() {
         startSegment,
         endSegment,
         isGetMP4,
-      )
-    } else {
-      setDownloadState((prev) => ({
-        ...prev,
-        downloadIndex: firstErrorIndex,
-      }))
+      ).finally(() => {
+        isRetryingRef.current = false
+      })
     }
   }
 
@@ -862,6 +919,26 @@ export function useM3u8Downloader() {
       setIsStreamSupported(true)
     }
   })
+
+  // Re-estimate file size when segment range changes
+  useEffect(() => {
+    if (tsUrlList.length === 0) return
+
+    const start = Math.max(parseInt(rangeDownload.startSegment) || 1, 1)
+    const end = Math.max(
+      parseInt(rangeDownload.endSegment) || tsUrlList.length,
+      1,
+    )
+
+    setEstimatedSize(null)
+    let cancelled = false
+    void estimateFileSize(tsUrlList, start, end).then((size) => {
+      if (!cancelled && size) setEstimatedSize(size)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [rangeDownload.startSegment, rangeDownload.endSegment, tsUrlList])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally load only on mount
   useEffect(() => {
