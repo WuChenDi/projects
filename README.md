@@ -96,20 +96,21 @@ https://byplay.pages.dev/
 - 为 ByPlay 提供播放数据采集、日志上报与行为分析能力
 - 适合作为播放器日志后端或 A/B 实验/质量监控的数据基础设施
 
-### m3u8-download
+### vidl
 
-**M3U8 / HLS 视频下载助手**
+**Online Video Downloader**
 
-https://m3u8dw.pages.dev/
+https://vidl.pages.dev/
 
-- 解析 M3U8 链接、支持范围下载 / 流式下载 / AES-128 自动解密 / TS 转 MP4
-- 核心技术：mux.js + Streams API
-- 亮点：流式下载几乎零内存占用、支持暂停/续传/单片段重试
+- Supports M3U8/HLS, MP4, WebM, MKV, FLV, and more — auto-detects URL format
+- M3U8: range download, stream download, AES-128 decryption, TS-to-MP4 conversion
+- Tech: mux.js + Streams API
+- Highlights: near-zero memory stream download, pause/resume, auto-retry with exponential backoff
 
 <details>
   <summary>📸 Preview</summary>
   <br/>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/m3u8-download/og-image.png" alt="m3u8-download" />
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/vidl/og-image.png" alt="vidl" />
 </details>
 
 ### value-vision
@@ -162,7 +163,7 @@ pnpm install
 ```bash
 pnpm dev                         # 启动所有应用（并行开发）
 pnpm --filter clearify dev       # 只启动 Clearify
-pnpm --filter m3u8-download dev
+pnpm --filter vidl dev
 pnpm --filter securec dev
 pnpm --filter text2img dev
 pnpm --filter value-vision dev
@@ -172,7 +173,7 @@ pnpm --filter dropply-web dev
 pnpm --filter repo-changelog dev
 pnpm build                       # 构建所有应用
 pnpm --filter clearify run build
-pnpm --filter m3u8-download run build
+pnpm --filter vidl run build
 pnpm --filter securec run build
 pnpm --filter text2img run build
 pnpm --filter value-vision run build
@@ -195,7 +196,7 @@ pnpm clean                       # 清理 node_modules / 缓存 / 构建产物
 │   ├── clearify/          # 图像 & 视频工具箱
 │   ├── dropply-api/       # Dropply 文件分享 Cloudflare API
 │   ├── dropply-web/       # Dropply 文件分享 Web 前端
-│   ├── m3u8-download/     # M3U8 下载工具
+│   ├── vidl/              # Video Downloader (M3U8/HLS, MP4, etc.)
 │   ├── repo-changelog/    # GitHub Release / Changelog 聚合工具
 │   ├── SecureC/           # 加解密工具
 │   ├── text2img/          # 文生图前端

@@ -72,14 +72,14 @@ export async function generateMetadata({
         'max-image-preview': 'large',
         'max-video-preview': -1,
       },
-      metadataBase: new URL('https://m3u8dw.pages.dev/'),
+      metadataBase: new URL('https://vidl.pages.dev/'),
       alternates: { canonical: '/' },
       applicationName: '视频在线下载工具',
       openGraph: {
         title: '视频在线下载工具 - 支持 M3U8/HLS、MP4 等多格式下载',
         description:
           '强大的在线视频下载工具，支持 M3U8/HLS、MP4、FLV、MKV 等格式，提供范围下载、流式下载、AES-128 解密、转 MP4 功能。完全免费，浏览器端处理，保护隐私。',
-        url: 'https://m3u8dw.pages.dev/',
+        url: 'https://vidl.pages.dev/',
         siteName: 'Video Download Tool',
         images: [
           {
@@ -137,14 +137,14 @@ export async function generateMetadata({
       'max-image-preview': 'large',
       'max-video-preview': -1,
     },
-    metadataBase: new URL('https://m3u8dw.pages.dev/'),
+    metadataBase: new URL('https://vidl.pages.dev/'),
     alternates: { canonical: '/' },
     applicationName: 'Video Downloader Online',
     openGraph: {
       title: 'Video Downloader Online - M3U8/HLS, MP4, and More Formats',
       description:
         'Powerful online video download tool supporting M3U8/HLS, MP4, FLV, MKV, and more. Features range download, streaming, AES-128 decryption, and MP4 conversion. Completely free, browser-based.',
-      url: 'https://m3u8dw.pages.dev/',
+      url: 'https://vidl.pages.dev/',
       siteName: 'Video Download Tool',
       images: [
         {

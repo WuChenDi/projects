@@ -23,7 +23,7 @@
     "dev": "turbo dev",
     "dev:clearify": "turbo dev --filter=./apps/clearify",
     "dev:securec": "turbo dev --filter=./apps/securec",
-    "dev:m3u8dw": "turbo dev --filter=./apps/m3u8-download",
+    "dev:vidl": "turbo dev --filter=./apps/vidl",
     "dev:dropply": "turbo dev --filter=./apps/dropply-*",
     "dev:text2img": "turbo dev --filter=./apps/text2img",
     "dev:byplay": "turbo dev --filter=./apps/byplay",

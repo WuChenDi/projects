@@ -91,7 +91,7 @@
         "apps/byplay/**/*",
         "apps/clearify/**/*",
         "apps/dropply-web/**/*",
-        "apps/m3u8-download/**/*",
+        "apps/vidl/**/*",
         "apps/SecureC/**/*",
         "apps/txt2img/**/*",
         "apps/value-vision/**/*"
