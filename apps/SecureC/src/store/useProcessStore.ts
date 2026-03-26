@@ -1,61 +1,164 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import {
+  clearBlobs,
+  getBlob,
+  removeBlob,
+  removeBlobs,
+  storeBlob,
+} from '@/lib/storage'
 import type { ProcessResult } from '@/types'
+import { StatusEnum } from '@/types'
 
 interface ProcessStore {
   processResults: ProcessResult[]
+  isHydrated: boolean
   addResult: (result: ProcessResult) => void
   updateResult: (id: string, updates: Partial<ProcessResult>) => void
   removeResult: (id: string) => void
   removeResults: (ids: string[]) => void
   clearResults: () => void
+  rehydrateBlobs: () => Promise<void>
 }
 
-export const useProcessStore = create<ProcessStore>()((set, get) => ({
-  processResults: [],
+export const useProcessStore = create<ProcessStore>()(
+  persist(
+    (set, get) => ({
+      processResults: [],
+      isHydrated: false,
 
-  addResult: (result) =>
-    set((state) => ({
-      processResults: [result, ...state.processResults],
-    })),
-
-  updateResult: (id, updates) =>
-    set((state) => ({
-      processResults: state.processResults.map((result) =>
-        result.id === id ? { ...result, ...updates } : result,
-      ),
-    })),
-
-  removeResult: (id) =>
-    set((state) => {
-      const result = state.processResults.find((r) => r.id === id)
-      if (result?.downloadUrl) {
-        URL.revokeObjectURL(result.downloadUrl)
-      }
-      return {
-        processResults: state.processResults.filter((r) => r.id !== id),
-      }
-    }),
-
-  removeResults: (ids) =>
-    set((state) => {
-      const idsSet = new Set(ids)
-      state.processResults.forEach((result) => {
-        if (idsSet.has(result.id) && result.downloadUrl) {
-          URL.revokeObjectURL(result.downloadUrl)
+      addResult: (result) => {
+        set((state) => ({
+          processResults: [result, ...state.processResults],
+        }))
+        if (result.data.byteLength > 0) {
+          storeBlob(result.id, result.data).catch(console.error)
         }
-      })
-      return {
-        processResults: state.processResults.filter((r) => !idsSet.has(r.id)),
-      }
-    }),
+      },
 
-  clearResults: () =>
-    set((state) => {
-      state.processResults.forEach((result) => {
-        if (result.downloadUrl) {
-          URL.revokeObjectURL(result.downloadUrl)
+      updateResult: (id, updates) => {
+        set((state) => ({
+          processResults: state.processResults.map((result) =>
+            result.id === id ? { ...result, ...updates } : result,
+          ),
+        }))
+        if (updates.data && updates.data.byteLength > 0) {
+          storeBlob(id, updates.data).catch(console.error)
         }
-      })
-      return { processResults: [] }
+      },
+
+      removeResult: (id) =>
+        set((state) => {
+          const result = state.processResults.find((r) => r.id === id)
+          if (result?.downloadUrl) {
+            URL.revokeObjectURL(result.downloadUrl)
+          }
+          removeBlob(id).catch(console.error)
+          return {
+            processResults: state.processResults.filter((r) => r.id !== id),
+          }
+        }),
+
+      removeResults: (ids) =>
+        set((state) => {
+          const idsSet = new Set(ids)
+          state.processResults.forEach((result) => {
+            if (idsSet.has(result.id) && result.downloadUrl) {
+              URL.revokeObjectURL(result.downloadUrl)
+            }
+          })
+          removeBlobs(ids).catch(console.error)
+          return {
+            processResults: state.processResults.filter(
+              (r) => !idsSet.has(r.id),
+            ),
+          }
+        }),
+
+      clearResults: () =>
+        set((state) => {
+          state.processResults.forEach((result) => {
+            if (result.downloadUrl) {
+              URL.revokeObjectURL(result.downloadUrl)
+            }
+          })
+          clearBlobs().catch(console.error)
+          return { processResults: [] }
+        }),
+
+      rehydrateBlobs: async () => {
+        const { processResults } = get()
+        const restoredMap = new Map<string, ProcessResult>()
+
+        await Promise.all(
+          processResults.map(async (result) => {
+            if (result.status !== StatusEnum.COMPLETED) {
+              restoredMap.set(result.id, result)
+              return
+            }
+            try {
+              const data = await getBlob(result.id)
+              if (!data) {
+                restoredMap.set(result.id, {
+                  ...result,
+                  status: StatusEnum.FAILED,
+                  error: 'Data lost',
+                })
+                return
+              }
+
+              let downloadUrl: string | undefined
+              if (result.fileInfo) {
+                const blob = new Blob([data], { type: result.fileInfo.type })
+                downloadUrl = URL.createObjectURL(blob)
+              }
+
+              restoredMap.set(result.id, { ...result, data, downloadUrl })
+            } catch {
+              restoredMap.set(result.id, {
+                ...result,
+                status: StatusEnum.FAILED,
+                error: 'Data lost',
+              })
+            }
+          }),
+        )
+
+        // Merge with current state to avoid overwriting concurrent mutations
+        set((state) => {
+          const merged = state.processResults.map(
+            (r) => restoredMap.get(r.id) ?? r,
+          )
+          const existingIds = new Set(state.processResults.map((r) => r.id))
+          // Keep any new results added during rehydration
+          return {
+            processResults: [
+              ...merged,
+              ...state.processResults.filter((r) => !existingIds.has(r.id)),
+            ],
+            isHydrated: true,
+          }
+        })
+      },
     }),
-}))
+    {
+      name: 'securec-process-results',
+      partialize: (state) => ({
+        processResults: state.processResults
+          .filter((r) => r.status === StatusEnum.COMPLETED)
+          .map(({ data, downloadUrl, ...rest }) => ({
+            ...rest,
+            data: new ArrayBuffer(0),
+          })),
+      }),
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('Failed to rehydrate store:', error)
+          useProcessStore.setState({ isHydrated: true })
+          return
+        }
+        state?.rehydrateBlobs()
+      },
+    },
+  ),
+)

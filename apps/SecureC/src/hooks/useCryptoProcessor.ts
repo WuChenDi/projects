@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useShallow } from 'zustand/react/shallow'
 import { downloadFile, genid } from '@/lib'
+import { detect } from '@/lib/crypto'
 import { useProcessStore } from '@/store/useProcessStore'
 import type { FileInfo, ProcessResult } from '@/types'
 import { InputModeEnum, ModeEnum, StatusEnum } from '@/types'
@@ -35,28 +36,35 @@ export function useCryptoProcessor() {
 
     return () => {
       workerRef.current?.terminate()
-
-      const results = useProcessStore.getState().processResults
-      results.forEach((result) => {
-        if (result.downloadUrl) {
-          URL.revokeObjectURL(result.downloadUrl)
-        }
-      })
     }
   }, [])
 
-  const handleFileSelect = useCallback((file: File | null) => {
+  const handleFileSelect = useCallback(async (file: File | null) => {
     setSelectedFile(file)
     if (file) {
+      const { encryptionType } = await detect(file)
+      const isEncrypted = encryptionType !== 'unencrypted'
       setFileInfo({
         name: file.name,
         size: file.size,
-        type:
-          file.type ||
-          (file.name.endsWith('.enc') ? 'application/encrypted' : 'Unknown'),
+        type: file.type || (isEncrypted ? 'application/encrypted' : 'Unknown'),
       })
+      if (isEncrypted) {
+        setActiveTab(ModeEnum.DECRYPT)
+      }
     } else {
       setFileInfo(null)
+    }
+  }, [])
+
+  const handleTextInputChange = useCallback(async (value: string) => {
+    setTextInput(value)
+    const trimmed = value.trim()
+    if (trimmed.length >= 3) {
+      const { encryptionType } = await detect(trimmed)
+      if (encryptionType !== 'unencrypted') {
+        setActiveTab(ModeEnum.DECRYPT)
+      }
     }
   }, [])
 
@@ -265,7 +273,7 @@ export function useCryptoProcessor() {
     selectedFile,
     fileInfo,
     textInput,
-    setTextInput,
+    setTextInput: handleTextInputChange,
     inputMode,
     setInputMode,
     activeTab,
