@@ -11,14 +11,16 @@ Preview: https://securec.pages.dev/
 
 ## Features
 
+- **Multi-File Batch Processing**: Select or drag-and-drop multiple files at once for batch encryption/decryption with individual progress tracking.
 - **File and Text Encryption**: Encrypt and decrypt any file type or text messages using XChaCha20-Poly1305.
 - **Password-Based Security**: Securely derive encryption keys from passwords using Argon2id with random salts.
 - **Public Key Encryption**: Support ECIES (Elliptic Curve Integrated Encryption Scheme) for public key encryption with optional digital signatures.
 - **Large File Chunking**: Process large files in 10MB chunks to optimize memory usage and performance.
 - **Web Worker Performance**: Run encryption and decryption in a Web Worker to keep the UI responsive.
-- **Processing History**: Track and manage all encryption/decryption operations with a comprehensive history table.
+- **Auto-Detection**: Automatically detects encrypted files (by magic bytes) and encrypted text, switching to decrypt mode.
+- **Processing History**: Track and manage all encryption/decryption operations with persistent storage (IndexedDB + localStorage).
 - **Batch Operations**: Download or delete multiple results at once from the processing history.
-- **Manual Download**: Download encrypted (`.enc`) or decrypted files with one click, with timestamped filenames.
+- **Internationalization**: Full i18n support with English and Chinese (Simplified) via next-intl.
 - **Progress Feedback**: Real-time progress updates during encryption/decryption for a better user experience.
 - **Client-Side Privacy**: All operations are performed locally, ensuring data never leaves your device.
 
@@ -31,7 +33,7 @@ graph TD
     B -->|File/Text Input| C[PasswordPage]
     B -->|Password Input| D[PasswordInput]
     C -->|Trigger Encryption/Decryption| E[Web Worker]
-    C -->|State Management| F[Zustand Store]
+    C -->|State Management| F[Zustand Store + Persist]
     C -->|File Prompt| G[Sonner Toaster]
     C -->|Text Display| H[Dialog]
     E -->|Chunk Processing| I[XChaCha20-Poly1305]
@@ -44,25 +46,26 @@ graph TD
     L -->|File Download| N[Blob Download]
     L -->|Text Output| H
     F -->|Process Results| O[Processing History]
-    O -->|Batch Operations| P[Download/Delete]
-    O -->|View Results| Q[Result Dialog]
-    B -->|Theme Switching| R[Next-Themes]
-    B -->|Visual Effects| S[Aurora/Particles]
-    B -->|Error Handling| T[Error Page]
+    F -->|Binary Data| P[IndexedDB Storage]
+    O -->|Batch Operations| Q[Download/Delete]
+    O -->|View Results| R[Result Dialog]
+    B -->|Theme Switching| S[Next-Themes]
+    B -->|Language Switching| T[next-intl]
+    B -->|Error Handling| U[Error Page]
 
     subgraph Frontend Layer
         B[Frontend Interface]
         C[PasswordPage]
         D[PasswordInput]
-        F[Zustand Store]
+        F[Zustand Store + Persist]
         G[Sonner Toaster]
         H[Dialog]
         O[Processing History]
-        P[Batch Operations]
-        Q[Result Dialog]
-        R[Next-Themes]
-        S[Aurora/Particles]
-        T[Error Page]
+        Q[Batch Operations]
+        R[Result Dialog]
+        S[Next-Themes]
+        T[next-intl]
+        U[Error Page]
     end
 
     subgraph Encryption Layer
@@ -76,6 +79,7 @@ graph TD
         L[Data Processing]
         M[FileInfo]
         N[Blob Download]
+        P[IndexedDB Storage]
     end
 ```
 
@@ -84,15 +88,16 @@ graph TD
 ### Encrypting Files or Text
 
 1. **Select Mode**:
-   - Choose **File** mode to upload a file or **Messages** mode to input text.
-   - For files, click the upload area or drag and drop a file (any type supported). File details (name, size, type) will be displayed.
+   - Choose **File** mode to upload files or **Messages** mode to input text.
+   - For files, click the upload area or drag and drop one or more files (any type supported). You can add more files incrementally, and remove individual files from the list.
    - For text, enter the message in the provided textarea.
 2. **Enter Password**:
    - Input a secure password in the password field (required).
 3. **Click Encrypt**:
-   - Click the "Encrypt" button to process the file or text using XChaCha20-Poly1305 encryption.
+   - Click the "Encrypt" button to process the files or text using XChaCha20-Poly1305 encryption.
+   - All selected files are queued and processed sequentially, each with its own progress card.
    - Files are processed in 10MB chunks; text is encrypted as a single block and output as Base64.
-   - After processing, the result appears in the processing history table below.
+   - After processing, results appear in the processing history panel.
    - For files, click the "Download" button in the history to save the encrypted file (`.enc` suffix).
    - For text, click the "View" button to see the encrypted text in a dialog (with copy/download options).
 
@@ -100,29 +105,32 @@ graph TD
 
 1. **Select Mode**:
    - Choose **File** mode for encrypted files (`.enc`) or **Messages** mode for encrypted text (Base64).
-   - For files, upload the `.enc` file. For text, paste the Base64-encoded encrypted text.
+   - For files, upload the `.enc` file(s). The app automatically detects encrypted content and switches to decrypt mode.
+   - For text, paste the Base64-encoded encrypted text. Auto-detection also works for encrypted text.
 2. **Enter Password**:
    - Input the same password used for encryption.
 3. **Click Decrypt**:
-   - Click the "Decrypt" button to decrypt the file or text.
-   - If the password is correct, the result appears in the processing history.
+   - Click the "Decrypt" button to decrypt the files or text.
+   - If the password is correct, results appear in the processing history.
    - For files, the decrypted file is available for download (with original extension if available).
    - For text, the decrypted message is shown in a dialog.
    - If the password is incorrect, a "Decryption failed" error is displayed.
 
 ### Managing Processing History
 
-1. **View Results**:
-   - All encryption/decryption operations are tracked in the processing history table.
-   - Each entry shows: file/text name, action (encrypt/decrypt), status, progress, size, and timestamp.
-2. **Download Results**:
+1. **Persistent Storage**:
+   - Completed results are automatically persisted. Refreshing the page preserves your processing history.
+   - Metadata is stored in localStorage; binary data is stored in IndexedDB.
+2. **View Results**:
+   - All encryption/decryption operations are tracked in the processing history panel.
+   - Each entry shows: file/text name, action (encrypt/decrypt), status, size, and a preview icon.
+3. **Download Results**:
    - Click the download icon for individual results.
-   - Select multiple results using checkboxes and click "Download" for batch downloads.
-3. **Delete Results**:
-   - Click the delete icon to remove individual results.
-   - Select multiple results and click "Delete" for batch deletion.
-4. **Reset All**:
-   - Click "Reset All" to clear the entire processing history.
+   - Click "Download All" for batch downloads of all completed results.
+4. **Delete Results**:
+   - Click the remove icon to delete individual results.
+5. **Clear All**:
+   - Click "Clear All" to clear the entire processing history.
 
 ## Security Considerations
 
@@ -139,12 +147,13 @@ graph TD
 
 ## Thanks
 
-The encryption algorithm is sourced from: https://github.com/nsiod/share
+The encryption algorithm is sourced from: https://ns.io/
 
 <!-- - https://pastebin.com/
 - https://defuse.ca/pastebin.htm
 - https://cowtransfer.com/
 - https://www.transfernow.net/en
+- https://github.com/nsiod/share
 - https://about.encl.io/ -->
 
 ## 📜 License
