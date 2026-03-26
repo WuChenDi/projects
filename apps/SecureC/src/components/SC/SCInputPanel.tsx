@@ -12,13 +12,13 @@ import { Label } from '@cdlab996/ui/components/label'
 import { PasswordInput } from '@cdlab996/ui/components/password-input'
 import { Textarea } from '@cdlab996/ui/components/textarea'
 import { cn } from '@cdlab996/ui/lib/utils'
-import { FileText, Lock, Unlock, Upload } from 'lucide-react'
+import { formatFileSize } from '@cdlab996/utils'
+import { FileText, Lock, Unlock, Upload, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { RefObject } from 'react'
 import type { FileInfo } from '@/types'
 import { InputModeEnum, ModeEnum } from '@/types'
 import { SCEncryptDecryptTabs } from './SCEncryptDecryptTabs'
-import { SCFileInfoDisplay } from './SCFileInfoDisplay'
 
 interface SCInputPanelProps {
   activeTab: ModeEnum
@@ -27,9 +27,10 @@ interface SCInputPanelProps {
   onInputModeChange: (mode: InputModeEnum) => void
   password: string
   onPasswordChange: (value: string) => void
-  fileInfo: FileInfo | null
+  fileInfos: FileInfo[]
   fileInputRef: RefObject<HTMLInputElement | null>
-  onFileSelect: (file: File | null) => void
+  onFileSelect: (files: File[]) => void
+  onRemoveFile: (index: number) => void
   textInput: string
   onTextInputChange: (value: string) => void
   onProcess: () => void
@@ -43,9 +44,10 @@ export function SCInputPanel({
   onInputModeChange,
   password,
   onPasswordChange,
-  fileInfo,
+  fileInfos,
   fileInputRef,
   onFileSelect,
+  onRemoveFile,
   textInput,
   onTextInputChange,
   onProcess,
@@ -53,6 +55,7 @@ export function SCInputPanel({
 }: SCInputPanelProps) {
   const isEncrypt = activeTab === ModeEnum.ENCRYPT
   const t = useTranslations()
+  const hasFiles = fileInfos.length > 0
 
   return (
     <Card className="shadow-none ">
@@ -71,7 +74,14 @@ export function SCInputPanel({
           type="file"
           ref={fileInputRef}
           className="hidden"
-          onChange={(e) => onFileSelect(e.target.files?.[0] || null)}
+          multiple
+          onChange={(e) => {
+            const files = e.target.files
+            if (files && files.length > 0) {
+              onFileSelect(Array.from(files))
+            }
+            e.target.value = ''
+          }}
         />
         <SCEncryptDecryptTabs activeTab={activeTab} onTabChange={onTabChange} />
 
@@ -118,7 +128,7 @@ export function SCInputPanel({
                 <div
                   className={cn(
                     'group relative overflow-hidden rounded-lg border border-dashed transition-all duration-300 cursor-pointer',
-                    fileInfo
+                    hasFiles
                       ? isEncrypt
                         ? 'border-blue-400 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-900/30'
                         : 'border-green-400 dark:border-green-500 bg-green-50/50 dark:bg-green-900/30'
@@ -130,12 +140,24 @@ export function SCInputPanel({
                         ),
                   )}
                   onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    const files = e.dataTransfer.files
+                    if (files.length > 0) {
+                      onFileSelect(Array.from(files))
+                    }
+                  }}
                 >
                   <div className="flex flex-col items-center justify-center space-y-3 p-8">
                     <Upload
                       className={cn(
                         'size-8 transition-colors duration-300',
-                        fileInfo
+                        hasFiles
                           ? isEncrypt
                             ? 'text-blue-500'
                             : 'text-green-500'
@@ -147,7 +169,7 @@ export function SCInputPanel({
                     <span
                       className={cn(
                         'text-sm text-center font-medium transition-colors duration-300',
-                        fileInfo
+                        hasFiles
                           ? isEncrypt
                             ? 'text-blue-600'
                             : 'text-green-600'
@@ -156,13 +178,47 @@ export function SCInputPanel({
                             : 'text-gray-500 group-hover:text-green-600',
                       )}
                     >
-                      {fileInfo
-                        ? t('input.selected', { filename: fileInfo.name })
+                      {hasFiles
+                        ? fileInfos.length === 1
+                          ? t('input.selectedOne', {
+                              filename: fileInfos[0].name,
+                            })
+                          : t('input.selectedMultiple', {
+                              count: fileInfos.length,
+                            })
                         : t('input.clickToSelect')}
                     </span>
                   </div>
                 </div>
-                {fileInfo && <SCFileInfoDisplay fileInfo={fileInfo} />}
+
+                {hasFiles && (
+                  <div className="mt-2 space-y-1.5">
+                    {fileInfos.map((info, index) => (
+                      <div
+                        // biome-ignore lint/suspicious/noArrayIndexKey: file list order is stable during display
+                        key={index}
+                        className="flex items-center justify-between rounded-md bg-gray-50/50 dark:bg-gray-800/30 px-3 py-2 text-xs border border-gray-200/50 dark:border-gray-700/50"
+                      >
+                        <span className="truncate flex-1 text-gray-700 dark:text-gray-300 font-medium">
+                          {info.name}
+                        </span>
+                        <span className="text-gray-500 dark:text-gray-400 ml-3 shrink-0">
+                          {formatFileSize(info.size)}
+                        </span>
+                        <button
+                          type="button"
+                          className="ml-2 shrink-0 text-gray-400 hover:text-red-500 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onRemoveFile(index)
+                          }}
+                        >
+                          <X className="size-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </>
             ) : (
               <>

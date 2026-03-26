@@ -28,8 +28,9 @@
     "password": "密码",
     "passwordPlaceholder": "输入密码",
     "selectFile": "选择文件",
-    "clickToSelect": "点击选择文件",
-    "selected": "已选择: {filename}",
+    "clickToSelect": "点击或拖拽文件到此处",
+    "selectedOne": "已选择: {filename}",
+    "selectedMultiple": "已选择 {count} 个文件",
     "message": "消息",
     "encryptPlaceholder": "输入要加密的消息",
     "decryptPlaceholder": "输入要解密的消息"

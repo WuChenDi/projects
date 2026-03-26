@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useShallow } from 'zustand/react/shallow'
 import { downloadFile, genid } from '@/lib'
@@ -13,8 +13,8 @@ import { InputModeEnum, ModeEnum, StatusEnum } from '@/types'
 export function useCryptoProcessor() {
   const t = useTranslations('toast')
   const [password, setPassword] = useState('')
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [fileInfo, setFileInfo] = useState<FileInfo | null>(null)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [fileInfos, setFileInfos] = useState<FileInfo[]>([])
   const [textInput, setTextInput] = useState('')
   const [inputMode, setInputMode] = useState<InputModeEnum>(InputModeEnum.FILE)
   const [activeTab, setActiveTab] = useState<ModeEnum>(ModeEnum.ENCRYPT)
@@ -41,21 +41,28 @@ export function useCryptoProcessor() {
     }
   }, [])
 
-  const handleFileSelect = useCallback(async (file: File | null) => {
-    setSelectedFile(file)
-    if (file) {
+  const handleFileSelect = useCallback(async (newFiles: File[]) => {
+    if (newFiles.length === 0) return
+
+    setSelectedFiles((prev) => [...prev, ...newFiles])
+
+    let hasEncrypted = false
+    const newInfos: FileInfo[] = []
+
+    for (const file of newFiles) {
       const { encryptionType } = await detect(file)
       const isEncrypted = encryptionType !== 'unencrypted'
-      setFileInfo({
+      if (isEncrypted) hasEncrypted = true
+      newInfos.push({
         name: file.name,
         size: file.size,
         type: file.type || (isEncrypted ? 'application/encrypted' : 'Unknown'),
       })
-      if (isEncrypted) {
-        setActiveTab(ModeEnum.DECRYPT)
-      }
-    } else {
-      setFileInfo(null)
+    }
+
+    setFileInfos((prev) => [...prev, ...newInfos])
+    if (hasEncrypted) {
+      setActiveTab(ModeEnum.DECRYPT)
     }
   }, [])
 
@@ -70,9 +77,14 @@ export function useCryptoProcessor() {
     }
   }, [])
 
+  const removeFile = useCallback((index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index))
+    setFileInfos((prev) => prev.filter((_, i) => i !== index))
+  }, [])
+
   const clearInput = useCallback(() => {
-    setSelectedFile(null)
-    setFileInfo(null)
+    setSelectedFiles([])
+    setFileInfos([])
     setTextInput('')
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
@@ -104,10 +116,78 @@ export function useCryptoProcessor() {
     [t],
   )
 
+  const processOneFile = useCallback(
+    (file: File, taskId: string, mode: ModeEnum): Promise<void> => {
+      return new Promise(async (resolve) => {
+        try {
+          const worker = workerRef.current
+          if (!worker) throw new Error('Web Worker not initialized')
+
+          const result = await new Promise<{
+            data: Blob
+            filename: string
+            base64?: string
+            originalExtension?: string
+          }>((res, rej) => {
+            worker.onmessage = (e: MessageEvent) => {
+              const { data, error, progress, stage } = e.data
+              if (error) {
+                rej(new Error(error))
+              } else if (progress !== undefined) {
+                updateResult(taskId, {
+                  progress,
+                  stage: stage || `Processing... ${progress}%`,
+                })
+              } else if (data) {
+                res(data)
+              }
+            }
+
+            worker.postMessage({
+              mode,
+              file,
+              filename: file.name,
+              password,
+              isTextMode: false,
+            })
+          })
+
+          const resultArrayBuffer = await result.data.arrayBuffer()
+          const blob = new Blob([resultArrayBuffer], { type: result.data.type })
+          const downloadUrl = URL.createObjectURL(blob)
+
+          updateResult(taskId, {
+            data: resultArrayBuffer,
+            status: StatusEnum.COMPLETED,
+            progress: 100,
+            stage: 'Complete!',
+            downloadUrl,
+            fileInfo: {
+              name: result.filename,
+              size: result.data.size,
+              type: result.data.type,
+              originalExtension: result.originalExtension,
+            },
+          })
+        } catch (error) {
+          updateResult(taskId, {
+            status: StatusEnum.FAILED,
+            error: error instanceof Error ? error.message : 'An error occurred',
+            progress: 0,
+            stage: 'Failed',
+          })
+        }
+
+        resolve()
+      })
+    },
+    [password, updateResult],
+  )
+
   const processInput = useCallback(async () => {
     const mode = activeTab
 
-    if (inputMode === InputModeEnum.FILE && !selectedFile) {
+    if (inputMode === InputModeEnum.FILE && selectedFiles.length === 0) {
       toast.error(t('selectFile'))
       return
     }
@@ -120,88 +200,63 @@ export function useCryptoProcessor() {
       return
     }
 
-    const taskId = String(genid.nextId())
-
-    const initialResult: ProcessResult = {
-      id: taskId,
-      mode,
-      inputMode,
-      data: new ArrayBuffer(0),
-      fileInfo: fileInfo || undefined,
-      timestamp: Date.now(),
-      status: StatusEnum.PROCESSING,
-      progress: 0,
-      stage: 'Initializing...',
-    }
-
-    addResult(initialResult)
     toast.info(
       mode === ModeEnum.ENCRYPT
         ? t('encryptionStarted')
         : t('decryptionStarted'),
     )
 
-    try {
-      const worker = workerRef.current
-      if (!worker) throw new Error('Web Worker not initialized')
+    if (inputMode === InputModeEnum.FILE) {
+      const filesToProcess = [...selectedFiles]
+      const infosToProcess = [...fileInfos]
+      clearInput()
 
-      if (inputMode === InputModeEnum.FILE && selectedFile) {
-        const result = await new Promise<{
-          data: Blob
-          filename: string
-          base64?: string
-          originalExtension?: string
-        }>((resolve, reject) => {
-          worker.onmessage = (e: MessageEvent) => {
-            const { data, error, progress, stage } = e.data
-            if (error) {
-              reject(new Error(error))
-            } else if (progress !== undefined) {
-              updateResult(taskId, {
-                progress,
-                stage: stage || `Processing... ${progress}%`,
-              })
-            } else if (data) {
-              resolve(data)
-            }
-          }
-
-          worker.postMessage({
-            mode,
-            file: selectedFile,
-            filename: selectedFile.name,
-            password,
-            isTextMode: false,
-          })
+      // Create all task entries upfront so all loading cards appear immediately
+      const taskIds: string[] = []
+      for (let i = 0; i < filesToProcess.length; i++) {
+        const taskId = String(genid.nextId())
+        taskIds.push(taskId)
+        addResult({
+          id: taskId,
+          mode,
+          inputMode: InputModeEnum.FILE,
+          data: new ArrayBuffer(0),
+          fileInfo: infosToProcess[i],
+          timestamp: Date.now(),
+          status: StatusEnum.PROCESSING,
+          progress: 0,
+          stage: 'Queued',
         })
+      }
 
-        const resultArrayBuffer = await result.data.arrayBuffer()
+      // Process files sequentially through the single worker
+      for (let i = 0; i < filesToProcess.length; i++) {
+        await processOneFile(filesToProcess[i], taskIds[i], mode)
+      }
 
-        const blob = new Blob([resultArrayBuffer], { type: result.data.type })
-        const downloadUrl = URL.createObjectURL(blob)
+      toast.success(
+        mode === ModeEnum.ENCRYPT ? t('fileEncrypted') : t('fileDecrypted'),
+      )
+    } else if (inputMode === InputModeEnum.MESSAGE) {
+      const taskId = String(genid.nextId())
 
-        updateResult(taskId, {
-          data: resultArrayBuffer,
-          status: StatusEnum.COMPLETED,
-          progress: 100,
-          stage: 'Complete!',
-          downloadUrl,
-          fileInfo: {
-            name: result.filename,
-            size: result.data.size,
-            type: result.data.type,
-            originalExtension: result.originalExtension,
-          },
-        })
+      const initialResult: ProcessResult = {
+        id: taskId,
+        mode,
+        inputMode,
+        data: new ArrayBuffer(0),
+        timestamp: Date.now(),
+        status: StatusEnum.PROCESSING,
+        progress: 0,
+        stage: 'Initializing...',
+      }
 
-        toast.success(
-          mode === ModeEnum.ENCRYPT
-            ? t('fileEncrypted')
-            : t('fileDecrypted'),
-        )
+      addResult(initialResult)
 
-        clearInput()
-      } else if (inputMode === InputModeEnum.MESSAGE) {
+      try {
+        const worker = workerRef.current
+        if (!worker) throw new Error('Web Worker not initialized')
+
         const result = await new Promise<{
           data: Blob
           filename: string
@@ -240,50 +295,49 @@ export function useCryptoProcessor() {
         })
 
         toast.success(
-          mode === ModeEnum.ENCRYPT
-            ? t('textEncrypted')
-            : t('textDecrypted'),
+          mode === ModeEnum.ENCRYPT ? t('textEncrypted') : t('textDecrypted'),
         )
 
         clearInput()
-      }
-    } catch (error) {
-      updateResult(taskId, {
-        status: StatusEnum.FAILED,
-        error: error instanceof Error ? error.message : 'An error occurred',
-        progress: 0,
-        stage: 'Failed',
-      })
+      } catch (error) {
+        updateResult(taskId, {
+          status: StatusEnum.FAILED,
+          error: error instanceof Error ? error.message : 'An error occurred',
+          progress: 0,
+          stage: 'Failed',
+        })
 
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : 'An error occurred during processing',
-      )
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : 'An error occurred during processing',
+        )
+      }
     }
   }, [
     activeTab,
     inputMode,
-    selectedFile,
+    selectedFiles,
+    fileInfos,
     textInput,
     password,
-    fileInfo,
     addResult,
     updateResult,
     clearInput,
+    processOneFile,
     t,
   ])
 
   const isProcessDisabled =
-    (inputMode === InputModeEnum.FILE && !selectedFile) ||
+    (inputMode === InputModeEnum.FILE && selectedFiles.length === 0) ||
     (inputMode === InputModeEnum.MESSAGE && !textInput.trim()) ||
     !password
 
   return {
     password,
     setPassword,
-    selectedFile,
-    fileInfo,
+    selectedFiles,
+    fileInfos,
     textInput,
     setTextInput: handleTextInputChange,
     inputMode,
@@ -292,6 +346,7 @@ export function useCryptoProcessor() {
     handleTabChange,
     fileInputRef,
     handleFileSelect,
+    removeFile,
     processInput,
     handleDownloadResult,
     processResults,

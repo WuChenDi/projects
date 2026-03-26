@@ -27,9 +27,10 @@
     "inputMode": "Input Mode",
     "password": "Password",
     "passwordPlaceholder": "Enter password",
-    "selectFile": "Select File",
-    "clickToSelect": "Click to select a file",
-    "selected": "Selected: {filename}",
+    "selectFile": "Select Files",
+    "clickToSelect": "Click or drag files here",
+    "selectedOne": "Selected: {filename}",
+    "selectedMultiple": "{count} files selected",
     "message": "Message",
     "encryptPlaceholder": "Enter the message to be encrypted",
     "decryptPlaceholder": "Enter the message to be decrypted"

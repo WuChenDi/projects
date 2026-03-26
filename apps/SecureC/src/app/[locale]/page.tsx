@@ -15,7 +15,7 @@ export default function PasswordPage() {
   const {
     password,
     setPassword,
-    fileInfo,
+    fileInfos,
     textInput,
     setTextInput,
     inputMode,
@@ -24,6 +24,7 @@ export default function PasswordPage() {
     handleTabChange,
     fileInputRef,
     handleFileSelect,
+    removeFile,
     processInput,
     handleDownloadResult,
     processResults,
@@ -52,9 +53,10 @@ export default function PasswordPage() {
             onInputModeChange={setInputMode}
             password={password}
             onPasswordChange={setPassword}
-            fileInfo={fileInfo}
+            fileInfos={fileInfos}
             fileInputRef={fileInputRef}
             onFileSelect={handleFileSelect}
+            onRemoveFile={removeFile}
             textInput={textInput}
             onTextInputChange={setTextInput}
             onProcess={processInput}
