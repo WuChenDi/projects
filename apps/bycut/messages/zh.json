@@ -356,6 +356,9 @@
     "moreOptions": "更多选项",
     "openInNewWindow": "在新窗口中打开",
     "fileSize": "文件大小",
+    "dimensions": "分辨率",
+    "codec": "编解码器",
+    "frameRate": "帧率",
     "processing": "正在处理您的文件 ({progress}%)"
   },
   "stickers": {

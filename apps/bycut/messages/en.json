@@ -356,6 +356,9 @@
     "moreOptions": "More options",
     "openInNewWindow": "Open in new window",
     "fileSize": "File size",
+    "dimensions": "Dimensions",
+    "codec": "Codec",
+    "frameRate": "Frame rate",
     "processing": "Processing your files ({progress}%)"
   },
   "stickers": {

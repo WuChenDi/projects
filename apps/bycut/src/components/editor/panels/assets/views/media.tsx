@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@cdlab996/ui/components/dropdown-menu'
 import { Input } from '@cdlab996/ui/components/input'
+import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
 import {
   Tooltip,
   TooltipContent,
@@ -48,6 +49,7 @@ import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { MediaDragOverlay } from '@/components/editor/panels/assets/drag-overlay'
 import { DraggableItem } from '@/components/editor/panels/assets/draggable-item'
+import { MediaInfoPanel } from '@/components/editor/panels/assets/views/media-info-panel'
 import { TIMELINE_CONSTANTS } from '@/constants/timeline-constants'
 import { useEditor } from '@/hooks/use-editor'
 import { useFileUpload } from '@/hooks/use-file-upload'
@@ -260,6 +262,10 @@ export function MediaView() {
     previewComponents.get(`compact-${item.id}`)
 
   const selectedMediaId = useMediaPreviewStore((state) => state.selectedMediaId)
+  const selectedMedia = useMemo(
+    () => mediaFiles.find((item) => item.id === selectedMediaId) ?? null,
+    [mediaFiles, selectedMediaId],
+  )
 
   const handleSelectMedia = ({ asset }: { asset: MediaAsset }) => {
     const store = useMediaPreviewStore.getState()
@@ -428,8 +434,8 @@ export function MediaView() {
         </div>
 
         {/* biome-ignore lint: deselect on empty space click */}
-        <div
-          className="scrollbar-thin size-full overflow-y-auto"
+        <ScrollArea
+          className="flex-1 min-h-0 w-full"
           onClick={(event) => {
             if (event.target === event.currentTarget) handleClearSelection()
           }}
@@ -474,7 +480,14 @@ export function MediaView() {
               />
             )}
           </div>
-        </div>
+        </ScrollArea>
+
+        {selectedMedia && (
+          <MediaInfoPanel
+            media={selectedMedia}
+            onClose={handleClearSelection}
+          />
+        )}
       </div>
 
       <Dialog open={isUrlDialogOpen} onOpenChange={setIsUrlDialogOpen}>
