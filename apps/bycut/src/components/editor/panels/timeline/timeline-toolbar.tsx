@@ -17,6 +17,7 @@ import {
   Copy,
   Link,
   Magnet,
+  Maximize2,
   Scissors,
   Snowflake,
   SplitSquareHorizontal,
@@ -62,6 +63,7 @@ export function TimelineToolbar({
           minZoom={minZoom}
           onZoomChange={(zoom) => setZoomLevel({ zoom })}
           onZoom={handleZoom}
+          onZoomToFit={() => setZoomLevel({ zoom: minZoom })}
         />
       </div>
     </ScrollArea>
@@ -164,11 +166,13 @@ function ToolbarRightSection({
   minZoom,
   onZoomChange,
   onZoom,
+  onZoomToFit,
 }: {
   zoomLevel: number
   minZoom: number
   onZoomChange: (zoom: number) => void
   onZoom: (options: { direction: 'in' | 'out' }) => void
+  onZoomToFit: () => void
 }) {
   const t = useTranslations()
   const {
@@ -199,14 +203,23 @@ function ToolbarRightSection({
       <div className="bg-border mx-1 h-6 w-px" />
 
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          type="button"
-          onClick={() => onZoom({ direction: 'out' })}
-        >
-          <ZoomOut />
-        </Button>
+        <TooltipProvider delayDuration={500}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                onClick={() => onZoom({ direction: 'out' })}
+              >
+                <ZoomOut />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p>{t('timeline.zoomOut')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <Slider
           className="w-28"
           value={[zoomToSlider({ zoomLevel, minZoom })]}
@@ -217,14 +230,40 @@ function ToolbarRightSection({
           max={1}
           step={0.005}
         />
-        <Button
-          variant="ghost"
-          size="icon"
-          type="button"
-          onClick={() => onZoom({ direction: 'in' })}
-        >
-          <ZoomIn />
-        </Button>
+        <TooltipProvider delayDuration={500}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                onClick={() => onZoom({ direction: 'in' })}
+              >
+                <ZoomIn />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p>{t('timeline.zoomIn')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <TooltipProvider delayDuration={500}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                onClick={onZoomToFit}
+              >
+                <Maximize2 />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p>{t('timeline.zoomToFit')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   )

@@ -288,7 +288,10 @@
     "revealMedia": "显示媒体",
     "copyMediaId": "复制媒体ID",
     "mediaIdCopied": "媒体ID已复制",
-    "clip": "剪辑"
+    "clip": "剪辑",
+    "zoomIn": "放大",
+    "zoomOut": "缩小",
+    "zoomToFit": "适应画面"
   },
   "properties": {
     "transform": "变换",

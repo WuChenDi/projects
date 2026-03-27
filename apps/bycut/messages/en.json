@@ -288,7 +288,10 @@
     "revealMedia": "Reveal media",
     "copyMediaId": "Copy Media ID",
     "mediaIdCopied": "Media ID copied",
-    "clip": "clip"
+    "clip": "clip",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "zoomToFit": "Zoom to Fit"
   },
   "properties": {
     "transform": "Transform",
