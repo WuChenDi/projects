@@ -78,6 +78,7 @@
     "processing": "Processing...",
     "generating": "Generating...",
     "submitting": "Submitting...",
+    "search": "Search",
     "searchPlaceholder": "Search...",
     "pleaseTryAgain": "Please try again",
     "emptyHere": "It's empty here",
@@ -362,7 +363,8 @@
     "dimensions": "Dimensions",
     "codec": "Codec",
     "frameRate": "Frame rate",
-    "processing": "Processing your files ({progress}%)"
+    "processing": "Processing your files ({progress}%)",
+    "allTypes": "All Types"
   },
   "stickers": {
     "searchAll": "Search all stickers",

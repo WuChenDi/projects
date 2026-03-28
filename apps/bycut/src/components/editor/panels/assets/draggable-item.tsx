@@ -169,15 +169,14 @@ export function DraggableItem({
         <div
           ref={dragRef}
           className={cn(
-            'group relative w-full',
+            'group relative w-full min-w-0',
             isHighlighted && highlightClassName,
             isSelected && selectedClassName,
           )}
         >
-          <button
-            type="button"
+          <div
             className={cn(
-              'flex h-8 w-full cursor-default items-center gap-3 px-1',
+              'flex w-full cursor-default items-center rounded-md px-1 py-1.5 transition-colors hover:bg-accent/50',
               isDraggable && '[&::-webkit-drag-ghost]:opacity-0',
               className,
             )}
@@ -186,13 +185,8 @@ export function DraggableItem({
             onDragEnd={isDraggable ? handleDragEnd : undefined}
             onClick={handleClick}
           >
-            <div className="size-6 flex-shrink-0 overflow-hidden rounded-[0.35rem]">
-              {preview}
-            </div>
-            <span className="w-full flex-1 truncate text-sm text-left">
-              {name}
-            </span>
-          </button>
+            {preview}
+          </div>
         </div>
       )}
 

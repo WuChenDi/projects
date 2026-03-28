@@ -1,5 +1,10 @@
 'use client'
 
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@cdlab996/ui/components/resizable'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { MigrationDialog } from '@/components/editor/dialogs/migration-dialog'
@@ -9,11 +14,6 @@ import { PreviewPanel } from '@/components/editor/panels/preview'
 import { PropertiesPanel } from '@/components/editor/panels/properties'
 import { Timeline } from '@/components/editor/panels/timeline'
 import { EditorProvider } from '@/components/providers/editor-provider'
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '@/components/resizable'
 import { useAgentStore } from '@/stores/agent-store'
 import { usePanelStore } from '@/stores/panel-store'
 
@@ -52,67 +52,75 @@ function EditorLayout() {
 
   return (
     <ResizablePanelGroup
-      direction="horizontal"
+      orientation="horizontal"
       className="size-full gap-[0.19rem]"
-      onLayout={(sizes) => {
-        if (isAgentOpen && sizes[1] != null) {
-          setPanel('agent', sizes[1])
+      onLayoutChange={(layout) => {
+        if (isAgentOpen && layout['agent'] != null) {
+          setPanel('agent', layout['agent'])
         }
       }}
     >
       <ResizablePanel
-        defaultSize={isAgentOpen ? 100 - panels.agent : 100}
-        minSize={50}
+        id="main"
+        defaultSize={`${isAgentOpen ? 100 - panels.agent : 100}%`}
+        minSize="50%"
         className="min-w-0"
       >
         <ResizablePanelGroup
-          direction="vertical"
+          orientation="vertical"
           className="size-full gap-[0.18rem]"
-          onLayout={(sizes) => {
-            setPanel('mainContent', sizes[0] ?? panels.mainContent)
-            setPanel('timeline', sizes[1] ?? panels.timeline)
+          onLayoutChange={(layout) => {
+            setPanel('mainContent', layout['mainContent'] ?? panels.mainContent)
+            setPanel('timeline', layout['timeline'] ?? panels.timeline)
           }}
         >
           <ResizablePanel
-            defaultSize={panels.mainContent}
-            minSize={30}
-            maxSize={85}
+            id="mainContent"
+            defaultSize={`${panels.mainContent}%`}
+            minSize="30%"
+            maxSize="85%"
             className="min-h-0"
           >
             <ResizablePanelGroup
-              direction="horizontal"
+              orientation="horizontal"
               className="size-full gap-[0.19rem]"
-              onLayout={(sizes) => {
-                setPanel('tools', sizes[0] ?? panels.tools)
-                setPanel('preview', sizes[1] ?? panels.preview)
-                setPanel('properties', sizes[2] ?? panels.properties)
+              onLayoutChange={(layout) => {
+                setPanel('tools', layout['tools'] ?? panels.tools)
+                setPanel('preview', layout['preview'] ?? panels.preview)
+                setPanel(
+                  'properties',
+                  layout['properties'] ?? panels.properties,
+                )
               }}
             >
               <ResizablePanel
-                defaultSize={panels.tools}
-                minSize={15}
-                maxSize={40}
+                id="tools"
+                defaultSize={`${panels.tools}%`}
+                minSize="15%"
+                maxSize="40%"
                 className="min-w-0"
               >
                 <AssetsPanel />
               </ResizablePanel>
 
-              <ResizableHandle withHandle />
+              <ResizableHandle withHandle className="bg-transparent" />
 
               <ResizablePanel
-                defaultSize={panels.preview}
-                minSize={30}
+                id="preview"
+                defaultSize={`${panels.preview}%`}
+                minSize="30%"
                 className="min-h-0 min-w-0 flex-1"
               >
                 <PreviewPanel />
               </ResizablePanel>
 
-              <ResizableHandle withHandle />
+              <ResizableHandle withHandle className="bg-transparent" />
 
               <ResizablePanel
-                defaultSize={panels.properties}
-                minSize={15}
-                maxSize={40}
+                id="properties"
+                defaultSize={`${panels.properties}%`}
+                minSize="15%"
+                maxSize="40%"
                 className="min-w-0"
               >
                 <PropertiesPanel />
@@ -120,12 +128,13 @@ function EditorLayout() {
             </ResizablePanelGroup>
           </ResizablePanel>
 
-          <ResizableHandle withHandle />
+          <ResizableHandle withHandle className="bg-transparent" />
 
           <ResizablePanel
-            defaultSize={panels.timeline}
-            minSize={15}
-            maxSize={70}
+            id="timeline"
+            defaultSize={`${panels.timeline}%`}
+            minSize="15%"
+            maxSize="70%"
             className="min-h-0"
           >
             <Timeline />

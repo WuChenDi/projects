@@ -43,7 +43,6 @@
     "radix-ui": "catalog:prod",
     "react": "catalog:prod",
     "react-dom": "catalog:prod",
-    "react-resizable-panels": "^2.1.7",
     "sonner": "catalog:prod",
     "streamdown": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",

@@ -23,6 +23,13 @@ import {
   DropdownMenuTrigger,
 } from '@cdlab996/ui/components/dropdown-menu'
 import { Input } from '@cdlab996/ui/components/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+  InputGroupText,
+} from '@cdlab996/ui/components/input-group'
 import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
 import {
   Tooltip,
@@ -35,13 +42,16 @@ import type { LucideIcon } from 'lucide-react'
 import {
   ArrowUpDown,
   CloudUpload,
+  Filter,
   Image as ImageIcon,
   LayoutGrid,
   Link,
   List,
   Monitor,
   Music,
+  Search,
   Video,
+  X,
 } from 'lucide-react'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
@@ -85,6 +95,11 @@ export function MediaView() {
     'name',
   )
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterType, setFilterType] = useState<
+    'all' | 'video' | 'audio' | 'image'
+  >('all')
 
   const [isUrlDialogOpen, setIsUrlDialogOpen] = useState(false)
   const [urlInput, setUrlInput] = useState('')
@@ -208,7 +223,15 @@ export function MediaView() {
   }
 
   const filteredMediaItems = useMemo(() => {
-    const filtered = mediaFiles.filter((item) => !item.ephemeral)
+    const query = searchQuery.toLowerCase().trim()
+    const filtered = mediaFiles.filter(
+      (item) =>
+        !item.ephemeral &&
+        (filterType === 'all' || item.type === filterType) &&
+        (!query ||
+          item.name.toLowerCase().includes(query) ||
+          item.type.toLowerCase().includes(query)),
+    )
 
     filtered.sort((a, b) => {
       let valueA: string | number
@@ -241,7 +264,7 @@ export function MediaView() {
     })
 
     return filtered
-  }, [mediaFiles, sortBy, sortOrder])
+  }, [mediaFiles, sortBy, sortOrder, searchQuery, filterType])
 
   const previewComponents = useMemo(() => {
     const previews = new Map<string, React.ReactNode>()
@@ -288,132 +311,39 @@ export function MediaView() {
         className={`relative flex h-full flex-col gap-1 ${isDragOver ? 'bg-accent/30' : ''}`}
         {...dragProps}
       >
-        <div className="h-12 px-4 pr-2 flex items-center justify-between border-b">
-          <span className="text-muted-foreground text-sm">
-            {t('assets.title')}
-          </span>
-          <div className="flex items-center gap-0">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() =>
-                      setMediaViewMode(
-                        mediaViewMode === 'grid' ? 'list' : 'grid',
-                      )
-                    }
-                    disabled={isProcessing}
-                    className="items-center justify-center"
+        <div className="flex flex-col gap-2 px-3 pt-3 pb-2">
+          <div className="flex items-center gap-1.5">
+            <InputGroup className="flex-1">
+              <InputGroupAddon>
+                <InputGroupText>
+                  <Search />
+                </InputGroupText>
+              </InputGroupAddon>
+              <InputGroupInput
+                placeholder={t('common.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <InputGroupAddon align="inline-end">
+                  <InputGroupButton
+                    size="icon-xs"
+                    onClick={() => setSearchQuery('')}
                   >
-                    {mediaViewMode === 'grid' ? <List /> : <LayoutGrid />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>
-                    {mediaViewMode === 'grid'
-                      ? t('projects.listView')
-                      : t('projects.gridView')}
-                  </p>
-                </TooltipContent>
-                <Tooltip>
-                  <DropdownMenu>
-                    <TooltipTrigger asChild>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          disabled={isProcessing}
-                          className="items-center justify-center"
-                        >
-                          <ArrowUpDown />
-                        </Button>
-                      </DropdownMenuTrigger>
-                    </TooltipTrigger>
-                    <DropdownMenuContent align="end">
-                      <SortMenuItem
-                        label={t('common.name')}
-                        sortKey="name"
-                        currentSortBy={sortBy}
-                        currentSortOrder={sortOrder}
-                        onSort={({ key }) => {
-                          if (sortBy === key) {
-                            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
-                          } else {
-                            setSortBy(key)
-                            setSortOrder('asc')
-                          }
-                        }}
-                      />
-                      <SortMenuItem
-                        label={t('common.type')}
-                        sortKey="type"
-                        currentSortBy={sortBy}
-                        currentSortOrder={sortOrder}
-                        onSort={({ key }) => {
-                          if (sortBy === key) {
-                            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
-                          } else {
-                            setSortBy(key)
-                            setSortOrder('asc')
-                          }
-                        }}
-                      />
-                      <SortMenuItem
-                        label={t('common.duration')}
-                        sortKey="duration"
-                        currentSortBy={sortBy}
-                        currentSortOrder={sortOrder}
-                        onSort={({ key }) => {
-                          if (sortBy === key) {
-                            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
-                          } else {
-                            setSortBy(key)
-                            setSortOrder('asc')
-                          }
-                        }}
-                      />
-                      <SortMenuItem
-                        label={t('media.fileSize')}
-                        sortKey="size"
-                        currentSortBy={sortBy}
-                        currentSortOrder={sortOrder}
-                        onSort={({ key }) => {
-                          if (sortBy === key) {
-                            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
-                          } else {
-                            setSortBy(key)
-                            setSortOrder('asc')
-                          }
-                        }}
-                      />
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <TooltipContent>
-                    <p>
-                      {t('projects.sortBy', {
-                        sortBy,
-                        sortOrder:
-                          sortOrder === 'asc'
-                            ? t('common.ascending')
-                            : t('common.descending'),
-                      })}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </Tooltip>
-            </TooltipProvider>
+                    <X />
+                  </InputGroupButton>
+                </InputGroupAddon>
+              )}
+            </InputGroup>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
                   disabled={isProcessing}
-                  size="sm"
-                  className="items-center justify-center gap-1.5 ml-1.5 hover:bg-accent px-3"
+                  size="icon"
+                  className="size-8 shrink-0"
                 >
-                  <CloudUpload />
-                  {t('common.import')}
+                  <CloudUpload className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -431,11 +361,161 @@ export function MediaView() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+          <div className="flex items-center gap-1">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant={filterType !== 'all' ? 'secondary' : 'outline'}
+                  size="sm"
+                  className="h-7 gap-1 px-2 text-xs"
+                >
+                  <Filter className="size-3.5" />
+                  {filterType === 'all'
+                    ? t('common.all')
+                    : t(`common.${filterType}`)}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem
+                  onClick={() => setFilterType('all')}
+                  className="gap-2"
+                >
+                  {t('media.allTypes')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setFilterType('video')}
+                  className="gap-2"
+                >
+                  <Video className="size-4" />
+                  {t('common.video')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setFilterType('audio')}
+                  className="gap-2"
+                >
+                  <Music className="size-4" />
+                  {t('common.audio')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setFilterType('image')}
+                  className="gap-2"
+                >
+                  <ImageIcon className="size-4" />
+                  {t('common.image')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isProcessing}
+                  className="h-7 gap-1 px-2 text-xs"
+                >
+                  <ArrowUpDown className="size-3.5" />
+                  {t(
+                    `common.${sortBy === 'name' ? 'name' : sortBy === 'type' ? 'type' : sortBy === 'duration' ? 'duration' : 'name'}`,
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <SortMenuItem
+                  label={t('common.name')}
+                  sortKey="name"
+                  currentSortBy={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={({ key }) => {
+                    if (sortBy === key) {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+                    } else {
+                      setSortBy(key)
+                      setSortOrder('asc')
+                    }
+                  }}
+                />
+                <SortMenuItem
+                  label={t('common.type')}
+                  sortKey="type"
+                  currentSortBy={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={({ key }) => {
+                    if (sortBy === key) {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+                    } else {
+                      setSortBy(key)
+                      setSortOrder('asc')
+                    }
+                  }}
+                />
+                <SortMenuItem
+                  label={t('common.duration')}
+                  sortKey="duration"
+                  currentSortBy={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={({ key }) => {
+                    if (sortBy === key) {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+                    } else {
+                      setSortBy(key)
+                      setSortOrder('asc')
+                    }
+                  }}
+                />
+                <SortMenuItem
+                  label={t('media.fileSize')}
+                  sortKey="size"
+                  currentSortBy={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={({ key }) => {
+                    if (sortBy === key) {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+                    } else {
+                      setSortBy(key)
+                      setSortOrder('asc')
+                    }
+                  }}
+                />
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <div className="ml-auto flex items-center">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() =>
+                        setMediaViewMode(
+                          mediaViewMode === 'grid' ? 'list' : 'grid',
+                        )
+                      }
+                      disabled={isProcessing}
+                      className="size-7 shrink-0"
+                    >
+                      {mediaViewMode === 'grid' ? (
+                        <LayoutGrid className="size-4" />
+                      ) : (
+                        <List className="size-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      {mediaViewMode === 'grid'
+                        ? t('projects.gridView')
+                        : t('projects.listView')}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
         </div>
 
         {/* biome-ignore lint: deselect on empty space click */}
         <ScrollArea
-          className="flex-1 min-h-0 w-full"
+          className="flex-1 min-h-0 w-full overflow-x-hidden"
           onClick={(event) => {
             if (event.target === event.currentTarget) handleClearSelection()
           }}
@@ -545,7 +625,9 @@ function MediaItemWithContextMenu({
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger>{children}</ContextMenuTrigger>
+      <ContextMenuTrigger className="block min-w-0 overflow-hidden">
+        {children}
+      </ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuItem onClick={() => onExportClip({ item })}>
           {t('export.clips')}
@@ -668,7 +750,11 @@ function ListView({
   return (
     <div className="space-y-1">
       {items.map((item) => (
-        <div key={item.id} ref={(el) => registerElement(item.id, el)}>
+        <div
+          key={item.id}
+          className="overflow-hidden"
+          ref={(el) => registerElement(item.id, el)}
+        >
           <MediaItemWithContextMenu
             item={item}
             onRemove={onRemove}
@@ -676,7 +762,9 @@ function ListView({
           >
             <DraggableItem
               name={item.name}
-              preview={renderPreview(item)}
+              preview={
+                <ListItemContent item={item} renderPreview={renderPreview} />
+              }
               dragData={{
                 id: item.id,
                 type: 'media',
@@ -684,6 +772,7 @@ function ListView({
                 name: item.name,
               }}
               shouldShowPlusOnDrag={false}
+              shouldShowLabel={false}
               onAddToTimeline={({ currentTime }) =>
                 onAddToTimeline({ asset: item, startTime: currentTime })
               }
@@ -695,6 +784,40 @@ function ListView({
           </MediaItemWithContextMenu>
         </div>
       ))}
+    </div>
+  )
+}
+
+function ListItemContent({
+  item,
+  renderPreview,
+}: {
+  item: MediaAsset
+  renderPreview: (item: MediaAsset) => React.ReactNode
+}) {
+  const ext = item.name.includes('.')
+    ? item.name.slice(item.name.lastIndexOf('.') + 1).toUpperCase()
+    : item.type.toUpperCase()
+
+  return (
+    <div className="flex w-full items-center gap-2.5 overflow-hidden">
+      <div className="size-10 shrink-0 overflow-hidden rounded">
+        {renderPreview(item)}
+      </div>
+      <div className="flex w-0 flex-1 flex-col gap-0.5">
+        <p className="truncate text-sm leading-tight" title={item.name}>
+          {item.name}
+        </p>
+        <div className="text-muted-foreground flex items-center gap-2 text-xs">
+          <span>{ext}</span>
+          {item.duration != null && item.duration > 0 && (
+            <>
+              <span className="text-muted-foreground/40">·</span>
+              <span>{formatDuration({ duration: item.duration })}</span>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

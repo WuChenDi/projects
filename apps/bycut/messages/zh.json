@@ -78,6 +78,7 @@
     "processing": "处理中...",
     "generating": "生成中...",
     "submitting": "提交中...",
+    "search": "搜索",
     "searchPlaceholder": "搜索...",
     "pleaseTryAgain": "请重试",
     "emptyHere": "这里空空如也",
@@ -362,7 +363,8 @@
     "dimensions": "分辨率",
     "codec": "编解码器",
     "frameRate": "帧率",
-    "processing": "正在处理您的文件 ({progress}%)"
+    "processing": "正在处理您的文件 ({progress}%)",
+    "allTypes": "所有类型"
   },
   "stickers": {
     "searchAll": "搜索所有贴纸",
