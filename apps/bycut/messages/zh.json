@@ -596,6 +596,42 @@
       "timeline": "时间轴",
       "history": "历史记录",
       "controls": "控制"
+    },
+    "actions": {
+      "toggle-play": "播放/暂停",
+      "stop-playback": "停止播放",
+      "seek-forward": "快进 1 秒",
+      "seek-backward": "快退 1 秒",
+      "frame-step-forward": "前进一帧",
+      "frame-step-backward": "后退一帧",
+      "jump-forward": "快进 5 秒",
+      "jump-backward": "快退 5 秒",
+      "goto-start": "跳转到时间轴起点",
+      "goto-end": "跳转到时间轴终点",
+      "split": "在播放头处分割",
+      "split-left": "分割并移除左侧",
+      "split-right": "分割并移除右侧",
+      "delete-selected": "删除选中元素",
+      "copy-selected": "复制选中元素",
+      "paste-copied": "在播放头处粘贴",
+      "toggle-snapping": "切换吸附",
+      "select-all": "全选",
+      "duplicate-selected": "复制选中元素",
+      "toggle-elements-muted-selected": "静音/取消静音选中元素",
+      "toggle-elements-visibility-selected": "显示/隐藏选中元素",
+      "detach-audio": "从视频中分离音频",
+      "convert-to-speech": "文字转语音",
+      "toggle-bookmark": "在播放头处切换书签",
+      "undo": "撤销",
+      "redo": "重做"
+    },
+    "keys": {
+      "space": "空格",
+      "home": "Home",
+      "end": "End",
+      "enter": "回车",
+      "delete": "删除",
+      "backspace": "退格"
     }
   },
   "misc": {

@@ -1,16 +1,8 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@cdlab996/ui/components/dropdown-menu'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { ArrowLeft, Command, Sparkles } from 'lucide-react'
-import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -21,36 +13,43 @@ import {
 import { useEditor } from '@/hooks/use-editor'
 import { useRouter } from '@/lib/navigation'
 import { useAgentStore } from '@/stores/agent-store'
-import { DeleteProjectDialog } from './dialogs/delete-project-dialog'
-import { RenameProjectDialog } from './dialogs/rename-project-dialog'
 import { ShortcutsDialog } from './dialogs/shortcuts-dialog'
 import { ExportButton } from './export-button'
 
 export function EditorHeader() {
+  const t = useTranslations()
+  const [showShortcuts, setShowShortcuts] = useState(false)
+
   return (
     <header className="flex h-[3.4rem] items-center justify-between px-3 pt-0.5">
       <div className="flex items-center gap-1">
-        <ProjectDropdown />
+        <ExitButton />
         <EditableProjectName />
       </div>
       <nav className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          className="size-8"
+          onClick={() => setShowShortcuts(true)}
+          title={t('editor.keyboardShortcuts')}
+        >
+          <Command className="size-4" />
+        </Button>
         <LanguageToggle />
         <ThemeToggle />
         <ExportButton />
       </nav>
+      <ShortcutsDialog isOpen={showShortcuts} onOpenChange={setShowShortcuts} />
     </header>
   )
 }
 
-function ProjectDropdown() {
+function ExitButton() {
   const t = useTranslations()
-  const [openDialog, setOpenDialog] = useState<
-    'delete' | 'rename' | 'shortcuts' | null
-  >(null)
   const [isExiting, setIsExiting] = useState(false)
   const router = useRouter()
   const editor = useEditor()
-  const activeProject = editor.project.getActive()
 
   const handleExit = async () => {
     if (isExiting) return
@@ -67,96 +66,17 @@ function ProjectDropdown() {
     }
   }
 
-  const handleSaveProjectName = async (newName: string) => {
-    if (
-      activeProject &&
-      newName.trim() &&
-      newName !== activeProject.metadata.name
-    ) {
-      try {
-        await editor.project.renameProject({
-          id: activeProject.metadata.id,
-          name: newName.trim(),
-        })
-      } catch (error) {
-        toast.error(t('projects.renameFailed'), {
-          description:
-            error instanceof Error ? error.message : t('common.pleaseTryAgain'),
-        })
-      } finally {
-        setOpenDialog(null)
-      }
-    }
-  }
-
-  const handleDeleteProject = async () => {
-    if (activeProject) {
-      try {
-        await editor.project.deleteProjects({
-          ids: [activeProject.metadata.id],
-        })
-        router.push('/projects')
-      } catch (error) {
-        toast.error(t('projects.deleteFailed'), {
-          description:
-            error instanceof Error ? error.message : t('common.pleaseTryAgain'),
-        })
-      } finally {
-        setOpenDialog(null)
-      }
-    }
-  }
-
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="p-1 rounded-sm size-8">
-            <Image
-              src="https://notes-wudi.pages.dev/images/logo.png"
-              alt="Project thumbnail"
-              width={32}
-              height={32}
-            />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="z-100 w-52">
-          <DropdownMenuItem
-            className="flex items-center gap-1.5"
-            onClick={handleExit}
-            disabled={isExiting}
-          >
-            <ArrowLeft className="size-4" />
-            {t('editor.exitProject')}
-          </DropdownMenuItem>
-
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="flex items-center gap-1.5"
-            onClick={() => setOpenDialog('shortcuts')}
-          >
-            <Command className="size-4" />
-            {t('editor.keyboardShortcuts')}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <RenameProjectDialog
-        isOpen={openDialog === 'rename'}
-        onOpenChange={(isOpen) => setOpenDialog(isOpen ? 'rename' : null)}
-        onConfirm={(newName) => handleSaveProjectName(newName)}
-        projectName={activeProject?.metadata.name || ''}
-      />
-      <DeleteProjectDialog
-        isOpen={openDialog === 'delete'}
-        onOpenChange={(isOpen) => setOpenDialog(isOpen ? 'delete' : null)}
-        onConfirm={handleDeleteProject}
-        projectNames={[activeProject?.metadata.name || '']}
-      />
-      <ShortcutsDialog
-        isOpen={openDialog === 'shortcuts'}
-        onOpenChange={(isOpen) => setOpenDialog(isOpen ? 'shortcuts' : null)}
-      />
-    </>
+    <Button
+      variant="ghost"
+      size="icon"
+      className="size-8"
+      onClick={handleExit}
+      disabled={isExiting}
+      title={t('editor.exitProject')}
+    >
+      <ArrowLeft className="size-4" />
+    </Button>
   )
 }
 

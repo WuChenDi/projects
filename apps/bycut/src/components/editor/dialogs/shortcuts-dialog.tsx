@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@cdlab996/ui/components/dialog'
+import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -66,7 +67,7 @@ export function ShortcutsDialog({
           toast.error(
             t('shortcuts.keyAlreadyBound', {
               key: keyString,
-              action: conflict.existingAction,
+              action: t(`shortcuts.actions.${conflict.existingAction}`),
             }),
           )
           setRecordingShortcut(null)
@@ -115,17 +116,19 @@ export function ShortcutsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[80vh] max-w-2xl flex-col">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t('editor.keyboardShortcuts')}</DialogTitle>
         </DialogHeader>
 
-        <div className="scrollbar-thin flex-grow overflow-y-auto">
-          <div className="flex flex-col gap-6">
+        <ScrollArea className="max-h-[60vh]">
+          <div className="flex flex-col gap-6 pr-2">
             {categories.map((category) => (
               <div key={category} className="flex flex-col gap-1">
                 <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                  {t(CATEGORY_I18N_KEYS[category as TActionCategory] ?? category)}
+                  {t(
+                    CATEGORY_I18N_KEYS[category as TActionCategory] ?? category,
+                  )}
                 </h3>
                 <div className="flex flex-col gap-1">
                   {shortcuts
@@ -144,7 +147,7 @@ export function ShortcutsDialog({
               </div>
             ))}
           </div>
-        </div>
+        </ScrollArea>
         <DialogFooter>
           <Button variant="destructive" onClick={resetToDefaults}>
             {t('shortcuts.resetToDefault')}

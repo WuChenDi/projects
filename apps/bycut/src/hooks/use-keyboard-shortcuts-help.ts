@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import type { TAction } from '@/lib/actions'
 import { ACTIONS } from '@/lib/actions'
@@ -18,8 +19,23 @@ export interface KeyboardShortcut {
   icon?: React.ReactNode
 }
 
-function formatKey({ key }: { key: string }): string {
-  return key
+const TRANSLATABLE_KEYS = [
+  'space',
+  'home',
+  'end',
+  'enter',
+  'delete',
+  'backspace',
+] as const
+
+function formatKey({
+  key,
+  t,
+}: {
+  key: string
+  t: (key: string) => string
+}): string {
+  let formatted = key
     .replace('ctrl', getPlatformSpecialKey())
     .replace('alt', getPlatformAlternateKey())
     .replace('shift', 'Shift')
@@ -27,17 +43,17 @@ function formatKey({ key }: { key: string }): string {
     .replace('right', '→')
     .replace('up', '↑')
     .replace('down', '↓')
-    .replace('space', 'Space')
-    .replace('home', 'Home')
-    .replace('enter', 'Enter')
-    .replace('end', 'End')
-    .replace('delete', 'Delete')
-    .replace('backspace', 'Backspace')
-    .replace('-', '+')
+
+  for (const tk of TRANSLATABLE_KEYS) {
+    formatted = formatted.replace(tk, t(`shortcuts.keys.${tk}`))
+  }
+
+  return formatted.replace('-', '+')
 }
 
 export function useKeyboardShortcutsHelp() {
   const { keybindings } = useKeybindingsStore()
+  const t = useTranslations()
 
   const shortcuts = useMemo(() => {
     const result: KeyboardShortcut[] = []
@@ -48,7 +64,7 @@ export function useKeyboardShortcutsHelp() {
         if (!actionToKeys[action]) {
           actionToKeys[action] = []
         }
-        actionToKeys[action].push(formatKey({ key }))
+        actionToKeys[action].push(formatKey({ key, t }))
       }
     }
 
@@ -59,7 +75,7 @@ export function useKeyboardShortcutsHelp() {
       result.push({
         id: actionId,
         keys,
-        description: actionDef.description,
+        description: t(`shortcuts.actions.${actionId}`),
         category: actionDef.category,
         action: actionId,
       })
@@ -71,7 +87,7 @@ export function useKeyboardShortcutsHelp() {
       }
       return a.description.localeCompare(b.description)
     })
-  }, [keybindings])
+  }, [keybindings, t])
 
   return {
     shortcuts,

@@ -596,6 +596,42 @@
       "timeline": "Timeline",
       "history": "History",
       "controls": "Controls"
+    },
+    "actions": {
+      "toggle-play": "Play/Pause",
+      "stop-playback": "Stop playback",
+      "seek-forward": "Seek forward 1 second",
+      "seek-backward": "Seek backward 1 second",
+      "frame-step-forward": "Frame step forward",
+      "frame-step-backward": "Frame step backward",
+      "jump-forward": "Jump forward 5 seconds",
+      "jump-backward": "Jump backward 5 seconds",
+      "goto-start": "Go to timeline start",
+      "goto-end": "Go to timeline end",
+      "split": "Split elements at playhead",
+      "split-left": "Split and remove left",
+      "split-right": "Split and remove right",
+      "delete-selected": "Delete selected elements",
+      "copy-selected": "Copy selected elements",
+      "paste-copied": "Paste elements at playhead",
+      "toggle-snapping": "Toggle snapping",
+      "select-all": "Select all elements",
+      "duplicate-selected": "Duplicate selected element",
+      "toggle-elements-muted-selected": "Mute/unmute selected elements",
+      "toggle-elements-visibility-selected": "Show/hide selected elements",
+      "detach-audio": "Detach audio from video",
+      "convert-to-speech": "Convert text to speech",
+      "toggle-bookmark": "Toggle bookmark at playhead",
+      "undo": "Undo",
+      "redo": "Redo"
+    },
+    "keys": {
+      "space": "Space",
+      "home": "Home",
+      "end": "End",
+      "enter": "Enter",
+      "delete": "Delete",
+      "backspace": "Backspace"
     }
   },
   "misc": {
