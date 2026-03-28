@@ -1,14 +1,8 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@cdlab996/ui/components/dropdown-menu'
 import { cn } from '@cdlab996/ui/lib/utils'
-import { EllipsisVertical, Maximize, Music, Pause, Play, X } from 'lucide-react'
+import { Camera, Maximize, Music, Pause, Play, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useCallback, useMemo, useRef } from 'react'
 import useDeepCompareEffect from 'use-deep-compare-effect'
@@ -278,24 +272,14 @@ function PreviewToolbar({
         >
           <Maximize className="size-4" />
         </Button>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onMouseDown={(event) => event.preventDefault()}
-              title={t('media.moreOptions')}
-            >
-              <EllipsisVertical className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" side="top">
-            <DropdownMenuItem onClick={() => exportCurrentFrame({ editor })}>
-              {t('export.currentFrame')}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => exportCurrentFrame({ editor })}
+          title={t('export.currentFrame')}
+        >
+          <Camera className="size-4" />
+        </Button>
       </div>
     </div>
   )
