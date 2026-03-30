@@ -2,13 +2,10 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { TProjectSortKey } from '@/types/project'
 
-export type ProjectsViewMode = 'grid' | 'list'
-
 interface ProjectsState {
   searchQuery: string
   sortKey: TProjectSortKey
   sortOrder: 'asc' | 'desc'
-  viewMode: ProjectsViewMode
   selectedProjectIds: string[]
   lastSelectedProjectId: string | null
   isHydrated: boolean
@@ -17,7 +14,6 @@ interface ProjectsState {
   setSortKey: ({ sortKey }: { sortKey: TProjectSortKey }) => void
   setSortOrder: ({ sortOrder }: { sortOrder: 'asc' | 'desc' }) => void
   toggleSortOrder: () => void
-  setViewMode: ({ viewMode }: { viewMode: ProjectsViewMode }) => void
   setSelectedProjects: ({ projectIds }: { projectIds: string[] }) => void
   clearSelectedProjects: () => void
   setProjectSelected: ({
@@ -62,7 +58,6 @@ export const useProjectsStore = create<ProjectsState>()(
       searchQuery: '',
       sortKey: 'updatedAt',
       sortOrder: 'desc',
-      viewMode: 'grid',
       selectedProjectIds: [],
       lastSelectedProjectId: null,
       isHydrated: false,
@@ -74,7 +69,6 @@ export const useProjectsStore = create<ProjectsState>()(
         set((state) => ({
           sortOrder: state.sortOrder === 'asc' ? 'desc' : 'asc',
         })),
-      setViewMode: ({ viewMode }) => set({ viewMode }),
       setSelectedProjects: ({ projectIds }) =>
         set({ selectedProjectIds: projectIds }),
       clearSelectedProjects: () =>
@@ -123,7 +117,6 @@ export const useProjectsStore = create<ProjectsState>()(
     {
       name: 'projects-view-mode',
       partialize: (state) => ({
-        viewMode: state.viewMode,
         sortKey: state.sortKey,
         sortOrder: state.sortOrder,
       }),

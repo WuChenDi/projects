@@ -86,6 +86,7 @@
     "clearAll": "Clear All",
     "clearAllLower": "Clear all",
     "selectAll": "Select all",
+    "selectedCount": "{count} selected",
     "confirmAll": "Confirm all",
     "ascending": "ascending",
     "descending": "descending",

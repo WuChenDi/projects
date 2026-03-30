@@ -86,6 +86,7 @@
     "clearAll": "清除所有",
     "clearAllLower": "全部清除",
     "selectAll": "全选",
+    "selectedCount": "已选择 {count} 项",
     "confirmAll": "确认全部",
     "ascending": "升序",
     "descending": "降序",
