@@ -27,9 +27,13 @@ import {
   Pause,
   Play,
   Search,
+  TvMinimalPlay,
   X,
 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+
+const BYPLAY_URL = 'https://byplay.pages.dev'
+
 import type {
   DownloadState,
   RangeDownload,
@@ -82,6 +86,7 @@ export function SourceCard({
   onCancel,
 }: SourceCardProps) {
   const t = useTranslations()
+  const locale = useLocale()
 
   return (
     <Card>
@@ -121,6 +126,34 @@ export function SourceCard({
                 </>
               )}
             </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="shrink-0"
+                    disabled={!url.trim()}
+                    asChild={!!url.trim()}
+                  >
+                    {url.trim() ? (
+                      <a
+                        href={`${BYPLAY_URL}/${locale}?url=${encodeURIComponent(url.trim())}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <TvMinimalPlay className="size-4" />
+                      </a>
+                    ) : (
+                      <span>
+                        <TvMinimalPlay className="size-4" />
+                      </span>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t('parse.playVideo')}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </Field>
 
