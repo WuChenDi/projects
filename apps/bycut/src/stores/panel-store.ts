@@ -8,7 +8,6 @@ export interface PanelSizes {
   properties: number
   mainContent: number
   timeline: number
-  agent: number
 }
 
 export type PanelId = keyof PanelSizes

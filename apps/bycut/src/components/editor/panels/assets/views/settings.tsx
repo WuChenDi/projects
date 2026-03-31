@@ -1,7 +1,6 @@
 'use client'
 
 import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
 import {
   Select,
   SelectContent,
@@ -9,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@cdlab996/ui/components/select'
-import { Switch } from '@cdlab996/ui/components/switch'
 import { cn } from '@cdlab996/ui/lib/utils'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
@@ -32,9 +30,6 @@ import { patternCraftGradients } from '@/data/colors/pattern-craft'
 import { colors } from '@/data/colors/solid'
 import { syntaxUIGradients } from '@/data/colors/syntax-ui'
 import { useEditor } from '@/hooks/use-editor'
-import { isDevPlaceholderAvailable } from '@/lib/ai/placeholder'
-import { IMAGE_PROVIDERS, VIDEO_PROVIDERS } from '@/lib/ai/providers'
-import { useAISettingsStore } from '@/stores/ai-settings-store'
 
 export function SettingsView() {
   return <ProjectSettingsTabs />
@@ -64,15 +59,6 @@ function ProjectSettingsTabs() {
               <div className="flex-1">
                 <BackgroundView />
               </div>
-            </div>
-          ),
-        },
-        {
-          value: 'ai',
-          label: t('misc.ai'),
-          content: (
-            <div className="p-5">
-              <AISettingsView />
             </div>
           ),
         },
@@ -464,141 +450,6 @@ function BackgroundView() {
           </div>
         </PropertyGroup>
       ))}
-    </div>
-  )
-}
-
-const NO_PROVIDER = '__none__'
-
-function AISettingsView() {
-  const t = useTranslations()
-  const {
-    imageProviderId,
-    imageApiKey,
-    videoProviderId,
-    videoApiKey,
-    devPlaceholderEnabled,
-    setImageProvider,
-    setImageApiKey,
-    setVideoProvider,
-    setVideoApiKey,
-    setDevPlaceholderEnabled,
-  } = useAISettingsStore()
-
-  const handleImageProviderChange = (value: string) => {
-    setImageProvider(value === NO_PROVIDER ? null : value)
-  }
-
-  const handleVideoProviderChange = (value: string) => {
-    setVideoProvider(value === NO_PROVIDER ? null : value)
-  }
-
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <span className="text-foreground text-xs font-medium">
-          {t('ai.imageProvider')}
-        </span>
-        <PropertyItem direction="column">
-          <PropertyItemLabel>{t('common.provider')}</PropertyItemLabel>
-          <PropertyItemValue>
-            <Select
-              value={imageProviderId ?? NO_PROVIDER}
-              onValueChange={handleImageProviderChange}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('ai.selectProvider')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NO_PROVIDER}>
-                  {t('transitions.none')}
-                </SelectItem>
-                {IMAGE_PROVIDERS.map((provider) => (
-                  <SelectItem key={provider.id} value={provider.id}>
-                    {provider.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </PropertyItemValue>
-        </PropertyItem>
-        <PropertyItem direction="column">
-          <PropertyItemLabel>{t('ai.apiKey')}</PropertyItemLabel>
-          <PropertyItemValue>
-            <Input
-              type="password"
-              placeholder={t('ai.enterApiKey')}
-              value={imageApiKey}
-              onChange={(event) => setImageApiKey(event.target.value)}
-            />
-          </PropertyItemValue>
-        </PropertyItem>
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <span className="text-foreground text-xs font-medium">
-          {t('ai.videoProvider')}
-        </span>
-        <PropertyItem direction="column">
-          <PropertyItemLabel>{t('common.provider')}</PropertyItemLabel>
-          <PropertyItemValue>
-            <Select
-              value={videoProviderId ?? NO_PROVIDER}
-              onValueChange={handleVideoProviderChange}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('ai.selectProvider')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NO_PROVIDER}>
-                  {t('transitions.none')}
-                </SelectItem>
-                {VIDEO_PROVIDERS.map((provider) => (
-                  <SelectItem key={provider.id} value={provider.id}>
-                    {provider.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </PropertyItemValue>
-        </PropertyItem>
-        <PropertyItem direction="column">
-          <PropertyItemLabel>{t('ai.apiKey')}</PropertyItemLabel>
-          <PropertyItemValue>
-            <Input
-              type="password"
-              placeholder={t('ai.enterApiKey')}
-              value={videoApiKey}
-              onChange={(event) => setVideoApiKey(event.target.value)}
-            />
-          </PropertyItemValue>
-        </PropertyItem>
-      </div>
-
-      {isDevPlaceholderAvailable() && (
-        <div className="border-foreground/10 flex flex-col gap-3 border-t pt-4">
-          <span className="text-foreground text-xs font-medium">
-            {t('misc.development')}
-          </span>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="dev-placeholder-mode">
-                {t('agent.placeholderMode')}
-              </Label>
-              <p className="text-muted-foreground text-xs">
-                {t(
-                  'Replace AI generation with placeholder assets to save costs',
-                )}
-              </p>
-            </div>
-            <Switch
-              id="dev-placeholder-mode"
-              checked={devPlaceholderEnabled}
-              onCheckedChange={setDevPlaceholderEnabled}
-            />
-          </div>
-        </div>
-      )}
     </div>
   )
 }

@@ -1,5 +1,4 @@
 import type { EditorCore } from '@/core'
-import { useAgentStore } from '@/stores/agent-store'
 
 type SaveManagerOptions = {
   debounceMs?: number
@@ -31,11 +30,6 @@ export class SaveManager {
       }),
       this.editor.timeline.subscribe(() => {
         this.markDirty()
-      }),
-      useAgentStore.subscribe((state, prevState) => {
-        if (state.messages !== prevState.messages) {
-          this.markDirty()
-        }
       }),
     ]
   }

@@ -1,4 +1,3 @@
-import type { AgentMessage } from '@/lib/ai/agent/types'
 import type { MediaType } from '@/types/assets'
 import type {
   TProject,
@@ -48,7 +47,6 @@ export type SerializedProject = Omit<TProject, 'metadata' | 'scenes'> & {
   metadata: SerializedProjectMetadata
   scenes: SerializedScene[]
   timelineViewState?: TTimelineViewState
-  agentMessages?: AgentMessage[]
 }
 
 export interface StorageConfig {

@@ -14,7 +14,6 @@ import { PreviewPanel } from '@/components/editor/panels/preview'
 import { PropertiesPanel } from '@/components/editor/panels/properties'
 import { Timeline } from '@/components/editor/panels/timeline'
 import { EditorProvider } from '@/components/providers/editor-provider'
-import { useAgentStore } from '@/stores/agent-store'
 import { usePanelStore } from '@/stores/panel-store'
 
 export default function Editor() {
@@ -48,21 +47,15 @@ export default function Editor() {
 
 function EditorLayout() {
   const { panels, setPanel } = usePanelStore()
-  const isAgentOpen = useAgentStore((s) => s.isOpen)
 
   return (
     <ResizablePanelGroup
       orientation="horizontal"
       className="size-full gap-[0.19rem]"
-      onLayoutChange={(layout) => {
-        if (isAgentOpen && layout['agent'] != null) {
-          setPanel('agent', layout['agent'])
-        }
-      }}
     >
       <ResizablePanel
         id="main"
-        defaultSize={`${isAgentOpen ? 100 - panels.agent : 100}%`}
+        defaultSize="100%"
         minSize="50%"
         className="min-w-0"
       >

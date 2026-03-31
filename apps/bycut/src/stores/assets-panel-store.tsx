@@ -1,5 +1,4 @@
 import {
-  Brain,
   Captions,
   ChevronsRight,
   FolderOpen,
@@ -24,7 +23,6 @@ export const TAB_KEYS = [
   'captions',
   'filters',
   'adjustment',
-  'ai',
   'settings',
 ] as const
 
@@ -44,7 +42,6 @@ const TAB_LABELS: Record<Tab, string> = {
   captions: 'assets.captions',
   filters: 'assets.filters',
   adjustment: 'properties.adjustment',
-  ai: 'misc.ai',
   settings: 'common.settings',
 }
 
@@ -84,10 +81,6 @@ export const tabs = {
   adjustment: {
     icon: createLucideIcon({ Icon: SlidersHorizontal }),
     label: TAB_LABELS.adjustment,
-  },
-  ai: {
-    icon: createLucideIcon({ Icon: Brain }),
-    label: TAB_LABELS.ai,
   },
   settings: {
     icon: createLucideIcon({ Icon: Settings }),

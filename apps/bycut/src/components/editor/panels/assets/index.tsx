@@ -4,7 +4,6 @@ import { Separator } from '@cdlab996/ui/components/separator'
 import type { Tab } from '@/stores/assets-panel-store'
 import { useAssetsPanelStore } from '@/stores/assets-panel-store'
 import { TabBar } from './tabbar'
-import { AIView } from './views/ai'
 import { Captions } from './views/captions'
 import { MediaView } from './views/media'
 import { SettingsView } from './views/settings'
@@ -38,7 +37,6 @@ export function AssetsPanel() {
         Adjustment view coming soon...
       </div>
     ),
-    ai: <AIView />,
     settings: <SettingsView />,
   }
 

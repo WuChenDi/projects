@@ -122,16 +122,15 @@ export async function generateMetadata({
   }
 
   return {
-    title: 'ByCut - Open Source Browser Video Editor | Free AI-Powered Editing',
+    title: 'ByCut - Open Source Browser Video Editor | Free Editing',
     description:
-      'A fully browser-based, open-source, and free video editor. Features multi-track timeline editing, AI caption generation, text-to-speech, character management, and more. No installation, no uploads — everything runs locally in your browser to protect your privacy.',
+      'A fully browser-based, open-source, and free video editor. Features multi-track timeline editing, caption generation, text-to-speech, and more. No installation, no uploads — everything runs locally in your browser to protect your privacy.',
     keywords: [
       'video editor',
       'browser video editor',
       'online video editor',
       'open source video editor',
       'free video editor',
-      'AI video editing',
       'multi-track timeline',
       'caption generator',
       'text to speech',
@@ -158,14 +157,13 @@ export async function generateMetadata({
       languages: { en: '/en', zh: '/zh' },
     },
     applicationName: 'ByCut',
-    category: 'Video Editor, Multimedia, AI Tools',
-    classification: 'Video Editor, Multimedia, AI Tools',
+    category: 'Video Editor, Multimedia',
+    classification: 'Video Editor, Multimedia',
     icons: 'https://notes-wudi.pages.dev/images/logo.png',
     openGraph: {
-      title:
-        'ByCut - Open Source Browser Video Editor | Free AI-Powered Editing',
+      title: 'ByCut - Open Source Browser Video Editor | Free Editing',
       description:
-        'Fully browser-based open source video editor with multi-track timeline, AI captions, text-to-speech, and local processing. Free, private, no installation required.',
+        'Fully browser-based open source video editor with multi-track timeline, captions, text-to-speech, and local processing. Free, private, no installation required.',
       url: 'https://bycut.pages.dev/',
       siteName: 'ByCut',
       images: [
@@ -181,10 +179,9 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title:
-        'ByCut - Open Source Browser Video Editor | Free AI-Powered Editing',
+      title: 'ByCut - Open Source Browser Video Editor | Free Editing',
       description:
-        'Fully browser-based open source video editor with multi-track timeline, AI captions, text-to-speech, and local processing. Free, private, no installation required.',
+        'Fully browser-based open source video editor with multi-track timeline, captions, text-to-speech, and local processing. Free, private, no installation required.',
       images: [
         'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/ByCut/index.png',
       ],
@@ -238,8 +235,8 @@ export default async function LocaleLayout({
               url: 'https://bycut.pages.dev/',
               description:
                 locale === 'zh'
-                  ? '基于浏览器的开源视频编辑器，支持 AI 智能剪辑、时间轴编辑、字幕生成等功能。'
-                  : 'Open-source browser-based video editor with AI-powered editing, timeline editing, caption generation and more.',
+                  ? '基于浏览器的开源视频编辑器，支持时间轴编辑、字幕生成等功能。'
+                  : 'Open-source browser-based video editor with timeline editing, caption generation and more.',
               inLanguage: locale,
               potentialAction: {
                 '@type': 'SearchAction',
@@ -260,8 +257,8 @@ export default async function LocaleLayout({
               name: 'ByCut',
               description:
                 locale === 'zh'
-                  ? '基于浏览器的开源视频编辑器，支持 AI 智能剪辑、时间轴编辑、字幕生成、文字转语音、角色管理等功能。完全免费，数据本地处理保护隐私。'
-                  : 'Open-source browser-based video editor with AI-powered editing, timeline editing, caption generation, text-to-speech, character management and more. Completely free, all data processed locally for privacy.',
+                  ? '基于浏览器的开源视频编辑器，支持时间轴编辑、字幕生成、文字转语音等功能。完全免费，数据本地处理保护隐私。'
+                  : 'Open-source browser-based video editor with timeline editing, caption generation, text-to-speech and more. Completely free, all data processed locally for privacy.',
               url: 'https://bycut.pages.dev/',
               applicationCategory: 'MultimediaApplication',
               operatingSystem: 'Web',
@@ -289,8 +286,8 @@ export default async function LocaleLayout({
               isAccessibleForFree: true,
               keywords:
                 locale === 'zh'
-                  ? '视频编辑器, AI 视频剪辑, 在线剪辑, 字幕生成, 文字转语音, 时间轴编辑, 开源'
-                  : 'video editor, AI video editing, online editor, caption generation, text-to-speech, timeline editing, open source',
+                  ? '视频编辑器, 在线剪辑, 字幕生成, 文字转语音, 时间轴编辑, 开源'
+                  : 'video editor, online editor, caption generation, text-to-speech, timeline editing, open source',
               screenshot: {
                 '@type': 'ImageObject',
                 contentUrl:
@@ -302,12 +299,9 @@ export default async function LocaleLayout({
               },
               softwareVersion: '1.0.0',
               featureList: [
-                'AI-powered video editing agent',
                 'Timeline-based multi-track editing',
                 'Caption/subtitle generation',
                 'Text-to-speech synthesis',
-                'AI character management',
-                'AI image and video generation',
                 'Sticker and transition effects',
                 'Local browser processing - no uploads',
                 'Privacy-focused - all data stays on your device',

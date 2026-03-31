@@ -2,7 +2,7 @@
 
 import { Button } from '@cdlab996/ui/components/button'
 import { cn } from '@cdlab996/ui/lib/utils'
-import { ArrowLeft, Command, Sparkles } from 'lucide-react'
+import { ArrowLeft, Command } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -12,7 +12,6 @@ import {
 } from '@/components/layout'
 import { useEditor } from '@/hooks/use-editor'
 import { useRouter } from '@/lib/navigation'
-import { useAgentStore } from '@/stores/agent-store'
 import { ShortcutsDialog } from './dialogs/shortcuts-dialog'
 import { ExportButton } from './export-button'
 
@@ -154,23 +153,5 @@ function EditableProjectName() {
         isEditing && 'ring-1 ring-ring cursor-text hover:bg-transparent',
       )}
     />
-  )
-}
-
-function AgentToggle() {
-  const t = useTranslations()
-  const isOpen = useAgentStore((s) => s.isOpen)
-  const togglePanel = useAgentStore((s) => s.togglePanel)
-
-  return (
-    <Button
-      variant={isOpen ? 'secondary' : 'ghost'}
-      size="icon"
-      onClick={togglePanel}
-      title={t('editor.aiAgent')}
-      className="size-8"
-    >
-      <Sparkles className="size-4" />
-    </Button>
   )
 }

@@ -17,7 +17,6 @@ import {
   runStorageMigrations,
 } from '@/services/storage/migrations'
 import { storageService } from '@/services/storage/service'
-import { useAgentStore } from '@/stores/agent-store'
 import type { ExportOptions, ExportResult } from '@/types/export'
 import type {
   TProject,
@@ -151,8 +150,6 @@ export class ProjectManager {
 
       await this.editor.media.loadProjectMedia({ projectId: id })
 
-      useAgentStore.getState().initMessages(project.agentMessages ?? [])
-
       if (!project.metadata.thumbnail) {
         const didUpdateThumbnail = await this.updateThumbnailFromTimeline()
         if (didUpdateThumbnail) {
@@ -174,11 +171,9 @@ export class ProjectManager {
 
     try {
       const scenes = this.editor.scenes.getScenes()
-      const agentMessages = useAgentStore.getState().getMessages()
       const updatedProject = {
         ...this.active,
         scenes,
-        agentMessages,
         metadata: {
           ...this.active.metadata,
           duration: getProjectDurationFromScenes({ scenes }),
