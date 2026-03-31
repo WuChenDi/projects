@@ -17,6 +17,18 @@ Preview: https://vidl.pages.dev/
   - Direct download for MP4, WebM, MKV, AVI, MOV, FLV, WMV, MPEG, TS
   - Auto-detect URL format — no manual switching needed
 
+- **Single & Batch Download**
+  - Single mode: paste one URL, parse, configure, and download
+  - Batch mode: paste multiple URLs at once, auto-parse all, per-item configuration
+  - Seamless tab switching between modes
+
+- **Batch Download**
+  - Paste multiple URLs (one per line) or use clipboard paste button
+  - Auto-parse all URLs on add to queue
+  - Per-item configuration: quality, format, segment range, custom filename
+  - Overall batch progress bar + per-item inline progress
+  - Sequential download with error handling per item
+
 - **M3U8/HLS Download**
   - One-click M3U8 playlist parsing
   - Multi-quality stream selection
@@ -33,12 +45,25 @@ Preview: https://vidl.pages.dev/
   - Near-zero memory usage
   - Download and write to disk simultaneously
   - Supports both .ts and MP4 output
+  - Available in both single and batch modes
   - Requires browser Streams API support
 
   > **Browser compatibility:**
   >
   > - Chrome 90+, Edge 90+, Firefox 88+
   > - Safari does not support stream download (falls back to normal download)
+
+- **Download Settings**
+  - Configurable concurrent downloads (1-20)
+  - Adjustable request timeout (5-120s)
+  - Max retries per segment (0-10)
+  - Retry base delay with exponential backoff (0.5-10s)
+  - Settings persisted in localStorage
+
+- **Custom Filename**
+  - Set custom output filename before download
+  - Available in both single and batch modes
+  - Auto-generated name as fallback
 
 - **AES Decryption**
   - Auto-detect AES-128 encryption
@@ -64,12 +89,22 @@ Preview: https://vidl.pages.dev/
 
 ## Quick Start
 
+### Single Download
+
 1. Open the [Video Downloader](https://vidl.pages.dev/)
 2. Paste a video URL (M3U8, MP4, etc.)
 3. Click **Parse** — the tool auto-detects the format
 4. For M3U8: choose download method (Normal / Stream) and format (TS / MP4)
 5. For direct video: click **Download Video**
 6. File saves to your browser's default download directory
+
+### Batch Download
+
+1. Switch to batch mode via the tab icon in the top-right corner
+2. Paste multiple URLs (one per line) or click the clipboard button
+3. Click **Add to Queue** — all URLs are automatically parsed
+4. Configure each item: quality, format, segment range, filename
+5. Click **Download** to start sequential processing
 
 ## Download Method Guide
 

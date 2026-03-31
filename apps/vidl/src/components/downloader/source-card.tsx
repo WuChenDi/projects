@@ -4,6 +4,7 @@ import { Button } from '@cdlab996/ui/components/button'
 import { ButtonGroup } from '@cdlab996/ui/components/button-group'
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -19,9 +20,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@cdlab996/ui/components/tooltip'
-import { formatFileSize } from '@cdlab996/utils'
+import { formatBytes } from '@cdlab996/utils'
 import {
   CircleQuestionMark,
+  FileText,
   HardDriveDownload,
   Loader2,
   Pause,
@@ -41,8 +43,11 @@ import type {
 } from '@/hooks/use-video-downloader'
 
 interface SourceCardProps {
+  headerAction?: React.ReactNode
   url: string
   onUrlChange: (url: string) => void
+  customFileName: string
+  onCustomFileNameChange: (name: string) => void
   isParsing: boolean
   isLoadingVariant: boolean
   downloadState: DownloadState
@@ -64,8 +69,11 @@ interface SourceCardProps {
 }
 
 export function SourceCard({
+  headerAction,
   url,
   onUrlChange,
+  customFileName,
+  onCustomFileNameChange,
   isParsing,
   isLoadingVariant,
   downloadState,
@@ -93,8 +101,8 @@ export function SourceCard({
       <CardHeader>
         <CardTitle>{t('tool.title')}</CardTitle>
         <CardDescription>{t('tool.description')}</CardDescription>
+        {headerAction && <CardAction>{headerAction}</CardAction>}
       </CardHeader>
-
       <CardContent className="space-y-4">
         <Field>
           <FieldTitle>{t('parse.videoUrlLabel')}</FieldTitle>
@@ -184,9 +192,28 @@ export function SourceCard({
             <FieldTitle>
               {t('download.fileInfo')}
               <span className="text-sm text-muted-foreground">
-                {formatFileSize(estimatedSize)}
+                {formatBytes({ bytes: estimatedSize })}
               </span>
             </FieldTitle>
+          </Field>
+        )}
+
+        {(isParsed || isDirectVideo) && (
+          <Field>
+            <FieldTitle>
+              <FileText className="size-4" />
+              {t('filename.label')}
+            </FieldTitle>
+            <Input
+              value={customFileName}
+              onChange={(e) => onCustomFileNameChange(e.target.value)}
+              disabled={downloadState.isDownloading}
+              placeholder={t('filename.placeholder')}
+              className="text-base"
+            />
+            <p className="text-xs text-muted-foreground">
+              {t('filename.hint')}
+            </p>
           </Field>
         )}
 
@@ -202,7 +229,7 @@ export function SourceCard({
                       size:
                         estimatedSize !== null
                           ? t('download.estimatedSize', {
-                              size: formatFileSize(estimatedSize),
+                              size: formatBytes({ bytes: estimatedSize }),
                             })
                           : '',
                     })}

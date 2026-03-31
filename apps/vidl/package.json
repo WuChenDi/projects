@@ -1,9 +1,9 @@
 {
   "name": "@cdlab996/vidl",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "M3U8 在线下载工具",
+  "description": "Online video downloader supporting M3U8/HLS, MP4 with batch download, range download, streaming, AES decryption, and MP4 conversion",
   "author": "wudi <wuchendi96@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/WuChenDi",
@@ -37,7 +37,8 @@
     "next-themes": "catalog:prod",
     "react": "catalog:prod",
     "react-dom": "catalog:prod",
-    "sonner": "catalog:prod"
+    "sonner": "catalog:prod",
+    "zustand": "catalog:prod"
   },
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",

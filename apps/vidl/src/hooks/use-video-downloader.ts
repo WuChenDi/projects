@@ -26,6 +26,7 @@ import {
   triggerBrowserDownload,
   VIDEO_MIME_MAP,
 } from '@/lib'
+import type { DownloadSettings } from '@/stores/settings-store'
 
 export type {
   DownloadState,
@@ -47,13 +48,17 @@ interface AesConf {
 // Hook
 // ============================================================
 
-export function useVideoDownloader() {
+export function useVideoDownloader(settings: DownloadSettings) {
   const t = useTranslations()
+
+  const settingsRef = useRef(settings)
+  settingsRef.current = settings
 
   const [url, setUrl] = useState(
     'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
   )
   const [title, setTitle] = useState('')
+  const [customFileName, setCustomFileName] = useState('')
   const [isParsing, setIsParsing] = useState(false)
   const [isLoadingVariant, setIsLoadingVariant] = useState(false)
 
@@ -100,6 +105,13 @@ export function useVideoDownloader() {
   const m3u8ContentRef = useRef('')
   const downloadAbortRef = useRef<AbortController | null>(null)
   const isRetryingRef = useRef(false)
+  const downloadCompleteResolverRef = useRef<(() => void) | null>(null)
+
+  // Mirror state in refs so batch can call startDownload immediately after parse
+  const tsUrlListRef = useRef<string[]>([])
+  const finishListRef = useRef<FinishItem[]>([])
+  const rangeDownloadRef = useRef<RangeDownload>(rangeDownload)
+  const isDirectVideoRef = useRef(false)
 
   const downloadStateRef = useRef(downloadState)
   downloadStateRef.current = downloadState
@@ -241,6 +253,8 @@ export function useVideoDownloader() {
           streamWriter.current = null
           setDownloadState((s) => ({ ...s, isDownloading: false }))
           toast.success(t('download.streamComplete', { count: newFinishNum }))
+          downloadCompleteResolverRef.current?.()
+          downloadCompleteResolverRef.current = null
         }
       } else if (
         !isStreamModeRef.current &&
@@ -256,11 +270,15 @@ export function useVideoDownloader() {
         const completeMediaList = mediaFileListRef.current.filter(Boolean)
         triggerBrowserDownload(
           completeMediaList,
-          title || format(beginTimeRef.current, 'yyyyMMdd_HHmmss'),
+          customFileName.trim() ||
+            title ||
+            format(beginTimeRef.current, 'yyyyMMdd_HHmmss'),
           downloadStateRef.current.isGetMP4,
         )
         setDownloadState((s) => ({ ...s, isDownloading: false }))
         toast.success(t('download.downloadComplete', { count: newFinishNum }))
+        downloadCompleteResolverRef.current?.()
+        downloadCompleteResolverRef.current = null
       }
 
       return newList
@@ -302,7 +320,9 @@ export function useVideoDownloader() {
         downloadingTimestamps.current.set(index, Date.now())
 
         let success = false
-        for (let attempt = 0; attempt < MAX_SEGMENT_RETRIES; attempt++) {
+        const { maxRetries, retryBaseDelayMs, timeoutMs } =
+          settingsRef.current
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
           const currentState = downloadStateRef.current
           if (currentState.isPaused || !currentState.isDownloading) return
 
@@ -311,6 +331,7 @@ export function useVideoDownloader() {
               urlList[index],
               'file',
               downloadAbortRef.current?.signal,
+              timeoutMs,
             )
             downloadingTimestamps.current.delete(index)
             if (!downloadStateRef.current.isDownloading) return
@@ -319,8 +340,8 @@ export function useVideoDownloader() {
             break
           } catch {
             if (!downloadStateRef.current.isDownloading) return
-            if (attempt < MAX_SEGMENT_RETRIES - 1) {
-              const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt)
+            if (attempt < maxRetries - 1) {
+              const delay = retryBaseDelayMs * Math.pow(2, attempt)
               await new Promise((resolve) => setTimeout(resolve, delay))
             }
           }
@@ -346,7 +367,10 @@ export function useVideoDownloader() {
     }
 
     const pendingCount = finishItems.filter((item) => item.status === '').length
-    const concurrency = Math.min(6, pendingCount || targetSegment)
+    const concurrency = Math.min(
+      settingsRef.current.concurrency,
+      pendingCount || targetSegment,
+    )
     await Promise.all(Array.from({ length: concurrency }, () => worker()))
   }
 
@@ -397,12 +421,16 @@ export function useVideoDownloader() {
     }
 
     m3u8ContentRef.current = m3u8Str
-    setTsUrlList(newTsUrlList)
-    setFinishList(newFinishList)
-    setRangeDownload({
+    tsUrlListRef.current = newTsUrlList
+    finishListRef.current = newFinishList
+    const newRange = {
       startSegment: '1',
       endSegment: String(newTsUrlList.length),
-    })
+    }
+    rangeDownloadRef.current = newRange
+    setTsUrlList(newTsUrlList)
+    setFinishList(newFinishList)
+    setRangeDownload(newRange)
 
     toast.success(t('parse.success', { count: newTsUrlList.length }))
 
@@ -454,7 +482,7 @@ export function useVideoDownloader() {
         type: VIDEO_MIME_MAP[ext] || 'application/octet-stream',
       })
       const a = document.createElement('a')
-      a.download = `${newTitle}.${ext}`
+      a.download = `${customFileName.trim() || newTitle}.${ext}`
       a.href = URL.createObjectURL(blob)
       a.style.display = 'none'
       document.body.appendChild(a)
@@ -495,11 +523,15 @@ export function useVideoDownloader() {
     setVariants([])
     setEstimatedSize(null)
     setIsDirectVideo(false)
+    tsUrlListRef.current = []
+    finishListRef.current = []
+    isDirectVideoRef.current = false
     m3u8ContentRef.current = ''
 
     // Direct video URL — no parsing needed
     if (isDirectVideoUrl(fetchUrl)) {
       setIsDirectVideo(true)
+      isDirectVideoRef.current = true
       setIsParsing(false)
 
       // Estimate file size via HEAD request
@@ -578,8 +610,23 @@ export function useVideoDownloader() {
   }
 
   // ---- Start HLS segment download ----
-  const startDownload = async (isGetMP4: boolean) => {
-    if (!isParsed || downloadState.isDownloading) return
+  const startDownload = async (
+    isGetMP4: boolean,
+  ): Promise<void> => {
+    // Read from refs to support immediate call after parseM3U8 (batch mode)
+    const currentTsUrlList = tsUrlListRef.current.length > 0
+      ? tsUrlListRef.current
+      : tsUrlList
+    const currentFinishList = finishListRef.current.length > 0
+      ? finishListRef.current
+      : finishList
+    const currentRange = rangeDownloadRef.current
+
+    if (currentTsUrlList.length === 0 || downloadState.isDownloading) return
+
+    const completionPromise = new Promise<void>((resolve) => {
+      downloadCompleteResolverRef.current = resolve
+    })
 
     if (!isStreamModeRef.current) {
       isStreamModeRef.current = false
@@ -592,13 +639,13 @@ export function useVideoDownloader() {
     setTitle(newTitle)
     beginTimeRef.current = new Date()
 
-    let startSeg = Math.max(parseInt(rangeDownload.startSegment) || 1, 1)
+    let startSeg = Math.max(parseInt(currentRange.startSegment) || 1, 1)
     let endSeg = Math.max(
-      parseInt(rangeDownload.endSegment) || tsUrlList.length,
+      parseInt(currentRange.endSegment) || currentTsUrlList.length,
       1,
     )
-    startSeg = Math.min(startSeg, tsUrlList.length)
-    endSeg = Math.min(endSeg, tsUrlList.length)
+    startSeg = Math.min(startSeg, currentTsUrlList.length)
+    endSeg = Math.min(endSeg, currentTsUrlList.length)
     const newStartSegment = Math.min(startSeg, endSeg)
     const newEndSegment = Math.max(startSeg, endSeg)
 
@@ -607,7 +654,7 @@ export function useVideoDownloader() {
       endSegment: String(newEndSegment),
     })
 
-    const newFinishList = finishList.map((item) => ({
+    const newFinishList = currentFinishList.map((item) => ({
       ...item,
       status: '' as const,
     }))
@@ -662,7 +709,7 @@ export function useVideoDownloader() {
 
       await getAES(
         newAesConf,
-        tsUrlList,
+        currentTsUrlList,
         newFinishList,
         newStartSegment,
         newEndSegment,
@@ -670,13 +717,15 @@ export function useVideoDownloader() {
       )
     } else {
       await downloadTS(
-        tsUrlList,
+        currentTsUrlList,
         newFinishList,
         newStartSegment,
         newEndSegment,
         isGetMP4,
       )
     }
+
+    return completionPromise
   }
 
   // ---- Cancel download ----
@@ -684,6 +733,8 @@ export function useVideoDownloader() {
     downloadAbortRef.current?.abort()
     downloadAbortRef.current = null
     isRetryingRef.current = false
+    downloadCompleteResolverRef.current?.()
+    downloadCompleteResolverRef.current = null
 
     setDownloadState((prev) => ({
       ...prev,
@@ -789,7 +840,10 @@ export function useVideoDownloader() {
       }
       if (item.status === 'downloading') {
         const startedAt = downloadingTimestamps.current.get(index)
-        if (startedAt && now - startedAt > FETCH_TIMEOUT_MS + 5_000) {
+        if (
+          startedAt &&
+          now - startedAt > settingsRef.current.timeoutMs + 5_000
+        ) {
           downloadingTimestamps.current.delete(index)
           firstPendingIndex = Math.min(firstPendingIndex, index)
           hasPending = true
@@ -831,7 +885,9 @@ export function useVideoDownloader() {
     if (currentMediaList.length) {
       triggerBrowserDownload(
         currentMediaList,
-        title || format(beginTimeRef.current, 'yyyyMMdd_HHmmss'),
+        customFileName.trim() ||
+          title ||
+          format(beginTimeRef.current, 'yyyyMMdd_HHmmss'),
         downloadState.isGetMP4,
       )
       toast.success(t('download.forceDownloadSuccess'))
@@ -854,7 +910,8 @@ export function useVideoDownloader() {
     const newTitle = urlObj.searchParams.get('title') || title
     setTitle(newTitle)
 
-    const fileName = newTitle || format(new Date(), 'yyyyMMdd_HHmmss')
+    const fileName =
+      customFileName.trim() || newTitle || format(new Date(), 'yyyyMMdd_HHmmss')
     const extension = isGetMP4 ? 'mp4' : 'ts'
 
     const writableStream = streamSaver.createWriteStream(
@@ -928,6 +985,8 @@ export function useVideoDownloader() {
     // State
     url,
     setUrl,
+    customFileName,
+    setCustomFileName,
     isParsing,
     isLoadingVariant,
     downloadState,

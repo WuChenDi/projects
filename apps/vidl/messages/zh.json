@@ -16,6 +16,10 @@
     "title": "视频在线下载工具",
     "description": "支持 M3U8/HLS、MP4 等视频格式，范围下载、流式下载、AES 解密、转 MP4"
   },
+  "tab": {
+    "single": "单个下载",
+    "batch": "批量下载"
+  },
   "parse": {
     "videoUrlLabel": "视频链接",
     "videoPlaceholder": "https://example.com/video.m3u8 或 .mp4",
@@ -68,6 +72,8 @@
     "finished": "已完成 {count}",
     "failed": "失败 {count}",
     "overall": "整体进度",
+    "batchOverall": "批量进度",
+    "currentVideo": "第 {index} 集",
     "partialFailed": "部分片段下载失败",
     "retryHint": "红色格子可点击重试 · 系统每 2 秒自动重试一次",
     "segment": "片段 {index}",
@@ -80,5 +86,56 @@
     "title": "暂无下载任务",
     "description": "输入视频链接，点击解析按钮开始",
     "hint": "支持 M3U8/HLS、MP4 等视频格式"
+  },
+  "filename": {
+    "label": "文件名称",
+    "placeholder": "自定义文件名（可选）",
+    "hint": "留空则自动生成文件名"
+  },
+  "settings": {
+    "title": "下载设置",
+    "description": "自定义下载行为，设置会自动保存",
+    "concurrency": "并发下载数",
+    "concurrencyHint": "同时下载的片段数量（1-20）",
+    "timeout": "请求超时时间",
+    "timeoutHint": "每个片段请求的最大等待时间（5-120秒）",
+    "maxRetries": "最大重试次数",
+    "maxRetriesHint": "每个失败片段的重试次数（0-10）",
+    "retryDelay": "重试基础延迟",
+    "retryDelayHint": "重试前的初始延迟，每次翻倍（0.5-10秒）",
+    "reset": "恢复默认"
+  },
+  "batch": {
+    "title": "批量下载",
+    "inputLabel": "视频链接（每行一个）",
+    "inputPlaceholder": "https://example.com/video1.m3u8\nhttps://example.com/video2.m3u8\nhttps://example.com/video3.m3u8",
+    "addToQueue": "添加到队列",
+    "lineCount": "{count} 个链接",
+    "clipboardError": "无法读取剪贴板",
+    "queue": "下载队列",
+    "format": "格式",
+    "variant": "画质",
+    "range": "片段范围",
+    "parseAll": "解析全部",
+    "parseComplete": "全部解析完成",
+    "startAll": "下载",
+    "cancel": "取消",
+    "clearDone": "清除已完成",
+    "streamMp4": "流式 MP4（大文件）",
+    "streamTs": "流式 .ts（大文件）",
+    "emptyList": "请输入至少一个链接",
+    "complete": "全部下载完成",
+    "running": "正在处理 {current} / {total}",
+    "parsedCount": "{count} 就绪",
+    "doneCount": "{count} 完成",
+    "errorCount": "{count} 失败",
+    "status": {
+      "pending": "等待中",
+      "parsing": "解析中",
+      "parsed": "就绪",
+      "downloading": "下载中",
+      "done": "已完成",
+      "error": "失败"
+    }
   }
 }

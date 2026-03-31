@@ -16,6 +16,10 @@
     "title": "Video Downloader",
     "description": "Supports M3U8/HLS, MP4, and other video formats with range download, streaming, AES decryption, MP4 conversion"
   },
+  "tab": {
+    "single": "Single",
+    "batch": "Batch"
+  },
   "parse": {
     "videoUrlLabel": "Video URL",
     "videoPlaceholder": "https://example.com/video.m3u8 or .mp4",
@@ -68,6 +72,8 @@
     "finished": "Done {count}",
     "failed": "Failed {count}",
     "overall": "Overall Progress",
+    "batchOverall": "Batch Progress",
+    "currentVideo": "Video #{index}",
     "partialFailed": "Some segments failed to download",
     "retryHint": "Red blocks can be clicked to retry - auto-retry every 2 seconds",
     "segment": "Segment {index}",
@@ -80,5 +86,56 @@
     "title": "No download tasks",
     "description": "Enter a video URL and click Parse to start",
     "hint": "Supports M3U8/HLS, MP4, and other video formats"
+  },
+  "filename": {
+    "label": "File Name",
+    "placeholder": "Custom file name (optional)",
+    "hint": "Leave empty to use auto-generated name"
+  },
+  "settings": {
+    "title": "Download Settings",
+    "description": "Customize download behavior, settings are saved automatically",
+    "concurrency": "Concurrent Downloads",
+    "concurrencyHint": "Number of segments downloaded in parallel (1-20)",
+    "timeout": "Request Timeout",
+    "timeoutHint": "Maximum wait time per segment request (5-120s)",
+    "maxRetries": "Max Retries",
+    "maxRetriesHint": "Number of retry attempts per failed segment (0-10)",
+    "retryDelay": "Retry Base Delay",
+    "retryDelayHint": "Initial delay before retry, doubles each attempt (0.5-10s)",
+    "reset": "Reset to Defaults"
+  },
+  "batch": {
+    "title": "Batch Download",
+    "inputLabel": "Video URLs (one per line)",
+    "inputPlaceholder": "https://example.com/video1.m3u8\nhttps://example.com/video2.m3u8\nhttps://example.com/video3.m3u8",
+    "addToQueue": "Add to Queue",
+    "lineCount": "{count} URLs",
+    "clipboardError": "Unable to read clipboard",
+    "queue": "Download Queue",
+    "format": "Format",
+    "variant": "Quality",
+    "range": "Segment Range",
+    "parseAll": "Parse All",
+    "parseComplete": "All URLs parsed",
+    "startAll": "Download",
+    "cancel": "Cancel",
+    "clearDone": "Clear Done",
+    "streamMp4": "Stream MP4 (Large Files)",
+    "streamTs": "Stream .ts (Large Files)",
+    "emptyList": "Please enter at least one URL",
+    "complete": "All downloads complete",
+    "running": "Processing {current} / {total}",
+    "parsedCount": "{count} ready",
+    "doneCount": "{count} done",
+    "errorCount": "{count} failed",
+    "status": {
+      "pending": "Pending",
+      "parsing": "Parsing",
+      "parsed": "Ready",
+      "downloading": "Downloading",
+      "done": "Done",
+      "error": "Failed"
+    }
   }
 }

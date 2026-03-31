@@ -74,9 +74,13 @@ export const fetchData = async (
   url: string,
   type?: 'file' | 'text',
   signal?: AbortSignal,
+  timeoutMs?: number,
 ): Promise<any> => {
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    timeoutMs ?? FETCH_TIMEOUT_MS,
+  )
 
   if (signal) {
     signal.addEventListener('abort', () => controller.abort(), { once: true })
