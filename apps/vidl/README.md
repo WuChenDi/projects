@@ -1,5 +1,7 @@
 # Video Downloader
 
+[中文文档](./README.zh-CN.md)
+
 Online video download tool supporting M3U8/HLS, MP4, and other video formats with range download, streaming, AES decryption, and MP4 conversion.
 
 > All video processing is done locally in the browser. No data is uploaded to any server.
@@ -47,6 +49,10 @@ Preview: https://vidl.pages.dev/
   - TS to MP4 transmuxing via mux.js
   - Audio/video track merging with timestamp sync
   - Browser-side conversion, no server needed
+
+- **Cross-tool Integration**
+  - One-click jump to [byplay](https://byplay.pages.dev/) to preview/play the current video
+  - Locale is preserved across navigation (en/zh)
 
 - **User Experience**
   - Click to retry individual failed segments
@@ -133,7 +139,6 @@ Preview: https://vidl.pages.dev/
 - No download links are logged or stored
 - Open source and auditable
 - No registration or login required
-
 
 ## License
 

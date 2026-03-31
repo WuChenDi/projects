@@ -5,96 +5,117 @@
 [![pnpm](https://img.shields.io/badge/pnpm-%E2%89%A5%2010-f69220.svg)](https://pnpm.io/)
 [![Turborepo](https://img.shields.io/badge/built%20with-Turborepo-cc00ff.svg)](https://turbo.build/)
 
-现代 Web 工具集合 monorepo —— 基于 **Turborepo + pnpm**，涵盖 Next.js、Nuxt、Hono 等多技术栈
+[中文文档](./README.zh-CN.md)
+
+A modern web tools monorepo built with **Turborepo + pnpm**, spanning Next.js, Nuxt, Hono, and more.
 
 > [!IMPORTANT]
-> 大多数应用**完全在浏览器端运行**，**零服务器上传**，数据永不离开你的设备。
-> 隐私优先 · 本地优先 · 性能优先
+> Most apps run **entirely in the browser** with **zero server uploads** — your data never leaves your device.
+> Privacy-first · Local-first · Performance-first
 
-## ✨ 应用详情
+## Applications
 
 ### Clearify
 
-**图片 & 视频处理工具箱**
+**Image & Video Processing Toolbox**
 
 https://clearify.pages.dev/
 
-- 一键移除背景、批量压缩（AVIF / WebP / JXL 等多种格式）、视频体积压缩（最高可达 90%）
-- 核心技术：Transformers.js + WebGPU（背景移除）、FFmpeg.wasm（压缩 & 转码）
-- 亮点：本地 WebGPU 加速、批量高效处理、完全无上传
+- One-click background removal, batch compression (AVIF / WebP / JXL and more), video compression (up to 90% size reduction)
+- Tech: Transformers.js + WebGPU (background removal), FFmpeg.wasm (compression & transcoding)
+- Highlights: local WebGPU acceleration, efficient batch processing, completely upload-free
 
 <details>
-  <summary>📸 Preview</summary>
+  <summary>Preview</summary>
   <br/>
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Clearify/og-image.png" alt="Clearify" />
 </details>
 
 ### SecureC
 
-**客户端文件 / 文本加解密工具**
+**Client-side File / Text Encryption Tool**
 
 https://securec.pages.dev/
 
-- XChaCha20-Poly1305 加密、Argon2id 密码派生、ECIES 公钥加密、大文件分块处理
-- 核心技术：@noble/ciphers + Web Workers
-- 亮点：10 MB 分块 + Web Worker 后台处理，UI 始终流畅
+- XChaCha20-Poly1305 encryption, Argon2id key derivation, ECIES public key encryption, large file chunked processing
+- Tech: @noble/ciphers + Web Workers
+- Highlights: 10 MB chunking + Web Worker background processing, UI stays smooth
 
 <details>
-  <summary>📸 Preview</summary>
+  <summary>Preview</summary>
   <br/>
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/og-image.png" alt="SecureC" />
 </details>
 
 ### Dropply
 
-**端到端加密的文件分享平台**
+**End-to-end Encrypted File Sharing Platform**
 
-- 前后端分离架构：`dropply-web` 提供分享/管理界面，`dropply-api` 提供加密存储与链接管理
-- 特点：临时链接、到期失效、加密后再上传，适合安全地分享敏感文件
+- Decoupled architecture: `dropply-web` for sharing/management UI, `dropply-api` for encrypted storage & link management
+- Features: temporary links, expiration, encrypt-before-upload — ideal for sharing sensitive files securely
 
 <details>
-  <summary>📸 Preview</summary>
+  <summary>Preview</summary>
   <br/>
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Dropply/og-image.png" alt="Dropply" />
 </details>
 
 ### text2img
 
-**浏览器端文本生成图像**
+**Browser-based Text-to-Image Generator**
 
 https://text2img.cdlab.workers.dev/
 
-- 支持 FLUX、SDXL、DreamShaper 等模型，随机提示词、丰富参数调节
-- 核心技术：Next.js App Router + TanStack Query + Cloudflare AI
-- 亮点：实时预览、深色/浅色主题、一键下载
+- Supports FLUX, SDXL, DreamShaper and more, random prompts, rich parameter controls
+- Tech: Next.js App Router + TanStack Query + Cloudflare AI
+- Highlights: real-time preview, dark/light theme, one-click download
 
 <details>
-  <summary>📸 Preview</summary>
+  <summary>Preview</summary>
   <br/>
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/og-image.png" alt="text2img" />
 </details>
 
+### ByCut
+
+**Browser-based Video Editor**
+
+https://bycut.pages.dev/
+
+- A fully client-side, open-source video editor (CapCut alternative) — zero server uploads, complete privacy
+- Multi-track timeline editing, timeline bookmarks, AI caption generation, text-to-speech, stickers, transitions, keyframe animation
+- Tech: Next.js (App Router, static export) + Zustand + FFmpeg.wasm + Hugging Face Transformers + WaveSurfer.js + next-intl (en/zh)
+- Highlights: GPU-accelerated canvas rendering, full undo/redo command system, customizable keyboard shortcuts
+
+<details>
+  <summary>Preview</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/bycut/og-image.png" alt="ByCut" />
+</details>
+
 ### byplay
 
-**在线视频播放器 / Web Player 平台**
+**Online Video Player**
 
 https://byplay.pages.dev/
 
-- 支持 HLS、FLV、MP4 等多种格式的视频播放
-- 提供更好的视频播放体验，可扩展监控与数据上报能力
+- Supports HLS (M3U8 adaptive bitrate), MP4, WebM, OGG, and more
+- HLS quality switching, ABR adaptive bitrate, configurable buffer & retry settings
+- One-click jump to [vidl](https://vidl.pages.dev/) to download the current video
+- Extensible monitoring and analytics capabilities
 
 <details>
-  <summary>📸 Preview</summary>
+  <summary>Preview</summary>
   <br/>
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byplay/og-image.png" alt="byplay" />
 </details>
 
 ### byplay-log
 
-**ByPlay 播放器监控与分析服务**
+**ByPlay Player Monitoring & Analytics Service**
 
-- 为 ByPlay 提供播放数据采集、日志上报与行为分析能力
-- 适合作为播放器日志后端或 A/B 实验/质量监控的数据基础设施
+- Playback data collection, log reporting, and behavior analytics for ByPlay
+- Suitable as a player log backend or data infrastructure for A/B testing / quality monitoring
 
 ### vidl
 
@@ -104,53 +125,54 @@ https://vidl.pages.dev/
 
 - Supports M3U8/HLS, MP4, WebM, MKV, FLV, and more — auto-detects URL format
 - M3U8: range download, stream download, AES-128 decryption, TS-to-MP4 conversion
+- One-click jump to [byplay](https://byplay.pages.dev/) to preview/play the current video
 - Tech: mux.js + Streams API
 - Highlights: near-zero memory stream download, pause/resume, auto-retry with exponential backoff
 
 <details>
-  <summary>📸 Preview</summary>
+  <summary>Preview</summary>
   <br/>
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/vidl/og-image.png" alt="vidl" />
 </details>
 
 ### value-vision
 
-**加密货币 / 法币 / 商品价值对比工具**
+**Crypto / Fiat / Commodity Value Comparison Tool**
 
 https://values.pages.dev/
 
-- 将加密货币、法币与各类商品放在同一尺度下直观对比
-- 亮点：输入资产或金额后，一眼看出"能买什么""价值相当于什么"
+- Compare cryptocurrencies, fiat currencies, and commodities side by side on a unified scale
+- Highlights: enter an asset or amount and instantly see "what it can buy" or "what it's equivalent to"
 
 <details>
-  <summary>📸 Preview</summary>
+  <summary>Preview</summary>
   <br/>
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/value-vision/og-image.png" alt="value-vision" />
 </details>
 
 ### repo-changelog
 
-**开源项目 Release / Changelog 聚合面板**
+**Open Source Release / Changelog Aggregation Dashboard**
 
 https://repo-changelog.vercel.app/
 
-- 在一个仪表盘中跟踪多个 GitHub 仓库的 Release 与 Changelog
-- 支持按仓库 / 用户 / 组织搜索，并按 Star、更新时间等排序
+- Track releases and changelogs from multiple GitHub repositories in one dashboard
+- Search by repository / user / organization, sort by stars, update time, and more
 
 <details>
-  <summary>📸 Preview</summary>
+  <summary>Preview</summary>
   <br/>
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/repo-changelog/og-image.png" alt="repo-changelog" />
 </details>
 
-## 🚀 快速开始
+## Getting Started
 
-### 环境要求
+### Prerequisites
 
-- Node.js ≥ 20
-- pnpm ≥ 10
+- Node.js >= 20
+- pnpm >= 10
 
-### 克隆 & 安装
+### Clone & Install
 
 ```bash
 git clone https://github.com/WuChenDi/projects.git
@@ -158,11 +180,12 @@ cd projects
 pnpm install
 ```
 
-### 常用命令
+### Common Commands
 
 ```bash
-pnpm dev                         # 启动所有应用（并行开发）
-pnpm --filter clearify dev       # 只启动 Clearify
+pnpm dev                           # Start all apps (parallel dev)
+pnpm --filter clearify dev         # Start Clearify only
+pnpm --filter @cdlab996/bycut dev  # Start ByCut only (port 3020)
 pnpm --filter vidl dev
 pnpm --filter securec dev
 pnpm --filter text2img dev
@@ -171,8 +194,9 @@ pnpm --filter byplay dev
 pnpm --filter byplay-log dev
 pnpm --filter dropply-web dev
 pnpm --filter repo-changelog dev
-pnpm build                       # 构建所有应用
+pnpm build                         # Build all apps
 pnpm --filter clearify run build
+pnpm --filter @cdlab996/bycut run build
 pnpm --filter vidl run build
 pnpm --filter securec run build
 pnpm --filter text2img run build
@@ -181,31 +205,32 @@ pnpm --filter byplay run build
 pnpm --filter byplay-log run build
 pnpm --filter dropply-web run build
 pnpm --filter repo-changelog run build
-pnpm lint                        # Biome 代码检查
-pnpm format                      # Biome 格式化全部代码
-pnpm clean                       # 清理 node_modules / 缓存 / 构建产物
+pnpm lint                          # Biome lint
+pnpm format                        # Biome format all code
+pnpm clean                         # Clean node_modules / cache / build artifacts
 ```
 
-## 📁 目录结构
+## Project Structure
 
 ```text
 .
 ├── apps/
-│   ├── byplay/            # 在线视频播放器 / Web Player
-│   ├── byplay-log/        # ByPlay 播放器监控与分析服务
-│   ├── clearify/          # 图像 & 视频工具箱
-│   ├── dropply-api/       # Dropply 文件分享 Cloudflare API
-│   ├── dropply-web/       # Dropply 文件分享 Web 前端
+│   ├── bycut/             # Browser-based Video Editor
+│   ├── byplay/            # Online Video Player
+│   ├── byplay-log/        # ByPlay Monitoring & Analytics Service
+│   ├── clearify/          # Image & Video Toolbox
+│   ├── dropply-api/       # Dropply File Sharing Cloudflare API
+│   ├── dropply-web/       # Dropply File Sharing Web Frontend
 │   ├── vidl/              # Video Downloader (M3U8/HLS, MP4, etc.)
-│   ├── repo-changelog/    # GitHub Release / Changelog 聚合工具
-│   ├── SecureC/           # 加解密工具
-│   ├── text2img/          # 文生图前端
-│   └── value-vision/      # 价值对比 / 可视化工具
+│   ├── repo-changelog/    # GitHub Release / Changelog Aggregation
+│   ├── SecureC/           # Encryption Tool
+│   ├── text2img/          # Text-to-Image Frontend
+│   └── value-vision/      # Value Comparison / Visualization
 ├── packages/
-│   ├── tsconfig/          # 共享 TypeScript 配置 (@cdlab996/tsconfig)
-│   ├── ui/                # 共享 UI 组件库 (@cdlab996/ui)
-│   ├── uncrypto/          # 轻量加密库 (@cdlab996/uncrypto)
-│   └── utils/             # 通用工具函数 (@cdlab996/utils)
+│   ├── tsconfig/          # Shared TypeScript Config (@cdlab996/tsconfig)
+│   ├── ui/                # Shared UI Component Library (@cdlab996/ui)
+│   ├── uncrypto/          # Lightweight Crypto Library (@cdlab996/uncrypto)
+│   └── utils/             # Common Utilities (@cdlab996/utils)
 ├── scripts/
 │   └── clean.sh
 ├── turbo.json
@@ -213,18 +238,18 @@ pnpm clean                       # 清理 node_modules / 缓存 / 构建产物
 └── package.json
 ```
 
-## 🛠 技术栈
+## Tech Stack
 
-| 层级           | 技术                                                           |
-| -------------- | -------------------------------------------------------------- |
-| **前端框架**   | React + Next.js 16+（App Router） / Vue 3 + Nuxt 4             |
-| **类型系统**   | TypeScript 5                                                   |
-| **UI**         | shadcn/ui · Tailwind CSS v4 · Nuxt UI                          |
-| **浏览器能力** | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API |
-| **后端 / API** | Cloudflare Workers · Hono + Zod Validator                      |
-| **数据库**     | Drizzle ORM + LibSQL / Cloudflare D1                           |
-| **工程**       | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format)     |
+| Layer              | Technology                                                     |
+| ------------------ | -------------------------------------------------------------- |
+| **Frontend**       | React + Next.js 16+ (App Router) / Vue 3 + Nuxt 4             |
+| **Type System**    | TypeScript 5                                                   |
+| **UI**             | shadcn/ui · Tailwind CSS v4 · Nuxt UI                         |
+| **Browser APIs**   | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API |
+| **Backend / API**  | Cloudflare Workers · Hono + Zod Validator                      |
+| **Database**       | Drizzle ORM + LibSQL / Cloudflare D1                           |
+| **Engineering**    | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format)   |
 
-## 📜 License
+## License
 
 [MIT](./LICENSE) License © 2026-PRESENT [wudi](https://github.com/WuChenDi)
