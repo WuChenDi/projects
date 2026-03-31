@@ -1,5 +1,11 @@
 {
   "extends": "@cdlab996/tsconfig/utils.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
   "include": ["."],
   "exclude": ["node_modules", "dist"]
 }

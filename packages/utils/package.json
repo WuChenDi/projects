@@ -25,6 +25,8 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
+    "test": "vitest --run",
+    "test:watch": "vitest",
     "typecheck": "tsc --project ./tsconfig.json --noEmit",
     "prepack": "pnpm build"
   },
@@ -32,7 +34,9 @@
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
+    "jsdom": "catalog:dev",
     "tsdown": "catalog:dev",
-    "typescript": "catalog:dev"
+    "typescript": "catalog:dev",
+    "vitest": "catalog:dev"
   }
 }
