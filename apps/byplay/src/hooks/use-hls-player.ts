@@ -58,6 +58,7 @@ export interface HlsPlayerState {
   isSupported: boolean
   isLoading: boolean
   isPlaying: boolean
+  isDirectVideo: boolean
   error: string | null
   levels: { height: number; width: number; bitrate: number; codec: string }[]
   currentLevel: number
@@ -77,6 +78,7 @@ export function useHlsPlayer() {
     isSupported: false,
     isLoading: false,
     isPlaying: false,
+    isDirectVideo: false,
     error: null,
     levels: [],
     currentLevel: -1,
@@ -164,6 +166,12 @@ export function useHlsPlayer() {
       hlsRef.current.destroy()
       hlsRef.current = null
     }
+    // Also clear native video src to avoid stale playback
+    const video = videoRef.current
+    if (video) {
+      video.removeAttribute('src')
+      video.load()
+    }
   }, [])
 
   const loadSource = useCallback(
@@ -172,9 +180,14 @@ export function useHlsPlayer() {
       if (!video || !src) return
 
       destroyHls()
+
+      // Check if this is a direct video file (mp4, webm, ogg, etc.)
+      const directVideo = /\.(mp4|webm|ogg|ogv|mov|avi|mkv)(\?.*)?$/i.test(src)
+
       update({
         error: null,
         isLoading: true,
+        isDirectVideo: directVideo,
         levels: [],
         currentLevel: -1,
         bandwidth: 0,
@@ -185,7 +198,40 @@ export function useHlsPlayer() {
       const isNativeHls = !!video.canPlayType('application/vnd.apple.mpegurl')
       const { autoPlay, ...hlsConfig } = config
 
-      if (Hls.isSupported()) {
+      if (directVideo) {
+        video.src = src
+        addLog('info', 'DIRECT_VIDEO', 'Using native HTML5 video playback')
+        video.addEventListener(
+          'loadedmetadata',
+          () => {
+            update({ isLoading: false, duration: video.duration || 0 })
+            addLog(
+              'info',
+              'LOADED',
+              `Video loaded: ${video.videoWidth}x${video.videoHeight}`,
+            )
+            if (autoPlay) {
+              video.play().catch(() => {
+                video.muted = true
+                video.play().catch(console.warn)
+              })
+            }
+          },
+          { once: true },
+        )
+        video.addEventListener(
+          'error',
+          () => {
+            const mediaError = video.error
+            const errorMsg = mediaError
+              ? `Video error (code ${mediaError.code}): ${mediaError.message || 'Unknown'}`
+              : 'Video playback error'
+            update({ error: errorMsg, isLoading: false })
+            addLog('error', 'VIDEO_ERROR', errorMsg)
+          },
+          { once: true },
+        )
+      } else if (Hls.isSupported()) {
         const hls = new Hls({
           ...hlsConfig,
           abrEwmaFastLive: 3,

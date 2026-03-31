@@ -10,7 +10,16 @@ import {
 } from '@cdlab996/ui/components/card'
 import { Field } from '@cdlab996/ui/components/field'
 import { Input } from '@cdlab996/ui/components/input'
-import { useTranslations } from 'next-intl'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@cdlab996/ui/components/tooltip'
+import { HardDriveDownload } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
+
+const VIDL_URL = 'https://vidl.pages.dev'
 
 interface SourceCardProps {
   url: string
@@ -26,6 +35,7 @@ export function SourceCard({
   onLoad,
 }: SourceCardProps) {
   const t = useTranslations('source')
+  const locale = useLocale()
 
   return (
     <Card>
@@ -46,6 +56,33 @@ export function SourceCard({
             <Button onClick={onLoad} disabled={isLoading || !url.trim()}>
               {isLoading ? t('loading') : t('load')}
             </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    disabled={!url.trim()}
+                    asChild={!!url.trim()}
+                  >
+                    {url.trim() ? (
+                      <a
+                        href={`${VIDL_URL}/${locale}?url=${encodeURIComponent(url.trim())}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <HardDriveDownload className="size-4" />
+                      </a>
+                    ) : (
+                      <span>
+                        <HardDriveDownload className="size-4" />
+                      </span>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t('downloadVideo')}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </Field>
       </CardContent>

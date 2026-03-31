@@ -114,10 +114,14 @@ export default function HlsPage({ params }: Props) {
             onResetConfig={handleResetConfig}
             onSetLevel={setLevel}
           />
-          <PerformanceCard config={config} onUpdateConfig={updateConfig} />
-          <BufferCard config={config} onUpdateConfig={updateConfig} />
-          <AbrCard config={config} onUpdateConfig={updateConfig} />
-          <LoadingRetryCard config={config} onUpdateConfig={updateConfig} />
+          {!state.isDirectVideo && (
+            <>
+              <PerformanceCard config={config} onUpdateConfig={updateConfig} />
+              <BufferCard config={config} onUpdateConfig={updateConfig} />
+              <AbrCard config={config} onUpdateConfig={updateConfig} />
+              <LoadingRetryCard config={config} onUpdateConfig={updateConfig} />
+            </>
+          )}
         </div>
       </ScrollArea>
 

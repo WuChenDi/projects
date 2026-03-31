@@ -50,30 +50,34 @@ export function StatsCard({ state }: StatsCardProps) {
               {formatTime(state.buffered)}
             </span>
           </Field>
-          <Field orientation="horizontal">
-            <FieldTitle>{t('bandwidth')}</FieldTitle>
-            <span className="text-sm tabular-nums">
-              {state.bandwidth > 0 ? formatBitrate(state.bandwidth) : '--'}
-            </span>
-          </Field>
-          <Field orientation="horizontal">
-            <FieldTitle>{t('droppedFrames')}</FieldTitle>
-            <span className="text-sm tabular-nums">
-              {state.droppedFrames}
-            </span>
-          </Field>
-          <Field orientation="horizontal">
-            <FieldTitle>{t('levels')}</FieldTitle>
-            <span className="text-sm tabular-nums">
-              {state.levels.length}
-            </span>
-          </Field>
-          <Field orientation="horizontal">
-            <FieldTitle>{t('currentLevel')}</FieldTitle>
-            <span className="text-sm tabular-nums">
-              {state.currentLevel === -1 ? 'Auto' : state.currentLevel}
-            </span>
-          </Field>
+          {!state.isDirectVideo && (
+            <>
+              <Field orientation="horizontal">
+                <FieldTitle>{t('bandwidth')}</FieldTitle>
+                <span className="text-sm tabular-nums">
+                  {state.bandwidth > 0 ? formatBitrate(state.bandwidth) : '--'}
+                </span>
+              </Field>
+              <Field orientation="horizontal">
+                <FieldTitle>{t('droppedFrames')}</FieldTitle>
+                <span className="text-sm tabular-nums">
+                  {state.droppedFrames}
+                </span>
+              </Field>
+              <Field orientation="horizontal">
+                <FieldTitle>{t('levels')}</FieldTitle>
+                <span className="text-sm tabular-nums">
+                  {state.levels.length}
+                </span>
+              </Field>
+              <Field orientation="horizontal">
+                <FieldTitle>{t('currentLevel')}</FieldTitle>
+                <span className="text-sm tabular-nums">
+                  {state.currentLevel === -1 ? 'Auto' : state.currentLevel}
+                </span>
+              </Field>
+            </>
+          )}
         </FieldGroup>
       </CardContent>
     </Card>
