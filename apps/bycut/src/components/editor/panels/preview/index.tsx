@@ -1,8 +1,24 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
+import { Slider } from '@cdlab996/ui/components/slider'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@cdlab996/ui/components/tooltip'
 import { cn } from '@cdlab996/ui/lib/utils'
-import { Camera, Maximize, Music, Pause, Play, X } from 'lucide-react'
+import {
+  Camera,
+  Maximize,
+  Music,
+  Pause,
+  Play,
+  Volume2,
+  VolumeX,
+  X,
+} from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useCallback, useMemo, useRef } from 'react'
 import useDeepCompareEffect from 'use-deep-compare-effect'
@@ -263,6 +279,7 @@ function PreviewToolbar({
       </Button>
 
       <div className="flex items-center gap-1 justify-self-end">
+        <VolumeControl />
         <Button
           variant="ghost"
           size="icon"
@@ -395,6 +412,48 @@ function PreviewCanvas() {
           displaySize={displaySize}
         />
       </div>
+    </div>
+  )
+}
+
+function VolumeControl() {
+  const t = useTranslations()
+  const editor = useEditor()
+  const volume = editor.playback.getVolume()
+  const muted = editor.playback.isMuted()
+
+  return (
+    <div className="flex items-center gap-1">
+      <TooltipProvider delayDuration={500}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => editor.playback.toggleMute()}
+            >
+              {muted ? (
+                <VolumeX className="size-4" />
+              ) : (
+                <Volume2 className="size-4" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{muted ? t('common.unmute') : t('common.mute')}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <Slider
+        className="w-20"
+        value={[muted ? 0 : volume]}
+        onValueChange={(values) =>
+          editor.playback.setVolume({ volume: values[0] })
+        }
+        min={0}
+        max={1}
+        step={0.01}
+      />
     </div>
   )
 }

@@ -42,6 +42,7 @@ import {
   getTimelineZoomMin,
   getTotalTracksHeight,
   getTrackHeight,
+  getZoomToFit,
   isMainTrack,
 } from '@/lib/timeline'
 import { useTimelineStore } from '@/stores/timeline-store'
@@ -215,6 +216,10 @@ export function Timeline() {
       <TimelineToolbar
         zoomLevel={zoomLevel}
         minZoom={minZoomLevel}
+        zoomToFitLevel={getZoomToFit({
+          duration: timelineDuration,
+          containerWidth: tracksContainerRef.current?.clientWidth,
+        })}
         setZoomLevel={({ zoom }) => setZoomLevel(zoom)}
       />
 

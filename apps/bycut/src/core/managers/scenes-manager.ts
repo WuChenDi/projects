@@ -1,7 +1,9 @@
 import type { EditorCore } from '@/core'
 import {
+  ClearAllBookmarksCommand,
   CreateSceneCommand,
   DeleteSceneCommand,
+  MoveBookmarkCommand,
   RemoveBookmarkCommand,
   RenameSceneCommand,
   ToggleBookmarkCommand,
@@ -122,6 +124,22 @@ export class ScenesManager {
 
   async removeBookmark({ time }: { time: number }): Promise<void> {
     const command = new RemoveBookmarkCommand(time)
+    this.editor.command.execute({ command })
+  }
+
+  async clearAllBookmarks(): Promise<void> {
+    const command = new ClearAllBookmarksCommand()
+    this.editor.command.execute({ command })
+  }
+
+  async moveBookmark({
+    fromTime,
+    toTime,
+  }: {
+    fromTime: number
+    toTime: number
+  }): Promise<void> {
+    const command = new MoveBookmarkCommand(fromTime, toTime)
     this.editor.command.execute({ command })
   }
 

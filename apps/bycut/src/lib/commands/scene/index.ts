@@ -1,5 +1,7 @@
-export { CreateSceneCommand } from "./create-scene";
-export { DeleteSceneCommand } from "./delete-scene";
-export { RenameSceneCommand } from "./rename-scene";
-export { ToggleBookmarkCommand } from "./toggle-bookmark";
-export { RemoveBookmarkCommand } from "./remove-bookmark";
+export { ClearAllBookmarksCommand } from './clear-all-bookmarks'
+export { CreateSceneCommand } from './create-scene'
+export { DeleteSceneCommand } from './delete-scene'
+export { MoveBookmarkCommand } from './move-bookmark'
+export { RemoveBookmarkCommand } from './remove-bookmark'
+export { RenameSceneCommand } from './rename-scene'
+export { ToggleBookmarkCommand } from './toggle-bookmark'

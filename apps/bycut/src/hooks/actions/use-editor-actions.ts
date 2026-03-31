@@ -269,6 +269,35 @@ export function useEditorActions() {
   )
 
   useActionHandler(
+    'add-bookmark',
+    () => {
+      const time = editor.playback.getCurrentTime()
+      if (!editor.scenes.isBookmarked({ time })) {
+        void editor.scenes.toggleBookmark({ time })
+      }
+    },
+    undefined,
+  )
+
+  useActionHandler(
+    'remove-bookmark',
+    () => {
+      void editor.scenes.removeBookmark({
+        time: editor.playback.getCurrentTime(),
+      })
+    },
+    undefined,
+  )
+
+  useActionHandler(
+    'clear-all-bookmarks',
+    () => {
+      void editor.scenes.clearAllBookmarks()
+    },
+    undefined,
+  )
+
+  useActionHandler(
     'copy-selected',
     () => {
       if (selectedElements.length === 0) return

@@ -24,9 +24,8 @@ import { format as formatDate } from 'date-fns'
 import {
   ArrowDown,
   Calendar,
-  ChevronRight,
   Copy,
-  Ellipsis,
+  EllipsisVertical,
   Info,
   Pencil,
   Plus,
@@ -37,7 +36,6 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
-import type { KeyboardEvent, MouseEvent } from 'react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { CreateProjectDialog } from '@/components/editor/dialogs/create-project-dialog'
@@ -133,7 +131,7 @@ export default function ProjectsPage() {
         ) : (
           groupedProjects.map((group) => (
             <MonthGroup key={group.month} group={group}>
-              <div className="xs:grid-cols-2 grid grid-cols-1 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] p-0.5 gap-6">
                 {group.projects.map((project) => (
                   <ProjectItem
                     key={project.id}
@@ -267,40 +265,34 @@ function ProjectsToolbar({ projectIds }: { projectIds: string[] }) {
 
   if (hasSelection) {
     return (
-      <div className="sticky top-16 z-10 flex items-center justify-between px-6 h-14 pt-2">
-        <div className="flex items-center gap-2">
-          <Label
-            className="flex items-center gap-3 cursor-pointer px-2"
-            htmlFor="select-all-projects"
-          >
-            <Checkbox
-              id="select-all-projects"
-              checked={
-                isAllSelected ? true : hasSomeSelected ? 'indeterminate' : false
-              }
-              onCheckedChange={(checked) =>
-                handleSelectAll({ checked: checked === true })
-              }
-            />
-            <span className="text-muted-foreground hidden md:block">
-              {t('common.selectAll')}
-            </span>
-          </Label>
-
-          <div className="h-4 w-px bg-border/50" />
-
-          <span className="text-sm text-muted-foreground">
-            {t('common.selectedCount', { count: selectedProjectCount })}
+      <div className="sticky top-16 z-10 flex items-center gap-2 px-6 h-14 pt-2">
+        <Label
+          className="flex items-center gap-3 cursor-pointer px-2"
+          htmlFor="select-all-projects"
+        >
+          <Checkbox
+            id="select-all-projects"
+            checked={
+              isAllSelected ? true : hasSomeSelected ? 'indeterminate' : false
+            }
+            onCheckedChange={(checked) =>
+              handleSelectAll({ checked: checked === true })
+            }
+          />
+          <span className="text-muted-foreground hidden md:block">
+            {t('common.selectAll')}
           </span>
+        </Label>
 
-          <div className="h-4 w-px bg-border/50" />
+        <div className="h-4 w-px bg-border/50" />
 
-          <ProjectActions />
-        </div>
+        <span className="text-sm text-muted-foreground">
+          {t('common.selectedCount', { count: selectedProjectCount })}
+        </span>
 
-        <Button variant="outline" onClick={() => clearSelectedProjects()}>
-          {t('common.cancel')}
-        </Button>
+        <div className="h-4 w-px bg-border/50" />
+
+        <ProjectActions />
       </div>
     )
   }
@@ -489,6 +481,9 @@ function ProjectActions() {
             <span className="hidden sm:inline">{t(action.labelKey)}</span>
           </Button>
         ))}
+        <Button variant="outline" onClick={() => clearSelectedProjects()}>
+          {t('common.cancel')}
+        </Button>
       </div>
 
       <DeleteProjectDialog
@@ -547,10 +542,12 @@ function ProjectItem({
     useProjectsStore()
   const selectedProjectIdSet = new Set(selectedProjectIds)
   const isSelected = selectedProjectIdSet.has(project.id)
-  const selectedProjectCount = selectedProjectIds.length
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false)
+  const editor = useEditor()
   const durationLabel = formatProjectDuration({ duration: project.duration })
-  const isMultiSelect = selectedProjectCount > 1
 
   const handleCheckboxChange = ({
     checked,
@@ -601,7 +598,7 @@ function ProjectItem({
               <h3 className="group-hover:text-foreground/90 line-clamp-2 text-sm leading-snug font-medium">
                 {project.name}
               </h3>
-              <div className="flex items-center gap-1 text-xs text-white/50 transition-all duration-300 group-hover:text-white/70">
+              <div className="flex items-center gap-1 text-xs text-foreground/50 transition-all duration-300 group-hover:text-foreground/70">
                 <Calendar className="size-3.5" />
                 <span>
                   {t('projects.createdDate', {
@@ -610,7 +607,74 @@ function ProjectItem({
                 </span>
               </div>
             </div>
-            <ChevronRight className="size-4 text-white/50 transition-colors duration-300 group-hover:text-foreground/90" />
+            <DropdownMenu
+              open={isDropdownOpen}
+              onOpenChange={setIsDropdownOpen}
+            >
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('editor.menu.title')}
+                  onClick={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                  }}
+                  onMouseDown={(event) => event.stopPropagation()}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      event.stopPropagation()
+                    }
+                  }}
+                >
+                  <EllipsisVertical className="size-4 text-foreground/50 transition-colors duration-300 group-hover:text-foreground/90" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-48"
+                align="end"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <DropdownMenuItem
+                  onClick={() => {
+                    setIsRenameDialogOpen(true)
+                    setIsDropdownOpen(false)
+                  }}
+                >
+                  <Pencil />
+                  {t('common.rename')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={async () => {
+                    await duplicateProjects({ editor, ids: [project.id] })
+                    setIsDropdownOpen(false)
+                  }}
+                >
+                  <Copy />
+                  {t('common.duplicate')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setIsInfoDialogOpen(true)
+                    setIsDropdownOpen(false)
+                  }}
+                >
+                  <Info />
+                  {t('common.info')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => {
+                    setIsDeleteDialogOpen(true)
+                    setIsDropdownOpen(false)
+                  }}
+                >
+                  <Trash2 />
+                  {t('common.delete')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </CardContent>
         </Card>
       </Link>
@@ -625,128 +689,12 @@ function ProjectItem({
           })
         }}
         onCheckedChange={() => {}}
-        className={`absolute z-10 top-3 left-3 ${
+        className={`absolute z-10 top-5 left-5 ${
           isSelected || isDropdownOpen
             ? 'opacity-100'
             : 'opacity-0 group-hover:opacity-100'
         }`}
       />
-
-      {!isMultiSelect && (
-        <ProjectMenu
-          isOpen={isDropdownOpen}
-          onOpenChange={setIsDropdownOpen}
-          project={project}
-        />
-      )}
-    </div>
-  )
-}
-
-function ProjectMenu({
-  isOpen,
-  onOpenChange,
-  project,
-}: {
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
-  project: TProjectMetadata
-}) {
-  const t = useTranslations()
-  const editor = useEditor()
-  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false)
-
-  const handleMenuClick = ({
-    event,
-  }: {
-    event: MouseEvent<HTMLButtonElement>
-  }) => {
-    event.preventDefault()
-    event.stopPropagation()
-  }
-
-  const handleMenuKeyDown = ({
-    event,
-  }: {
-    event: KeyboardEvent<HTMLButtonElement>
-  }) => {
-    if (event.key !== 'Enter' && event.key !== ' ') {
-      return
-    }
-    event.preventDefault()
-    event.stopPropagation()
-  }
-
-  const handleRename = () => {
-    setIsRenameDialogOpen(true)
-    onOpenChange(false)
-  }
-
-  const handleDuplicate = async () => {
-    await duplicateProjects({ editor, ids: [project.id] })
-    onOpenChange(false)
-  }
-
-  const handleDeleteClick = () => {
-    setIsDeleteDialogOpen(true)
-    onOpenChange(false)
-  }
-
-  const handleDeleteConfirm = async () => {
-    await deleteProjects({ editor, ids: [project.id] })
-    setIsDeleteDialogOpen(false)
-  }
-
-  const handleInfoClick = () => {
-    setIsInfoDialogOpen(true)
-    onOpenChange(false)
-  }
-
-  return (
-    <>
-      <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            aria-label={t('editor.menu.title')}
-            className={`absolute z-10 top-3 right-3 ${isOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
-            size="icon"
-            onClick={(event) =>
-              handleMenuClick({
-                event: event as unknown as MouseEvent<HTMLButtonElement>,
-              })
-            }
-            onMouseDown={(event) => event.stopPropagation()}
-            onKeyDown={(event) =>
-              handleMenuKeyDown({
-                event: event as unknown as KeyboardEvent<HTMLButtonElement>,
-              })
-            }
-          >
-            <Ellipsis className="size-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-48" align="end">
-          <DropdownMenuItem onClick={handleRename}>
-            <Pencil />
-            {t('common.rename')}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleDuplicate}>
-            <Copy />
-            {t('common.duplicate')}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleInfoClick}>
-            <Info />
-            {t('common.info')}
-          </DropdownMenuItem>
-          <DropdownMenuItem variant="destructive" onClick={handleDeleteClick}>
-            <Trash2 />
-            {t('common.delete')}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
 
       <RenameProjectDialog
         isOpen={isRenameDialogOpen}
@@ -762,7 +710,10 @@ function ProjectMenu({
         isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         projectNames={[project.name]}
-        onConfirm={handleDeleteConfirm}
+        onConfirm={async () => {
+          await deleteProjects({ editor, ids: [project.id] })
+          setIsDeleteDialogOpen(false)
+        }}
       />
 
       <ProjectInfoDialog
@@ -770,7 +721,7 @@ function ProjectMenu({
         onOpenChange={setIsInfoDialogOpen}
         project={project}
       />
-    </>
+    </div>
   )
 }
 
@@ -781,27 +732,33 @@ function ProjectsSkeleton() {
   )
 
   return (
-    <div className="px-4 xs:grid-cols-2 grid grid-cols-1 gap-6 sm:grid-cols-3 lg:grid-cols-4">
-      {skeletonIds.map((skeletonId) => (
-        <Card
-          key={skeletonId}
-          className="bg-background overflow-hidden border-none p-0"
-        >
-          <div className="bg-muted relative aspect-video">
-            <div className="absolute inset-0">
-              <Skeleton className="bg-muted/50 size-full" />
+    <section className="px-4">
+      <div className="flex items-center gap-2 mb-3">
+        <Skeleton className="bg-muted/50 h-4 w-4" />
+        <Skeleton className="bg-muted/50 h-4 w-20" />
+      </div>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] p-0.5 gap-6">
+        {skeletonIds.map((skeletonId) => (
+          <Card
+            key={skeletonId}
+            className="bg-background overflow-hidden border-none p-0"
+          >
+            <div className="bg-muted relative aspect-video">
+              <div className="absolute inset-0">
+                <Skeleton className="bg-muted/50 size-full" />
+              </div>
             </div>
-          </div>
-          <CardContent className="flex flex-col gap-2 px-0 pt-4">
-            <Skeleton className="bg-muted/50 h-4 w-3/4" />
-            <div className="text-muted-foreground flex items-center gap-1.5">
-              <Skeleton className="bg-muted/50 size-4" />
-              <Skeleton className="bg-muted/50 h-4 w-24" />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+            <CardContent className="flex flex-col gap-2 px-0 pt-4">
+              <Skeleton className="bg-muted/50 h-4 w-3/4" />
+              <div className="flex items-center gap-1.5">
+                <Skeleton className="bg-muted/50 size-3.5" />
+                <Skeleton className="bg-muted/50 h-3.5 w-36" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
   )
 }
 

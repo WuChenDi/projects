@@ -2,6 +2,7 @@
 
 import { Button } from '@cdlab996/ui/components/button'
 import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
+import { Separator } from '@cdlab996/ui/components/separator'
 import { Slider } from '@cdlab996/ui/components/slider'
 import {
   Tooltip,
@@ -14,14 +15,18 @@ import {
   AlignEndHorizontal,
   AlignStartHorizontal,
   Bookmark,
+  BookmarkMinus,
+  BookmarkX,
   Copy,
   Link,
   Magnet,
   Maximize2,
+  Redo2,
   Scissors,
   Snowflake,
   SplitSquareHorizontal,
   Trash2,
+  Undo2,
   ZoomIn,
   ZoomOut,
 } from 'lucide-react'
@@ -36,10 +41,12 @@ import { useTimelineStore } from '@/stores/timeline-store'
 export function TimelineToolbar({
   zoomLevel,
   minZoom,
+  zoomToFitLevel,
   setZoomLevel,
 }: {
   zoomLevel: number
   minZoom: number
+  zoomToFitLevel: number
   setZoomLevel: ({ zoom }: { zoom: number }) => void
 }) {
   const handleZoom = ({ direction }: { direction: 'in' | 'out' }) => {
@@ -63,7 +70,7 @@ export function TimelineToolbar({
           minZoom={minZoom}
           onZoomChange={(zoom) => setZoomLevel({ zoom })}
           onZoom={handleZoom}
-          onZoomToFit={() => setZoomLevel({ zoom: minZoom })}
+          onZoomToFit={() => setZoomLevel({ zoom: zoomToFitLevel })}
         />
       </div>
     </ScrollArea>
@@ -73,9 +80,6 @@ export function TimelineToolbar({
 function ToolbarLeftSection() {
   const t = useTranslations()
   const editor = useEditor()
-  const currentTime = editor.playback.getCurrentTime()
-  const currentBookmarked = editor.scenes.isBookmarked({ time: currentTime })
-
   const handleAction = ({
     action,
     event,
@@ -140,22 +144,21 @@ function ToolbarLeftSection() {
           }
         />
 
-        <div className="bg-border mx-1 h-6 w-px" />
+        <Separator orientation="vertical" className="m-2" />
 
-        <Tooltip>
-          <ToolbarButton
-            icon={<Bookmark />}
-            isActive={currentBookmarked}
-            tooltip={
-              currentBookmarked
-                ? t('timeline.removeBookmark')
-                : t('timeline.addBookmark')
-            }
-            onClick={({ event }) =>
-              handleAction({ action: 'toggle-bookmark', event })
-            }
-          />
-        </Tooltip>
+        <ToolbarButton
+          icon={<Undo2 />}
+          tooltip={t('shortcuts.actions.undo')}
+          disabled={!editor.command.canUndo()}
+          onClick={({ event }) => handleAction({ action: 'undo', event })}
+        />
+
+        <ToolbarButton
+          icon={<Redo2 />}
+          tooltip={t('shortcuts.actions.redo')}
+          disabled={!editor.command.canRedo()}
+          onClick={({ event }) => handleAction({ action: 'redo', event })}
+        />
       </TooltipProvider>
     </div>
   )
@@ -175,6 +178,11 @@ function ToolbarRightSection({
   onZoomToFit: () => void
 }) {
   const t = useTranslations()
+  const editor = useEditor()
+  const currentTime = editor.playback.getCurrentTime()
+  const currentBookmarked = editor.scenes.isBookmarked({ time: currentTime })
+  const activeScene = editor.scenes.getActiveScene()
+  const hasBookmarks = activeScene.bookmarks.length > 0
   const {
     snappingEnabled,
     rippleEditingEnabled,
@@ -184,6 +192,31 @@ function ToolbarRightSection({
 
   return (
     <div className="flex items-center gap-1">
+      <TooltipProvider delayDuration={500}>
+        <ToolbarButton
+          icon={<Bookmark />}
+          tooltip={t('timeline.addBookmark')}
+          disabled={currentBookmarked}
+          onClick={() => invokeAction('add-bookmark')}
+        />
+
+        <ToolbarButton
+          icon={<BookmarkMinus />}
+          tooltip={t('timeline.removeBookmark')}
+          disabled={!currentBookmarked}
+          onClick={() => invokeAction('remove-bookmark')}
+        />
+
+        <ToolbarButton
+          icon={<BookmarkX />}
+          tooltip={t('timeline.removeAllBookmarks')}
+          disabled={!hasBookmarks}
+          onClick={() => invokeAction('clear-all-bookmarks')}
+        />
+      </TooltipProvider>
+
+      <Separator orientation="vertical" className="m-2" />
+
       <TooltipProvider delayDuration={500}>
         <ToolbarButton
           icon={<Magnet />}
@@ -200,7 +233,7 @@ function ToolbarRightSection({
         />
       </TooltipProvider>
 
-      <div className="bg-border mx-1 h-6 w-px" />
+      <Separator orientation="vertical" className="m-2" />
 
       <div className="flex items-center gap-1">
         <TooltipProvider delayDuration={500}>
@@ -209,7 +242,6 @@ function ToolbarRightSection({
               <Button
                 variant="ghost"
                 size="icon"
-                type="button"
                 onClick={() => onZoom({ direction: 'out' })}
               >
                 <ZoomOut />
@@ -221,7 +253,7 @@ function ToolbarRightSection({
           </Tooltip>
         </TooltipProvider>
         <Slider
-          className="w-28"
+          className="w-24"
           value={[zoomToSlider({ zoomLevel, minZoom })]}
           onValueChange={(values) =>
             onZoomChange(sliderToZoom({ sliderPosition: values[0], minZoom }))
@@ -236,7 +268,6 @@ function ToolbarRightSection({
               <Button
                 variant="ghost"
                 size="icon"
-                type="button"
                 onClick={() => onZoom({ direction: 'in' })}
               >
                 <ZoomIn />
@@ -250,12 +281,7 @@ function ToolbarRightSection({
         <TooltipProvider delayDuration={500}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
-                onClick={onZoomToFit}
-              >
+              <Button variant="ghost" size="icon" onClick={onZoomToFit}>
                 <Maximize2 />
               </Button>
             </TooltipTrigger>
@@ -264,6 +290,9 @@ function ToolbarRightSection({
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
+        <span className="text-xs text-muted-foreground w-10 text-center tabular-nums">
+          {Math.max(1, Math.round(zoomToSlider({ zoomLevel, minZoom }) * 100))}%
+        </span>
       </div>
     </div>
   )
