@@ -186,14 +186,14 @@ pnpm install
 pnpm dev                           # 启动所有应用（并行开发）
 pnpm --filter clearify dev         # 只启动 Clearify
 pnpm --filter @cdlab996/bycut dev  # 只启动 ByCut (port 3020)
-pnpm --filter vidl dev
-pnpm --filter securec dev
-pnpm --filter text2img dev
-pnpm --filter value-vision dev
-pnpm --filter byplay dev
-pnpm --filter byplay-log dev
-pnpm --filter dropply-web dev
-pnpm --filter repo-changelog dev
+pnpm --filter vidl dev             # 只启动 vidl (port 3010)
+pnpm --filter securec dev          # 只启动 SecureC (port 3009)
+pnpm --filter text2img dev         # 只启动 Text2Img (port 3012)
+pnpm --filter value-vision dev     # 只启动 Value Vision (port 3011)
+pnpm --filter byplay dev           # 只启动 ByPlay (port 3016)
+pnpm --filter byplay-log dev       # 只启动 ByPlay Log (port 3017)
+pnpm --filter dropply-web dev      # 只启动 Dropply Web (port 3013)
+pnpm --filter repo-changelog dev   # 只启动 Repo Changelog (port 3019)
 pnpm build                         # 构建所有应用
 pnpm --filter clearify run build
 pnpm --filter @cdlab996/bycut run build
@@ -242,13 +242,13 @@ pnpm clean                         # 清理 node_modules / 缓存 / 构建产物
 
 | 层级           | 技术                                                           |
 | -------------- | -------------------------------------------------------------- |
-| **前端框架**   | React + Next.js 16+（App Router） / Vue 3 + Nuxt 4            |
+| **前端框架**   | React + Next.js 16+（App Router） / Vue 3 + Nuxt 4             |
 | **类型系统**   | TypeScript 5                                                   |
-| **UI**         | shadcn/ui · Tailwind CSS v4 · Nuxt UI                         |
+| **UI**         | shadcn/ui · Tailwind CSS v4 · Nuxt UI                          |
 | **浏览器能力** | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API |
 | **后端 / API** | Cloudflare Workers · Hono + Zod Validator                      |
 | **数据库**     | Drizzle ORM + LibSQL / Cloudflare D1                           |
-| **工程**       | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format)   |
+| **工程**       | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format)     |
 
 ## 许可证
 

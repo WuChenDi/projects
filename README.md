@@ -186,14 +186,14 @@ pnpm install
 pnpm dev                           # Start all apps (parallel dev)
 pnpm --filter clearify dev         # Start Clearify only
 pnpm --filter @cdlab996/bycut dev  # Start ByCut only (port 3020)
-pnpm --filter vidl dev
-pnpm --filter securec dev
-pnpm --filter text2img dev
-pnpm --filter value-vision dev
-pnpm --filter byplay dev
-pnpm --filter byplay-log dev
-pnpm --filter dropply-web dev
-pnpm --filter repo-changelog dev
+pnpm --filter vidl dev             # Start vidl only (port 3010)
+pnpm --filter securec dev          # Start SecureC only (port 3009)
+pnpm --filter text2img dev         # Start Text2Img only (port 3012)
+pnpm --filter value-vision dev     # Start Value Vision only (port 3011)
+pnpm --filter byplay dev           # Start ByPlay only (port 3016)
+pnpm --filter byplay-log dev       # Start ByPlay Log only (port 3017)
+pnpm --filter dropply-web dev      # Start Dropply Web only (port 3013)
+pnpm --filter repo-changelog dev   # Start Repo Changelog only (port 3019)
 pnpm build                         # Build all apps
 pnpm --filter clearify run build
 pnpm --filter @cdlab996/bycut run build
@@ -240,15 +240,15 @@ pnpm clean                         # Clean node_modules / cache / build artifact
 
 ## Tech Stack
 
-| Layer              | Technology                                                     |
-| ------------------ | -------------------------------------------------------------- |
-| **Frontend**       | React + Next.js 16+ (App Router) / Vue 3 + Nuxt 4             |
-| **Type System**    | TypeScript 5                                                   |
-| **UI**             | shadcn/ui · Tailwind CSS v4 · Nuxt UI                         |
-| **Browser APIs**   | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API |
-| **Backend / API**  | Cloudflare Workers · Hono + Zod Validator                      |
-| **Database**       | Drizzle ORM + LibSQL / Cloudflare D1                           |
-| **Engineering**    | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format)   |
+| Layer             | Technology                                                     |
+| ----------------- | -------------------------------------------------------------- |
+| **Frontend**      | React + Next.js 16+ (App Router) / Vue 3 + Nuxt 4              |
+| **Type System**   | TypeScript 5                                                   |
+| **UI**            | shadcn/ui · Tailwind CSS v4 · Nuxt UI                          |
+| **Browser APIs**  | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API |
+| **Backend / API** | Cloudflare Workers · Hono + Zod Validator                      |
+| **Database**      | Drizzle ORM + LibSQL / Cloudflare D1                           |
+| **Engineering**   | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format)     |
 
 ## License
 
