@@ -34,7 +34,7 @@
     "success": "Parsed successfully, {count} segments found",
     "variantsDetected": "Detected {count} quality levels, highest bitrate selected by default",
     "invalidLink": "Incorrect URL, please check if the link is valid",
-    "selectVariant": "Multiple quality levels detected, please select:",
+    "variant": "Quality",
     "continueSelect": "Please continue to select a quality level",
     "variantFailed": "Failed to parse selected quality, please retry",
     "emptyResource": "Resource is empty, please check if the link is valid",
@@ -89,7 +89,7 @@
   },
   "filename": {
     "label": "File Name",
-    "placeholder": "Custom file name (optional)",
+    "placeholder": "Custom file name",
     "hint": "Leave empty to use auto-generated name"
   },
   "settings": {

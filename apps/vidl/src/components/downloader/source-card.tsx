@@ -11,7 +11,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import { Field, FieldTitle } from '@cdlab996/ui/components/field'
+import {
+  Field,
+  FieldDescription,
+  FieldTitle,
+} from '@cdlab996/ui/components/field'
 import { Input } from '@cdlab996/ui/components/input'
 import { Slider } from '@cdlab996/ui/components/slider'
 import {
@@ -23,7 +27,6 @@ import {
 import { formatBytes } from '@cdlab996/utils'
 import {
   CircleQuestionMark,
-  FileText,
   HardDriveDownload,
   Loader2,
   Pause,
@@ -167,7 +170,7 @@ export function SourceCard({
 
         {variants.length > 0 && (
           <Field>
-            <FieldTitle>{t('parse.selectVariant')}</FieldTitle>
+            <FieldTitle>{t('parse.variant')}</FieldTitle>
             <div className="flex gap-2 flex-wrap">
               {variants.map((v) => (
                 <Button
@@ -200,10 +203,7 @@ export function SourceCard({
 
         {(isParsed || isDirectVideo) && (
           <Field>
-            <FieldTitle>
-              <FileText className="size-4" />
-              {t('filename.label')}
-            </FieldTitle>
+            <FieldTitle>{t('filename.label')}</FieldTitle>
             <Input
               value={customFileName}
               onChange={(e) => onCustomFileNameChange(e.target.value)}
@@ -211,9 +211,7 @@ export function SourceCard({
               placeholder={t('filename.placeholder')}
               className="text-base"
             />
-            <p className="text-xs text-muted-foreground">
-              {t('filename.hint')}
-            </p>
+            <FieldDescription>{t('filename.hint')}</FieldDescription>
           </Field>
         )}
 
@@ -223,7 +221,7 @@ export function SourceCard({
               <FieldTitle>
                 {t('download.range')}
                 {tsUrlList.length > 0 && (
-                  <span className="text-sm text-muted-foreground">
+                  <FieldDescription>
                     {t('download.totalSegments', {
                       count: tsUrlList.length,
                       size:
@@ -233,10 +231,10 @@ export function SourceCard({
                             })
                           : '',
                     })}
-                  </span>
+                  </FieldDescription>
                 )}
               </FieldTitle>
-              <span className="text-sm text-muted-foreground shrink-0">
+              <FieldDescription>
                 <span className="font-medium tabular-nums">
                   {rangeDownload.startSegment}
                 </span>
@@ -244,7 +242,7 @@ export function SourceCard({
                 <span className="font-medium tabular-nums">
                   {rangeDownload.endSegment}
                 </span>
-              </span>
+              </FieldDescription>
             </div>
             <Slider
               value={[

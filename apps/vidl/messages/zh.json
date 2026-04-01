@@ -32,11 +32,11 @@
     "enterUrl": "请输入链接",
     "invalidUrl": "链接有误，请重新输入",
     "success": "解析成功，共 {count} 个片段",
-    "variantsDetected": "检测到 {count} 个清晰度，已默认选择最高码率",
+    "variantsDetected": "检测到 {count} 个画质，已默认选择最高码率",
     "invalidLink": "链接不正确，请查看链接是否有效",
-    "selectVariant": "检测到多个清晰度，请选择：",
-    "continueSelect": "请继续选择清晰度",
-    "variantFailed": "解析所选清晰度失败，请重试",
+    "variant": "画质",
+    "continueSelect": "请继续选择画质",
+    "variantFailed": "解析所选画质失败，请重试",
     "emptyResource": "资源为空，请查看链接是否有效",
     "encryptedError": "视频已加密，无法下载"
   },
@@ -89,7 +89,7 @@
   },
   "filename": {
     "label": "文件名称",
-    "placeholder": "自定义文件名（可选）",
+    "placeholder": "自定义文件名",
     "hint": "留空则自动生成文件名"
   },
   "settings": {

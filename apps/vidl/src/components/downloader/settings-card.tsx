@@ -10,7 +10,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@cdlab996/ui/components/dialog'
-import { Field, FieldTitle } from '@cdlab996/ui/components/field'
+import {
+  Field,
+  FieldDescription,
+  FieldTitle,
+} from '@cdlab996/ui/components/field'
 import { Slider } from '@cdlab996/ui/components/slider'
 import { RotateCcw, Settings2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -61,9 +65,7 @@ export function SettingsDialog({
               max={20}
               step={1}
             />
-            <p className="text-xs text-muted-foreground">
-              {t('settings.concurrencyHint')}
-            </p>
+            <FieldDescription>{t('settings.concurrencyHint')}</FieldDescription>
           </Field>
 
           <Field>
@@ -75,16 +77,12 @@ export function SettingsDialog({
             </div>
             <Slider
               value={[settings.timeoutMs / 1000]}
-              onValueChange={([v]) =>
-                onSettingsChange({ timeoutMs: v * 1000 })
-              }
+              onValueChange={([v]) => onSettingsChange({ timeoutMs: v * 1000 })}
               min={5}
               max={120}
               step={5}
             />
-            <p className="text-xs text-muted-foreground">
-              {t('settings.timeoutHint')}
-            </p>
+            <FieldDescription>{t('settings.timeoutHint')}</FieldDescription>
           </Field>
 
           <Field>
@@ -101,9 +99,7 @@ export function SettingsDialog({
               max={10}
               step={1}
             />
-            <p className="text-xs text-muted-foreground">
-              {t('settings.maxRetriesHint')}
-            </p>
+            <FieldDescription>{t('settings.maxRetriesHint')}</FieldDescription>
           </Field>
 
           <Field>
@@ -122,9 +118,7 @@ export function SettingsDialog({
               max={10}
               step={0.5}
             />
-            <p className="text-xs text-muted-foreground">
-              {t('settings.retryDelayHint')}
-            </p>
+            <FieldDescription>{t('settings.retryDelayHint')}</FieldDescription>
           </Field>
         </div>
 
