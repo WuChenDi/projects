@@ -108,6 +108,7 @@
     "streamMp4Short": "Stream MP4",
     "streamTsShort": "Stream .ts",
     "emptyList": "Please enter at least one URL",
+    "invalidUrls": "{count} invalid URLs skipped (must be video or m3u8 links)",
     "complete": "All downloads complete",
     "running": "Processing {current} / {total}",
     "parsedCount": "{count} ready",

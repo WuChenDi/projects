@@ -206,6 +206,7 @@ export function SourceCard({ headerAction, actions }: SourceCardProps) {
                 <ToggleGroup
                   type="single"
                   size="sm"
+                  spacing={1}
                   variant="outline"
                   value={variants.find((v) => v.selected)?.url || ''}
                   onValueChange={(v) => {
@@ -251,6 +252,7 @@ export function SourceCard({ headerAction, actions }: SourceCardProps) {
               <ToggleGroup
                 type="single"
                 size="sm"
+                spacing={1}
                 variant="outline"
                 value={format}
                 onValueChange={(v) => {

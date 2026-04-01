@@ -108,6 +108,7 @@
     "streamMp4Short": "流式 MP4",
     "streamTsShort": "流式 .ts",
     "emptyList": "请输入至少一个链接",
+    "invalidUrls": "已跳过 {count} 个无效链接（需为视频或 m3u8 链接）",
     "complete": "全部下载完成",
     "running": "正在处理 {current} / {total}",
     "parsedCount": "{count} 就绪",

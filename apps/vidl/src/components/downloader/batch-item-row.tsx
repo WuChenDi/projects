@@ -67,6 +67,13 @@ export function BatchItemRow({
               : ''}
           </Badge>
         )}
+        {isParsed &&
+          !item.meta?.isDirectVideo &&
+          item.meta?.estimatedSize != null && (
+            <Badge variant="outline" className="text-[10px] shrink-0 h-5">
+              ~{formatBytes({ bytes: item.meta.estimatedSize })}
+            </Badge>
+          )}
         {!isCurrentlyDownloading && item.status !== 'done' && (
           <button
             type="button"
@@ -123,6 +130,7 @@ export function BatchItemRow({
               <ToggleGroup
                 type="single"
                 size="sm"
+                spacing={1}
                 variant="outline"
                 value={item.selectedVariantUrl}
                 onValueChange={(v) => {
@@ -146,6 +154,7 @@ export function BatchItemRow({
             <ToggleGroup
               type="single"
               size="sm"
+              spacing={1}
               variant="outline"
               value={item.format}
               onValueChange={(v) => {

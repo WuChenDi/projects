@@ -3,7 +3,13 @@
 import { useTranslations } from 'next-intl'
 import { useCallback, useRef } from 'react'
 import { toast } from 'sonner'
-import { fetchData, fetchUrlMetadata } from '@/lib'
+import {
+  applyURL,
+  estimateFileSize,
+  fetchData,
+  fetchUrlMetadata,
+  isDirectVideoUrl,
+} from '@/lib'
 import type { EngineNotifier } from '@/lib/download-engine'
 import { DownloadEngine } from '@/lib/download-engine'
 import type { BatchItem } from '@/stores/batch-store'
@@ -86,7 +92,28 @@ export function useBatchActions() {
       toast.error(t('batch.emptyList'))
       return
     }
-    const items = addItems(urls)
+
+    const valid: string[] = []
+    const invalid: string[] = []
+    for (const url of urls) {
+      try {
+        new URL(url)
+        if (isDirectVideoUrl(url) || url.toLowerCase().includes('m3u8')) {
+          valid.push(url)
+        } else {
+          invalid.push(url)
+        }
+      } catch {
+        invalid.push(url)
+      }
+    }
+
+    if (invalid.length > 0) {
+      toast.error(t('batch.invalidUrls', { count: invalid.length }))
+    }
+    if (valid.length === 0) return
+
+    const items = addItems(valid)
     void parseItems(items)
   }, [t, addItems, parseItems])
 
@@ -102,10 +129,17 @@ export function useBatchActions() {
       updateItem(item.id, { selectedVariantUrl: variantUrl })
       try {
         const m3u8Str: string = await fetchData(variantUrl)
-        const count = m3u8Str
+        const segUrls = m3u8Str
           .split('\n')
-          .filter((l: string) => /^[^#]/.test(l) && l.trim()).length
-        updateItem(item.id, { rangeStart: 1, rangeEnd: count })
+          .filter((l: string) => /^[^#]/.test(l) && l.trim())
+          .map((l: string) => applyURL(l.trim(), variantUrl))
+        updateItem(item.id, { rangeStart: 1, rangeEnd: segUrls.length })
+        const size = await estimateFileSize(segUrls, 1, segUrls.length)
+        if (size != null && item.meta) {
+          updateItem(item.id, {
+            meta: { ...item.meta, estimatedSize: size, segmentCount: segUrls.length },
+          })
+        }
       } catch {
         /* keep existing */
       }

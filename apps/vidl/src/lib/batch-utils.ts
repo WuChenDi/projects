@@ -1,6 +1,12 @@
 import { isMasterPlaylist, parseMasterPlaylistContent } from './m3u8-parser'
 import type { VariantStream } from './video-utils'
-import { fetchData, getFileExtension, isDirectVideoUrl } from './video-utils'
+import {
+  applyURL,
+  estimateFileSize,
+  fetchData,
+  getFileExtension,
+  isDirectVideoUrl,
+} from './video-utils'
 
 export interface BatchUrlMetadata {
   isDirectVideo: boolean
@@ -11,6 +17,12 @@ export interface BatchUrlMetadata {
   /** The final URL to use for download (after variant resolution) */
   resolvedUrl: string
 }
+
+const extractSegmentUrls = (m3u8Str: string, baseUrl: string): string[] =>
+  m3u8Str
+    .split('\n')
+    .filter((l) => /^[^#]/.test(l) && l.trim())
+    .map((l) => applyURL(l.trim(), baseUrl))
 
 export const fetchUrlMetadata = async (
   inputUrl: string,
@@ -42,15 +54,14 @@ export const fetchUrlMetadata = async (
       const bestUrl = variants[0].url
       try {
         const variantStr: string = await fetchData(bestUrl)
-        const count = variantStr
-          .split('\n')
-          .filter((l) => /^[^#]/.test(l) && l.trim()).length
+        const segUrls = extractSegmentUrls(variantStr, bestUrl)
+        const size = await estimateFileSize(segUrls, 1, segUrls.length)
         return {
           isDirectVideo: false,
           directExt: '',
           variants,
-          segmentCount: count,
-          estimatedSize: null,
+          segmentCount: segUrls.length,
+          estimatedSize: size,
           resolvedUrl: bestUrl,
         }
       } catch {
@@ -66,15 +77,14 @@ export const fetchUrlMetadata = async (
     }
   }
 
-  const segments = m3u8Str
-    .split('\n')
-    .filter((l) => /^[^#]/.test(l) && l.trim())
+  const segUrls = extractSegmentUrls(m3u8Str, inputUrl)
+  const size = await estimateFileSize(segUrls, 1, segUrls.length)
   return {
     isDirectVideo: false,
     directExt: '',
     variants: [],
-    segmentCount: segments.length,
-    estimatedSize: null,
+    segmentCount: segUrls.length,
+    estimatedSize: size,
     resolvedUrl: inputUrl,
   }
 }
