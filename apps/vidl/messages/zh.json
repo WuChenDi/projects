@@ -16,42 +16,28 @@
     "title": "视频在线下载工具",
     "description": "支持 M3U8/HLS、MP4 等视频格式，范围下载、流式下载、AES 解密、转 MP4"
   },
-  "tab": {
-    "single": "单个下载",
-    "batch": "批量下载"
-  },
   "parse": {
     "videoUrlLabel": "视频链接",
     "videoPlaceholder": "https://example.com/video.m3u8 或 .mp4",
-    "playVideo": "播放",
-    "urlLabel": "m3u8 链接",
-    "placeholder": "https://example.com/playlist.m3u8",
     "directVideoDetected": "检测到 {format} 视频，点击下载按钮开始",
     "parsing": "解析中",
     "parse": "解析",
     "enterUrl": "请输入链接",
     "invalidUrl": "链接有误，请重新输入",
     "success": "解析成功，共 {count} 个片段",
-    "variantsDetected": "检测到 {count} 个画质，已默认选择最高码率",
+    "variantsDetected": "检测到 {count} 个清晰度，已默认选择最高码率",
     "invalidLink": "链接不正确，请查看链接是否有效",
-    "variant": "画质",
-    "continueSelect": "请继续选择画质",
-    "variantFailed": "解析所选画质失败，请重试",
+    "continueSelect": "请继续选择清晰度",
+    "variantFailed": "解析所选清晰度失败，请重试",
     "emptyResource": "资源为空，请查看链接是否有效",
     "encryptedError": "视频已加密，无法下载"
   },
   "download": {
-    "range": "下载范围",
-    "totalSegments": "(共 {count} 个片段{size})",
-    "estimatedSize": "，预估 {size}",
     "fileInfo": "文件大小：",
     "directDownload": "下载视频",
     "directComplete": "下载完成",
     "directFailed": "下载失败，请检查链接后重试",
-    "normalDownload": "普通下载",
-    "originalFormat": "原格式 (.ts)",
-    "convertMp4": "转码 MP4",
-    "streamDownload": "大文件流式下载",
+    "startDownload": "开始下载",
     "streamTooltip": "边下载边保存，解决大文件内存不足问题",
     "resume": "继续下载",
     "pause": "暂停下载",
@@ -73,7 +59,6 @@
     "failed": "失败 {count}",
     "overall": "整体进度",
     "batchOverall": "批量进度",
-    "currentVideo": "第 {index} 集",
     "partialFailed": "部分片段下载失败",
     "retryHint": "红色格子可点击重试 · 系统每 2 秒自动重试一次",
     "segment": "片段 {index}",
@@ -89,8 +74,7 @@
   },
   "filename": {
     "label": "文件名称",
-    "placeholder": "自定义文件名",
-    "hint": "留空则自动生成文件名"
+    "placeholder": "自定义文件名"
   },
   "settings": {
     "title": "下载设置",
@@ -121,8 +105,8 @@
     "startAll": "下载",
     "cancel": "取消",
     "clearDone": "清除已完成",
-    "streamMp4": "流式 MP4（大文件）",
-    "streamTs": "流式 .ts（大文件）",
+    "streamMp4Short": "流式 MP4",
+    "streamTsShort": "流式 .ts",
     "emptyList": "请输入至少一个链接",
     "complete": "全部下载完成",
     "running": "正在处理 {current} / {total}",
@@ -130,10 +114,6 @@
     "doneCount": "{count} 完成",
     "errorCount": "{count} 失败",
     "status": {
-      "pending": "等待中",
-      "parsing": "解析中",
-      "parsed": "就绪",
-      "downloading": "下载中",
       "done": "已完成",
       "error": "失败"
     }

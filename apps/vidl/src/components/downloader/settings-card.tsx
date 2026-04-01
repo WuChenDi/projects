@@ -10,32 +10,24 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@cdlab996/ui/components/dialog'
-import {
-  Field,
-  FieldDescription,
-  FieldTitle,
-} from '@cdlab996/ui/components/field'
+import { Field, FieldTitle } from '@cdlab996/ui/components/field'
 import { Slider } from '@cdlab996/ui/components/slider'
 import { RotateCcw, Settings2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import type { DownloadSettings } from '@/stores/settings-store'
+import { useSettingsStore } from '@/stores/settings-store'
 
 interface SettingsDialogProps {
-  settings: DownloadSettings
-  defaultSettings: DownloadSettings
   disabled: boolean
-  onSettingsChange: (next: Partial<DownloadSettings>) => void
-  onReset: () => void
 }
 
-export function SettingsDialog({
-  settings,
-  defaultSettings,
-  disabled,
-  onSettingsChange,
-  onReset,
-}: SettingsDialogProps) {
+export function SettingsDialog({ disabled }: SettingsDialogProps) {
   const t = useTranslations()
+  const concurrency = useSettingsStore((s) => s.concurrency)
+  const timeoutMs = useSettingsStore((s) => s.timeoutMs)
+  const maxRetries = useSettingsStore((s) => s.maxRetries)
+  const retryBaseDelayMs = useSettingsStore((s) => s.retryBaseDelayMs)
+  const setSettings = useSettingsStore((s) => s.setSettings)
+  const resetSettings = useSettingsStore((s) => s.resetSettings)
 
   return (
     <Dialog>
@@ -55,75 +47,83 @@ export function SettingsDialog({
             <div className="flex items-center justify-between">
               <FieldTitle>{t('settings.concurrency')}</FieldTitle>
               <span className="text-sm font-medium tabular-nums">
-                {settings.concurrency}
+                {concurrency}
               </span>
             </div>
             <Slider
-              value={[settings.concurrency]}
-              onValueChange={([v]) => onSettingsChange({ concurrency: v })}
+              value={[concurrency]}
+              onValueChange={([v]) => setSettings({ concurrency: v })}
               min={1}
               max={20}
               step={1}
             />
-            <FieldDescription>{t('settings.concurrencyHint')}</FieldDescription>
+            <p className="text-xs text-muted-foreground">
+              {t('settings.concurrencyHint')}
+            </p>
           </Field>
 
           <Field>
             <div className="flex items-center justify-between">
               <FieldTitle>{t('settings.timeout')}</FieldTitle>
               <span className="text-sm font-medium tabular-nums">
-                {settings.timeoutMs / 1000}s
+                {timeoutMs / 1000}s
               </span>
             </div>
             <Slider
-              value={[settings.timeoutMs / 1000]}
-              onValueChange={([v]) => onSettingsChange({ timeoutMs: v * 1000 })}
+              value={[timeoutMs / 1000]}
+              onValueChange={([v]) => setSettings({ timeoutMs: v * 1000 })}
               min={5}
               max={120}
               step={5}
             />
-            <FieldDescription>{t('settings.timeoutHint')}</FieldDescription>
+            <p className="text-xs text-muted-foreground">
+              {t('settings.timeoutHint')}
+            </p>
           </Field>
 
           <Field>
             <div className="flex items-center justify-between">
               <FieldTitle>{t('settings.maxRetries')}</FieldTitle>
               <span className="text-sm font-medium tabular-nums">
-                {settings.maxRetries}
+                {maxRetries}
               </span>
             </div>
             <Slider
-              value={[settings.maxRetries]}
-              onValueChange={([v]) => onSettingsChange({ maxRetries: v })}
+              value={[maxRetries]}
+              onValueChange={([v]) => setSettings({ maxRetries: v })}
               min={0}
               max={10}
               step={1}
             />
-            <FieldDescription>{t('settings.maxRetriesHint')}</FieldDescription>
+            <p className="text-xs text-muted-foreground">
+              {t('settings.maxRetriesHint')}
+            </p>
           </Field>
 
           <Field>
             <div className="flex items-center justify-between">
               <FieldTitle>{t('settings.retryDelay')}</FieldTitle>
               <span className="text-sm font-medium tabular-nums">
-                {settings.retryBaseDelayMs / 1000}s
+                {retryBaseDelayMs / 1000}s
               </span>
             </div>
             <Slider
-              value={[settings.retryBaseDelayMs / 1000]}
+              value={[retryBaseDelayMs / 1000]}
               onValueChange={([v]) =>
-                onSettingsChange({ retryBaseDelayMs: v * 1000 })
+                setSettings({ retryBaseDelayMs: v * 1000 })
               }
               min={0.5}
               max={10}
               step={0.5}
             />
-            <FieldDescription>{t('settings.retryDelayHint')}</FieldDescription>
+            <p className="text-xs text-muted-foreground">
+              {t('settings.retryDelayHint')}
+            </p>
           </Field>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" size="sm" onClick={onReset}>
+          <Button variant="outline" size="sm" onClick={resetSettings}>
             <RotateCcw className="size-4" />
             {t('settings.reset')}
           </Button>

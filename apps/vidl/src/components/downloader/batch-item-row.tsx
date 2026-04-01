@@ -4,19 +4,16 @@ import { Badge } from '@cdlab996/ui/components/badge'
 import { Field, FieldTitle } from '@cdlab996/ui/components/field'
 import { Input } from '@cdlab996/ui/components/input'
 import { Progress } from '@cdlab996/ui/components/progress'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@cdlab996/ui/components/select'
 import { Slider } from '@cdlab996/ui/components/slider'
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@cdlab996/ui/components/toggle-group'
 import { formatBytes } from '@cdlab996/utils'
 import { Check, Loader2, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import type { BatchFormat, BatchItem, BatchStatus } from '@/hooks/use-batch-downloader'
 import type { VariantStream } from '@/lib'
+import type { BatchFormat, BatchItem, BatchStatus } from '@/stores/batch-store'
 
 interface BatchItemRowProps {
   item: BatchItem
@@ -70,7 +67,7 @@ export function BatchItemRow({
               : ''}
           </Badge>
         )}
-        {!disabled && (
+        {!isCurrentlyDownloading && item.status !== 'done' && (
           <button
             type="button"
             onClick={() => onRemove(item.id)}
@@ -81,7 +78,7 @@ export function BatchItemRow({
         )}
       </div>
 
-      {/* Inline progress for downloading item */}
+      {/* Inline progress */}
       {isCurrentlyDownloading && targetSegment > 0 && (
         <div className="px-3 py-2 bg-blue-500/5 border-t">
           <div className="flex justify-between text-xs text-muted-foreground mb-1">
@@ -98,7 +95,7 @@ export function BatchItemRow({
         </div>
       )}
 
-      {/* Done indicator */}
+      {/* Done */}
       {item.status === 'done' && (
         <div className="px-3 py-1.5 bg-emerald-500/5 border-t flex items-center gap-1.5">
           <Check className="size-3 text-emerald-500" />
@@ -108,7 +105,7 @@ export function BatchItemRow({
         </div>
       )}
 
-      {/* Error indicator */}
+      {/* Error */}
       {item.status === 'error' && (
         <div className="px-3 py-1.5 bg-red-500/5 border-t">
           <span className="text-xs text-red-500">
@@ -117,85 +114,85 @@ export function BatchItemRow({
         </div>
       )}
 
-      {/* Config — always visible when parsed and not running */}
-      {isParsed && !disabled && (
-        <div className="border-t px-3 py-3 space-y-3 bg-background/50">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {hasVariants && (
-              <Field>
-                <FieldTitle className="text-xs">
-                  {t('batch.variant')}
-                </FieldTitle>
-                <Select
-                  value={item.selectedVariantUrl}
-                  onValueChange={(v) => void onVariantChange(item, v)}
-                >
-                  <SelectTrigger className="h-7 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {item.meta!.variants.map((v: VariantStream) => (
-                      <SelectItem key={v.url} value={v.url}>
-                        {v.name}
-                        {v.resolution && ` (${v.resolution})`}
-                        {v.bandwidth > 0 &&
-                          ` · ${(v.bandwidth / 1_000_000).toFixed(1)}Mbps`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            )}
-
+      {/* Config */}
+      {isParsed && !isCurrentlyDownloading && item.status !== 'done' && (
+        <div className="border-t px-3 py-3 space-y-2.5 bg-background/50">
+          {hasVariants && (
             <Field>
-              <FieldTitle className="text-xs">{t('batch.format')}</FieldTitle>
-              <Select
-                value={item.format}
-                onValueChange={(v) =>
-                  onUpdate(item.id, { format: v as BatchFormat })
-                }
+              <FieldTitle>{t('batch.variant')}</FieldTitle>
+              <ToggleGroup
+                type="single"
+                size="sm"
+                variant="outline"
+                value={item.selectedVariantUrl}
+                onValueChange={(v) => {
+                  if (v) void onVariantChange(item, v)
+                }}
+                className="flex-wrap"
               >
-                <SelectTrigger className="h-7 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="mp4">
-                    {t('download.convertMp4')}
-                  </SelectItem>
-                  <SelectItem value="ts">
-                    {t('download.originalFormat')}
-                  </SelectItem>
-                  {isStreamSupported && (
-                    <>
-                      <SelectItem value="stream-mp4">
-                        {t('batch.streamMp4')}
-                      </SelectItem>
-                      <SelectItem value="stream-ts">
-                        {t('batch.streamTs')}
-                      </SelectItem>
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
+                {item.meta!.variants.map((v: VariantStream) => (
+                  <ToggleGroupItem key={v.url} value={v.url}>
+                    {v.name}
+                    {v.resolution && ` ${v.resolution}`}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
             </Field>
+          )}
 
-            <Field>
-              <FieldTitle className="text-xs">{t('filename.label')}</FieldTitle>
-              <Input
-                value={item.customName}
-                onChange={(e) =>
-                  onUpdate(item.id, { customName: e.target.value })
-                }
-                placeholder={t('filename.placeholder')}
-                className="h-7 text-xs"
-              />
-            </Field>
-          </div>
+          {/* Format — buttons */}
+          <Field>
+            <FieldTitle>{t('batch.format')}</FieldTitle>
+            <ToggleGroup
+              type="single"
+              size="sm"
+              variant="outline"
+              value={item.format}
+              onValueChange={(v) => {
+                if (v) onUpdate(item.id, { format: v as BatchFormat })
+              }}
+              className="flex-wrap"
+            >
+              <ToggleGroupItem value="mp4">MP4</ToggleGroupItem>
+              <ToggleGroupItem value="ts">.ts</ToggleGroupItem>
+              {isStreamSupported && (
+                <>
+                  <ToggleGroupItem value="stream-mp4">
+                    {t('batch.streamMp4Short')}
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="stream-ts">
+                    {t('batch.streamTsShort')}
+                  </ToggleGroupItem>
+                </>
+              )}
+            </ToggleGroup>
+          </Field>
 
+          {/* Filename */}
+          <Field>
+            <FieldTitle>{t('filename.label')}</FieldTitle>
+            <Input
+              value={item.customName}
+              onChange={(e) =>
+                onUpdate(item.id, { customName: e.target.value })
+              }
+              placeholder={t('filename.placeholder')}
+            />
+          </Field>
+
+          {/* Range */}
           {segCount > 1 && (
             <Field>
               <div className="flex items-center justify-between">
-                <FieldTitle className="text-xs">{t('batch.range')}</FieldTitle>
+                <FieldTitle>
+                  {t('batch.range')}
+                  <span className="text-muted-foreground font-normal">
+                    ({segCount} seg
+                    {item.meta?.estimatedSize != null &&
+                      ` · ${formatBytes({ bytes: item.meta.estimatedSize })}`}
+                    )
+                  </span>
+                </FieldTitle>
                 <span className="text-xs text-muted-foreground tabular-nums">
                   {item.rangeStart} ~ {item.rangeEnd}
                 </span>

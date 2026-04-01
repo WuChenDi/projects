@@ -3,57 +3,52 @@
 import { useTranslations } from 'next-intl'
 import { useCallback, useRef } from 'react'
 import { toast } from 'sonner'
-import {
-  type BatchItem,
-  selectCurrentDownloadingId,
-  selectDoneCount,
-  selectErrorCount,
-  selectParsedCount,
-  selectPendingCount,
-  useBatchStore,
-} from '@/stores/batch-store'
 import { fetchData, fetchUrlMetadata } from '@/lib'
+import type { EngineNotifier } from '@/lib/download-engine'
+import { DownloadEngine } from '@/lib/download-engine'
+import type { BatchItem } from '@/stores/batch-store'
+import { useBatchStore } from '@/stores/batch-store'
+import { useDownloadStore } from '@/stores/download-store'
+import { useSettingsStore } from '@/stores/settings-store'
 
 // Re-export types for consumers
-export type { BatchItem, BatchFormat, BatchStatus } from '@/stores/batch-store'
+export type { BatchFormat, BatchItem, BatchStatus } from '@/stores/batch-store'
 
-interface UseBatchDownloaderOptions {
-  setUrl: (url: string) => void
-  setCustomFileName: (name: string) => void
-  setRangeDownload: (range: { startSegment: string; endSegment: string }) => void
-  parseM3U8: (url: string) => Promise<void>
-  startDownload: (isGetMP4: boolean) => Promise<void>
-  directDownload: () => Promise<void>
-  streamDownload: (isGetMP4: boolean) => void
-}
-
-export function useBatchDownloader(options: UseBatchDownloaderOptions) {
-  const {
-    setUrl,
-    setCustomFileName,
-    setRangeDownload,
-    parseM3U8,
-    startDownload,
-    directDownload,
-    streamDownload,
-  } = options
-
+export function useBatchActions() {
   const t = useTranslations()
   const batchAbortRef = useRef(false)
 
+  // Create a separate engine for batch mode
+  const engineRef = useRef<DownloadEngine | null>(null)
+  if (!engineRef.current) {
+    const notify: EngineNotifier = {
+      success: () => {},
+      error: () => {},
+      warning: () => {},
+      info: () => {},
+    }
+    engineRef.current = new DownloadEngine(
+      useDownloadStore,
+      () => useSettingsStore.getState(),
+      notify,
+    )
+  }
+
+  // Read store values for rendering
   const batchText = useBatchStore((s) => s.batchText)
   const setBatchText = useBatchStore((s) => s.setBatchText)
   const batchList = useBatchStore((s) => s.batchList)
   const isBatchParsing = useBatchStore((s) => s.isBatchParsing)
   const isBatchRunning = useBatchStore((s) => s.isBatchRunning)
-  const pendingCount = useBatchStore(selectPendingCount)
-  const parsedCount = useBatchStore(selectParsedCount)
-  const doneCount = useBatchStore(selectDoneCount)
-  const errorCount = useBatchStore(selectErrorCount)
-  const currentDownloadingId = useBatchStore(selectCurrentDownloadingId)
 
-  const { addItems, updateItem, removeItem, clearDone, setIsBatchParsing, setIsBatchRunning } =
-    useBatchStore.getState()
+  const {
+    addItems,
+    updateItem,
+    removeItem,
+    clearDone,
+    setIsBatchParsing,
+    setIsBatchRunning,
+  } = useBatchStore.getState()
 
   // ---- Parse ----
   const parseItems = useCallback(
@@ -82,8 +77,9 @@ export function useBatchDownloader(options: UseBatchDownloaderOptions) {
   )
 
   const addToQueue = useCallback(() => {
-    const urls = useBatchStore.getState().batchText
-      .split('\n')
+    const urls = useBatchStore
+      .getState()
+      .batchText.split('\n')
       .map((u) => u.trim())
       .filter((u) => u.length > 0)
     if (urls.length === 0) {
@@ -95,9 +91,9 @@ export function useBatchDownloader(options: UseBatchDownloaderOptions) {
   }, [t, addItems, parseItems])
 
   const parseAll = useCallback(() => {
-    const toParse = useBatchStore.getState().batchList.filter(
-      (b) => b.status === 'pending' || b.status === 'error',
-    )
+    const toParse = useBatchStore
+      .getState()
+      .batchList.filter((b) => b.status === 'pending' || b.status === 'error')
     void parseItems(toParse)
   }, [parseItems])
 
@@ -119,10 +115,15 @@ export function useBatchDownloader(options: UseBatchDownloaderOptions) {
 
   // ---- Download ----
   const startBatchDownload = useCallback(async () => {
-    const ready = useBatchStore.getState().batchList.filter((b) => b.status === 'parsed')
+    const ready = useBatchStore
+      .getState()
+      .batchList.filter((b) => b.status === 'parsed')
     if (ready.length === 0) return
     setIsBatchRunning(true)
     batchAbortRef.current = false
+
+    const engine = engineRef.current!
+    const ds = useDownloadStore.getState()
 
     for (const item of ready) {
       if (batchAbortRef.current) break
@@ -130,52 +131,79 @@ export function useBatchDownloader(options: UseBatchDownloaderOptions) {
       const downloadUrl =
         item.selectedVariantUrl || item.meta?.resolvedUrl || item.url
       updateItem(item.id, { status: 'downloading' })
-      setUrl(downloadUrl)
-      setCustomFileName(item.customName.trim())
-      if (item.rangeEnd > 0) {
-        setRangeDownload({
-          startSegment: String(item.rangeStart),
-          endSegment: String(item.rangeEnd),
-        })
-      }
 
+      // Set up store state for this item
+      ds.setUrl(downloadUrl)
+      ds.setCustomFileName(item.customName.trim())
+
+      // Reset engine state for new download
+      engine.resetState()
+      // Restore the URL after reset
+      ds.setUrl(downloadUrl)
+      ds.setCustomFileName(item.customName.trim())
+
+      // Parse
       try {
-        await parseM3U8(downloadUrl)
+        await engine.parseM3U8(downloadUrl)
       } catch {
         updateItem(item.id, { status: 'error' })
         continue
       }
       if (batchAbortRef.current) break
 
+      // Apply custom range AFTER parse
+      if (item.rangeEnd > 0) {
+        ds.setRangeDownload({
+          startSegment: String(item.rangeStart),
+          endSegment: String(item.rangeEnd),
+        })
+      }
+
       const isStream = item.format.startsWith('stream-')
       const isGetMP4 = item.format === 'mp4' || item.format === 'stream-mp4'
 
       try {
         if (item.meta?.isDirectVideo) {
-          await directDownload()
+          await engine.directDownload()
         } else if (isStream) {
-          streamDownload(isGetMP4)
+          await engine.streamDownload(isGetMP4)
         } else {
-          await startDownload(isGetMP4)
+          await engine.startDownload(isGetMP4)
         }
         updateItem(item.id, { status: 'done' })
       } catch {
         updateItem(item.id, { status: 'error' })
       }
-      await new Promise((r) => setTimeout(r, 500))
+
+      await new Promise((r) => setTimeout(r, 300))
     }
 
     setIsBatchRunning(false)
     if (!batchAbortRef.current) toast.success(t('batch.complete'))
-  }, [
-    updateItem, setIsBatchRunning, setUrl, setCustomFileName, setRangeDownload,
-    parseM3U8, startDownload, directDownload, streamDownload, t,
-  ])
+  }, [updateItem, setIsBatchRunning, t])
 
   const cancelBatch = useCallback(() => {
     batchAbortRef.current = true
+    engineRef.current?.cancelDownload()
     setIsBatchRunning(false)
   }, [setIsBatchRunning])
+
+  // ---- Derived ----
+  const pendingCount = useBatchStore(
+    (s) => s.batchList.filter((b) => b.status === 'pending').length,
+  )
+  const parsedCount = useBatchStore(
+    (s) => s.batchList.filter((b) => b.status === 'parsed').length,
+  )
+  const doneCount = useBatchStore(
+    (s) => s.batchList.filter((b) => b.status === 'done').length,
+  )
+  const errorCount = useBatchStore(
+    (s) => s.batchList.filter((b) => b.status === 'error').length,
+  )
+  const currentDownloadingId = useBatchStore(
+    (s) => s.batchList.find((b) => b.status === 'downloading')?.id ?? null,
+  )
 
   return {
     batchText,

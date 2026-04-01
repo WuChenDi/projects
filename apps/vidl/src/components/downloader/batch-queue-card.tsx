@@ -12,51 +12,37 @@ import {
 import { Progress } from '@cdlab996/ui/components/progress'
 import { HardDriveDownload, Loader2, Search, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import type { BatchItem } from '@/hooks/use-batch-downloader'
+import type { useBatchActions } from '@/hooks/use-batch-actions'
+import {
+  selectFinishNum,
+  selectTargetSegment,
+  useDownloadStore,
+} from '@/stores/download-store'
 import { BatchItemRow } from './batch-item-row'
 
 interface BatchQueueCardProps {
-  batchList: BatchItem[]
-  isBatchParsing: boolean
-  isBatchRunning: boolean
-  isStreamSupported: boolean
-  pendingCount: number
-  parsedCount: number
-  doneCount: number
-  errorCount: number
-  currentDownloadingId: number | null
-  finishNum: number
-  targetSegment: number
-  onParseAll: () => void
-  onStartBatchDownload: () => void
+  batch: ReturnType<typeof useBatchActions>
   onCancelBatch: () => void
-  onClearDone: () => void
-  onRemoveItem: (id: number) => void
-  onUpdateItem: (id: number, patch: Partial<BatchItem>) => void
-  onVariantChange: (item: BatchItem, variantUrl: string) => void
 }
 
-export function BatchQueueCard({
-  batchList,
-  isBatchParsing,
-  isBatchRunning,
-  isStreamSupported,
-  pendingCount,
-  parsedCount,
-  doneCount,
-  errorCount,
-  currentDownloadingId,
-  finishNum,
-  targetSegment,
-  onParseAll,
-  onStartBatchDownload,
-  onCancelBatch,
-  onClearDone,
-  onRemoveItem,
-  onUpdateItem,
-  onVariantChange,
-}: BatchQueueCardProps) {
+export function BatchQueueCard({ batch, onCancelBatch }: BatchQueueCardProps) {
   const t = useTranslations()
+
+  const isStreamSupported = useDownloadStore((s) => s.isStreamSupported)
+  const finishNum = useDownloadStore(selectFinishNum)
+  const targetSegment = useDownloadStore(selectTargetSegment)
+
+  const {
+    batchList,
+    isBatchParsing,
+    isBatchRunning,
+    pendingCount,
+    parsedCount,
+    doneCount,
+    errorCount,
+    currentDownloadingId,
+  } = batch
+
   const disabled = isBatchRunning || isBatchParsing
 
   return (
@@ -84,7 +70,6 @@ export function BatchQueueCard({
         </CardTitle>
       </CardHeader>
 
-      {/* Overall batch progress */}
       {(isBatchRunning || doneCount > 0) && (
         <div className="px-6 pb-2">
           <div className="flex justify-between text-xs text-muted-foreground mb-1">
@@ -101,23 +86,23 @@ export function BatchQueueCard({
       )}
 
       <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-            {batchList.map((item, idx) => (
-              <BatchItemRow
-                key={item.id}
-                item={item}
-                index={idx}
-                disabled={disabled}
-                isStreamSupported={isStreamSupported}
-                isCurrentlyDownloading={item.id === currentDownloadingId}
-                finishNum={finishNum}
-                targetSegment={targetSegment}
-                onRemove={onRemoveItem}
-                onUpdate={onUpdateItem}
-                onVariantChange={onVariantChange}
-              />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {batchList.map((item, idx) => (
+            <BatchItemRow
+              key={item.id}
+              item={item}
+              index={idx}
+              disabled={disabled}
+              isStreamSupported={isStreamSupported}
+              isCurrentlyDownloading={item.id === currentDownloadingId}
+              finishNum={finishNum}
+              targetSegment={targetSegment}
+              onRemove={batch.removeBatchItem}
+              onUpdate={batch.updateItem}
+              onVariantChange={batch.onVariantChange}
+            />
+          ))}
+        </div>
       </CardContent>
 
       <CardFooter className="flex-wrap gap-2">
@@ -127,7 +112,7 @@ export function BatchQueueCard({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={onParseAll}
+                onClick={batch.parseAll}
                 disabled={isBatchParsing}
               >
                 {isBatchParsing ? (
@@ -139,13 +124,13 @@ export function BatchQueueCard({
               </Button>
             )}
             {parsedCount > 0 && (
-              <Button size="sm" onClick={onStartBatchDownload}>
+              <Button size="sm" onClick={() => void batch.startBatchDownload()}>
                 <HardDriveDownload className="size-4" />
                 {t('batch.startAll')} ({parsedCount})
               </Button>
             )}
             {doneCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={onClearDone}>
+              <Button variant="ghost" size="sm" onClick={batch.clearDone}>
                 <Trash2 className="size-4" />
                 {t('batch.clearDone')}
               </Button>
@@ -158,8 +143,7 @@ export function BatchQueueCard({
               {t('batch.running', {
                 current:
                   batchList.findIndex(
-                    (b) =>
-                      b.status === 'parsing' || b.status === 'downloading',
+                    (b) => b.status === 'parsing' || b.status === 'downloading',
                   ) + 1,
                 total: batchList.length,
               })}

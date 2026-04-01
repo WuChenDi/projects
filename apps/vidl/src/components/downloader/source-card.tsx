@@ -11,13 +11,20 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import {
-  Field,
-  FieldDescription,
-  FieldTitle,
-} from '@cdlab996/ui/components/field'
+import { Field, FieldTitle } from '@cdlab996/ui/components/field'
 import { Input } from '@cdlab996/ui/components/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+  InputGroupText,
+} from '@cdlab996/ui/components/input-group'
 import { Slider } from '@cdlab996/ui/components/slider'
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@cdlab996/ui/components/toggle-group'
 import {
   Tooltip,
   TooltipContent,
@@ -27,77 +34,80 @@ import {
 import { formatBytes } from '@cdlab996/utils'
 import {
   CircleQuestionMark,
+  ClipboardPaste,
+  CornerDownLeft,
   HardDriveDownload,
+  Link,
   Loader2,
   Pause,
   Play,
-  Search,
+  Trash2,
   TvMinimalPlay,
   X,
 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
+import { useCallback, useState } from 'react'
+import { toast } from 'sonner'
+import { selectIsParsed, useDownloadStore } from '@/stores/download-store'
 
 const BYPLAY_URL = 'https://byplay.pages.dev'
 
-import type {
-  DownloadState,
-  RangeDownload,
-  VariantStream,
-} from '@/hooks/use-video-downloader'
+type DownloadFormat = 'ts' | 'mp4' | 'stream-ts' | 'stream-mp4'
 
 interface SourceCardProps {
   headerAction?: React.ReactNode
-  url: string
-  onUrlChange: (url: string) => void
-  customFileName: string
-  onCustomFileNameChange: (name: string) => void
-  isParsing: boolean
-  isLoadingVariant: boolean
-  downloadState: DownloadState
-  variants: VariantStream[]
-  tsUrlList: string[]
-  isParsed: boolean
-  isDirectVideo: boolean
-  rangeDownload: RangeDownload
-  estimatedSize: number | null
-  isStreamSupported: boolean
-  onSetRangeDownload: (range: RangeDownload) => void
-  onParse: () => void
-  onSelectVariant: (variant: VariantStream) => void
-  onStartDownload: (isGetMP4: boolean) => void
-  onDirectDownload: () => void
-  onStreamDownload: (isGetMP4: boolean) => void
-  onTogglePause: () => void
-  onCancel: () => void
+  actions: {
+    parseM3U8: (url?: string) => Promise<void>
+    selectVariant: (variant: any) => Promise<void>
+    startDownload: (isGetMP4: boolean) => Promise<void>
+    directDownload: () => Promise<void>
+    streamDownload: (isGetMP4: boolean) => Promise<void>
+    togglePause: () => void
+    cancelDownload: () => void
+  }
 }
 
-export function SourceCard({
-  headerAction,
-  url,
-  onUrlChange,
-  customFileName,
-  onCustomFileNameChange,
-  isParsing,
-  isLoadingVariant,
-  downloadState,
-  variants,
-  tsUrlList,
-  isParsed,
-  isDirectVideo,
-  rangeDownload,
-  estimatedSize,
-  isStreamSupported,
-  onSetRangeDownload,
-  onParse,
-  onSelectVariant,
-  onStartDownload,
-  onDirectDownload,
-  onStreamDownload,
-  onTogglePause,
-  onCancel,
-}: SourceCardProps) {
+export function SourceCard({ headerAction, actions }: SourceCardProps) {
   const t = useTranslations()
   const locale = useLocale()
+
+  const url = useDownloadStore((s) => s.url)
+  const setUrl = useDownloadStore((s) => s.setUrl)
+  const customFileName = useDownloadStore((s) => s.customFileName)
+  const setCustomFileName = useDownloadStore((s) => s.setCustomFileName)
+  const isParsing = useDownloadStore((s) => s.isParsing)
+  const isLoadingVariant = useDownloadStore((s) => s.isLoadingVariant)
+  const downloadState = useDownloadStore((s) => s.downloadState)
+  const variants = useDownloadStore((s) => s.variants)
+  const tsUrlList = useDownloadStore((s) => s.tsUrlList)
+  const isDirectVideo = useDownloadStore((s) => s.isDirectVideo)
+  const rangeDownload = useDownloadStore((s) => s.rangeDownload)
+  const estimatedSize = useDownloadStore((s) => s.estimatedSize)
+  const isStreamSupported = useDownloadStore((s) => s.isStreamSupported)
+  const setRangeDownload = useDownloadStore((s) => s.setRangeDownload)
+  const isParsed = useDownloadStore(selectIsParsed)
+
+  const [format, setFormat] = useState<DownloadFormat>('mp4')
+
+  const handlePaste = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText()
+      if (!text.trim()) return
+      setUrl(text.trim())
+    } catch {
+      toast.error(t('batch.clipboardError'))
+    }
+  }, [setUrl, t])
+
+  const handleDownload = () => {
+    const isStream = format.startsWith('stream-')
+    const isGetMP4 = format === 'mp4' || format === 'stream-mp4'
+    if (isStream) {
+      void actions.streamDownload(isGetMP4)
+    } else {
+      void actions.startDownload(isGetMP4)
+    }
+  }
 
   return (
     <Card>
@@ -106,23 +116,57 @@ export function SourceCard({
         <CardDescription>{t('tool.description')}</CardDescription>
         {headerAction && <CardAction>{headerAction}</CardAction>}
       </CardHeader>
+
       <CardContent className="space-y-4">
-        <Field>
-          <FieldTitle>{t('parse.videoUrlLabel')}</FieldTitle>
-          <div className="flex gap-2">
-            <Input
-              id="m3u8-url"
-              value={url}
-              onChange={(e) => onUrlChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') onParse()
-              }}
-              disabled={downloadState.isDownloading}
-              placeholder={t('parse.videoPlaceholder')}
-              className="text-base"
-            />
-            <Button
-              onClick={onParse}
+        {/* URL input — InputGroup style */}
+        <InputGroup>
+          <InputGroupAddon align="block-start" className="border-b">
+            <InputGroupText className="font-mono font-medium">
+              <Link className="size-4" />
+              {t('parse.videoUrlLabel')}
+            </InputGroupText>
+            <div className="flex items-center gap-0.5 ml-auto">
+              <InputGroupButton
+                size="icon-xs"
+                onClick={() => void handlePaste()}
+                disabled={downloadState.isDownloading}
+              >
+                <ClipboardPaste />
+              </InputGroupButton>
+              {url.trim() && (
+                <InputGroupButton size="icon-xs" onClick={() => setUrl('')}>
+                  <Trash2 />
+                </InputGroupButton>
+              )}
+              {url.trim() && (
+                <InputGroupButton size="icon-xs" asChild>
+                  <a
+                    href={`${BYPLAY_URL}/${locale}?url=${encodeURIComponent(url.trim())}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <TvMinimalPlay />
+                  </a>
+                </InputGroupButton>
+              )}
+            </div>
+          </InputGroupAddon>
+          <InputGroupInput
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void actions.parseM3U8()
+            }}
+            disabled={downloadState.isDownloading}
+            placeholder={t('parse.videoPlaceholder')}
+          />
+          <InputGroupAddon align="block-end" className="border-t">
+            <InputGroupText />
+            <InputGroupButton
+              size="sm"
+              className="ml-auto"
+              variant="default"
+              onClick={() => void actions.parseM3U8()}
               disabled={isParsing || downloadState.isDownloading || !url.trim()}
             >
               {isParsing ? (
@@ -132,64 +176,15 @@ export function SourceCard({
                 </>
               ) : (
                 <>
-                  <Search className="size-4" />
                   {t('parse.parse')}
+                  <CornerDownLeft />
                 </>
               )}
-            </Button>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="shrink-0"
-                    disabled={!url.trim()}
-                    asChild={!!url.trim()}
-                  >
-                    {url.trim() ? (
-                      <a
-                        href={`${BYPLAY_URL}/${locale}?url=${encodeURIComponent(url.trim())}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <TvMinimalPlay className="size-4" />
-                      </a>
-                    ) : (
-                      <span>
-                        <TvMinimalPlay className="size-4" />
-                      </span>
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('parse.playVideo')}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </Field>
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
 
-        {variants.length > 0 && (
-          <Field>
-            <FieldTitle>{t('parse.variant')}</FieldTitle>
-            <div className="flex gap-2 flex-wrap">
-              {variants.map((v) => (
-                <Button
-                  key={v.url}
-                  variant={v.selected ? 'default' : 'outline'}
-                  size="sm"
-                  disabled={isLoadingVariant || downloadState.isDownloading}
-                  onClick={() => onSelectVariant(v)}
-                >
-                  {v.name}
-                  {v.resolution && ` (${v.resolution})`}
-                  {v.bandwidth > 0 &&
-                    ` · ${(v.bandwidth / 1_000_000).toFixed(1)}Mbps`}
-                </Button>
-              ))}
-            </div>
-          </Field>
-        )}
-
+        {/* Direct video info */}
         {isDirectVideo && estimatedSize !== null && (
           <Field>
             <FieldTitle>
@@ -201,151 +196,169 @@ export function SourceCard({
           </Field>
         )}
 
-        {(isParsed || isDirectVideo) && (
+        {/* Parsed config — same compact style as batch */}
+        {isParsed && !isDirectVideo && (
+          <div className="space-y-2.5">
+            {/* Variant */}
+            {variants.length > 0 && (
+              <Field>
+                <FieldTitle>{t('batch.variant')}</FieldTitle>
+                <ToggleGroup
+                  type="single"
+                  size="sm"
+                  variant="outline"
+                  value={variants.find((v) => v.selected)?.url || ''}
+                  onValueChange={(v) => {
+                    if (v) {
+                      const variant = variants.find((item) => item.url === v)
+                      if (variant) void actions.selectVariant(variant)
+                    }
+                  }}
+                  className="flex-wrap"
+                >
+                  {variants.map((v) => (
+                    <ToggleGroupItem
+                      key={v.url}
+                      value={v.url}
+                      disabled={isLoadingVariant || downloadState.isDownloading}
+                    >
+                      {v.name}
+                      {v.resolution && ` ${v.resolution}`}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </Field>
+            )}
+
+            <Field>
+              <FieldTitle>
+                {t('batch.format')}
+                {(format === 'stream-mp4' || format === 'stream-ts') && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <CircleQuestionMark className="size-3.5 cursor-help text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">
+                          {t('download.streamTooltip')}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </FieldTitle>
+              <ToggleGroup
+                type="single"
+                size="sm"
+                variant="outline"
+                value={format}
+                onValueChange={(v) => {
+                  if (v) setFormat(v as DownloadFormat)
+                }}
+                className="flex-wrap"
+              >
+                <ToggleGroupItem value="mp4">MP4</ToggleGroupItem>
+                <ToggleGroupItem value="ts">.ts</ToggleGroupItem>
+                {isStreamSupported && (
+                  <>
+                    <ToggleGroupItem value="stream-mp4">
+                      {t('batch.streamMp4Short')}
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="stream-ts">
+                      {t('batch.streamTsShort')}
+                    </ToggleGroupItem>
+                  </>
+                )}
+              </ToggleGroup>
+            </Field>
+
+            {/* Filename */}
+            <Field>
+              <FieldTitle>{t('filename.label')}</FieldTitle>
+              <Input
+                value={customFileName}
+                onChange={(e) => setCustomFileName(e.target.value)}
+                disabled={downloadState.isDownloading}
+                placeholder={t('filename.placeholder')}
+              />
+            </Field>
+
+            {/* Range */}
+            {tsUrlList.length > 1 && (
+              <Field>
+                <div className="flex items-center justify-between">
+                  <FieldTitle>
+                    {t('batch.range')}
+                    <span className="text-muted-foreground font-normal">
+                      ({tsUrlList.length} seg
+                      {estimatedSize !== null &&
+                        ` · ${formatBytes({ bytes: estimatedSize })}`}
+                      )
+                    </span>
+                  </FieldTitle>
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    {rangeDownload.startSegment} ~ {rangeDownload.endSegment}
+                  </span>
+                </div>
+                <Slider
+                  value={[
+                    parseInt(rangeDownload.startSegment) || 1,
+                    parseInt(rangeDownload.endSegment) || tsUrlList.length,
+                  ]}
+                  onValueChange={(value) =>
+                    setRangeDownload({
+                      startSegment: String(value[0]),
+                      endSegment: String(value[1]),
+                    })
+                  }
+                  min={1}
+                  max={tsUrlList.length}
+                  step={1}
+                  disabled={downloadState.isDownloading}
+                />
+              </Field>
+            )}
+          </div>
+        )}
+
+        {/* Filename for direct video */}
+        {isDirectVideo && (
           <Field>
             <FieldTitle>{t('filename.label')}</FieldTitle>
             <Input
               value={customFileName}
-              onChange={(e) => onCustomFileNameChange(e.target.value)}
+              onChange={(e) => setCustomFileName(e.target.value)}
               disabled={downloadState.isDownloading}
               placeholder={t('filename.placeholder')}
-              className="text-base"
-            />
-            <FieldDescription>{t('filename.hint')}</FieldDescription>
-          </Field>
-        )}
-
-        {isParsed && !isDirectVideo && (
-          <Field>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
-              <FieldTitle>
-                {t('download.range')}
-                {tsUrlList.length > 0 && (
-                  <FieldDescription>
-                    {t('download.totalSegments', {
-                      count: tsUrlList.length,
-                      size:
-                        estimatedSize !== null
-                          ? t('download.estimatedSize', {
-                              size: formatBytes({ bytes: estimatedSize }),
-                            })
-                          : '',
-                    })}
-                  </FieldDescription>
-                )}
-              </FieldTitle>
-              <FieldDescription>
-                <span className="font-medium tabular-nums">
-                  {rangeDownload.startSegment}
-                </span>
-                {' ~ '}
-                <span className="font-medium tabular-nums">
-                  {rangeDownload.endSegment}
-                </span>
-              </FieldDescription>
-            </div>
-            <Slider
-              value={[
-                parseInt(rangeDownload.startSegment) || 1,
-                parseInt(rangeDownload.endSegment) || tsUrlList.length,
-              ]}
-              onValueChange={(value) =>
-                onSetRangeDownload({
-                  startSegment: String(value[0]),
-                  endSegment: String(value[1]),
-                })
-              }
-              min={1}
-              max={tsUrlList.length}
-              step={1}
-              disabled={downloadState.isDownloading}
-              className="mt-2"
-              aria-label={t('download.range')}
             />
           </Field>
         )}
       </CardContent>
 
       {(isParsed || isDirectVideo) && (
-        <CardFooter className="flex-col sm:flex-row gap-4 items-start">
+        <CardFooter className="gap-2">
           {!downloadState.isDownloading ? (
             isDirectVideo ? (
-              <Button onClick={onDirectDownload}>
+              <Button onClick={() => void actions.directDownload()}>
                 <HardDriveDownload className="size-4" />
                 {t('download.directDownload')}
               </Button>
             ) : (
-              <>
-                <Field>
-                  <FieldTitle>{t('download.normalDownload')}</FieldTitle>
-                  <ButtonGroup>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onStartDownload(false)}
-                    >
-                      <HardDriveDownload className="size-4" />
-                      {t('download.originalFormat')}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onStartDownload(true)}
-                    >
-                      <HardDriveDownload className="size-4" />
-                      {t('download.convertMp4')}
-                    </Button>
-                  </ButtonGroup>
-                </Field>
-
-                {isStreamSupported && (
-                  <Field>
-                    <FieldTitle>
-                      {t('download.streamDownload')}
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <CircleQuestionMark className="size-4 cursor-help text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">
-                              {t('download.streamTooltip')}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </FieldTitle>
-                    <ButtonGroup>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onStreamDownload(false)}
-                      >
-                        <HardDriveDownload className="size-4" />
-                        {t('download.originalFormat')}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onStreamDownload(true)}
-                      >
-                        <HardDriveDownload className="size-4" />
-                        {t('download.convertMp4')}
-                      </Button>
-                    </ButtonGroup>
-                  </Field>
-                )}
-              </>
+              <Button onClick={handleDownload}>
+                <HardDriveDownload className="size-4" />
+                {t('download.startDownload')}
+              </Button>
             )
           ) : isDirectVideo ? (
-            <Button variant="destructive" onClick={onCancel}>
+            <Button variant="destructive" onClick={actions.cancelDownload}>
               <X className="size-4" />
               {t('download.cancel')}
             </Button>
           ) : (
             <ButtonGroup>
               <Button
-                onClick={onTogglePause}
+                onClick={actions.togglePause}
                 variant={downloadState.isPaused ? 'default' : 'secondary'}
               >
                 {downloadState.isPaused ? (
@@ -360,7 +373,7 @@ export function SourceCard({
                   </>
                 )}
               </Button>
-              <Button variant="destructive" onClick={onCancel}>
+              <Button variant="destructive" onClick={actions.cancelDownload}>
                 <X className="size-4" />
                 {t('download.cancel')}
               </Button>

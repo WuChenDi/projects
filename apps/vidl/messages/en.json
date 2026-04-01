@@ -16,16 +16,9 @@
     "title": "Video Downloader",
     "description": "Supports M3U8/HLS, MP4, and other video formats with range download, streaming, AES decryption, MP4 conversion"
   },
-  "tab": {
-    "single": "Single",
-    "batch": "Batch"
-  },
   "parse": {
     "videoUrlLabel": "Video URL",
     "videoPlaceholder": "https://example.com/video.m3u8 or .mp4",
-    "playVideo": "Play",
-    "urlLabel": "M3U8 URL",
-    "placeholder": "https://example.com/playlist.m3u8",
     "directVideoDetected": "{format} video detected, click download to start",
     "parsing": "Parsing",
     "parse": "Parse",
@@ -34,24 +27,17 @@
     "success": "Parsed successfully, {count} segments found",
     "variantsDetected": "Detected {count} quality levels, highest bitrate selected by default",
     "invalidLink": "Incorrect URL, please check if the link is valid",
-    "variant": "Quality",
     "continueSelect": "Please continue to select a quality level",
     "variantFailed": "Failed to parse selected quality, please retry",
     "emptyResource": "Resource is empty, please check if the link is valid",
     "encryptedError": "Video is encrypted and cannot be downloaded"
   },
   "download": {
-    "range": "Download Range",
-    "totalSegments": "({count} segments{size})",
-    "estimatedSize": ", est. {size}",
     "fileInfo": "File Size: ",
     "directDownload": "Download Video",
     "directComplete": "Download complete",
     "directFailed": "Download failed, please check the URL and try again",
-    "normalDownload": "Normal Download",
-    "originalFormat": "Original (.ts)",
-    "convertMp4": "Convert MP4",
-    "streamDownload": "Stream Download (Large Files)",
+    "startDownload": "Start Download",
     "streamTooltip": "Download and save simultaneously, solves memory issues for large files",
     "resume": "Resume",
     "pause": "Pause",
@@ -73,7 +59,6 @@
     "failed": "Failed {count}",
     "overall": "Overall Progress",
     "batchOverall": "Batch Progress",
-    "currentVideo": "Video #{index}",
     "partialFailed": "Some segments failed to download",
     "retryHint": "Red blocks can be clicked to retry - auto-retry every 2 seconds",
     "segment": "Segment {index}",
@@ -89,8 +74,7 @@
   },
   "filename": {
     "label": "File Name",
-    "placeholder": "Custom file name",
-    "hint": "Leave empty to use auto-generated name"
+    "placeholder": "Custom file name"
   },
   "settings": {
     "title": "Download Settings",
@@ -121,8 +105,8 @@
     "startAll": "Download",
     "cancel": "Cancel",
     "clearDone": "Clear Done",
-    "streamMp4": "Stream MP4 (Large Files)",
-    "streamTs": "Stream .ts (Large Files)",
+    "streamMp4Short": "Stream MP4",
+    "streamTsShort": "Stream .ts",
     "emptyList": "Please enter at least one URL",
     "complete": "All downloads complete",
     "running": "Processing {current} / {total}",
@@ -130,10 +114,6 @@
     "doneCount": "{count} done",
     "errorCount": "{count} failed",
     "status": {
-      "pending": "Pending",
-      "parsing": "Parsing",
-      "parsed": "Ready",
-      "downloading": "Downloading",
       "done": "Done",
       "error": "Failed"
     }

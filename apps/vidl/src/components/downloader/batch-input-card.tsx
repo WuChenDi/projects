@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import { Field, FieldTitle } from '@cdlab996/ui/components/field'
 import {
   InputGroup,
   InputGroupAddon,
@@ -17,8 +16,8 @@ import {
   InputGroupTextarea,
 } from '@cdlab996/ui/components/input-group'
 import { ClipboardPaste, CornerDownLeft, Link, Trash2 } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
+import { useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 
 interface BatchInputCardProps {
@@ -68,9 +67,6 @@ export function BatchInputCard({
         {headerAction && <CardAction>{headerAction}</CardAction>}
       </CardHeader>
       <CardContent className="space-y-4">
-        <Field>
-          <FieldTitle>{t('parse.videoUrlLabel')}</FieldTitle>
-        </Field>
         <InputGroup>
           <InputGroupAddon align="block-start" className="border-b">
             <InputGroupText className="font-mono font-medium">
@@ -103,9 +99,7 @@ export function BatchInputCard({
           />
           <InputGroupAddon align="block-end" className="border-t">
             <InputGroupText>
-              {lineCount > 0
-                ? t('batch.lineCount', { count: lineCount })
-                : ''}
+              {lineCount > 0 ? t('batch.lineCount', { count: lineCount }) : ''}
             </InputGroupText>
             <InputGroupButton
               size="sm"

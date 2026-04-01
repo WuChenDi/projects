@@ -26,30 +26,29 @@ import { IKEmpty } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { Download } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import type { FinishItem } from '@/hooks/use-video-downloader'
+import {
+  selectErrorNum,
+  selectFinishNum,
+  selectTargetSegment,
+  useDownloadStore,
+} from '@/stores/download-store'
 
 interface ProgressCardProps {
-  finishList: FinishItem[]
-  finishNum: number
-  errorNum: number
-  targetSegment: number
-  hasMediaData: boolean
-  hasStreamWriter: boolean
-  onRetry: (index: number) => void
-  onForceDownload: () => void
+  actions: {
+    retry: (index: number) => Promise<void>
+    forceDownload: () => void
+  }
 }
 
-export function ProgressCard({
-  finishList,
-  finishNum,
-  errorNum,
-  targetSegment,
-  hasMediaData,
-  hasStreamWriter,
-  onRetry,
-  onForceDownload,
-}: ProgressCardProps) {
+export function ProgressCard({ actions }: ProgressCardProps) {
   const t = useTranslations()
+
+  const finishList = useDownloadStore((s) => s.finishList)
+  const finishNum = useDownloadStore(selectFinishNum)
+  const errorNum = useDownloadStore(selectErrorNum)
+  const targetSegment = useDownloadStore(selectTargetSegment)
+  const hasMediaData = useDownloadStore((s) => s.hasMediaData)
+  const hasStreamWriter = useDownloadStore((s) => s.hasStreamWriter)
 
   return (
     <Card className="flex flex-col p-4 border-none h-full">
@@ -75,7 +74,11 @@ export function ProgressCard({
               </div>
 
               {hasMediaData && !hasStreamWriter && (
-                <Button variant="secondary" size="sm" onClick={onForceDownload}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={actions.forceDownload}
+                >
                   <Download className="size-4" />
                   {t('download.forceDownload')}
                 </Button>
@@ -110,17 +113,13 @@ export function ProgressCard({
 
             <div className="flex-1">
               <TooltipProvider>
-                <div
-                  className={
-                    'grid grid-cols-[repeat(auto-fill,minmax(40px,1fr))] p-0.5 gap-2'
-                  }
-                >
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(40px,1fr))] p-0.5 gap-2">
                   {finishList.map((item, index) => (
                     // biome-ignore lint/suspicious/noArrayIndexKey: no unique identifier available
                     <Tooltip key={index}>
                       <TooltipTrigger asChild>
                         <button
-                          onClick={() => onRetry(index)}
+                          onClick={() => void actions.retry(index)}
                           disabled={item.status !== 'error'}
                           className={cn(
                             'aspect-square rounded-md border font-medium',
