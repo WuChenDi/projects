@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.1.0",
   "private": true,
-  "description": "免费的在线AI文生图工具，基于 Cloudflare Workers AI，支持 FLUX.1、Stable Diffusion XL 等多种模型。无需注册，即刻使用，快速生成高质量AI图像。",
+  "description": "Free online AI text-to-image tool powered by Cloudflare Workers AI. Supports FLUX.1, Stable Diffusion XL and more. No registration required.",
   "author": "wudi <wuchendi96@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/WuChenDi",
