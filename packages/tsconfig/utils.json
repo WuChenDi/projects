@@ -5,8 +5,8 @@
   "compilerOptions": {
     "noEmit": false,
     "declaration": false,
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "declarationMap": false,
     "target": "ES6",
     "types": ["node"]
