@@ -1,5 +1,5 @@
+import { parseStreamHeader, streamCrypto, textCrypto } from '@cdlab996/cipher'
 import { clampProgress, generateDownloadFilename } from '@/lib'
-import { parseStreamHeader, streamCrypto, textCrypto } from '@/lib/crypto'
 import { ModeEnum } from '@/types'
 
 interface WorkerInput {
@@ -63,14 +63,14 @@ self.onmessage = async (e: MessageEvent<WorkerInput>) => {
         const result = await streamCrypto.encrypt.withPassword({
           file,
           password,
-          onProgress: (progress) => {
+          onProgress: (progress: number) => {
             const scaledProgress = 10 + (clampProgress(progress) / 100) * 85
             self.postMessage({
               progress: Math.min(scaledProgress, 95),
               stage: `Encrypting... ${Math.round(progress)}%`,
             })
           },
-          onStage: (stage) => {
+          onStage: (stage: string) => {
             self.postMessage({ stage })
           },
         })
@@ -113,14 +113,14 @@ self.onmessage = async (e: MessageEvent<WorkerInput>) => {
         const result = await streamCrypto.decrypt.withPassword({
           file,
           password,
-          onProgress: (progress) => {
+          onProgress: (progress: number) => {
             const scaledProgress = 20 + (clampProgress(progress) / 100) * 75
             self.postMessage({
               progress: Math.min(scaledProgress, 95),
               stage: `Decrypting... ${Math.round(progress)}%`,
             })
           },
-          onStage: (stage) => {
+          onStage: (stage: string) => {
             self.postMessage({ stage })
           },
         })
