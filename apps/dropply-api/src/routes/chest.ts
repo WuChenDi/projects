@@ -203,7 +203,8 @@ chestRoutes.post(
     const fileInserts: any[] = []
 
     // Process file uploads
-    for (const [key, value] of formData.entries()) {
+    for (const [key, entry] of formData.entries()) {
+      const value = entry as unknown as File
       if (key === 'files' && value instanceof File) {
         const fileId = generateUUID()
         const filename = value.name || 'unnamed-file'
