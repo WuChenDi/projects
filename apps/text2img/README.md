@@ -1,77 +1,79 @@
-# 基于 CloudFlare 的在线文生图服务
+# AI Text-to-Image Tool (Cloudflare AI)
 
-这是一个使用 Next.js 的文本生成图像服务，基于 Cloudflare AI Workers 的 AI 模型。
+[中文文档](./README.zh-CN.md)
+
+A free online AI text-to-image tool built with Next.js, powered by Cloudflare Workers AI. Supports multiple models including FLUX.1, Stable Diffusion XL, and DreamShaper.
 
 Preview: https://text2img.cdlab.workers.dev/
 
-## Preview
+<details>
+  <summary>Preview</summary>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/index.png" />
+</details>
 
-![Preview](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/index.png)
+## Features
 
-## 功能特性
+- Multiple AI image generation models (Stable Diffusion XL, FLUX.1, DreamShaper, etc.)
+- Random prompt library
+- Rich parameter configuration (size, steps, guidance scale, random seed, etc.)
+- Dark / light theme toggle
+- Responsive design for mobile
+- Parameter copy function
+- One-click image download
 
-- 🎨 支持多个 AI 图像生成模型（Stable Diffusion XL、FLUX、DreamShaper 等）
-- 🎲 随机提示词功能
-- ⚙️ 丰富的参数配置（尺寸、步数、引导系数、随机种子等）
-- 🌓 深色/浅色主题切换
-- 📱 响应式设计，支持移动端
-- 📋 参数复制功能
-- 💾 图像下载功能
+## Tech Stack
 
-## 技术栈
+- **Framework**: Next.js 16
+- **UI**: shadcn/ui + Tailwind CSS
+- **Data Fetching**: TanStack Query (React Query)
 
-- **框架**: Next.js 16
-- **UI 库**: shadcn/ui + Tailwind CSS
-- **状态管理**: TanStack Query (React Query)
+## Getting Started
 
-## 开始使用
-
-### 环境要求
+### Prerequisites
 
 - Node.js 20+
 - pnpm
 
-### 安装依赖
+### Install Dependencies
 
 ```bash
 pnpm install
 ```
 
-### 配置环境变量
+### Configure Environment Variables
 
-复制 `.env.example` 为 `.env.local` 并填写以下配置：
+Copy `.env.example` to `.env.local` and fill in the following:
 
 ```bash
 PASSWORDS=
 ```
 
-### 运行开发服务器
+### Run Development Server
 
 ```bash
 pnpm dev
 ```
 
-打开 [http://localhost:3000](http://localhost:3000) 查看应用。
+Open [http://localhost:3000](http://localhost:3000) to view the app.
 
-### 构建生产版本
+### Build for Production
 
 ```bash
 pnpm build
 pnpm start
 ```
 
-## 部署
+## Deployment
 
-### 部署到 Cloudflare Pages
+### Deploy to Cloudflare Pages
 
-项目已配置 `@opennextjs/cloudflare`，可以部署到 Cloudflare Pages 或 Workers。
+The project is configured with `@opennextjs/cloudflare` and can be deployed to Cloudflare Pages or Workers.
 
 ```bash
-# 构建并部署到 Cloudflare
 pnpm deploy
 ```
 
-## 项目结构
+## Project Structure
 
 ```
 .
@@ -90,9 +92,9 @@ pnpm deploy
 └── public/
 ```
 
-## 支持的模型
+## Supported Models
 
-| 厂商 | 模型 | 状态 |
+| Provider | Model | Status |
 | --- | --- | --- |
 | Black Forest Labs | FLUX.2 [klein] 9B | ✅ |
 | Black Forest Labs | FLUX.2 [klein] 4B | ✅ |

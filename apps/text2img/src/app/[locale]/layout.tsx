@@ -75,6 +75,8 @@ export async function generateMetadata({
       metadataBase: new URL('https://text2img.cdlab.workers.dev/'),
       alternates: { canonical: '/' },
       applicationName: 'AI文生图在线工具',
+      category: 'AI工具, 图像生成, 创意工具',
+      classification: 'AI工具, 图像生成软件, 创意应用',
       openGraph: {
         title: 'AI文生图在线工具 | 基于 Cloudflare AI 的免费图像生成',
         description:
@@ -102,6 +104,14 @@ export async function generateMetadata({
         ],
         creator: '@wuchendi96',
         site: '@wuchendi96',
+      },
+      other: {
+        'revisit-after': '3 days',
+        distribution: 'global',
+        rating: 'general',
+        copyright: '© 2025 wudi. All rights reserved.',
+        language: 'zh-CN',
+        googlebot: 'index, follow',
       },
     }
   }
@@ -309,10 +319,31 @@ export default async function LocaleLayout({
                 {
                   '@type': 'ListItem',
                   position: 1,
-                  name: 'Home',
+                  name: locale === 'zh' ? '首页' : 'Home',
                   item: 'https://text2img.cdlab.workers.dev/',
                 },
               ],
+            }),
+          }}
+        />
+
+        {/* JSON-LD Structured Data - SoftwareApplication */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'SoftwareApplication',
+              name: 'wudi',
+              url: 'https://github.com/WuChenDi',
+              logo: 'https://notes-wudi.pages.dev/images/logo.png',
+              applicationCategory: 'MultimediaApplication',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+              },
+              operatingSystem: 'Any',
+              permissions: 'Browser access',
             }),
           }}
         />
