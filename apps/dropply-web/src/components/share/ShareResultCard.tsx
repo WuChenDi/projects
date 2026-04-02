@@ -5,7 +5,9 @@ import { Card } from '@cdlab996/ui/components/card'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { copyToClipboard } from '@cdlab996/utils'
 import { CheckCircle, Copy, Link2, Mail, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
+import { useI18n } from '@/i18n'
 import type { ShareResult } from '@/store/useShareStore'
 
 interface ShareResultCardProps {
@@ -21,6 +23,7 @@ export function ShareResultCard({
   onRemove,
   onEmailShare,
 }: ShareResultCardProps) {
+  const t = useTranslations('share')
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -75,12 +78,12 @@ export function ShareResultCard({
             {copied ? (
               <>
                 <CheckCircle size={12} />
-                Copied!
+                {t('copied')}
               </>
             ) : (
               <>
                 <Copy size={12} />
-                Copy Link
+                {t('copyLink')}
               </>
             )}
           </Button>

@@ -16,6 +16,7 @@ import {
   InputGroupTextarea,
 } from '@cdlab996/ui/components/input-group'
 import { ClipboardPaste, Copy, FileText, Plus, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import type { TextItem } from '@/types'
 
@@ -25,6 +26,7 @@ interface TextInputProps {
 }
 
 export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
+  const t = useTranslations('textInput')
   const [currentText, setCurrentText] = useState('')
   const [currentFilename, setCurrentFilename] = useState('')
 
@@ -84,13 +86,13 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
           <InputGroupInput
             value={currentFilename}
             onChange={(e) => setCurrentFilename(e.target.value)}
-            placeholder={`Label: Text ${textItems.length + 1}`}
+            placeholder={`Text ${textItems.length + 1}`}
           />
           <InputGroupButton
             size="icon-xs"
             variant="ghost"
             onClick={handlePaste}
-            title="Paste from clipboard"
+            title={t('pasteFromClipboard')}
           >
             <ClipboardPaste />
           </InputGroupButton>
@@ -99,7 +101,7 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
             variant="ghost"
             onClick={handleCopy}
             disabled={!currentText}
-            title="Copy content"
+            title={t('copyContent')}
           >
             <Copy />
           </InputGroupButton>
@@ -108,7 +110,7 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
             variant="ghost"
             onClick={handleClear}
             disabled={!currentText && !currentFilename}
-            title="Clear"
+            title={t('clear')}
           >
             <Trash2 />
           </InputGroupButton>
@@ -118,13 +120,13 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
           value={currentText}
           onChange={(e) => setCurrentText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Enter text content, code snippets, notes..."
+          placeholder={t('placeholder')}
           rows={3}
         />
 
         <InputGroupAddon align="block-end" className="border-t">
           <InputGroupText className="text-xs">
-            {currentText.length} chars
+            {currentText.length} {t('chars')}
           </InputGroupText>
           <InputGroupButton
             className="ml-auto"
@@ -134,7 +136,7 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
             disabled={!currentText.trim()}
           >
             <Plus className="size-3.5" />
-            Add
+            {t('add')}
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>
@@ -144,7 +146,7 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
           <div className="flex items-center gap-2">
             <FileText className="size-4 text-muted-foreground" />
             <h4 className="font-semibold text-foreground">
-              Text Items ({textItems.length})
+              {t('textItems')} ({textItems.length})
             </h4>
           </div>
 
@@ -165,13 +167,13 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
                   value={`item-${index}`}
                   className="px-0 first:pt-0 last:pb-0"
                 >
-                  <AccordionTrigger className="group flex items-center gap-3 px-4 py-3 hover:no-underline">
+                  <AccordionTrigger className="group flex items-center gap-3 px-4 hover:no-underline">
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       <span className="text-sm font-medium truncate">
                         {displayName}
                       </span>
                       <span className="text-xs text-muted-foreground shrink-0">
-                        ({item.content.length} chars)
+                        ({item.content.length} {t('chars')})
                       </span>
                     </div>
 

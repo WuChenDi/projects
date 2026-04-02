@@ -10,6 +10,7 @@ import {
 import { cn } from '@cdlab996/ui/lib/utils'
 import { formatBytes } from '@cdlab996/utils'
 import { HardDrive, Upload, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { getFileIcon } from '@/lib'
@@ -69,6 +70,7 @@ function FilePreviewModal({
 }
 
 export function FileUpload({ onFilesChange, files }: FileUploadProps) {
+  const t = useTranslations('fileUpload')
   const [previewFile, setPreviewFile] = useState<File | null>(null)
 
   const onDrop = useCallback(
@@ -123,7 +125,7 @@ export function FileUpload({ onFilesChange, files }: FileUploadProps) {
                   : 'text-gray-500 group-hover:text-blue-600',
               )}
             >
-              {isDragActive ? 'Drop files here' : 'Click to select a file'}
+              {isDragActive ? t('dropHere') : t('clickToSelect')}
             </span>
           </div>
         </div>
@@ -133,7 +135,7 @@ export function FileUpload({ onFilesChange, files }: FileUploadProps) {
             <div className="flex items-center gap-2">
               <HardDrive className="size-4 text-muted-foreground" />
               <h4 className="font-semibold text-foreground">
-                Selected Files ({files.length})
+                {t('selectedFiles')} ({files.length})
               </h4>
             </div>
 

@@ -5,9 +5,12 @@ import { GitHubIcon as Github } from '@cdlab996/ui/icon'
 import { ExternalLinkIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ThemeToggle } from '@/components/layout/theme-toggle'
+import { useTranslations } from 'next-intl'
+import { LanguageSelector, ThemeToggle } from '@/components/layout'
 
 export function Header() {
+  const t = useTranslations('header')
+
   return (
     //
     <header className="relative w-full z-10">
@@ -41,12 +44,13 @@ export function Header() {
               href="https://notes-wudi.pages.dev/projects/"
               className="transition-colors flex items-center gap-1 uppercase"
             >
-              more
+              {t('more')}
               <ExternalLinkIcon className="size-4" />
             </Link>
           </nav>
 
           <div className="flex items-center gap-2">
+            <LanguageSelector />
             <ThemeToggle />
             <Button asChild variant="outline" size="icon" aria-label="GitHub">
               <Link

@@ -10,8 +10,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@cdlab996/ui/components/dialog'
-import { Input } from '@cdlab996/ui/components/input'
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from '@cdlab996/ui/components/input-otp'
 import { AlertCircle, Loader2, Lock, ShieldCheck } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
 interface TOTPModalProps {
@@ -29,6 +35,7 @@ export function TOTPModal({
   error,
   allowCancel = true,
 }: TOTPModalProps) {
+  const t = useTranslations('totp')
   const [token, setToken] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -50,21 +57,16 @@ export function TOTPModal({
     }
   }
 
-  const handleTokenChange = (value: string) => {
-    const digits = value.replace(/\D/g, '').slice(0, 6)
-    setToken(digits)
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent showCloseButton={allowCancel}>
         <DialogHeader>
           <div className="flex items-center gap-2">
             <ShieldCheck className="size-5 text-primary" />
-            <DialogTitle>Authentication Required</DialogTitle>
+            <DialogTitle>{t('title')}</DialogTitle>
           </div>
           <DialogDescription>
-            Enter your 6-digit TOTP code from your authenticator app
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -76,22 +78,28 @@ export function TOTPModal({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Input
-              value={token}
-              onChange={(e) => handleTokenChange(e.target.value)}
-              placeholder="123456"
+          <div className="flex flex-col items-center gap-2">
+            <InputOTP
               maxLength={6}
-              className="text-center text-lg font-mono font-bold tracking-[0.3em]"
-              autoComplete="one-time-code"
+              value={token}
+              onChange={setToken}
               autoFocus
-            />
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Check your authenticator app</span>
-              <span className={token.length === 6 ? 'text-green-600' : ''}>
-                {token.length}/6
-              </span>
-            </div>
+            >
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+              </InputOTPGroup>
+              <InputOTPSeparator />
+              <InputOTPGroup>
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+            <p className="text-xs text-muted-foreground">
+              {t('checkApp')}
+            </p>
           </div>
 
           <DialogFooter>
@@ -102,19 +110,19 @@ export function TOTPModal({
                 onClick={onClose}
                 disabled={isSubmitting}
               >
-                Cancel
+                {t('cancel')}
               </Button>
             )}
             <Button type="submit" disabled={token.length !== 6 || isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Verifying...
+                  {t('verifying')}
                 </>
               ) : (
                 <>
                   <Lock className="size-4" />
-                  Authenticate
+                  {t('authenticate')}
                 </>
               )}
             </Button>

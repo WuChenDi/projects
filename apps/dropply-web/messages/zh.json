@@ -1,0 +1,134 @@
+{
+  "theme": {
+    "toggle": "切换主题"
+  },
+  "language": {
+    "label": "切换语言"
+  },
+  "header": {
+    "more": "更多"
+  },
+  "footer": {
+    "copyright": "Copyright © 2025-PRESENT |"
+  },
+  "error": {
+    "title": "出错了！",
+    "message": "页面出现了一些问题，这可能是临时性的，请重试您的操作。",
+    "tryAgain": "重试"
+  },
+  "notFound": {
+    "title": "页面不存在",
+    "message": "抱歉，您访问的页面不存在或已被移动。",
+    "goBack": "返回",
+    "backToHome": "回到首页"
+  },
+  "tabs": {
+    "share": "分享",
+    "retrieve": "提取"
+  },
+  "share": {
+    "authRequired": "需要身份验证",
+    "authDescription": "输入您的 TOTP 验证码以解锁分享功能",
+    "unlockWithTOTP": "使用 TOTP 解锁",
+    "text": "文本",
+    "files": "文件",
+    "encryptionKey": "加密密钥",
+    "encryptionKeyPlaceholder": "输入或自动生成",
+    "encryptionKeyDescription": "已自动生成，您可以自定义或重新生成。",
+    "generateNewKey": "生成新密钥",
+    "uploading": "上传中...",
+    "uploadAndGenerate": "上传并生成提取码",
+    "results": "结果",
+    "clearAll": "清除全部",
+    "noResultsYet": "暂无结果",
+    "emptyHint": "在左侧添加文件或文本，然后点击上传",
+    "copyLink": "复制链接",
+    "copied": "已复制！",
+    "retry": "重试"
+  },
+  "retrieve": {
+    "retrievalCode": "提取码",
+    "retrievalCodePlaceholder": "输入您收到的 6 位提取码",
+    "encryptionKey": "加密密钥",
+    "encryptionKeyPlaceholder": "从链接自动填充或手动输入",
+    "keyDetected": "已从链接检测到密钥",
+    "pasteKeyHint": "粘贴分享链接中的加密密钥",
+    "retrieving": "提取中...",
+    "alreadyRetrieved": "已提取",
+    "accessFiles": "获取文件",
+    "results": "结果",
+    "clearAll": "清除全部",
+    "retrievingFiles": "正在提取文件...",
+    "noResultsYet": "暂无结果",
+    "emptyHint": "输入提取码和密钥以获取共享文件",
+    "expired": "已过期",
+    "copy": "复制",
+    "copied": "已复制！",
+    "download": "下载",
+    "viewFiles": "查看文件",
+    "downloadAll": "打包下载 ZIP",
+    "downloadingAll": "打包中..."
+  },
+  "fileUpload": {
+    "dropHere": "拖放文件到这里",
+    "clickToSelect": "点击选择文件",
+    "selectedFiles": "已选文件"
+  },
+  "textInput": {
+    "placeholder": "输入文本内容、代码片段、笔记...",
+    "pasteFromClipboard": "从剪贴板粘贴",
+    "copyContent": "复制内容",
+    "clear": "清除",
+    "chars": "字符",
+    "textItems": "文本项",
+    "add": "添加"
+  },
+  "expiry": {
+    "title": "过期时间",
+    "1day": "1 天",
+    "days": "{n} 天",
+    "1week": "1 周",
+    "1month": "1 个月",
+    "1year": "1 年"
+  },
+  "upload": {
+    "title": "上传",
+    "uploading": "上传中...",
+    "complete": "上传完成",
+    "failed": "上传失败",
+    "items": "{n} 个项目",
+    "uploaded": "已上传",
+    "total": "总计",
+    "errorDefault": "上传过程中出现错误",
+    "retryUpload": "重试上传",
+    "cancel": "取消",
+    "successTitle": "上传成功！",
+    "successMessage": "所有 {n} 个项目已上传完成，可以分享了。",
+    "characters": "个字符"
+  },
+  "totp": {
+    "title": "需要身份验证",
+    "description": "输入您身份验证器应用中的 6 位 TOTP 验证码",
+    "checkApp": "请查看您的身份验证器应用",
+    "verifying": "验证中...",
+    "authenticate": "验证",
+    "cancel": "取消"
+  },
+  "email": {
+    "title": "通过邮件分享",
+    "sentTitle": "邮件已发送！",
+    "sentMessage": "提取码已成功分享。",
+    "recipientEmail": "收件人邮箱 *",
+    "recipientEmailPlaceholder": "recipient@example.com",
+    "theirName": "对方姓名",
+    "theirNamePlaceholder": "张三",
+    "yourName": "您的姓名",
+    "yourNamePlaceholder": "您的姓名",
+    "personalMessage": "个人留言（可选）",
+    "messagePlaceholder": "添加个人留言...",
+    "messageHint": "此留言将包含在邮件中",
+    "sending": "发送中...",
+    "sendEmail": "发送邮件",
+    "cancel": "取消"
+  }
+}

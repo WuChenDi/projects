@@ -8,9 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import { Archive, Trash2 } from 'lucide-react'
+import { Progress } from '@cdlab996/ui/components/progress'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
+import { cn } from '@cdlab996/ui/lib/utils'
+import { AlertCircle, Archive, Loader2, RotateCcw, Trash2, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { ShareResultCard } from '@/components/share/ShareResultCard'
-import { UploadProgress } from '@/components/UploadProgress'
 import type { ShareResult } from '@/store/useShareStore'
 import type { FileUploadProgress, TextItem } from '@/types'
 
@@ -31,15 +34,94 @@ interface ShareResultsProps {
   onCancel: () => void
 }
 
+function UploadingCard({
+  uploadStatus,
+  uploadProgress,
+  error,
+  onRetry,
+  onCancel,
+}: {
+  uploadStatus: 'uploading' | 'error'
+  uploadProgress: { percentage: number; loaded: number; total: number }
+  error?: string
+  onRetry: () => void
+  onCancel: () => void
+}) {
+  const t = useTranslations('share')
+
+  return (
+    <Card
+      className={cn(
+        'relative p-4 border',
+        uploadStatus === 'error'
+          ? 'bg-gradient-to-br from-red-50/30 to-rose-50/30 border-red-200/30 dark:from-red-950/10 dark:to-rose-950/10 dark:border-red-800/20'
+          : 'bg-gradient-to-br from-blue-50/30 to-indigo-50/30 border-blue-200/30 dark:from-blue-950/10 dark:to-indigo-950/10 dark:border-blue-800/20',
+      )}
+    >
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {uploadStatus === 'error' ? (
+              <AlertCircle size={14} className="text-red-500 shrink-0" />
+            ) : (
+              <Loader2 size={14} className="text-primary animate-spin shrink-0" />
+            )}
+            <Skeleton className="h-5 w-20" />
+          </div>
+          {uploadStatus === 'uploading' && onCancel && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-red-500"
+              onClick={onCancel}
+            >
+              <X size={14} />
+            </Button>
+          )}
+        </div>
+
+        {uploadStatus === 'error' ? (
+          <p className="text-xs text-red-600 dark:text-red-400 bg-red-50/80 dark:bg-red-950/30 p-2 rounded-lg">
+            {error}
+          </p>
+        ) : (
+          <div className="space-y-1.5">
+            <Progress value={uploadProgress.percentage} className="h-1.5" />
+            <Skeleton className="h-3 w-full" />
+          </div>
+        )}
+
+        <div className="flex items-center gap-2">
+          {uploadStatus === 'error' ? (
+            <Button
+              onClick={onRetry}
+              size="sm"
+              variant="outline"
+              className="flex-1 text-xs text-red-600 border-red-300"
+            >
+              <RotateCcw size={12} />
+              {t('retry')}
+            </Button>
+          ) : (
+            <>
+              <Skeleton className="h-7 flex-1 rounded-md" />
+              <Skeleton className="h-7 w-9 rounded-md" />
+            </>
+          )}
+        </div>
+
+        <Skeleton className="h-3 w-24" />
+      </div>
+    </Card>
+  )
+}
+
 export function ShareResults({
   results,
   emailShareEnabled,
   uploadStatus,
   isUploading,
   uploadProgress,
-  fileProgress,
-  files,
-  textItems,
   error,
   onRemove,
   onClearAll,
@@ -47,39 +129,34 @@ export function ShareResults({
   onRetry,
   onCancel,
 }: ShareResultsProps) {
+  const t = useTranslations('share')
   const showProgress = uploadStatus === 'uploading' || uploadStatus === 'error'
-  const showEmpty =
-    results.length === 0 && !showProgress
 
   return (
     <Card className="flex flex-col shadow-none h-full">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Results</CardTitle>
+        <CardTitle>{t('results')}</CardTitle>
         <CardAction>
           {results.length > 0 && (
             <Button onClick={onClearAll} size="sm" variant="secondary">
               <Trash2 size={14} />
-              Clear All
+              {t('clearAll')}
             </Button>
           )}
         </CardAction>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-4 overflow-auto">
-        {showProgress && (
-          <UploadProgress
-            files={files}
-            textItems={textItems}
-            isUploading={isUploading}
-            progress={uploadProgress}
-            fileProgress={fileProgress}
-            uploadStatus={uploadStatus}
-            error={error}
-            onRetry={onRetry}
-            onCancel={onCancel}
-          />
-        )}
-        {results.length > 0 ? (
+        {showProgress || results.length > 0 ? (
           <div className="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+            {showProgress && (
+              <UploadingCard
+                uploadStatus={uploadStatus as 'uploading' | 'error'}
+                uploadProgress={uploadProgress}
+                error={error}
+                onRetry={onRetry}
+                onCancel={onCancel}
+              />
+            )}
             {results.map((result) => (
               <ShareResultCard
                 key={result.id}
@@ -90,19 +167,19 @@ export function ShareResults({
               />
             ))}
           </div>
-        ) : showEmpty ? (
+        ) : (
           <div className="flex flex-1 flex-col items-center justify-center py-16 text-center gap-3">
             <div className="p-4 rounded-full bg-muted/50">
               <Archive size={24} className="text-muted-foreground" />
             </div>
             <p className="text-sm font-medium text-muted-foreground">
-              No results yet
+              {t('noResultsYet')}
             </p>
             <p className="text-xs text-muted-foreground">
-              Add files or text on the left, then click upload
+              {t('emptyHint')}
             </p>
           </div>
-        ) : null}
+        )}
       </CardContent>
     </Card>
   )

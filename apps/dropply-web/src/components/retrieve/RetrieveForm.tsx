@@ -10,6 +10,7 @@ import { Field, FieldDescription } from '@cdlab996/ui/components/field'
 import { Input } from '@cdlab996/ui/components/input'
 import { Label } from '@cdlab996/ui/components/label'
 import { CheckCircle, Download, Loader2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { TabSwitcher } from '@/components/TabSwitcher'
 
 interface RetrieveFormProps {
@@ -31,6 +32,7 @@ export function RetrieveForm({
   onEncryptionKeyChange,
   onRetrieve,
 }: RetrieveFormProps) {
+  const t = useTranslations('retrieve')
   const canSubmit =
     !isRetrieving &&
     retrievalCode.trim().length === 6 &&
@@ -46,32 +48,32 @@ export function RetrieveForm({
       </CardHeader>
       <CardContent className="space-y-6">
         <Field>
-          <Label htmlFor="retrieval-code">Retrieval Code</Label>
+          <Label htmlFor="retrieval-code">{t('retrievalCode')}</Label>
           <Input
             id="retrieval-code"
             type="text"
             value={retrievalCode}
             onChange={(e) => onRetrievalCodeChange(e.target.value.toUpperCase())}
             onKeyDown={(e) => e.key === 'Enter' && canSubmit && onRetrieve()}
-            placeholder="Enter the 6-character code you received"
+            placeholder={t('retrievalCodePlaceholder')}
             maxLength={6}
           />
         </Field>
 
         <Field>
-          <Label htmlFor="encryption-key">Encryption Key</Label>
+          <Label htmlFor="encryption-key">{t('encryptionKey')}</Label>
           <Input
             id="encryption-key"
             type="text"
             value={encryptionKey || ''}
             onChange={(e) => onEncryptionKeyChange(e.target.value || null)}
             onKeyDown={(e) => e.key === 'Enter' && canSubmit && onRetrieve()}
-            placeholder="Auto-filled from link or enter manually"
+            placeholder={t('encryptionKeyPlaceholder')}
           />
           <FieldDescription>
             {encryptionKey
-              ? 'Key detected from link'
-              : 'Paste the encryption key from the share link'}
+              ? t('keyDetected')
+              : t('pasteKeyHint')}
           </FieldDescription>
         </Field>
 
@@ -83,17 +85,17 @@ export function RetrieveForm({
           {isRetrieving ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              Retrieving...
+              {t('retrieving')}
             </>
           ) : alreadyRetrieved ? (
             <>
               <CheckCircle className="size-4" />
-              Already Retrieved
+              {t('alreadyRetrieved')}
             </>
           ) : (
             <>
               <Download className="size-4" />
-              Access Files
+              {t('accessFiles')}
             </>
           )}
         </Button>

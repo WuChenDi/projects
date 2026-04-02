@@ -23,6 +23,7 @@ import {
   X,
   Zap,
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import type { FileUploadProgress } from '@/types'
 
 interface UploadProgressProps {
@@ -52,6 +53,8 @@ export function UploadProgress({
   onRetry,
   onCancel,
 }: UploadProgressProps) {
+  const t = useTranslations('upload')
+
   if (uploadStatus === 'idle') return null
 
   const totalItems = files.length + textItems.length
@@ -116,13 +119,13 @@ export function UploadProgress({
   const getHeaderTitle = () => {
     switch (uploadStatus) {
       case 'uploading':
-        return 'Uploading...'
+        return t('uploading')
       case 'success':
-        return 'Upload Complete'
+        return t('complete')
       case 'error':
-        return 'Upload Failed'
+        return t('failed')
       default:
-        return 'Upload'
+        return t('title')
     }
   }
 
@@ -157,7 +160,7 @@ export function UploadProgress({
         {(uploadStatus === 'uploading' || uploadStatus === 'success') && (
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="font-medium">{totalItems} item(s)</span>
+              <span className="font-medium">{t('items', { n: totalItems })}</span>
               <span className="text-muted-foreground">
                 {uploadStatus === 'success'
                   ? '100%'
@@ -172,8 +175,8 @@ export function UploadProgress({
 
             {progress.total > 0 && (
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{formatBytes({ bytes: progress.loaded })} uploaded</span>
-                <span>{formatBytes({ bytes: progress.total })} total</span>
+                <span>{formatBytes({ bytes: progress.loaded })} {t('uploaded')}</span>
+                <span>{formatBytes({ bytes: progress.total })} {t('total')}</span>
               </div>
             )}
           </div>
@@ -279,7 +282,7 @@ export function UploadProgress({
                           : item.filename || `Text ${index + 1}`}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {item.content.length} characters
+                        {item.content.length} {t('characters')}
                       </p>
                     </div>
                   </div>
@@ -339,11 +342,11 @@ export function UploadProgress({
             <div className="flex items-center gap-2 mb-3">
               <AlertCircle size={16} className="text-red-500" />
               <span className="font-medium text-red-900 dark:text-red-100">
-                Upload Failed
+                {t('failed')}
               </span>
             </div>
             <p className="text-red-700 dark:text-red-300 text-sm mb-4">
-              {error || 'An error occurred during upload'}
+              {error || t('errorDefault')}
             </p>
             <div className="flex gap-2">
               <Button
@@ -352,11 +355,11 @@ export function UploadProgress({
                 className="bg-red-600 hover:bg-red-700 text-white"
               >
                 <RotateCcw size={14} className="mr-2" />
-                Retry Upload
+                {t('retryUpload')}
               </Button>
               {onCancel && (
                 <Button onClick={onCancel} variant="outline" size="sm">
-                  Cancel
+                  {t('cancel')}
                 </Button>
               )}
             </div>
@@ -374,12 +377,11 @@ export function UploadProgress({
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle size={16} className="text-emerald-500" />
               <span className="font-medium text-emerald-900 dark:text-emerald-100">
-                Upload Completed Successfully!
+                {t('successTitle')}
               </span>
             </div>
             <p className="text-emerald-700 dark:text-emerald-300 text-sm">
-              All {totalItems} item(s) have been uploaded and are ready to
-              share.
+              {t('successMessage', { n: totalItems })}
             </p>
           </div>
         )}

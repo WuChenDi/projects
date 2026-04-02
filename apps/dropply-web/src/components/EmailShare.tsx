@@ -7,6 +7,7 @@ import { Label } from '@cdlab996/ui/components/label'
 import { Textarea } from '@cdlab996/ui/components/textarea'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { CheckCircle, Mail, Send, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { PocketChestAPI } from '@/lib'
 import type { EmailShareRequest } from '@/types'
@@ -22,6 +23,7 @@ export function EmailShare({
   isVisible,
   onClose,
 }: EmailShareProps) {
+  const t = useTranslations('email')
   const [recipientEmail, setRecipientEmail] = useState('')
   const [recipientName, setRecipientName] = useState('')
   const [senderName, setSenderName] = useState('')
@@ -105,7 +107,7 @@ export function EmailShare({
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-semibold flex items-center gap-2">
               <Mail size={20} className="text-primary" />
-              Share via Email
+              {t('title')}
             </h3>
             <Button
               variant="ghost"
@@ -122,10 +124,10 @@ export function EmailShare({
             <div className="text-center py-8">
               <CheckCircle size={48} className="mx-auto text-green-500 mb-4" />
               <h4 className="text-lg font-semibold text-green-600 mb-2">
-                Email Sent!
+                {t('sentTitle')}
               </h4>
               <p className="text-muted-foreground">
-                The retrieval code has been shared successfully.
+                {t('sentMessage')}
               </p>
             </div>
           ) : (
@@ -139,13 +141,13 @@ export function EmailShare({
               )}
 
               <div>
-                <Label htmlFor="recipient-email">Recipient Email *</Label>
+                <Label htmlFor="recipient-email">{t('recipientEmail')}</Label>
                 <Input
                   id="recipient-email"
                   type="email"
                   value={recipientEmail}
                   onChange={(e) => setRecipientEmail(e.target.value)}
-                  placeholder="recipient@example.com"
+                  placeholder={t('recipientEmailPlaceholder')}
                   className="mt-1"
                   disabled={isSending}
                   autoFocus
@@ -154,23 +156,23 @@ export function EmailShare({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="recipient-name">Their Name</Label>
+                  <Label htmlFor="recipient-name">{t('theirName')}</Label>
                   <Input
                     id="recipient-name"
                     value={recipientName}
                     onChange={(e) => setRecipientName(e.target.value)}
-                    placeholder="John Doe"
+                    placeholder={t('theirNamePlaceholder')}
                     className="mt-1"
                     disabled={isSending}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="sender-name">Your Name</Label>
+                  <Label htmlFor="sender-name">{t('yourName')}</Label>
                   <Input
                     id="sender-name"
                     value={senderName}
                     onChange={(e) => setSenderName(e.target.value)}
-                    placeholder="Your name"
+                    placeholder={t('yourNamePlaceholder')}
                     className="mt-1"
                     disabled={isSending}
                   />
@@ -178,19 +180,19 @@ export function EmailShare({
               </div>
 
               <div>
-                <Label htmlFor="message">Personal Message (optional)</Label>
+                <Label htmlFor="message">{t('personalMessage')}</Label>
                 <Textarea
                   id="message"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Add a personal message..."
+                  placeholder={t('messagePlaceholder')}
                   className="mt-1 h-20 resize-none"
                   maxLength={500}
                   disabled={isSending}
                 />
                 <div className="flex justify-between items-center mt-1">
                   <span className="text-xs text-muted-foreground">
-                    This message will be included in the email
+                    {t('messageHint')}
                   </span>
                   <span className="text-xs text-muted-foreground">
                     {message.length}/500
@@ -205,7 +207,7 @@ export function EmailShare({
                   variant="outline"
                   className="flex-1 h-12"
                 >
-                  Cancel
+                  {t('cancel')}
                 </Button>
 
                 <Button
@@ -220,12 +222,12 @@ export function EmailShare({
                   {isSending ? (
                     <>
                       <div className="animate-spin mr-2">⏳</div>
-                      Sending...
+                      {t('sending')}
                     </>
                   ) : (
                     <>
                       <Send size={16} className="mr-2" />
-                      Send Email
+                      {t('sendEmail')}
                     </>
                   )}
                 </Button>

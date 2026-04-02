@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from '@cdlab996/ui/components/card'
 import { ShieldCheck } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { ShareForm } from '@/components/share/ShareForm'
 import { ShareResults } from '@/components/share/ShareResults'
@@ -34,6 +35,7 @@ export function ShareTab({
   totpToken,
   onEmailShare,
 }: ShareTabProps) {
+  const t = useTranslations('share')
   const [files, setFiles] = useState<File[]>([])
   const [textItems, setTextItems] = useState<TextItem[]>([])
   const [validityDays, setValidityDays] = useState<ValidityDays>(7)
@@ -58,33 +60,39 @@ export function ShareTab({
     error,
   } = usePocketChest()
 
+  const [isStarting, setIsStarting] = useState(false)
   const api = new PocketChestAPI()
 
   const doUpload = async (filesToUpload: File[], textsToUpload: TextItem[]) => {
-    const session = await api.createChest(totpToken ?? undefined)
+    setIsStarting(true)
+    try {
+      const session = await api.createChest(totpToken ?? undefined)
 
-    const result = await uploadWithSession(
-      session.sessionId,
-      session.uploadToken,
-      filesToUpload,
-      textsToUpload,
-      validityDays,
-      encryptionKey,
-    )
+      const result = await uploadWithSession(
+        session.sessionId,
+        session.uploadToken,
+        filesToUpload,
+        textsToUpload,
+        validityDays,
+        encryptionKey,
+      )
 
-    const shareUrl = `${window.location.origin}/?code=${result.retrievalCode}#key=${encodeURIComponent(result.encryptionKey)}`
+      const shareUrl = `${window.location.origin}${window.location.pathname}?code=${result.retrievalCode}#key=${encodeURIComponent(result.encryptionKey)}`
 
-    addResult({
-      id: String(genid.nextId()),
-      retrievalCode: result.retrievalCode,
-      encryptionKey: result.encryptionKey,
-      shareUrl,
-      timestamp: Date.now(),
-    })
+      addResult({
+        id: String(genid.nextId()),
+        retrievalCode: result.retrievalCode,
+        encryptionKey: result.encryptionKey,
+        shareUrl,
+        timestamp: Date.now(),
+      })
 
-    setFiles([])
-    setTextItems([])
-    setEncryptionKey(generateEncryptionKey())
+      setFiles([])
+      setTextItems([])
+      setEncryptionKey(generateEncryptionKey())
+    } finally {
+      setIsStarting(false)
+    }
   }
 
   const handleUpload = async () => {
@@ -106,23 +114,16 @@ export function ShareTab({
 
   if (requireTOTP && !isShareUnlocked) {
     return (
-      <Card className="shadow-none max-w-md mx-auto">
+      <Card className="max-w-md mx-auto">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center w-16 h-16 rounded-full bg-muted mx-auto mb-2">
             <ShieldCheck size={32} className="text-muted-foreground" />
           </div>
-          <CardTitle>Authentication Required</CardTitle>
-          <CardDescription>
-            Enter your TOTP code to unlock the Share feature
-          </CardDescription>
+          <CardTitle>{t('authRequired')}</CardTitle>
+          <CardDescription>{t('authDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-          <Button
-            onClick={onUnlockTOTP}
-            className="bg-gradient-to-r from-purple-500 to-blue-500 border-none text-white"
-          >
-            Unlock with TOTP
-          </Button>
+          <Button onClick={onUnlockTOTP}>{t('unlockWithTOTP')}</Button>
         </CardContent>
       </Card>
     )
@@ -136,7 +137,7 @@ export function ShareTab({
           textItems={textItems}
           validityDays={validityDays}
           encryptionKey={encryptionKey}
-          isUploading={isUploading}
+          isUploading={isUploading || isStarting}
           onFilesChange={setFiles}
           onTextItemsChange={setTextItems}
           onValidityDaysChange={setValidityDays}

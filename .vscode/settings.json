@@ -37,9 +37,10 @@
   "i18n-ally.localesPaths": [
     "apps/bycut/messages",
     "apps/byplay/messages",
+    "apps/dropply-web/messages",
     "apps/SecureC/messages",
     "apps/text2img/messages",
-    "apps/vidl/src/i18n"
+    "apps/vidl/messages"
   ],
   "i18n-ally.enabledFrameworks": ["react-i18next"],
   "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css"

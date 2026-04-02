@@ -51,8 +51,11 @@ https://securec.pages.dev/
 
 **End-to-end Encrypted File Sharing Platform**
 
-- Decoupled architecture: `dropply-web` for sharing/management UI, `dropply-api` for encrypted storage & link management
-- Features: temporary links, expiration, encrypt-before-upload — ideal for sharing sensitive files securely
+https://dropply.pages.dev/
+
+- Client-side AES-GCM + Argon2id encryption — encryption key shared only via URL fragment, server never sees plaintext
+- Tab-based Share / Retrieve UI; multipart upload for large files (20 MB chunks, 3 concurrent parts); configurable expiry; optional TOTP gate; email sharing; i18n (en/zh)
+- Decoupled architecture: `dropply-web` (Next.js + Cloudflare Pages) + `dropply-api` (Cloudflare Workers)
 
 <details>
   <summary>Preview</summary>

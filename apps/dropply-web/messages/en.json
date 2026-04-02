@@ -1,0 +1,134 @@
+{
+  "theme": {
+    "toggle": "Toggle theme"
+  },
+  "language": {
+    "label": "Switch language"
+  },
+  "header": {
+    "more": "more"
+  },
+  "footer": {
+    "copyright": "Copyright © 2025-PRESENT |"
+  },
+  "error": {
+    "title": "Oh no!",
+    "message": "There was an issue with our storefront. This could be a temporary issue, please try your action again.",
+    "tryAgain": "Try Again"
+  },
+  "notFound": {
+    "title": "Something's missing",
+    "message": "Sorry, the page you are looking for doesn't exist or has been moved.",
+    "goBack": "Go back",
+    "backToHome": "Back to Home"
+  },
+  "tabs": {
+    "share": "Share",
+    "retrieve": "Retrieve"
+  },
+  "share": {
+    "authRequired": "Authentication Required",
+    "authDescription": "Enter your TOTP code to unlock the Share feature",
+    "unlockWithTOTP": "Unlock with TOTP",
+    "text": "Text",
+    "files": "Files",
+    "encryptionKey": "Encryption Key",
+    "encryptionKeyPlaceholder": "Enter or auto-generate",
+    "encryptionKeyDescription": "Auto-generated. You can customize it or regenerate.",
+    "generateNewKey": "Generate new key",
+    "uploading": "Uploading...",
+    "uploadAndGenerate": "Upload & Generate Code",
+    "results": "Results",
+    "clearAll": "Clear All",
+    "noResultsYet": "No results yet",
+    "emptyHint": "Add files or text on the left, then click upload",
+    "copyLink": "Copy Link",
+    "copied": "Copied!",
+    "retry": "Retry"
+  },
+  "retrieve": {
+    "retrievalCode": "Retrieval Code",
+    "retrievalCodePlaceholder": "Enter the 6-character code you received",
+    "encryptionKey": "Encryption Key",
+    "encryptionKeyPlaceholder": "Auto-filled from link or enter manually",
+    "keyDetected": "Key detected from link",
+    "pasteKeyHint": "Paste the encryption key from the share link",
+    "retrieving": "Retrieving...",
+    "alreadyRetrieved": "Already Retrieved",
+    "accessFiles": "Access Files",
+    "results": "Results",
+    "clearAll": "Clear All",
+    "retrievingFiles": "Retrieving files...",
+    "noResultsYet": "No results yet",
+    "emptyHint": "Enter a retrieval code and key to access shared files",
+    "expired": "Expired",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "download": "Download",
+    "viewFiles": "View Files",
+    "downloadAll": "Download All as ZIP",
+    "downloadingAll": "Packaging..."
+  },
+  "fileUpload": {
+    "dropHere": "Drop files here",
+    "clickToSelect": "Click to select a file",
+    "selectedFiles": "Selected Files"
+  },
+  "textInput": {
+    "placeholder": "Enter text content, code snippets, notes...",
+    "pasteFromClipboard": "Paste from clipboard",
+    "copyContent": "Copy content",
+    "clear": "Clear",
+    "chars": "chars",
+    "textItems": "Text Items",
+    "add": "Add"
+  },
+  "expiry": {
+    "title": "Expiry Time",
+    "1day": "1 day",
+    "days": "{n} days",
+    "1week": "1 week",
+    "1month": "1 month",
+    "1year": "1 year"
+  },
+  "upload": {
+    "title": "Upload",
+    "uploading": "Uploading...",
+    "complete": "Upload Complete",
+    "failed": "Upload Failed",
+    "items": "{n} item(s)",
+    "uploaded": "uploaded",
+    "total": "total",
+    "errorDefault": "An error occurred during upload",
+    "retryUpload": "Retry Upload",
+    "cancel": "Cancel",
+    "successTitle": "Upload Completed Successfully!",
+    "successMessage": "All {n} item(s) have been uploaded and are ready to share.",
+    "characters": "characters"
+  },
+  "totp": {
+    "title": "Authentication Required",
+    "description": "Enter your 6-digit TOTP code from your authenticator app",
+    "checkApp": "Check your authenticator app",
+    "verifying": "Verifying...",
+    "authenticate": "Authenticate",
+    "cancel": "Cancel"
+  },
+  "email": {
+    "title": "Share via Email",
+    "sentTitle": "Email Sent!",
+    "sentMessage": "The retrieval code has been shared successfully.",
+    "recipientEmail": "Recipient Email *",
+    "recipientEmailPlaceholder": "recipient@example.com",
+    "theirName": "Their Name",
+    "theirNamePlaceholder": "John Doe",
+    "yourName": "Your Name",
+    "yourNamePlaceholder": "Your name",
+    "personalMessage": "Personal Message (optional)",
+    "messagePlaceholder": "Add a personal message...",
+    "messageHint": "This message will be included in the email",
+    "sending": "Sending...",
+    "sendEmail": "Send Email",
+    "cancel": "Cancel"
+  }
+}

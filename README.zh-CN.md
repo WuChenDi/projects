@@ -51,8 +51,11 @@ https://securec.pages.dev/
 
 **端到端加密的文件分享平台**
 
-- 前后端分离架构：`dropply-web` 提供分享/管理界面，`dropply-api` 提供加密存储与链接管理
-- 特点：临时链接、到期失效、加密后再上传，适合安全地分享敏感文件
+https://dropply.pages.dev/
+
+- 客户端 AES-GCM + Argon2id 加密，密钥仅通过 URL fragment 传递，服务端从不接触明文
+- Tab 式分享/取件界面；大文件 Multipart 上传（20 MB 分块，3 并发）；可配置有效期；可选 TOTP 验证门控；邮件分享；国际化（中/英）
+- 前后端分离架构：`dropply-web`（Next.js + Cloudflare Pages）+ `dropply-api`（Cloudflare Workers）
 
 <details>
   <summary>预览</summary>

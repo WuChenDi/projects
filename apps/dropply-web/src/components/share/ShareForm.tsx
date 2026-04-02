@@ -14,6 +14,7 @@ import {
 } from '@cdlab996/ui/components/input-group'
 import { Label } from '@cdlab996/ui/components/label'
 import { Loader2, RefreshCw, Upload } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { ExpirySelector } from '@/components/ExpirySelector'
 import { FileUpload } from '@/components/FileUpload'
 import { TabSwitcher } from '@/components/TabSwitcher'
@@ -46,6 +47,8 @@ export function ShareForm({
   onEncryptionKeyChange,
   onUpload,
 }: ShareFormProps) {
+  const t = useTranslations('share')
+
   return (
     <Card className="shadow-none">
       <CardHeader>
@@ -55,7 +58,7 @@ export function ShareForm({
       </CardHeader>
       <CardContent className="space-y-6">
         <Field>
-          <Label>Text</Label>
+          <Label>{t('text')}</Label>
           <TextInput
             textItems={textItems}
             onTextItemsChange={onTextItemsChange}
@@ -63,7 +66,7 @@ export function ShareForm({
         </Field>
 
         <Field>
-          <Label>Files</Label>
+          <Label>{t('files')}</Label>
           <FileUpload files={files} onFilesChange={onFilesChange} />
         </Field>
 
@@ -73,23 +76,23 @@ export function ShareForm({
         />
 
         <Field>
-          <Label>Encryption Key</Label>
+          <Label>{t('encryptionKey')}</Label>
           <InputGroup>
             <InputGroupInput
               value={encryptionKey}
               onChange={(e) => onEncryptionKeyChange(e.target.value)}
-              placeholder="Enter or auto-generate"
+              placeholder={t('encryptionKeyPlaceholder')}
               className="font-mono text-xs"
             />
             <InputGroupButton
               onClick={() => onEncryptionKeyChange(generateEncryptionKey())}
-              title="Generate new key"
+              title={t('generateNewKey')}
             >
               <RefreshCw className="size-4" />
             </InputGroupButton>
           </InputGroup>
           <FieldDescription>
-            Auto-generated. You can customize it or regenerate.
+            {t('encryptionKeyDescription')}
           </FieldDescription>
         </Field>
 
@@ -101,12 +104,12 @@ export function ShareForm({
           {isUploading ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              Uploading...
+              {t('uploading')}
             </>
           ) : (
             <>
               <Upload className="size-4" />
-              Upload & Generate Code
+              {t('uploadAndGenerate')}
             </>
           )}
         </Button>
