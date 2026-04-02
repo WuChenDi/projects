@@ -6,11 +6,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { notFound } from 'next/navigation'
 import type { Locale } from 'next-intl'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
-import {
-  getMessages,
-  getTranslations,
-  setRequestLocale,
-} from 'next-intl/server'
+import { getMessages, setRequestLocale } from 'next-intl/server'
 
 import '@cdlab996/ui/globals.css'
 import { ClientProviders, Footer, Header } from '@/components/layout'
@@ -205,7 +201,7 @@ export default async function RootLayout({
 
   // Providing all messages to the client side
   const messages = await getMessages()
-  const t = await getTranslations()
+  const inLanguage = locale === 'zh' ? 'zh-CN' : 'en-US'
 
   return (
     <html lang={locale}>
@@ -221,7 +217,7 @@ export default async function RootLayout({
               url: 'https://byplay.pages.dev/',
               description:
                 'Online HLS streaming player powered by hls.js. Supports M3U8, MP4, WebM, and TS formats.',
-              inLanguage: locale,
+              inLanguage,
               potentialAction: {
                 '@type': 'SearchAction',
                 target: 'https://byplay.pages.dev/?q={search_term_string}',
@@ -264,7 +260,7 @@ export default async function RootLayout({
               },
               datePublished: '2023-01-01',
               dateModified: '2025-10-07',
-              inLanguage: locale,
+              inLanguage,
               isAccessibleForFree: true,
               keywords:
                 'HLS player, hls.js, M3U8 player, MP4 player, WebM player, TS streaming, adaptive bitrate, low latency, playback rate',

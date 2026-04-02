@@ -6,11 +6,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { notFound } from 'next/navigation'
 import type { Locale } from 'next-intl'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
-import {
-  getMessages,
-  getTranslations,
-  setRequestLocale,
-} from 'next-intl/server'
+import { getMessages, setRequestLocale } from 'next-intl/server'
 
 import '@cdlab996/ui/globals.css'
 import './globals.css'
@@ -219,7 +215,7 @@ export default async function LocaleLayout({
 
   // Providing all messages to the client side
   const messages = await getMessages()
-  const t = await getTranslations()
+  const inLanguage = locale === 'zh' ? 'zh-CN' : 'en-US'
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -237,7 +233,7 @@ export default async function LocaleLayout({
                 locale === 'zh'
                   ? '基于浏览器的开源视频编辑器，支持时间轴编辑、字幕生成等功能。'
                   : 'Open-source browser-based video editor with timeline editing, caption generation and more.',
-              inLanguage: locale,
+              inLanguage,
               potentialAction: {
                 '@type': 'SearchAction',
                 target: 'https://bycut.pages.dev/?q={search_term_string}',
@@ -282,7 +278,7 @@ export default async function LocaleLayout({
               },
               datePublished: '2024-01-01',
               dateModified: '2025-11-04',
-              inLanguage: locale,
+              inLanguage,
               isAccessibleForFree: true,
               keywords:
                 locale === 'zh'

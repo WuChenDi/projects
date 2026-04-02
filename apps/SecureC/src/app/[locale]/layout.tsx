@@ -143,8 +143,7 @@ export async function generateMetadata({
     alternates: { canonical: '/' },
     applicationName: 'SecureC Encryption Tool',
     category: 'Security Tools, Encryption, Privacy Tools',
-    classification:
-      'Security Tools, Encryption Software, Privacy Applications',
+    classification: 'Security Tools, Encryption Software, Privacy Applications',
     openGraph: {
       title: 'SecureC - Client-Side File & Text Encryption Tool',
       description:
@@ -197,6 +196,7 @@ export default async function LocaleLayout({
   setRequestLocale(locale)
 
   const messages = await getMessages()
+  const inLanguage = locale === 'zh' ? 'zh-CN' : 'en-US'
 
   return (
     <html lang={locale}>
@@ -212,11 +212,10 @@ export default async function LocaleLayout({
               url: 'https://securec.pages.dev/',
               description:
                 'Client-side file and text encryption tool using AES-GCM with Argon2id',
-              inLanguage: locale === 'zh' ? 'zh-CN' : 'en-US',
+              inLanguage,
               potentialAction: {
                 '@type': 'SearchAction',
-                target:
-                  'https://securec.pages.dev/?q={search_term_string}',
+                target: 'https://securec.pages.dev/?q={search_term_string}',
                 'query-input': 'required name=search_term_string',
               },
             }),
@@ -256,7 +255,7 @@ export default async function LocaleLayout({
               },
               datePublished: '2023-01-01',
               dateModified: '2025-01-15',
-              inLanguage: locale === 'zh' ? 'zh-CN' : 'en-US',
+              inLanguage,
               isAccessibleForFree: true,
               keywords:
                 'file encryption, text encryption, AES-GCM, Argon2id, client-side encryption, privacy tools',

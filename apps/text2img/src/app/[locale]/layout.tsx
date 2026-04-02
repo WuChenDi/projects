@@ -143,7 +143,8 @@ export async function generateMetadata({
     alternates: { canonical: '/' },
     applicationName: 'AI Text-to-Image Tool',
     category: 'AI Tools, Image Generation, Creative Tools',
-    classification: 'AI Tools, Image Generation Software, Creative Applications',
+    classification:
+      'AI Tools, Image Generation Software, Creative Applications',
     openGraph: {
       title: 'AI Text-to-Image Tool | Free Image Generation with Cloudflare AI',
       description:
