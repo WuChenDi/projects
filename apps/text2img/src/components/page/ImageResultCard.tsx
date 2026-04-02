@@ -1,6 +1,7 @@
 import { format } from 'date-fns'
 import { Copy, Download, Eye, Trash2 } from 'lucide-react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { SCAssetFailed } from '@/components/SC/SCAssetFailed'
@@ -19,59 +20,10 @@ import { Separator } from '@cdlab996/ui/components/separator'
 import type { GenerateParams, GenerationResult, Model } from '@/types'
 import { GenerationStatus } from '@/types'
 
-const PARAM_LABELS: Record<string, string> = {
-  prompt: '提示词',
-  negative_prompt: '反向提示词',
-  model: '模型',
-  width: '宽度',
-  height: '高度',
-  num_steps: '步数',
-  guidance: '引导',
-  seed: '种子',
-}
-
 interface ImageResultCardProps {
   result: GenerationResult
   models?: Model[]
   onRemove: (id: string) => void
-}
-
-function copyParams(params: GenerateParams) {
-  let paramsText = '--- AI绘图创作生成参数 ---\n'
-  const paramNames: Record<string, string> = {
-    prompt: '正向提示词',
-    negative_prompt: '反向提示词',
-    model: '文生图模型',
-    width: '图像宽度',
-    height: '图像高度',
-    num_steps: '迭代步数',
-    guidance: '引导系数',
-    seed: '随机种子',
-  }
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (key === 'password' || !value) return
-    const name = paramNames[key] || key
-    paramsText += `${name}: ${value}\n`
-  })
-
-  navigator.clipboard.writeText(paramsText).then(
-    () => toast.success('参数已复制到剪贴板'),
-    () => toast.error('复制失败'),
-  )
-}
-
-function downloadImage(result: GenerationResult, models?: Model[]) {
-  if (!result.imageUrl) return
-
-  const link = document.createElement('a')
-  link.href = result.imageUrl
-  const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
-  const modelName =
-    models?.find((m) => m.id === result.params.model)?.name || 'ai-image'
-  link.download = `${modelName}-${timestamp}.png`
-  link.click()
-  toast.success('图像下载成功')
 }
 
 export function ImageResultCard({
@@ -79,9 +31,59 @@ export function ImageResultCard({
   models,
   onRemove,
 }: ImageResultCardProps) {
+  const t = useTranslations()
   const [open, setOpen] = useState(false)
   const modelName = models?.find((m) => m.id === result.params.model)?.name
   const isCompleted = result.status === GenerationStatus.COMPLETED
+
+  const copyParams = (params: GenerateParams) => {
+    const paramNames: Record<string, string> = {
+      prompt: t('params.prompt'),
+      negative_prompt: t('params.negative_prompt'),
+      model: t('params.model'),
+      width: t('params.width'),
+      height: t('params.height'),
+      num_steps: t('params.num_steps'),
+      guidance: t('params.guidance'),
+      seed: t('params.seed'),
+    }
+
+    let paramsText = `${t('params.copyHeader')}\n`
+    Object.entries(params).forEach(([key, value]) => {
+      if (key === 'password' || key === 'image_b64' || key === 'mask_b64' || !value) return
+      const name = paramNames[key] || key
+      paramsText += `${name}: ${value}\n`
+    })
+
+    navigator.clipboard.writeText(paramsText).then(
+      () => toast.success(t('card.copiedToClipboard')),
+      () => toast.error(t('card.copyFailed')),
+    )
+  }
+
+  const downloadImage = () => {
+    if (!result.imageUrl) return
+
+    const link = document.createElement('a')
+    link.href = result.imageUrl
+    const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+    const name =
+      models?.find((m) => m.id === result.params.model)?.name || 'ai-image'
+    link.download = `${name}-${timestamp}.png`
+    link.click()
+    toast.success(t('card.downloadSuccess'))
+  }
+
+  const paramLabels: Record<string, string> = {
+    prompt: t('params.prompt'),
+    negative_prompt: t('params.negative_prompt'),
+    model: t('params.model'),
+    width: t('params.width'),
+    height: t('params.height'),
+    num_steps: t('params.num_steps'),
+    guidance: t('params.guidance'),
+    seed: t('params.seed'),
+  }
 
   return (
     <>
@@ -112,7 +114,7 @@ export function ImageResultCard({
                 size="icon"
                 className="size-7"
                 onClick={() => setOpen(true)}
-                title="查看详情"
+                title={t('card.viewDetail')}
               >
                 <Eye className="size-3.5" />
               </Button>
@@ -121,7 +123,7 @@ export function ImageResultCard({
                 size="icon"
                 className="size-7"
                 onClick={() => copyParams(result.params)}
-                title="复制参数"
+                title={t('card.copyParams')}
               >
                 <Copy className="size-3.5" />
               </Button>
@@ -129,8 +131,8 @@ export function ImageResultCard({
                 variant="secondary"
                 size="icon"
                 className="size-7"
-                onClick={() => downloadImage(result, models)}
-                title="下载图像"
+                onClick={downloadImage}
+                title={t('card.downloadImage')}
               >
                 <Download className="size-3.5" />
               </Button>
@@ -141,7 +143,7 @@ export function ImageResultCard({
             size="icon"
             className="size-7"
             onClick={() => onRemove(result.id)}
-            title="删除"
+            title={t('card.delete')}
           >
             <Trash2 className="size-3.5" />
           </Button>
@@ -151,9 +153,11 @@ export function ImageResultCard({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>图像详情</DialogTitle>
+            <DialogTitle>{t('card.imageDetail')}</DialogTitle>
             {modelName && (
-              <DialogDescription>模型：{modelName}</DialogDescription>
+              <DialogDescription>
+                {t('card.modelLabel', { modelName })}
+              </DialogDescription>
             )}
           </DialogHeader>
 
@@ -177,31 +181,31 @@ export function ImageResultCard({
               <div className="grid grid-cols-2 gap-2 text-sm">
                 {result.generationTime && (
                   <div>
-                    <span className="font-medium">生成时间：</span>
-                    {result.generationTime.toFixed(2)}秒
+                    <span className="font-medium">{t('card.generationTime')}</span>
+                    {result.generationTime.toFixed(2)}s
                   </div>
                 )}
                 {result.params.width && (
                   <div>
-                    <span className="font-medium">尺寸：</span>
+                    <span className="font-medium">{t('card.size')}</span>
                     {result.params.width}x{result.params.height}
                   </div>
                 )}
                 {result.params.num_steps && (
                   <div>
-                    <span className="font-medium">步数：</span>
+                    <span className="font-medium">{t('card.steps')}</span>
                     {result.params.num_steps}
                   </div>
                 )}
                 {result.params.guidance && (
                   <div>
-                    <span className="font-medium">引导：</span>
+                    <span className="font-medium">{t('card.guidanceLabel')}</span>
                     {result.params.guidance}
                   </div>
                 )}
                 {result.params.seed && (
                   <div>
-                    <span className="font-medium">种子：</span>
+                    <span className="font-medium">{t('card.seedLabel')}</span>
                     {result.params.seed}
                   </div>
                 )}
@@ -210,14 +214,14 @@ export function ImageResultCard({
               <Separator />
 
               <div className="space-y-2">
-                <h4 className="text-sm font-medium">所有参数</h4>
+                <h4 className="text-sm font-medium">{t('card.allParams')}</h4>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(result.params).map(([key, value]) => {
-                    if (key === 'password' || !value) return null
+                    if (key === 'password' || key === 'image_b64' || key === 'mask_b64' || !value) return null
                     return (
                       <Badge key={key} variant="secondary">
                         <span className="font-medium">
-                          {PARAM_LABELS[key] || key}:
+                          {paramLabels[key] || key}:
                         </span>{' '}
                         {String(value).substring(0, 50)}
                         {String(value).length > 50 ? '...' : ''}
@@ -238,15 +242,15 @@ export function ImageResultCard({
                   onClick={() => copyParams(result.params)}
                 >
                   <Copy className="size-4" />
-                  复制参数
+                  {t('card.copyParamsButton')}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => downloadImage(result, models)}
+                  onClick={downloadImage}
                 >
                   <Download className="size-4" />
-                  下载图像
+                  {t('card.downloadImageButton')}
                 </Button>
               </>
             )}

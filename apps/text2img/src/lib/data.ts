@@ -49,7 +49,7 @@ export const AVAILABLE_MODELS: ModelGroup[] = [
   {
     id: 'leonardo',
     name: 'Leonardo AI',
-    image: 'https://developers.cloudflare.com/_astro/leonardo.OdhR6aP9.svg',
+    image: 'https://developers.cloudflare.com/_astro/leonardo.CTjvkdQs.svg',
     models: [
       {
         id: 'lucid-origin',

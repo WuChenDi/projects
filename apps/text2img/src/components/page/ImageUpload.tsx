@@ -1,6 +1,7 @@
 'use client'
 
 import { ImagePlus, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@cdlab996/ui/components/button'
@@ -68,16 +69,17 @@ function DropZone({
   onFileSelect: (base64: string) => void
   onClear: () => void
 }) {
+  const t = useTranslations('upload')
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleFile = useCallback(
     async (file: File) => {
       if (!file.type.startsWith('image/')) {
-        toast.error('请选择图片文件')
+        toast.error(t('invalidFile'))
         return
       }
       if (file.size > MAX_FILE_SIZE) {
-        toast.error('图片大小不能超过 10MB')
+        toast.error(t('fileTooLarge'))
         return
       }
       const base64 = await resizeAndConvertToBase64(file)
@@ -138,7 +140,7 @@ function DropZone({
         >
           <ImagePlus className="size-6 text-muted-foreground" />
           <p className="text-xs text-muted-foreground">
-            点击或拖拽上传图片
+            {t('dropHint')}
           </p>
           <input
             ref={inputRef}
@@ -160,18 +162,20 @@ export function ImageUpload({
   maskImage,
   setMaskImage,
 }: ImageUploadProps) {
+  const t = useTranslations('upload')
+
   if (modelType === 'text2img') return null
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>
-          {modelType === 'img2img' ? '图生图设置' : '局部重绘设置'}
+          {modelType === 'img2img' ? t('img2imgTitle') : t('inpaintingTitle')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <DropZone
-          label="源图片"
+          label={t('sourceImage')}
           preview={sourceImage}
           onFileSelect={setSourceImage}
           onClear={() => setSourceImage('')}
@@ -179,7 +183,7 @@ export function ImageUpload({
 
         {modelType === 'inpainting' && (
           <DropZone
-            label="遮罩图片（白色区域为重绘区域）"
+            label={t('maskImage')}
             preview={maskImage}
             onFileSelect={setMaskImage}
             onClear={() => setMaskImage('')}

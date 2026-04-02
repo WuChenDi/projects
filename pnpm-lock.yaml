@@ -699,8 +699,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/utils
       '@tanstack/react-query':
-        specifier: ^5.95.2
-        version: 5.95.2(react@19.2.4)
+        specifier: ^5.96.1
+        version: 5.96.1(react@19.2.4)
       class-variance-authority:
         specifier: catalog:prod
         version: 0.7.1
@@ -716,6 +716,9 @@ importers:
       next:
         specifier: catalog:prod
         version: 16.2.2(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next-intl:
+        specifier: catalog:prod
+        version: 4.9.0(@swc/helpers@0.5.19)(next@16.2.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@6.0.2)
       next-themes:
         specifier: catalog:prod
         version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -733,8 +736,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/tsconfig
       '@opennextjs/cloudflare':
-        specifier: ^1.17.1
-        version: 1.17.1(next@16.2.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.77.0(@cloudflare/workers-types@4.20260317.1))
+        specifier: ^1.18.0
+        version: 1.18.0(next@16.2.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.77.0(@cloudflare/workers-types@4.20260317.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -2999,8 +3002,8 @@ packages:
     peerDependencies:
       next: ~15.0.8 || ~15.1.12 || ~15.2.9 || ~15.3.9 || ~15.4.11 || ~15.5.10 || ~16.0.11 || ^16.1.5
 
-  '@opennextjs/cloudflare@1.17.1':
-    resolution: {integrity: sha512-TtmjhXUEpSbnb9kgr7IQtmlQugOeX0cHiLc/e6NYAnmqQVro3yN49WvzaclSGFZod/lJFW7pOJ0NGT6JpqypAw==}
+  '@opennextjs/cloudflare@1.18.0':
+    resolution: {integrity: sha512-JM236YHnKzroFAZqst1t28ZGOShvnkVUDtjrp7TJ/W2P3RLo4b6npJ8VEXOn6frs6lsUfR5rvsKYLYb7h1GIJQ==}
     hasBin: true
     peerDependencies:
       next: ~15.0.8 || ~15.1.12 || ~15.2.9 || ~15.3.9 || ~15.4.11 || ~15.5.10 || ~16.0.11 || ^16.1.5
@@ -5288,11 +5291,11 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
 
-  '@tanstack/query-core@5.95.2':
-    resolution: {integrity: sha512-o4T8vZHZET4Bib3jZ/tCW9/7080urD4c+0/AUaYVpIqOsr7y0reBc1oX3ttNaSW5mYyvZHctiQ/UOP2PfdmFEQ==}
+  '@tanstack/query-core@5.96.1':
+    resolution: {integrity: sha512-u1yBgtavSy+N8wgtW3PiER6UpxcplMje65yXnnVgiHTqiMwLlxiw4WvQDrXyn+UD6lnn8kHaxmerJUzQcV/MMg==}
 
-  '@tanstack/react-query@5.95.2':
-    resolution: {integrity: sha512-/wGkvLj/st5Ud1Q76KF1uFxScV7WeqN1slQx5280ycwAyYkIPGaRZAEgHxe3bjirSd5Zpwkj6zNcR4cqYni/ZA==}
+  '@tanstack/react-query@5.96.1':
+    resolution: {integrity: sha512-2X7KYK5KKWUKGeWCVcqxXAkYefJtrKB7tSKWgeG++b0H6BRHxQaLSSi8AxcgjmUnnosHuh9WsFZqvE16P1WCzA==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -13220,7 +13223,7 @@ snapshots:
       - aws-crt
       - supports-color
 
-  '@opennextjs/cloudflare@1.17.1(next@16.2.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.77.0(@cloudflare/workers-types@4.20260317.1))':
+  '@opennextjs/cloudflare@1.18.0(next@16.2.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.77.0(@cloudflare/workers-types@4.20260317.1))':
     dependencies:
       '@ast-grep/napi': 0.40.5
       '@dotenvx/dotenvx': 1.31.0
@@ -15248,11 +15251,11 @@ snapshots:
       tailwindcss: 4.2.2
       vite: 7.3.1(@types/node@25.3.3)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
-  '@tanstack/query-core@5.95.2': {}
+  '@tanstack/query-core@5.96.1': {}
 
-  '@tanstack/react-query@5.95.2(react@19.2.4)':
+  '@tanstack/react-query@5.96.1(react@19.2.4)':
     dependencies:
-      '@tanstack/query-core': 5.95.2
+      '@tanstack/query-core': 5.96.1
       react: 19.2.4
 
   '@tanstack/table-core@8.21.3': {}

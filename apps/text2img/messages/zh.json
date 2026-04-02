@@ -1,0 +1,115 @@
+{
+  "language": {
+    "label": "切换语言"
+  },
+  "header": {
+    "title": "在线文生图服务",
+    "more": "more"
+  },
+  "common": {
+    "generating": "生成中...",
+    "generateImage": "生成图像"
+  },
+  "basic": {
+    "title": "基础设置",
+    "randomPrompt": "随机提示词",
+    "password": "访问密码",
+    "passwordPlaceholder": "请输入访问密码",
+    "passwordToggle": "切换密码显示",
+    "prompt": "正向提示词",
+    "promptPlaceholder": "描述您想要生成的图像内容及样式...",
+    "negativePrompt": "反向提示词",
+    "negativePromptPlaceholder": "描述在生成的图像中要避免的元素文本...",
+    "model": "模型",
+    "selectModel": "选择模型"
+  },
+  "modelType": {
+    "text2img": "文生图",
+    "img2img": "图生图",
+    "inpainting": "局部重绘"
+  },
+  "advanced": {
+    "title": "高级选项",
+    "width": "图像宽度",
+    "height": "图像高度",
+    "numSteps": "迭代步数",
+    "guidance": "引导系数",
+    "seed": "随机种子",
+    "seedPlaceholder": "留空则随机生成",
+    "seedHint": "使用相同的种子值可以在其他参数相同的情况下生成相似的图像"
+  },
+  "upload": {
+    "img2imgTitle": "图生图设置",
+    "inpaintingTitle": "局部重绘设置",
+    "sourceImage": "源图片",
+    "maskImage": "遮罩图片（白色区域为重绘区域）",
+    "dropHint": "点击或拖拽上传图片",
+    "invalidFile": "请选择图片文件",
+    "fileTooLarge": "图片大小不能超过 10MB"
+  },
+  "result": {
+    "title": "生成结果",
+    "downloadAll": "下载全部",
+    "clearAll": "清空全部",
+    "downloadAllStarted": "已开始下载全部图像",
+    "emptyTitle": "暂无生成结果",
+    "emptyDescription": "输入提示词并点击生成按钮开始创建 AI 图像",
+    "emptyHint": "支持多种模型，可调节尺寸、步数、引导系数等参数"
+  },
+  "card": {
+    "viewDetail": "查看详情",
+    "copyParams": "复制参数",
+    "downloadImage": "下载图像",
+    "delete": "删除",
+    "imageDetail": "图像详情",
+    "modelLabel": "模型：{modelName}",
+    "generationTime": "生成时间：",
+    "size": "尺寸：",
+    "steps": "步数：",
+    "guidanceLabel": "引导：",
+    "seedLabel": "种子：",
+    "allParams": "所有参数",
+    "copyParamsButton": "复制参数",
+    "downloadImageButton": "下载图像",
+    "copiedToClipboard": "参数已复制到剪贴板",
+    "copyFailed": "复制失败",
+    "downloadSuccess": "图像下载成功"
+  },
+  "params": {
+    "prompt": "提示词",
+    "negative_prompt": "反向提示词",
+    "model": "模型",
+    "width": "宽度",
+    "height": "高度",
+    "num_steps": "步数",
+    "guidance": "引导",
+    "seed": "种子",
+    "copyHeader": "--- AI绘图创作生成参数 ---"
+  },
+  "generation": {
+    "success": "图像生成成功！",
+    "failed": "生成失败"
+  },
+  "seo": {
+    "title": "AI文生图在线工具 | 基于 Cloudflare AI 的免费图像生成服务",
+    "description": "免费的在线AI文生图工具，基于 Cloudflare Workers AI，支持 FLUX.1、Stable Diffusion XL 等多种模型。无需注册，即刻使用，快速生成高质量AI图像。",
+    "appName": "AI文生图在线工具",
+    "ogTitle": "AI文生图在线工具 | 基于 Cloudflare AI 的免费图像生成",
+    "ogDescription": "免费的在线AI文生图工具，支持 FLUX.1、Stable Diffusion XL 等多种先进模型。无需注册，即刻体验高质量AI图像生成。",
+    "twitterTitle": "AI文生图在线工具 | 基于 Cloudflare AI",
+    "twitterDescription": "免费的在线AI文生图工具，支持多种先进AI模型，即刻体验高质量图像生成。"
+  },
+  "models": {
+    "flux-2-klein-9b": "旗舰级极速模型，支持实时预览与高画质图像编辑。",
+    "flux-2-klein-4b": "轻量化极致测速，适用于对延迟要求极高的实时交互场景。",
+    "flux-2-dev": "专业级写实工具，支持多参考图生成，细节还原度极高。",
+    "flux-1-schnell": "高效整流互感器模型，在极短时间内生成高质量艺术构图。",
+    "lucid-origin": "适配性最强的创意模型，精准遵循指令，支持复杂的文本渲染。",
+    "phoenix-1.0": "具备卓越的指令遵循能力，生成画面逻辑严密且文本清晰。",
+    "stable-diffusion-xl-lightning": "闪电级生成速度，几步内即可快速导出 1024px 高清大图。",
+    "dreamshaper-8-lcm": "深度优化的写实模型，在保持多样化风格的同时增强照片质感。",
+    "stable-diffusion-xl-base-1.0": "行业标准基座模型，提供稳定、高质量的文生图与图像修改功能。",
+    "stable-diffusion-v1-5-img2img": "经典的图生图模型，支持以现有图像为底稿进行艺术再创作。",
+    "stable-diffusion-v1-5-inpainting": "专业的局部重绘模型，通过遮罩精准修改或修复图像特定区域。"
+  }
+}

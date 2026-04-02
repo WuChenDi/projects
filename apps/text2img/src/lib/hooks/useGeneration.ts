@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
+import { useTranslations } from 'next-intl'
 import { useCallback, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { genid } from '@/lib/genid'
@@ -31,6 +32,7 @@ async function generateImage(params: GenerateParams): Promise<Blob> {
 }
 
 export function useGeneration() {
+  const t = useTranslations('generation')
   const [results, setResults] = useState<GenerationResult[]>([])
   const currentIdRef = useRef('')
   const startTimeRef = useRef(0)
@@ -64,7 +66,7 @@ export function useGeneration() {
             : r,
         ),
       )
-      toast.success('图像生成成功！')
+      toast.success(t('success'))
     },
     onError: (error: Error) => {
       const id = currentIdRef.current
@@ -75,12 +77,12 @@ export function useGeneration() {
             ? {
                 ...r,
                 status: GenerationStatus.FAILED,
-                error: error.message || '生成失败',
+                error: error.message || t('failed'),
               }
             : r,
         ),
       )
-      toast.error(error.message || '生成失败')
+      toast.error(error.message || t('failed'))
     },
   })
 

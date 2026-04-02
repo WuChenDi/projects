@@ -1,0 +1,115 @@
+{
+  "language": {
+    "label": "Switch language"
+  },
+  "header": {
+    "title": "Text-to-Image",
+    "more": "more"
+  },
+  "common": {
+    "generating": "Generating...",
+    "generateImage": "Generate Image"
+  },
+  "basic": {
+    "title": "Basic Settings",
+    "randomPrompt": "Random Prompt",
+    "password": "Access Password",
+    "passwordPlaceholder": "Enter access password",
+    "passwordToggle": "Toggle password visibility",
+    "prompt": "Prompt",
+    "promptPlaceholder": "Describe the image content and style you want to generate...",
+    "negativePrompt": "Negative Prompt",
+    "negativePromptPlaceholder": "Describe elements to avoid in the generated image...",
+    "model": "Model",
+    "selectModel": "Select model"
+  },
+  "modelType": {
+    "text2img": "Text-to-Image",
+    "img2img": "Image-to-Image",
+    "inpainting": "Inpainting"
+  },
+  "advanced": {
+    "title": "Advanced Options",
+    "width": "Image Width",
+    "height": "Image Height",
+    "numSteps": "Iteration Steps",
+    "guidance": "Guidance Scale",
+    "seed": "Random Seed",
+    "seedPlaceholder": "Leave empty for random",
+    "seedHint": "Using the same seed with identical parameters will produce similar images"
+  },
+  "upload": {
+    "img2imgTitle": "Image-to-Image Settings",
+    "inpaintingTitle": "Inpainting Settings",
+    "sourceImage": "Source Image",
+    "maskImage": "Mask Image (white areas will be repainted)",
+    "dropHint": "Click or drag to upload image",
+    "invalidFile": "Please select an image file",
+    "fileTooLarge": "Image size cannot exceed 10MB"
+  },
+  "result": {
+    "title": "Results",
+    "downloadAll": "Download All",
+    "clearAll": "Clear All",
+    "downloadAllStarted": "Started downloading all images",
+    "emptyTitle": "No results yet",
+    "emptyDescription": "Enter a prompt and click Generate to create AI images",
+    "emptyHint": "Supports multiple models with adjustable size, steps, guidance and more"
+  },
+  "card": {
+    "viewDetail": "View details",
+    "copyParams": "Copy parameters",
+    "downloadImage": "Download image",
+    "delete": "Delete",
+    "imageDetail": "Image Details",
+    "modelLabel": "Model: {modelName}",
+    "generationTime": "Generation Time:",
+    "size": "Size:",
+    "steps": "Steps:",
+    "guidanceLabel": "Guidance:",
+    "seedLabel": "Seed:",
+    "allParams": "All Parameters",
+    "copyParamsButton": "Copy Parameters",
+    "downloadImageButton": "Download Image",
+    "copiedToClipboard": "Parameters copied to clipboard",
+    "copyFailed": "Copy failed",
+    "downloadSuccess": "Image downloaded successfully"
+  },
+  "params": {
+    "prompt": "Prompt",
+    "negative_prompt": "Negative Prompt",
+    "model": "Model",
+    "width": "Width",
+    "height": "Height",
+    "num_steps": "Steps",
+    "guidance": "Guidance",
+    "seed": "Seed",
+    "copyHeader": "--- AI Image Generation Parameters ---"
+  },
+  "generation": {
+    "success": "Image generated successfully!",
+    "failed": "Generation failed"
+  },
+  "seo": {
+    "title": "AI Text-to-Image Tool | Free Image Generation with Cloudflare AI",
+    "description": "Free online AI text-to-image tool powered by Cloudflare Workers AI. Supports FLUX.1, Stable Diffusion XL and more. No registration required.",
+    "appName": "AI Text-to-Image Tool",
+    "ogTitle": "AI Text-to-Image Tool | Free Image Generation with Cloudflare AI",
+    "ogDescription": "Free online AI text-to-image tool supporting FLUX.1, Stable Diffusion XL and more advanced models. Experience high-quality AI image generation instantly.",
+    "twitterTitle": "AI Text-to-Image Tool | Cloudflare AI",
+    "twitterDescription": "Free online AI text-to-image tool supporting multiple advanced AI models for high-quality image generation."
+  },
+  "models": {
+    "flux-2-klein-9b": "Flagship ultra-fast model with real-time preview and high-quality image editing.",
+    "flux-2-klein-4b": "Lightweight speed model for ultra-low latency real-time interaction scenarios.",
+    "flux-2-dev": "Professional photorealistic tool with multi-reference image generation and high detail fidelity.",
+    "flux-1-schnell": "Efficient rectified transformer model generating high-quality artistic compositions in minimal time.",
+    "lucid-origin": "Most versatile creative model with precise instruction following and complex text rendering.",
+    "phoenix-1.0": "Exceptional instruction adherence with logically coherent scenes and clear text generation.",
+    "stable-diffusion-xl-lightning": "Lightning-fast generation producing 1024px HD images in just a few steps.",
+    "dreamshaper-8-lcm": "Deeply optimized photorealistic model enhancing photo quality while maintaining diverse styles.",
+    "stable-diffusion-xl-base-1.0": "Industry standard base model providing stable, high-quality text-to-image and image editing.",
+    "stable-diffusion-v1-5-img2img": "Classic image-to-image model for artistic recreation using existing images as base.",
+    "stable-diffusion-v1-5-inpainting": "Professional inpainting model for precise modification or repair of specific image areas via masks."
+  }
+}

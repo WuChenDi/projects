@@ -1,3 +1,6 @@
+import { Dices } from 'lucide-react'
+import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
 import {
@@ -19,15 +22,7 @@ import {
   SelectValue,
 } from '@cdlab996/ui/components/select'
 import { Textarea } from '@cdlab996/ui/components/textarea'
-import { Dices } from 'lucide-react'
-import Image from 'next/image'
-import type { ModelGroup, ModelType } from '@/types'
-
-const MODEL_TYPE_LABELS: Record<ModelType, string> = {
-  text2img: '文生图',
-  img2img: '图生图',
-  inpainting: '局部重绘',
-}
+import type { ModelGroup } from '@/types'
 
 interface BasicSettingsProps {
   modelGroups: ModelGroup[] | undefined
@@ -54,6 +49,8 @@ export function BasicSettings({
   setSelectedModel,
   handleRandomPrompt,
 }: BasicSettingsProps) {
+  const t = useTranslations()
+
   const findSelectedModel = () => {
     if (!modelGroups || !selectedModel) return null
     for (const group of modelGroups) {
@@ -68,55 +65,55 @@ export function BasicSettings({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>基础设置</CardTitle>
+        <CardTitle>{t('basic.title')}</CardTitle>
         <CardAction>
           <Button variant="outline" size="sm" onClick={handleRandomPrompt}>
             <Dices className="size-4" />
-            随机提示词
+            {t('basic.randomPrompt')}
           </Button>
         </CardAction>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="password">访问密码</Label>
+          <Label htmlFor="password">{t('basic.password')}</Label>
           <PasswordInput
             id="password"
-            placeholder="请输入访问密码"
+            placeholder={t('basic.passwordPlaceholder')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            toggleAriaLabel="切换密码显示"
+            toggleAriaLabel={t('basic.passwordToggle')}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="prompt">正向提示词</Label>
+          <Label htmlFor="prompt">{t('basic.prompt')}</Label>
           <Textarea
             id="prompt"
             rows={3}
-            placeholder="描述您想要生成的图像内容及样式..."
+            placeholder={t('basic.promptPlaceholder')}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="negative_prompt">反向提示词</Label>
+          <Label htmlFor="negative_prompt">{t('basic.negativePrompt')}</Label>
           <Textarea
             id="negative_prompt"
             rows={2}
-            placeholder="描述在生成的图像中要避免的元素文本..."
+            placeholder={t('basic.negativePromptPlaceholder')}
             value={negativePrompt}
             onChange={(e) => setNegativePrompt(e.target.value)}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="model">模型</Label>
+          <Label htmlFor="model">{t('basic.model')}</Label>
           <Select value={selectedModel} onValueChange={setSelectedModel}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="选择模型">
+              <SelectValue placeholder={t('basic.selectModel')}>
                 <div className="flex items-center gap-2">
-                  {selectedModelData ? selectedModelData.name : '选择模型'}
+                  {selectedModelData ? selectedModelData.name : t('basic.selectModel')}
                 </div>
               </SelectValue>
             </SelectTrigger>
@@ -148,17 +145,14 @@ export function BasicSettings({
                         <span className="font-medium flex items-center gap-1.5">
                           {model.name}
                           {model.type !== 'text2img' && (
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] px-1 py-0 font-normal"
-                            >
-                              {MODEL_TYPE_LABELS[model.type]}
+                            <Badge variant="outline" className="text-[10px] px-1 py-0 font-normal">
+                              {t(`modelType.${model.type}`)}
                             </Badge>
                           )}
                         </span>
                         {model.description && (
                           <span className="text-xs text-muted-foreground mt-0.5">
-                            {model.description}
+                            {t(`models.${model.id}`)}
                           </span>
                         )}
                       </div>

@@ -9,6 +9,7 @@ import {
 import { IKEmpty } from '@cdlab996/ui/IK'
 import { format } from 'date-fns'
 import { Download, ImageOff, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import type { GenerationResult, Model } from '@/types'
 import { GenerationStatus } from '@/types'
@@ -27,6 +28,8 @@ export function ImageResult({
   onRemove,
   onClearAll,
 }: ImageResultProps) {
+  const t = useTranslations('result')
+
   const completedResults = results.filter(
     (r) => r.status === GenerationStatus.COMPLETED,
   )
@@ -42,13 +45,13 @@ export function ImageResult({
       link.download = `${modelName}-${timestamp}.png`
       link.click()
     }
-    toast.success('已开始下载全部图像')
+    toast.success(t('downloadAllStarted'))
   }
 
   return (
     <Card className="flex flex-col p-4 border-none h-full">
       <CardHeader className="p-0 flex flex-row items-center justify-between">
-        <CardTitle>生成结果</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
         <CardAction>
           {results.length > 0 && (
             <div className="flex gap-2">
@@ -59,11 +62,11 @@ export function ImageResult({
                 disabled={completedResults.length === 0}
               >
                 <Download className="size-4" />
-                下载全部
+                {t('downloadAll')}
               </Button>
               <Button onClick={onClearAll} size="sm" variant="secondary">
                 <Trash2 className="size-4" />
-                清空全部
+                {t('clearAll')}
               </Button>
             </div>
           )}
@@ -86,9 +89,9 @@ export function ImageResult({
             className="min-h-65"
             icon={ImageOff}
             iconClassName="size-5"
-            title="暂无生成结果"
-            description="输入提示词并点击生成按钮开始创建 AI 图像"
-            hint="支持多种模型，可调节尺寸、步数、引导系数等参数"
+            title={t('emptyTitle')}
+            description={t('emptyDescription')}
+            hint={t('emptyHint')}
           />
         )}
       </CardContent>

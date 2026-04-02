@@ -1,4 +1,11 @@
 import type { NextConfig } from 'next'
+import createNextIntlPlugin from 'next-intl/plugin'
+
+const withNextIntl = createNextIntlPlugin({
+  experimental: {
+    createMessagesDeclaration: './messages/en.json',
+  },
+})
 
 const nextConfig: NextConfig = {
   // Performance optimizations
@@ -26,7 +33,7 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withNextIntl(nextConfig)
 
 // Enable calling `getCloudflareContext()` in `next dev`.
 // See https://opennext.js.org/cloudflare/bindings#local-access-to-bindings.

@@ -1,4 +1,5 @@
 import { Shuffle } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@cdlab996/ui/components/card'
 import {
   InputGroup,
@@ -36,15 +37,17 @@ export function AdvancedOptions({
   setSeed,
   handleRandomSeed,
 }: AdvancedOptionsProps) {
+  const t = useTranslations('advanced')
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>高级选项</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <div className="flex justify-between">
-            <Label htmlFor="width">图像宽度</Label>
+            <Label htmlFor="width">{t('width')}</Label>
             <span className="text-sm font-mono">{width}px</span>
           </div>
           <Slider
@@ -59,7 +62,7 @@ export function AdvancedOptions({
 
         <div className="space-y-2">
           <div className="flex justify-between">
-            <Label htmlFor="height">图像高度</Label>
+            <Label htmlFor="height">{t('height')}</Label>
             <span className="text-sm font-mono">{height}px</span>
           </div>
           <Slider
@@ -74,7 +77,7 @@ export function AdvancedOptions({
 
         <div className="space-y-2">
           <div className="flex justify-between">
-            <Label htmlFor="num_steps">迭代步数</Label>
+            <Label htmlFor="num_steps">{t('numSteps')}</Label>
             <span className="text-sm font-mono">{numSteps}</span>
           </div>
           <Slider
@@ -89,7 +92,7 @@ export function AdvancedOptions({
 
         <div className="space-y-2">
           <div className="flex justify-between">
-            <Label htmlFor="guidance">引导系数</Label>
+            <Label htmlFor="guidance">{t('guidance')}</Label>
             <span className="text-sm font-mono">{guidance.toFixed(1)}</span>
           </div>
           <Slider
@@ -103,12 +106,12 @@ export function AdvancedOptions({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="seed">随机种子</Label>
+          <Label htmlFor="seed">{t('seed')}</Label>
           <InputGroup>
             <InputGroupInput
               id="seed"
               type="number"
-              placeholder="留空则随机生成"
+              placeholder={t('seedPlaceholder')}
               value={seed}
               onChange={(e) =>
                 setSeed(e.target.value ? Number(e.target.value) : '')
@@ -121,7 +124,7 @@ export function AdvancedOptions({
             </InputGroupAddon>
           </InputGroup>
           <p className="text-xs text-muted-foreground">
-            使用相同的种子值可以在其他参数相同的情况下生成相似的图像
+            {t('seedHint')}
           </p>
         </div>
       </CardContent>
