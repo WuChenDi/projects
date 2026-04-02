@@ -1,10 +1,12 @@
 'use client'
 
 import { TooltipProvider } from '@cdlab996/ui/components/tooltip'
+import { IKVersionInfo } from '@cdlab996/ui/IK'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useTheme } from 'next-themes'
 import { useEffect, useMemo, useState } from 'react'
-import { ThemeProvider } from '@/components/layout'
+import { ThemeProvider } from '@/components/layout/theme-provider'
+import pkg from '../../../package.json'
 
 function ThemedBackground({ children }: { children: React.ReactNode }) {
   const { resolvedTheme } = useTheme()
@@ -52,7 +54,6 @@ function ThemedBackground({ children }: { children: React.ReactNode }) {
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   const queryClient = useMemo(() => new QueryClient(), [])
-
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider
@@ -64,6 +65,11 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
         <TooltipProvider>
           <ThemedBackground>{children}</ThemedBackground>
         </TooltipProvider>
+        <IKVersionInfo
+          name={pkg.name}
+          version={pkg.version}
+          buildTime={process.env.BUILD_TIME}
+        />
       </ThemeProvider>
     </QueryClientProvider>
   )
