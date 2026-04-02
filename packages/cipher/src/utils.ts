@@ -5,7 +5,7 @@ import { InvalidDataError } from './errors'
 import type { ChunkMetadata } from './types'
 
 export function secureClear(buffer: ArrayBufferLike): void {
-  const view = new Uint8Array(buffer)
+  const view = new Uint8Array(buffer as ArrayBuffer)
   getRandomValues(view)
   view.fill(0)
 }

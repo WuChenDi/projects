@@ -56,7 +56,7 @@ describe('public-key encryption', () => {
     await expect(
       streamDecryptWithPrivateKey({
         file: encryptedFile,
-        receiver: wrongReceiver.privKeyBytes,
+        receiver: wrongReceiver.privKeyHex,
       }),
     ).rejects.toThrow()
   })
