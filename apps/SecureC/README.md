@@ -1,5 +1,7 @@
 # SecureC
 
+[中文文档](./README.zh-CN.md)
+
 SecureC is a Next.js-based client-side encryption tool designed to securely encrypt and decrypt files and text messages using XChaCha20-Poly1305 symmetric encryption. It leverages the `@noble/ciphers` library for encryption and Argon2id for secure password-based key derivation, supports chunked processing for large files, and ensures smooth performance with Web Workers.
 
 Preview: https://securec.pages.dev/
