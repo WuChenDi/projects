@@ -8,15 +8,20 @@ import { useState } from 'react'
 import { AdvancedOptions } from '@/components/page/AdvancedOptions'
 import { BasicSettings } from '@/components/page/BasicSettings'
 import { ImageResult } from '@/components/page/ImageResult'
+import { ImageUpload } from '@/components/page/ImageUpload'
 import { fetchModels, fetchPrompts, genid } from '@/lib'
 import { useGeneration } from '@/lib/hooks/useGeneration'
-import type { GenerateParams, ModelGroup } from '@/types'
+import type { GenerateParams, ModelGroup, ModelType } from '@/types'
 
 export default function Home() {
   const [prompt, setPrompt] = useState('cyberpunk cat')
   const [negativePrompt, setNegativePrompt] = useState('')
   const [selectedModel, setSelectedModel] = useState('flux-1-schnell')
   const [password, setPassword] = useState('')
+
+  // Image upload (img2img / inpainting)
+  const [sourceImage, setSourceImage] = useState('')
+  const [maskImage, setMaskImage] = useState('')
 
   // Advanced options
   const [width, setWidth] = useState(1024)
@@ -51,6 +56,9 @@ export default function Home() {
     ? modelGroups.flatMap((group) => group.models)
     : undefined
 
+  const currentModelType: ModelType =
+    models?.find((m) => m.id === selectedModel)?.type || 'text2img'
+
   const handleRandomPrompt = () => {
     if (prompts && prompts.length > 0) {
       const randomIndex = Math.floor(Math.random() * prompts.length)
@@ -73,6 +81,14 @@ export default function Home() {
       num_steps: numSteps,
       guidance,
       seed: seed || undefined,
+      image_b64:
+        currentModelType !== 'text2img' && sourceImage
+          ? sourceImage
+          : undefined,
+      mask_b64:
+        currentModelType === 'inpainting' && maskImage
+          ? maskImage
+          : undefined,
     }
     handleGenerateClick(params)
   }
@@ -92,6 +108,14 @@ export default function Home() {
             selectedModel={selectedModel}
             setSelectedModel={setSelectedModel}
             handleRandomPrompt={handleRandomPrompt}
+          />
+
+          <ImageUpload
+            modelType={currentModelType}
+            sourceImage={sourceImage}
+            setSourceImage={setSourceImage}
+            maskImage={maskImage}
+            setMaskImage={setMaskImage}
           />
 
           <AdvancedOptions

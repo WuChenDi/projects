@@ -1,3 +1,5 @@
+export type ModelType = 'text2img' | 'img2img' | 'inpainting'
+
 export interface Model {
   id: string
   name: string
@@ -5,6 +7,7 @@ export interface Model {
   key: string
   disabled: boolean
   group: string
+  type: ModelType
 }
 
 export interface ModelGroup {
@@ -39,4 +42,6 @@ export interface GenerateParams {
   num_steps?: number
   guidance?: number
   seed?: number
+  image_b64?: string
+  mask_b64?: string
 }

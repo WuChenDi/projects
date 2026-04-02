@@ -1,5 +1,4 @@
-import { Dices } from 'lucide-react'
-import Image from 'next/image'
+import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
 import {
   Card,
@@ -20,7 +19,15 @@ import {
   SelectValue,
 } from '@cdlab996/ui/components/select'
 import { Textarea } from '@cdlab996/ui/components/textarea'
-import type { ModelGroup } from '@/types'
+import { Dices } from 'lucide-react'
+import Image from 'next/image'
+import type { ModelGroup, ModelType } from '@/types'
+
+const MODEL_TYPE_LABELS: Record<ModelType, string> = {
+  text2img: '文生图',
+  img2img: '图生图',
+  inpainting: '局部重绘',
+}
 
 interface BasicSettingsProps {
   modelGroups: ModelGroup[] | undefined
@@ -138,7 +145,17 @@ export function BasicSettings({
                       disabled={model.disabled}
                     >
                       <div className="flex flex-col">
-                        <span className="font-medium">{model.name}</span>
+                        <span className="font-medium flex items-center gap-1.5">
+                          {model.name}
+                          {model.type !== 'text2img' && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-1 py-0 font-normal"
+                            >
+                              {MODEL_TYPE_LABELS[model.type]}
+                            </Badge>
+                          )}
+                        </span>
                         {model.description && (
                           <span className="text-xs text-muted-foreground mt-0.5">
                             {model.description}

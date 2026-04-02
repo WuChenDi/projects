@@ -12,6 +12,8 @@ interface GenerateRequest {
   strength?: number
   guidance?: number
   seed?: number
+  image_b64?: string
+  mask_b64?: string
 }
 
 interface ModelConfig {
@@ -160,13 +162,126 @@ const blackForestLabsConfig: ModelConfig = {
   },
 }
 
+const leonardoConfig: ModelConfig = {
+  prepareInputs: (data: GenerateRequest) => ({
+    prompt: data.prompt || 'cyberpunk cat',
+    negative_prompt: data.negative_prompt || '',
+    height: data.height || 1024,
+    width: data.width || 1024,
+    steps: data.num_steps || 25,
+    guidance: data.guidance || 4,
+    seed: data.seed || Math.floor(Math.random() * 1024 * 1024),
+  }),
+  processResponse: (response: any) => {
+    const result = response?.result ?? response
+    const imageData = result?.image ?? result
+
+    if (typeof imageData === 'string') {
+      try {
+        const binaryString = atob(imageData)
+        const bytes = new Uint8Array(binaryString.length)
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i)
+        }
+        return new Response(bytes, {
+          headers: { 'content-type': 'image/png' },
+        })
+      } catch (e: any) {
+        return new Response(
+          JSON.stringify({
+            error: 'Failed to process image data',
+            details: e.message,
+          }),
+          { status: 500, headers: { 'Content-Type': 'application/json' } },
+        )
+      }
+    }
+
+    return new Response(imageData, {
+      headers: { 'content-type': 'image/png' },
+    })
+  },
+}
+
+function base64ToUint8Array(base64: string): number[] {
+  const binaryString = atob(base64)
+  const bytes = new Array(binaryString.length)
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i)
+  }
+  return bytes
+}
+
+const img2imgConfig: ModelConfig = {
+  prepareInputs: (data: GenerateRequest) => ({
+    prompt: data.prompt || 'cyberpunk cat',
+    ...(data.image_b64 ? { image: base64ToUint8Array(data.image_b64) } : {}),
+    negative_prompt: data.negative_prompt || '',
+    height: data.height || 512,
+    width: data.width || 512,
+    num_steps: data.num_steps || 20,
+    strength: data.strength || 0.75,
+    guidance: data.guidance || 7.5,
+    seed: data.seed || Math.floor(Math.random() * 1024 * 1024),
+  }),
+  processResponse: (response: any) => {
+    const imageData = response?.image ?? response
+
+    if (typeof imageData === 'string') {
+      try {
+        const binaryString = atob(imageData)
+        const bytes = new Uint8Array(binaryString.length)
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i)
+        }
+        return new Response(bytes, {
+          headers: { 'content-type': 'image/png' },
+        })
+      } catch (e: any) {
+        return new Response(
+          JSON.stringify({
+            error: 'Failed to process image data',
+            details: e.message,
+          }),
+          { status: 500, headers: { 'Content-Type': 'application/json' } },
+        )
+      }
+    }
+
+    return new Response(imageData, {
+      headers: { 'content-type': 'image/png' },
+    })
+  },
+}
+
+const inpaintingConfig: ModelConfig = {
+  prepareInputs: (data: GenerateRequest) => ({
+    prompt: data.prompt || 'cyberpunk cat',
+    ...(data.image_b64 ? { image: base64ToUint8Array(data.image_b64) } : {}),
+    ...(data.mask_b64 ? { mask: base64ToUint8Array(data.mask_b64) } : {}),
+    negative_prompt: data.negative_prompt || '',
+    height: data.height || 512,
+    width: data.width || 512,
+    num_steps: data.num_steps || 20,
+    strength: data.strength || 1,
+    guidance: data.guidance || 7.5,
+    seed: data.seed || Math.floor(Math.random() * 1024 * 1024),
+  }),
+  processResponse: img2imgConfig.processResponse,
+}
+
 const MODEL_GROUP_CONFIGS: Record<string, ModelConfig> = {
   'black-forest-labs': blackForestLabsConfig,
-  leonardo: defaultModelConfig,
+  leonardo: leonardoConfig,
   bytedance: defaultModelConfig,
   lykon: defaultModelConfig,
   stabilityai: defaultModelConfig,
   runwayml: defaultModelConfig,
+}
+
+const MODEL_TYPE_CONFIGS: Record<string, ModelConfig> = {
+  img2img: img2imgConfig,
+  inpainting: inpaintingConfig,
 }
 
 export async function POST(request: Request) {
@@ -227,9 +342,12 @@ export async function POST(request: Request) {
     }
 
     const model = selectedModel.key as keyof AiModels
-    const modelConfig = selectedModel.group
-      ? MODEL_GROUP_CONFIGS[selectedModel.group] || defaultModelConfig
-      : defaultModelConfig
+
+    const modelConfig =
+      MODEL_TYPE_CONFIGS[selectedModel.type] ||
+      (selectedModel.group
+        ? MODEL_GROUP_CONFIGS[selectedModel.group] || defaultModelConfig
+        : defaultModelConfig)
 
     console.log(
       `Generating image with ${model} (group: ${selectedModel.group}) and prompt: ${data.prompt?.substring(0, 50)}...`,
