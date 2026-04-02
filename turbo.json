@@ -17,6 +17,9 @@
       "cache": false,
       "persistent": true
     },
+    "deploy": {
+      "dependsOn": ["^deploy"]
+    },
     "preview": {
       "dependsOn": ["^preview"]
     }

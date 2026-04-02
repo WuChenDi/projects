@@ -37,6 +37,8 @@
   "i18n-ally.localesPaths": [
     "apps/bycut/messages",
     "apps/byplay/messages",
+    "apps/SecureC/messages",
+    "apps/text2img/messages",
     "apps/vidl/src/i18n"
   ],
   "i18n-ally.enabledFrameworks": ["react-i18next"],
