@@ -4,9 +4,7 @@
   "compilerOptions": {
     "declaration": true,
     "declarationMap": true,
-    "esModuleInterop": true,
     "incremental": false,
-    "isolatedModules": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "module": "NodeNext",
     "moduleDetection": "force",

@@ -5,8 +5,8 @@
   "compilerOptions": {
     "noEmit": false,
     "declaration": false,
-    "module": "CommonJS",
-    "moduleResolution": "Node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "declarationMap": false,
     "target": "ES6",
     "types": ["node"]
