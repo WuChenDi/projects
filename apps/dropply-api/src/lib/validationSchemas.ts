@@ -24,9 +24,8 @@ export const completeUploadRequestSchema = z.object({
   validityDays: z
     .number()
     .int('Validity days must be an integer')
-    .refine(
-      (val) => val === -1 || (val >= 1 && val <= 365),
-      'Validity days must be -1 (permanent) or between 1 and 365',
+    .min(1, 'Validity days must be at least 1')
+    .max(365, 'Validity days must be at most 365'
     ),
 })
 

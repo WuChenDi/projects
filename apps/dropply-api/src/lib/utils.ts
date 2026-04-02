@@ -29,10 +29,7 @@ export function isValidRetrievalCode(code: string): boolean {
 }
 
 // Calculate expiry time
-export function calculateExpiry(validityDays: number): Date | null {
-  if (validityDays === -1) {
-    return null // Permanent
-  }
+export function calculateExpiry(validityDays: number): Date {
   return new Date(Date.now() + validityDays * 24 * 60 * 60 * 1000)
 }
 

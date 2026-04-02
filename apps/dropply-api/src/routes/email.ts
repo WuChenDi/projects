@@ -1,4 +1,4 @@
-import { formatFileSize } from '@cdlab996/utils'
+import { formatBytes } from '@cdlab996/utils'
 import { zValidator } from '@hono/zod-validator'
 import { eq } from 'drizzle-orm'
 import { Hono } from 'hono'
@@ -292,13 +292,13 @@ function generateEmailTemplate(
       ${message ? `<div class="message-box"><strong>Personal message:</strong><br>${message.replace(/\n/g, '<br>')}</div>` : ''}
       
       <div class="file-list">
-        <h3 style="margin-top: 0; color: #333;">Files shared (${formatFileSize(totalSize)} total)</h3>
+        <h3 style="margin-top: 0; color: #333;">Files shared (${formatBytes({ bytes: totalSize })} total)</h3>
         ${
           sessionFiles
             ?.slice(0, 5)
             .map(
               (file) =>
-                `<div class="file-info"><span class="file-icon">📄</span><span>${file.originalFilename} (${formatFileSize(file.fileSize)})</span></div>`,
+                `<div class="file-info"><span class="file-icon">📄</span><span>${file.originalFilename} (${formatBytes({ bytes: file.fileSize })})</span></div>`,
             )
             .join('') || ''
         }

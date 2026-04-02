@@ -143,7 +143,7 @@ export interface TextItem {
   filename?: string
 }
 
-export type ValidityDays = 1 | 3 | 7 | 15 | -1
+export type ValidityDays = number
 
 // Multipart upload types
 export interface CreateMultipartUploadResponse {
