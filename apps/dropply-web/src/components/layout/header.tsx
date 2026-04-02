@@ -1,11 +1,11 @@
 'use client'
 
-// import { ThemeToggle } from '@/components/layout/theme-toggle'
 import { Button } from '@cdlab996/ui/components/button'
 import { GitHubIcon as Github } from '@cdlab996/ui/icon'
 import { ExternalLinkIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { ThemeToggle } from '@/components/layout/theme-toggle'
 
 export function Header() {
   return (
@@ -47,7 +47,7 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
-            {/* <ThemeToggle /> */}
+            <ThemeToggle />
             <Button asChild variant="outline" size="icon" aria-label="GitHub">
               <Link
                 href="https://github.com/WuChenDi/projects/tree/main/apps/dropply-web"

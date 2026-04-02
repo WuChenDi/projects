@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@cdlab996/ui/components/dialog'
 import { cn } from '@cdlab996/ui/lib/utils'
-import { formatFileSize } from '@cdlab996/utils'
+import { formatBytes } from '@cdlab996/utils'
 import { HardDrive, Upload, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
@@ -57,7 +57,7 @@ function FilePreviewModal({
               <div className="text-center space-y-1">
                 <p className="text-sm font-medium truncate">{file.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {file.type} &middot; {formatFileSize(file.size)}
+                  {file.type} &middot; {formatBytes({ bytes: file.size })}
                 </p>
               </div>
             </div>
@@ -158,7 +158,7 @@ export function FileUpload({ onFilesChange, files }: FileUploadProps) {
                         {file.name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {formatFileSize(file.size)}
+                        {formatBytes({ bytes: file.size })}
                       </p>
                     </div>
                   </div>

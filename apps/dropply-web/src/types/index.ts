@@ -103,7 +103,7 @@ export interface TextItem {
   filename?: string
 }
 
-export type ValidityDays = 1 | 3 | 7 | 15 | -1
+export type ValidityDays = number
 
 // Multipart upload types
 export interface CreateMultipartUploadResponse {
@@ -140,9 +140,11 @@ export interface FileUploadProgress {
   isText: boolean
   status:
     | 'waiting'
+    | 'encrypting'
     | 'starting'
     | 'uploading'
     | 'finalizing'
+    | 'decrypting'
     | 'completed'
     | 'error'
 }

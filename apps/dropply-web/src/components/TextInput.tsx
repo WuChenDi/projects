@@ -7,11 +7,15 @@ import {
   AccordionTrigger,
 } from '@cdlab996/ui/components/accordion'
 import { Button } from '@cdlab996/ui/components/button'
-import { Field, FieldGroup } from '@cdlab996/ui/components/field'
-import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
-import { Textarea } from '@cdlab996/ui/components/textarea'
-import { FileText, Plus, Trash2 } from 'lucide-react'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+  InputGroupText,
+  InputGroupTextarea,
+} from '@cdlab996/ui/components/input-group'
+import { ClipboardPaste, Copy, FileText, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { TextItem } from '@/types'
 
@@ -31,7 +35,7 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
     const displayName = currentFilename.trim() || defaultName
     const newItem: TextItem = {
       content: currentText,
-      filename: `${displayName}.txt`, // Still store as .txt for backend
+      filename: `${displayName}.txt`,
     }
 
     onTextItemsChange([...textItems, newItem])
@@ -50,40 +54,91 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
     }
   }
 
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText()
+      if (text) setCurrentText((prev) => prev + text)
+    } catch {
+      // clipboard permission denied
+    }
+  }
+
+  const handleCopy = async () => {
+    if (!currentText) return
+    try {
+      await navigator.clipboard.writeText(currentText)
+    } catch {
+      // clipboard permission denied
+    }
+  }
+
+  const handleClear = () => {
+    setCurrentText('')
+    setCurrentFilename('')
+  }
+
   return (
     <div className="w-full space-y-6">
-      {/* Input Area */}
-      <FieldGroup>
-        <Field>
-          <Label htmlFor="text-content">Text Content</Label>
-          <Textarea
-            id="text-content"
-            value={currentText}
-            onChange={(e) => setCurrentText(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Enter text content, code snippets, notes... (Ctrl/Cmd + Enter to add)"
+      <InputGroup className="h-auto flex-col">
+        <InputGroupAddon align="block-start" className="border-b">
+          <InputGroupInput
+            value={currentFilename}
+            onChange={(e) => setCurrentFilename(e.target.value)}
+            placeholder={`Label: Text ${textItems.length + 1}`}
           />
-        </Field>
+          <InputGroupButton
+            size="icon-xs"
+            variant="ghost"
+            onClick={handlePaste}
+            title="Paste from clipboard"
+          >
+            <ClipboardPaste />
+          </InputGroupButton>
+          <InputGroupButton
+            size="icon-xs"
+            variant="ghost"
+            onClick={handleCopy}
+            disabled={!currentText}
+            title="Copy content"
+          >
+            <Copy />
+          </InputGroupButton>
+          <InputGroupButton
+            size="icon-xs"
+            variant="ghost"
+            onClick={handleClear}
+            disabled={!currentText && !currentFilename}
+            title="Clear"
+          >
+            <Trash2 />
+          </InputGroupButton>
+        </InputGroupAddon>
 
-        <Field>
-          <Label htmlFor="text-label">Label (optional)</Label>
-          <div className="flex items-center gap-2">
-            <Input
-              id="text-label"
-              type="text"
-              value={currentFilename}
-              onChange={(e) => setCurrentFilename(e.target.value)}
-              placeholder={`Text ${textItems.length + 1}`}
-            />
-            <Button onClick={addTextItem} disabled={!currentText.trim()}>
-              <Plus className="size-4" />
-              Add Text
-            </Button>
-          </div>
-        </Field>
-      </FieldGroup>
+        <InputGroupTextarea
+          value={currentText}
+          onChange={(e) => setCurrentText(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Enter text content, code snippets, notes..."
+          rows={3}
+        />
 
-      {/* Text Items List */}
+        <InputGroupAddon align="block-end" className="border-t">
+          <InputGroupText className="text-xs">
+            {currentText.length} chars
+          </InputGroupText>
+          <InputGroupButton
+            className="ml-auto"
+            size="sm"
+            variant="default"
+            onClick={addTextItem}
+            disabled={!currentText.trim()}
+          >
+            <Plus className="size-3.5" />
+            Add
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
+
       {textItems.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -108,7 +163,7 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
                   // biome-ignore lint/suspicious/noArrayIndexKey: no unique identifier available
                   key={index}
                   value={`item-${index}`}
-                  className=" px-0 first:pt-0 last:pb-0"
+                  className="px-0 first:pt-0 last:pb-0"
                 >
                   <AccordionTrigger className="group flex items-center gap-3 px-4 py-3 hover:no-underline">
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -134,7 +189,7 @@ export function TextInput({ onTextItemsChange, textItems }: TextInputProps) {
                     </Button>
                   </AccordionTrigger>
 
-                  <AccordionContent className="px-4 pb-4 pt-2 text-xs text-muted-foreground whitespace-pre-wrap break-words border-t">
+                  <AccordionContent className="px-4 pb-4 pt-2 text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word border-t">
                     {item.content}
                   </AccordionContent>
                 </AccordionItem>

@@ -1,5 +1,10 @@
 import { useCallback, useState } from 'react'
 import { PocketChestAPI } from '@/lib'
+import {
+  decryptFile,
+  decryptTextContent,
+  generateEncryptionKey,
+} from '@/lib/crypto'
 import type { FileUploadProgress, TextItem, ValidityDays } from '@/types'
 
 export function usePocketChest() {
@@ -64,7 +69,7 @@ export function usePocketChest() {
   )
 
   const retrieve = useCallback(
-    async (retrievalCode: string) => {
+    async (retrievalCode: string, encryptionKey: string) => {
       setIsRetrieving(true)
       setError(null)
 
@@ -72,17 +77,16 @@ export function usePocketChest() {
         const { files, chestToken, expiryDate } =
           await api.retrieveChest(retrievalCode)
 
-        // Only pre-load text content (small), not binary files (large)
         const filesWithText = await Promise.all(
           files.map(async (file) => {
             if (file.isText) {
-              const content = await api.downloadTextContent(
+              const rawContent = await api.downloadTextContent(
                 file.fileId,
                 chestToken,
               )
+              const content = await decryptTextContent(rawContent, encryptionKey)
               return { ...file, content }
             } else {
-              // Don't pre-download binary files - just return metadata
               return { ...file }
             }
           }),
@@ -105,9 +109,16 @@ export function usePocketChest() {
   )
 
   const downloadSingleFile = useCallback(
-    async (fileId: string, chestToken: string, filename: string) => {
+    async (
+      fileId: string,
+      chestToken: string,
+      filename: string,
+      encryptionKey: string,
+    ) => {
       try {
-        await api.downloadFileDirectly(fileId, chestToken, filename)
+        const blob = await api.downloadFile(fileId, chestToken)
+        const decryptedBlob = await decryptFile(blob, encryptionKey, filename)
+        api.triggerDownload(decryptedBlob, filename)
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Download failed'
         setError(message)
@@ -124,8 +135,8 @@ export function usePocketChest() {
       files: File[],
       textItems: TextItem[],
       validityDays: ValidityDays = 7,
+      encryptionKey?: string,
     ) => {
-      // Create new abort controller for this upload session
       const controller = new AbortController()
       setAbortController(controller)
 
@@ -134,6 +145,8 @@ export function usePocketChest() {
       setError(null)
       setUploadProgress({ percentage: 0, loaded: 0, total: 0 })
       setFileProgress([])
+
+      const finalKey = encryptionKey || generateEncryptionKey()
 
       try {
         let finalProgress = { percentage: 0, loaded: 0, total: 0 }
@@ -150,9 +163,9 @@ export function usePocketChest() {
           (fileProgressList) => {
             setFileProgress(fileProgressList)
           },
+          finalKey,
         )
 
-        // Upload complete, now finalizing
         setUploadProgress({
           percentage: 100,
           loaded: finalProgress.total,
@@ -168,17 +181,18 @@ export function usePocketChest() {
         )
 
         setUploadStatus('success')
-        setAbortController(null) // Clear abort controller on success
+        setAbortController(null)
 
         return {
           ...result,
           uploadedFiles,
+          encryptionKey: finalKey,
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Upload failed'
         setError(message)
         setUploadStatus('error')
-        setAbortController(null) // Clear abort controller on error
+        setAbortController(null)
         throw new Error(message)
       } finally {
         setIsUploading(false)
@@ -194,8 +208,8 @@ export function usePocketChest() {
       files: File[],
       textItems: TextItem[],
       validityDays: ValidityDays = 7,
+      encryptionKey?: string,
     ) => {
-      // Reset state completely before retry
       if (abortController) {
         abortController.abort()
         setAbortController(null)
@@ -212,6 +226,7 @@ export function usePocketChest() {
         files,
         textItems,
         validityDays,
+        encryptionKey,
       )
     },
     [uploadWithSession, abortController],

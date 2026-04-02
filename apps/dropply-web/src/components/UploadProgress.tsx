@@ -10,7 +10,7 @@ import {
 } from '@cdlab996/ui/components/card'
 import { Progress } from '@cdlab996/ui/components/progress'
 import { cn } from '@cdlab996/ui/lib/utils'
-import { formatFileSize } from '@cdlab996/utils'
+import { formatBytes } from '@cdlab996/utils'
 import {
   AlertCircle,
   CheckCircle,
@@ -172,8 +172,8 @@ export function UploadProgress({
 
             {progress.total > 0 && (
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{formatFileSize(progress.loaded)} uploaded</span>
-                <span>{formatFileSize(progress.total)} total</span>
+                <span>{formatBytes({ bytes: progress.loaded })} uploaded</span>
+                <span>{formatBytes({ bytes: progress.total })} total</span>
               </div>
             )}
           </div>
@@ -206,7 +206,7 @@ export function UploadProgress({
                         {file.name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {formatFileSize(file.size)}
+                        {formatBytes({ bytes: file.size })}
                       </p>
                     </div>
                   </div>
@@ -241,9 +241,9 @@ export function UploadProgress({
                     />
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>
-                        {formatFileSize(fileProgressData.uploadedBytes)}
+                        {formatBytes({ bytes: fileProgressData.uploadedBytes })}
                       </span>
-                      <span>{formatFileSize(fileProgressData.totalBytes)}</span>
+                      <span>{formatBytes({ bytes: fileProgressData.totalBytes })}</span>
                     </div>
                   </div>
                 )}
@@ -317,9 +317,9 @@ export function UploadProgress({
                     />
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>
-                        {formatFileSize(fileProgressData.uploadedBytes)}
+                        {formatBytes({ bytes: fileProgressData.uploadedBytes })}
                       </span>
-                      <span>{formatFileSize(fileProgressData.totalBytes)}</span>
+                      <span>{formatBytes({ bytes: fileProgressData.totalBytes })}</span>
                     </div>
                   </div>
                 )}

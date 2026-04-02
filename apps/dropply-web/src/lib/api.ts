@@ -17,6 +17,7 @@ import type {
   UploadResponse,
   ValidityDays,
 } from '@/types'
+import { encryptFile, encryptTextContent } from './crypto'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:3014'
 
@@ -70,30 +71,11 @@ export class PocketChestAPI {
       percentage: number
     }) => void,
     onFileProgress?: (progress: FileUploadProgress[]) => void,
+    encryptionPassword?: string,
   ): Promise<{
     uploadedFiles: Array<{ fileId: string; filename: string; isText: boolean }>
   }> {
     const CHUNK_SIZE = 20 * 1024 * 1024 // 20MB chunk size
-
-    // Separate small and large files - split if larger than one chunk
-    const smallFiles = files.filter((file) => file.size <= CHUNK_SIZE)
-    const largeFiles = files.filter((file) => file.size > CHUNK_SIZE)
-
-    const uploadedFiles: Array<{
-      fileId: string
-      filename: string
-      isText: boolean
-    }> = []
-
-    // Calculate total size for overall progress (including text items)
-    const totalSize =
-      files.reduce((sum, file) => sum + file.size, 0) +
-      textItems.reduce(
-        (sum, textItem) =>
-          sum + new TextEncoder().encode(textItem.content).length,
-        0,
-      )
-    let completedSize = 0
 
     // Track individual file progress
     const fileProgressMap = new Map<string, FileUploadProgress>()
@@ -101,7 +83,7 @@ export class PocketChestAPI {
     // Initialize progress for all files as waiting
     files.forEach((file) => {
       fileProgressMap.set(file.name, {
-        fileId: '', // Will be set when upload starts
+        fileId: '',
         filename: file.name,
         uploadedBytes: 0,
         totalBytes: file.size,
@@ -115,7 +97,7 @@ export class PocketChestAPI {
     textItems.forEach((textItem, index) => {
       const textSize = new TextEncoder().encode(textItem.content).length
       fileProgressMap.set(textItem.filename || `text-${index + 1}`, {
-        fileId: '', // Will be set when upload starts
+        fileId: '',
         filename: textItem.filename || `text-${index + 1}`,
         uploadedBytes: 0,
         totalBytes: textSize,
@@ -131,10 +113,98 @@ export class PocketChestAPI {
       }
     }
 
+    // --- Encrypt files if encryption is enabled ---
+    let processedFiles = files
+    let processedTextItems = textItems
+
+    if (encryptionPassword) {
+      // Encrypt each file
+      const encryptedFiles: File[] = []
+      for (const file of files) {
+        const fp = fileProgressMap.get(file.name)
+        if (fp) {
+          fp.status = 'encrypting'
+        }
+        updateFileProgress()
+
+        const encryptedBlob = await encryptFile(file, encryptionPassword, (pct) => {
+          const fp = fileProgressMap.get(file.name)
+          if (fp) {
+            fp.percentage = Math.round(pct / 2) // encrypting is first 50%
+            fp.uploadedBytes = Math.round((file.size * pct) / 100)
+          }
+          updateFileProgress()
+        })
+
+        const encryptedFile = new File([encryptedBlob], file.name, {
+          type: 'application/octet-stream',
+        })
+        encryptedFiles.push(encryptedFile)
+
+        // Update totalBytes to encrypted size for accurate upload progress
+        if (fp) {
+          fp.totalBytes = encryptedFile.size
+          fp.status = 'waiting'
+          fp.percentage = 0
+          fp.uploadedBytes = 0
+        }
+        updateFileProgress()
+      }
+      processedFiles = encryptedFiles
+
+      // Encrypt text items
+      const encryptedTextItems: TextItem[] = []
+      for (const textItem of textItems) {
+        const key = textItem.filename || `text-${textItems.indexOf(textItem) + 1}`
+        const fp = fileProgressMap.get(key)
+        if (fp) {
+          fp.status = 'encrypting'
+        }
+        updateFileProgress()
+
+        const encryptedContent = await encryptTextContent(
+          textItem.content,
+          encryptionPassword,
+        )
+        encryptedTextItems.push({
+          content: encryptedContent,
+          filename: textItem.filename,
+        })
+
+        if (fp) {
+          fp.totalBytes = new TextEncoder().encode(encryptedContent).length
+          fp.status = 'waiting'
+          fp.percentage = 0
+          fp.uploadedBytes = 0
+        }
+        updateFileProgress()
+      }
+      processedTextItems = encryptedTextItems
+    }
+
+    // Separate small and large files based on (possibly encrypted) sizes
+    const smallFiles = processedFiles.filter((file) => file.size <= CHUNK_SIZE)
+    const largeFiles = processedFiles.filter((file) => file.size > CHUNK_SIZE)
+
+    const uploadedFiles: Array<{
+      fileId: string
+      filename: string
+      isText: boolean
+    }> = []
+
+    // Calculate total size for overall progress (using processed sizes)
+    const totalSize =
+      processedFiles.reduce((sum, file) => sum + file.size, 0) +
+      processedTextItems.reduce(
+        (sum, textItem) =>
+          sum + new TextEncoder().encode(textItem.content).length,
+        0,
+      )
+    let completedSize = 0
+
     // Upload text items first if any
-    if (textItems.length > 0) {
-      // Mark all text items as starting
-      textItems.forEach((textItem, index) => {
+    if (processedTextItems.length > 0) {
+      processedTextItems.forEach((textItem, index) => {
         const key = textItem.filename || `text-${index + 1}`
         const fileProgress = fileProgressMap.get(key)
         if (fileProgress) {
@@ -147,13 +217,11 @@ export class PocketChestAPI {
         sessionId,
         uploadToken,
         [],
-        textItems,
+        processedTextItems,
       )
 
-      // Mark all text items as completed and update their fileIds
       result.uploadedFiles.forEach((uploadedFile) => {
         if (uploadedFile.isText) {
-          // Find the corresponding text item by filename
           const key = uploadedFile.filename
           const fileProgress = fileProgressMap.get(key)
           if (fileProgress) {
@@ -161,7 +229,6 @@ export class PocketChestAPI {
             fileProgress.status = 'completed'
             fileProgress.uploadedBytes = fileProgress.totalBytes
             fileProgress.percentage = 100
-            // Add text size to completed size for overall progress
             completedSize += fileProgress.totalBytes
           }
         }

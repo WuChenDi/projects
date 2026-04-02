@@ -1,11 +1,11 @@
+/** biome-ignore-all lint/security/noDangerouslySetInnerHtml: Required for JSON-LD structured data */
+
 import { Toaster } from '@cdlab996/ui/components/sonner'
-import Aurora from '@cdlab996/ui/reactbits/Aurora'
-import Particles from '@cdlab996/ui/reactbits/Particles'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+
 import '@cdlab996/ui/globals.css'
-import { ClientProviders } from '@/components/layout/client-providers'
-import { Header } from '@/components/layout/header'
+import { ClientProviders, Header } from '@/components/layout'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -16,31 +16,6 @@ const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
 })
-
-const BackgroundEffects = () => (
-  <>
-    <div className="fixed inset-0">
-      <Aurora
-        colorStops={['#4C00FF', '#97FFF4', '#FF3D9A']}
-        blend={3.3}
-        amplitude={0.3}
-        speed={1.3}
-      />
-    </div>
-    <div className="fixed inset-0">
-      <Particles
-        particleColors={['#ffffff', '#ffffff']}
-        particleCount={400}
-        particleSpread={10}
-        speed={0.05}
-        particleBaseSize={100}
-        moveParticlesOnHover={false}
-        alphaParticles={false}
-        disableRotation={false}
-      />
-    </div>
-  </>
-)
 
 export const metadata: Metadata = {
   title: 'Dropply',
