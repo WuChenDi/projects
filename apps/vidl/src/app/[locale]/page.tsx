@@ -10,7 +10,7 @@ import { IKPageContainer } from '@cdlab996/ui/IK'
 import { ListPlus, Video } from 'lucide-react'
 import Script from 'next/script'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   BatchInputCard,
   BatchQueueCard,
@@ -28,6 +28,14 @@ export default function VideoDownloaderPage() {
   const batch = useBatchActions()
 
   const isDownloading = useDownloadStore((s) => s.downloadState.isDownloading)
+  const isStreamSupported = useDownloadStore((s) => s.isStreamSupported)
+
+  // Fallback: if StreamSaver.js loaded before the Script onLoad could fire
+  useEffect(() => {
+    if (!isStreamSupported && (window as any).streamSaver) {
+      actions.onStreamSaverReady()
+    }
+  }, [isStreamSupported, actions])
 
   const [activeTab, setActiveTab] = useState('single')
 
