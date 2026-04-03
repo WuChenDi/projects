@@ -8,8 +8,7 @@ function parseConfig(url: URL, query: Record<string, string>): SDKConfig {
     serverUrl: query.serverUrl || `${protocol}://${url.host}/`,
     siteId: query.siteId || 'default-site',
     displayElementId: query.displayElementId || 'liveuser',
-    totalCountElementId:
-      query.totalCountElementId || 'liveuser_totalvisits',
+    totalCountElementId: query.totalCountElementId || 'liveuser_totalvisits',
     reconnectDelay: query.reconnectDelay
       ? Number.parseInt(query.reconnectDelay)
       : 3000,
@@ -19,7 +18,7 @@ function parseConfig(url: URL, query: Record<string, string>): SDKConfig {
 }
 
 const SDK_SCRIPT = `(function(cfg){
-  var ws,timer,hbTimer,el,totalEl;
+  var ws,timer,hbTimer,el,totalEl,closing=false;
   var cid='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){
     var r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16);
   });
@@ -42,12 +41,14 @@ const SDK_SCRIPT = `(function(cfg){
   }
 
   function connect(){
+    if(closing)return;
     if(ws&&ws.readyState===1)return;
     log('Connecting...');
     if(el)el.textContent='Connecting...';
     if(cfg.enableTotalCount&&totalEl)totalEl.textContent='Loading...';
 
-    var u=cfg.serverUrl.replace(/^http/,'ws')+'ws?siteId='+encodeURIComponent(cfg.siteId)
+    var base=cfg.serverUrl.replace(/^http/,'ws').replace(/\\/$/,'');
+    var u=base+'/ws?siteId='+encodeURIComponent(cfg.siteId)
       +'&clientId='+encodeURIComponent(cid);
     if(cfg.enableTotalCount)u+='&enableTotalCount=true';
 
@@ -61,17 +62,19 @@ const SDK_SCRIPT = `(function(cfg){
       try{
         var m=JSON.parse(e.data);
         if(m.type==='update')update(m.count,m.totalCount);
-        else if(m.type==='heartbeat'&&m.totalCount!==undefined&&cfg.enableTotalCount&&totalEl){
-          totalEl.textContent=fmt(m.totalCount);
+        else if(m.type==='heartbeat'){
+          if(m.count!==undefined)update(m.count,m.totalCount);
         }
       }catch(err){log('Parse error: '+err);}
     };
     ws.onclose=function(){
       log('Disconnected');
-      if(el)el.textContent='Reconnecting...';
       clearInterval(hbTimer);
-      clearTimeout(timer);
-      timer=setTimeout(connect,cfg.reconnectDelay);
+      if(!closing){
+        if(el)el.textContent='Reconnecting...';
+        clearTimeout(timer);
+        timer=setTimeout(connect,cfg.reconnectDelay);
+      }
     };
     ws.onerror=function(){log('Error');};
   }
@@ -86,7 +89,9 @@ const SDK_SCRIPT = `(function(cfg){
 
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
   window.addEventListener('beforeunload',function(){
-    ws&&ws.close();clearTimeout(timer);clearInterval(hbTimer);
+    closing=true;
+    clearTimeout(timer);clearInterval(hbTimer);
+    ws&&ws.close();
   });
 })`
 
