@@ -9,6 +9,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@cdlab996/ui/components/dialog'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupText,
+  InputGroupTextarea,
+} from '@cdlab996/ui/components/input-group'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { copyToClipboard, formatBytes } from '@cdlab996/utils'
 import JSZip from 'jszip'
@@ -186,43 +193,45 @@ export function RetrieveResultCard({
                     <span className="text-sm font-medium truncate flex-1">
                       {displayName}
                     </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatBytes({ bytes: file.size })}
-                    </span>
                   </div>
                   {file.content && (
-                    <>
-                      <div className="bg-muted/50 rounded-md p-2 max-h-32 overflow-y-auto border border-border/30 mb-2">
-                        <pre className="text-xs whitespace-pre-wrap font-mono text-muted-foreground">
-                          {file.content}
-                        </pre>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
+                    <InputGroup>
+                      <InputGroupTextarea
+                        value={file.content}
+                        readOnly
+                        className="min-h-[80px] max-h-32 resize-none font-mono text-xs text-muted-foreground bg-muted/50 break-all"
+                      />
+                      <InputGroupAddon align="block-end" className="border-t">
+                        <InputGroupText className="text-xs text-muted-foreground">
+                          {formatBytes({ bytes: file.size })}
+                        </InputGroupText>
+                        <InputGroupButton
+                          size="icon-xs"
+                          variant="outline"
+                          className="ml-auto text-xs"
                           onClick={() =>
                             handleCopyText(file.content!, file.fileId)
                           }
-                          size="sm"
-                          variant="outline"
-                          className={cn(
-                            'flex-1 text-xs',
-                            copiedFileId === file.fileId &&
-                              'text-emerald-600 border-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/30',
-                          )}
+                          title={
+                            copiedFileId === file.fileId
+                              ? t('copied')
+                              : t('copy')
+                          }
                         >
                           {copiedFileId === file.fileId ? (
                             <>
-                              <CheckCircle className="size-4" />
-                              {t('copied')}
+                              <CheckCircle className="size-3.5" />
                             </>
                           ) : (
                             <>
-                              <Copy className="size-4" />
-                              {t('copy')}
+                              <Copy className="size-3.5" />
                             </>
                           )}
-                        </Button>
-                        <Button
+                        </InputGroupButton>
+                        <InputGroupButton
+                          size="icon-xs"
+                          variant="outline"
+                          disabled={isExpired}
                           onClick={() =>
                             onDownload(
                               file.fileId,
@@ -231,15 +240,12 @@ export function RetrieveResultCard({
                               result.encryptionKey,
                             )
                           }
-                          size="sm"
-                          variant="outline"
-                          className="text-xs"
-                          disabled={isExpired}
+                          title={isExpired ? t('expired') : t('download')}
                         >
-                          <Download className="size-4" />
-                        </Button>
-                      </div>
-                    </>
+                          <Download className="size-3.5" />
+                        </InputGroupButton>
+                      </InputGroupAddon>
+                    </InputGroup>
                   )}
                 </div>
               )
@@ -268,13 +274,13 @@ export function RetrieveResultCard({
                       result.encryptionKey,
                     )
                   }
-                  size="sm"
+                  size="icon-xs"
                   variant="outline"
                   className="text-xs ml-2 shrink-0"
                   disabled={isExpired}
+                  title={isExpired ? t('expired') : t('download')}
                 >
-                  <Download className="size-4" />
-                  {t('download')}
+                  <Download className="size-3.5" />
                 </Button>
               </div>
             ))}

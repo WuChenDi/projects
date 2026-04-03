@@ -1,12 +1,24 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
-import { Card, CardContent } from '@cdlab996/ui/components/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@cdlab996/ui/components/dialog'
+import { Field } from '@cdlab996/ui/components/field'
 import { Input } from '@cdlab996/ui/components/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupText,
+  InputGroupTextarea,
+} from '@cdlab996/ui/components/input-group'
 import { Label } from '@cdlab996/ui/components/label'
-import { Textarea } from '@cdlab996/ui/components/textarea'
-import { cn } from '@cdlab996/ui/lib/utils'
-import { CheckCircle, Mail, Send, X } from 'lucide-react'
+import { CheckCircle, Loader2, Mail, Send } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { PocketChestAPI } from '@/lib'
@@ -30,9 +42,18 @@ export function EmailShare({
   const [message, setMessage] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [sent, setSent] = useState(false)
-  const [error, setError] = useState<string>('')
+  const [error, setError] = useState('')
 
   const api = new PocketChestAPI()
+
+  const resetForm = () => {
+    setRecipientEmail('')
+    setRecipientName('')
+    setSenderName('')
+    setMessage('')
+    setSent(false)
+    setError('')
+  }
 
   const handleSend = async () => {
     if (!recipientEmail.trim()) return
@@ -60,85 +81,49 @@ export function EmailShare({
       } else {
         throw new Error(result.message)
       }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to send email'
-      setError(errorMessage)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send email')
     } finally {
       setIsSending(false)
     }
   }
 
-  const resetForm = () => {
-    setRecipientEmail('')
-    setRecipientName('')
-    setSenderName('')
-    setMessage('')
-    setSent(false)
-    setError('')
-  }
-
-  const handleClose = () => {
-    onClose()
-    if (!isSending) {
+  const handleOpenChange = (open: boolean) => {
+    if (!open && !isSending) {
+      onClose()
       resetForm()
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape' && !isSending) {
-      handleClose()
-    }
-  }
-
-  if (!isVisible) return null
-
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      onClick={handleClose}
-      onKeyDown={handleKeyPress}
-    >
-      <Card
-        className="w-full max-w-md mx-auto border-none bg-card/90 backdrop-blur-xl shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <CardContent className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-semibold flex items-center gap-2">
-              <Mail className="size-5 text-primary" />
-              {t('title')}
-            </h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClose}
-              disabled={isSending}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <X className="size-4" />
-            </Button>
+    <Dialog open={isVisible} onOpenChange={handleOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <div className="flex items-center gap-2">
+            <Mail className="size-5 text-primary" />
+            <DialogTitle>{t('title')}</DialogTitle>
           </div>
+          <DialogDescription className="sr-only">
+            {t('title')}
+          </DialogDescription>
+        </DialogHeader>
 
-          {sent ? (
-            <div className="text-center py-8">
-              <CheckCircle className="size-12 mx-auto text-green-500 mb-4" />
-              <h4 className="text-lg font-semibold text-green-600 mb-2">
-                {t('sentTitle')}
-              </h4>
-              <p className="text-muted-foreground">{t('sentMessage')}</p>
-            </div>
-          ) : (
+        {sent ? (
+          <div className="flex flex-col items-center gap-3 py-8">
+            <CheckCircle className="size-12 text-emerald-500" />
+            <p className="text-lg font-semibold">{t('sentTitle')}</p>
+            <p className="text-sm text-muted-foreground">{t('sentMessage')}</p>
+          </div>
+        ) : (
+          <>
+            {error && (
+              <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
+                {error}
+              </p>
+            )}
+
             <div className="space-y-4">
-              {error && (
-                <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg">
-                  <p className="text-red-700 dark:text-red-300 text-sm">
-                    {error}
-                  </p>
-                </div>
-              )}
-
-              <div>
+              <Field>
                 <Label htmlFor="recipient-email">{t('recipientEmail')}</Label>
                 <Input
                   id="recipient-email"
@@ -146,94 +131,86 @@ export function EmailShare({
                   value={recipientEmail}
                   onChange={(e) => setRecipientEmail(e.target.value)}
                   placeholder={t('recipientEmailPlaceholder')}
-                  className="mt-1"
                   disabled={isSending}
                   autoFocus
                 />
-              </div>
+              </Field>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
+                <Field>
                   <Label htmlFor="recipient-name">{t('theirName')}</Label>
                   <Input
                     id="recipient-name"
                     value={recipientName}
                     onChange={(e) => setRecipientName(e.target.value)}
                     placeholder={t('theirNamePlaceholder')}
-                    className="mt-1"
                     disabled={isSending}
                   />
-                </div>
-                <div>
+                </Field>
+                <Field>
                   <Label htmlFor="sender-name">{t('yourName')}</Label>
                   <Input
                     id="sender-name"
                     value={senderName}
                     onChange={(e) => setSenderName(e.target.value)}
                     placeholder={t('yourNamePlaceholder')}
-                    className="mt-1"
                     disabled={isSending}
                   />
-                </div>
+                </Field>
               </div>
 
-              <div>
+              <Field>
                 <Label htmlFor="message">{t('personalMessage')}</Label>
-                <Textarea
-                  id="message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder={t('messagePlaceholder')}
-                  className="mt-1 h-20 resize-none"
-                  maxLength={500}
-                  disabled={isSending}
-                />
-                <div className="flex justify-between items-center mt-1">
-                  <span className="text-xs text-muted-foreground">
-                    {t('messageHint')}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {message.length}/500
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <Button
-                  onClick={handleClose}
-                  disabled={isSending}
-                  variant="outline"
-                  className="flex-1 h-12"
-                >
-                  {t('cancel')}
-                </Button>
-
-                <Button
-                  onClick={handleSend}
-                  disabled={!recipientEmail.trim() || isSending}
-                  className={cn(
-                    'flex-1 h-12 bg-linear-to-r from-purple-500 to-blue-500',
-                    'hover:from-purple-600 hover:to-blue-600 text-white border-none',
-                    'disabled:opacity-50 disabled:cursor-not-allowed',
-                  )}
-                >
-                  {isSending ? (
-                    <>
-                      <div className="animate-spin mr-2">⏳</div>
-                      {t('sending')}
-                    </>
-                  ) : (
-                    <>
-                      <Send className="size-4 mr-2" />
-                      {t('sendEmail')}
-                    </>
-                  )}
-                </Button>
-              </div>
+                <InputGroup>
+                  <InputGroupTextarea
+                    id="message"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder={t('messagePlaceholder')}
+                    className=" resize-none break-all"
+                    maxLength={500}
+                    disabled={isSending}
+                  />
+                  <InputGroupAddon align="block-end" className="border-t">
+                    <InputGroupText className="text-xs text-muted-foreground">
+                      {t('messageHint')}
+                    </InputGroupText>
+                    <InputGroupText className="ml-auto text-xs text-muted-foreground">
+                      {message.length}/500
+                    </InputGroupText>
+                  </InputGroupAddon>
+                </InputGroup>
+              </Field>
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+                disabled={isSending}
+              >
+                {t('cancel')}
+              </Button>
+              <Button
+                onClick={handleSend}
+                disabled={!recipientEmail.trim() || isSending}
+              >
+                {isSending ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    {t('sending')}
+                  </>
+                ) : (
+                  <>
+                    <Send className="size-4" />
+                    {t('sendEmail')}
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   )
 }
