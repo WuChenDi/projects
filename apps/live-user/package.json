@@ -1,0 +1,30 @@
+{
+  "name": "@cdlab996/live-user",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A Cloudflare Worker for managing live user data",
+  "author": "wudi <wuchendi96@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/WuChenDi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WuChenDi/projects.git",
+    "directory": "apps/live-user"
+  },
+  "module": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev --ip 0.0.0.0 --port 3021",
+    "deploy": "wrangler deploy --minify",
+    "build": "bun build src/index.tsx --outdir dist --target browser",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+  },
+  "dependencies": {
+    "hono": "catalog:prod"
+  },
+  "devDependencies": {
+    "@cdlab996/tsconfig": "workspace:*",
+    "@cloudflare/workers-types": "catalog:dev",
+    "wrangler": "catalog:dev"
+  }
+}

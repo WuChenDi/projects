@@ -650,6 +650,22 @@ importers:
         specifier: catalog:dev
         version: 6.0.2
 
+  apps/live-user:
+    dependencies:
+      hono:
+        specifier: catalog:prod
+        version: 4.12.9
+    devDependencies:
+      '@cdlab996/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@cloudflare/workers-types':
+        specifier: catalog:dev
+        version: 4.20260317.1
+      wrangler:
+        specifier: catalog:dev
+        version: 4.77.0(@cloudflare/workers-types@4.20260317.1)
+
   apps/repo-changelog:
     dependencies:
       '@cdlab996/genid':
