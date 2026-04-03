@@ -153,6 +153,17 @@ https://values.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/value-vision/og-image.png" alt="value-vision" />
 </details>
 
+### LiveUser
+
+**实时在线用户计数器**
+
+https://live-user.chendi.workers.dev/
+
+- 嵌入一行 script 标签，即可在任意网页上显示实时在线人数与总访问量
+- WebSocket Hibernation API —— Durable Object 空闲时自动休眠，最大程度降低成本
+- 访问量存储在 DO 内嵌 SQLite 中，原子更新，高并发下不丢数据
+- 核心技术：Hono + Cloudflare Workers + Durable Objects + SQLite
+
 ### repo-changelog
 
 **开源项目 Release / Changelog 聚合面板**
@@ -196,6 +207,7 @@ pnpm --filter value-vision dev     # 只启动 Value Vision (port 3011)
 pnpm --filter byplay dev           # 只启动 ByPlay (port 3016)
 pnpm --filter byplay-log dev       # 只启动 ByPlay Log (port 3017)
 pnpm --filter dropply-web dev      # 只启动 Dropply Web (port 3013)
+pnpm --filter @cdlab996/live-user dev  # 只启动 LiveUser (port 3021)
 pnpm --filter repo-changelog dev   # 只启动 Repo Changelog (port 3019)
 pnpm build                         # 构建所有应用
 pnpm --filter clearify run build
@@ -224,6 +236,7 @@ pnpm clean                         # 清理 node_modules / 缓存 / 构建产物
 │   ├── clearify/          # 图像 & 视频工具箱
 │   ├── dropply-api/       # Dropply 文件分享 Cloudflare API
 │   ├── dropply-web/       # Dropply 文件分享 Web 前端
+│   ├── live-user/         # 实时在线用户计数器
 │   ├── vidl/              # 视频下载工具（M3U8/HLS、MP4 等）
 │   ├── repo-changelog/    # GitHub Release / Changelog 聚合工具
 │   ├── SecureC/           # 加解密工具
