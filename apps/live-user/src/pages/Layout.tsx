@@ -3,25 +3,210 @@ import type { FC, PropsWithChildren } from 'hono/jsx'
 interface LayoutProps {
   title?: string
   description?: string
+  keywords?: string
+  canonicalUrl?: string
+  ogImage?: string
+  ogType?: 'website' | 'article'
 }
+
+const SITE_URL = 'https://live-user.cdlab.workers.dev'
+const SITE_NAME = 'LiveUser'
+const DEFAULT_OG_IMAGE = 'https://notes-wudi.pages.dev/images/logo.png'
 
 export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
   title = 'LiveUser',
-  description = 'Real-time online user counter for any website',
+  description = "Real-time online user counter. Drop a script tag, see who's here.",
+  keywords = 'live user counter, real-time analytics, online users, website traffic, SSE, script tag, visitor counter',
+  canonicalUrl = '/',
+  ogImage = DEFAULT_OG_IMAGE,
+  ogType = 'website',
   children,
 }) => {
+  const fullTitle = title === 'LiveUser' ? title : `${title} - LiveUser`
+  const fullCanonicalUrl = `${SITE_URL}${canonicalUrl}`
+
   return (
     <html lang="en">
       <head>
+        {/* Basic */}
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{title}</title>
+        <title>{fullTitle}</title>
         <meta name="description" content={description} />
-        <link
-          rel="icon"
-          type="image/png"
-          href="https://notes-wudi.pages.dev/images/logo.png"
+        <meta name="keywords" content={keywords} />
+
+        {/* Canonical */}
+        <link rel="canonical" href={fullCanonicalUrl} />
+
+        {/* Favicon */}
+        <link rel="icon" type="image/png" href={DEFAULT_OG_IMAGE} />
+        <link rel="apple-touch-icon" href={DEFAULT_OG_IMAGE} />
+
+        {/* Robots / Crawl */}
+        <meta
+          name="robots"
+          content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
         />
+        <meta name="referrer" content="no-referrer-when-downgrade" />
+        <meta name="revisit-after" content="3 days" />
+        <meta name="distribution" content="global" />
+        <meta name="rating" content="general" />
+
+        {/* Author / Publisher */}
+        <meta name="author" content="wudi" />
+        <meta name="creator" content="wudi" />
+        <meta name="publisher" content="wudi" />
+        <meta name="copyright" content="© 2025 wudi. All rights reserved." />
+
+        {/* App / Category */}
+        <meta name="application-name" content={SITE_NAME} />
+        <meta name="category" content="Developer Tools, Analytics, Real-time" />
+        <meta
+          name="classification"
+          content="Developer Tools, Web Analytics, Real-time Monitoring"
+        />
+        <meta name="language" content="en" />
+
+        {/* Open Graph */}
+        <meta property="og:title" content={fullTitle} />
+        <meta property="og:description" content={description} />
+        <meta property="og:type" content={ogType} />
+        <meta property="og:url" content={fullCanonicalUrl} />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta
+          property="og:image:alt"
+          content={`${SITE_NAME} - ${description}`}
+        />
+        <meta property="og:locale" content="en_US" />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={fullTitle} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImage} />
+        <meta name="twitter:site" content="@wuchendi96" />
+        <meta name="twitter:creator" content="@wuchendi96" />
+
+        {/* JSON-LD: WebSite */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: SITE_NAME,
+              url: SITE_URL,
+              description,
+              inLanguage: 'en',
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: `${SITE_URL}/search?q={search_term_string}`,
+                'query-input': 'required name=search_term_string',
+              },
+            }),
+          }}
+        />
+
+        {/* JSON-LD: WebApplication */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebApplication',
+              name: SITE_NAME,
+              description,
+              url: SITE_URL,
+              applicationCategory: 'DeveloperApplication',
+              operatingSystem: 'Web',
+              browserRequirements:
+                'Requires JavaScript. Compatible with Chrome 90+, Firefox 88+, Safari 14+, Edge 90+',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'USD',
+                availability: 'https://schema.org/InStock',
+              },
+              author: {
+                '@type': 'Person',
+                name: 'wudi',
+                url: 'https://github.com/WuChenDi',
+              },
+              publisher: {
+                '@type': 'Organization',
+                name: 'wudi',
+                url: 'https://github.com/WuChenDi',
+              },
+              inLanguage: 'en',
+              isAccessibleForFree: true,
+              keywords:
+                'live user counter, real-time analytics, SSE, online users, website traffic, script tag',
+              screenshot: {
+                '@type': 'ImageObject',
+                contentUrl: DEFAULT_OG_IMAGE,
+                description:
+                  'LiveUser - Real-time online user counter interface',
+              },
+              softwareVersion: '1.0.0',
+              featureList: [
+                'Real-time online user counting via SSE',
+                'One-line script tag integration',
+                'Total visit count tracking',
+                'Multi-site support via siteId',
+                'Customizable display element',
+                'Auto-reconnect on disconnect',
+                'Debug mode for development',
+                'Zero-dependency embed script',
+              ],
+              sameAs: [
+                'https://github.com/WuChenDi',
+                'https://x.com/wuchendi96',
+              ],
+            }),
+          }}
+        />
+
+        {/* JSON-LD: Organization */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'wudi',
+              url: 'https://github.com/WuChenDi',
+              logo: DEFAULT_OG_IMAGE,
+              foundingDate: '2025',
+              sameAs: [
+                'https://github.com/WuChenDi',
+                'https://x.com/wuchendi96',
+              ],
+            }),
+          }}
+        />
+
+        {/* JSON-LD: BreadcrumbList */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                {
+                  '@type': 'ListItem',
+                  position: 1,
+                  name: 'Home',
+                  item: SITE_URL,
+                },
+              ],
+            }),
+          }}
+        />
+
         <style
           dangerouslySetInnerHTML={{
             __html: `
@@ -60,8 +245,7 @@ footer{border-top:1px solid var(--border);padding:1.5rem 0;text-align:center;fon
         {children}
         <footer>
           <div class="container">
-            &copy; 2025-PRESENT{' '}
-            <a href="https://github.com/WuChenDi/">wudi</a>
+            &copy; 2025-PRESENT <a href="https://github.com/WuChenDi/">wudi</a>
           </div>
         </footer>
       </body>
