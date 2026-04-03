@@ -157,7 +157,7 @@ https://values.pages.dev/
 
 **实时在线用户计数器**
 
-https://live-user.chendi.workers.dev/
+https://live-user.cdlab.workers.dev/
 
 - 嵌入一行 script 标签，即可在任意网页上显示实时在线人数与总访问量
 - WebSocket Hibernation API —— Durable Object 空闲时自动休眠，最大程度降低成本

@@ -157,7 +157,7 @@ https://values.pages.dev/
 
 **Real-time Online User Counter**
 
-https://live-user.chendi.workers.dev/
+https://live-user.cdlab.workers.dev/
 
 - Embed a single script tag to display real-time online user count and total visits on any webpage
 - WebSocket Hibernation API — Durable Object hibernates when idle to minimize costs
