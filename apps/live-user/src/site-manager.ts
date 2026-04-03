@@ -23,8 +23,7 @@ export class SiteManager extends DurableObject<Record<string, unknown>> {
 
     const clientId = url.searchParams.get('clientId') || crypto.randomUUID()
     const siteId = url.searchParams.get('siteId') || 'default-site'
-    const enableTotalCount =
-      url.searchParams.get('enableTotalCount') === 'true'
+    const enableTotalCount = url.searchParams.get('enableTotalCount') === 'true'
 
     const pair = new WebSocketPair()
     const [client, server] = Object.values(pair)
@@ -43,7 +42,7 @@ export class SiteManager extends DurableObject<Record<string, unknown>> {
       this.incrementTotalCount(siteId)
     }
 
-    this.broadcast(siteId, enableTotalCount)
+    this.broadcast(siteId)
 
     return new Response(null, { status: 101, webSocket: client })
   }
@@ -58,6 +57,7 @@ export class SiteManager extends DurableObject<Record<string, unknown>> {
       if (msg.type === 'heartbeat') {
         const response: Record<string, unknown> = {
           type: 'heartbeat',
+          count: this.getOnlineCount(),
           timestamp: Math.floor(Date.now() / 1000),
         }
         if (state.enableTotalCount) {
@@ -65,26 +65,30 @@ export class SiteManager extends DurableObject<Record<string, unknown>> {
         }
         ws.send(JSON.stringify(response))
       } else if (msg.type === 'join') {
-        this.broadcast(state.siteId, state.enableTotalCount)
+        this.broadcast(state.siteId)
       }
     } catch {
       // ignore malformed messages
     }
   }
 
+  // Bug fix: Hibernation API calls this AFTER socket is already closed
+  // Do NOT call ws.close() here — it's redundant and can throw
   async webSocketClose(
-    ws: WebSocket,
-    code: number,
-    reason: string,
+    _ws: WebSocket,
+    _code: number,
+    _reason: string,
     _wasClean: boolean,
   ) {
-    ws.close(code, reason)
-    const state = ws.deserializeAttachment() as ConnectionState
-    this.broadcast(state.siteId, state.enableTotalCount)
+    const state = _ws.deserializeAttachment() as ConnectionState
+    this.broadcast(state.siteId)
   }
 
+  // Bug fix: broadcast after error so other clients get updated count
   async webSocketError(ws: WebSocket, _error: unknown) {
+    const state = ws.deserializeAttachment() as ConnectionState
     ws.close(1011, 'WebSocket error')
+    this.broadcast(state.siteId)
   }
 
   private getOnlineCount(): number {
@@ -109,18 +113,20 @@ export class SiteManager extends DurableObject<Record<string, unknown>> {
     )
   }
 
-  private broadcast(siteId: string, enableTotalCount: boolean): void {
+  // Bug fix: respect each client's own enableTotalCount preference
+  // instead of using the triggering connection's flag
+  private broadcast(siteId: string): void {
     const count = this.getOnlineCount()
-    const data: Record<string, unknown> = { type: 'update', count }
+    const totalCount = this.getTotalCount(siteId)
 
-    if (enableTotalCount) {
-      data.totalCount = this.getTotalCount(siteId)
-    }
-
-    const message = JSON.stringify(data)
     for (const client of this.ctx.getWebSockets()) {
       try {
-        client.send(message)
+        const state = client.deserializeAttachment() as ConnectionState
+        const data: Record<string, unknown> = { type: 'update', count }
+        if (state.enableTotalCount) {
+          data.totalCount = totalCount
+        }
+        client.send(JSON.stringify(data))
       } catch {
         // client already disconnected
       }
