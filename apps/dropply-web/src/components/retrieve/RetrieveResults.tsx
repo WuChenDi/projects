@@ -35,7 +35,7 @@ function RetrievingCard() {
     <Card
       className={cn(
         'relative p-4 border',
-        'bg-gradient-to-br from-emerald-50/30 to-teal-50/30 border-emerald-200/30',
+        'bg-linear-to-br from-emerald-50/30 to-teal-50/30 border-emerald-200/30',
         'dark:from-emerald-950/10 dark:to-teal-950/10 dark:border-emerald-800/20',
       )}
     >
@@ -83,7 +83,9 @@ export function RetrieveResults({
           <div className="flex items-center justify-between gap-3 p-4 rounded-lg border border-red-200/50 bg-red-50/80 dark:bg-red-950/30 dark:border-red-800/50">
             <div className="flex items-center gap-2">
               <AlertCircle size={16} className="text-red-500 shrink-0" />
-              <p className="text-sm text-red-700 dark:text-red-300 font-medium">{error}</p>
+              <p className="text-sm text-red-700 dark:text-red-300 font-medium">
+                {error}
+              </p>
             </div>
             <Button
               onClick={onClearError}
@@ -116,9 +118,7 @@ export function RetrieveResults({
             <p className="text-sm font-medium text-muted-foreground">
               {t('noResultsYet')}
             </p>
-            <p className="text-xs text-muted-foreground">
-              {t('emptyHint')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('emptyHint')}</p>
           </div>
         ) : null}
       </CardContent>

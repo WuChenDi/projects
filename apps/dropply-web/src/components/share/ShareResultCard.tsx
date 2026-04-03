@@ -7,7 +7,6 @@ import { copyToClipboard } from '@cdlab996/utils'
 import { CheckCircle, Copy, Link2, Mail, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { useI18n } from '@/i18n'
 import type { ShareResult } from '@/store/useShareStore'
 
 interface ShareResultCardProps {
@@ -38,7 +37,7 @@ export function ShareResultCard({
     <Card
       className={cn(
         'relative p-4 border',
-        'bg-gradient-to-br from-blue-50/30 to-indigo-50/30 border-blue-200/30',
+        'bg-linear-to-br from-blue-50/30 to-indigo-50/30 border-blue-200/30',
         'dark:from-blue-950/10 dark:to-indigo-950/10 dark:border-blue-800/20',
       )}
     >

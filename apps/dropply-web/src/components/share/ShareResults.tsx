@@ -11,7 +11,14 @@ import {
 import { Progress } from '@cdlab996/ui/components/progress'
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { cn } from '@cdlab996/ui/lib/utils'
-import { AlertCircle, Archive, Loader2, RotateCcw, Trash2, X } from 'lucide-react'
+import {
+  AlertCircle,
+  Archive,
+  Loader2,
+  RotateCcw,
+  Trash2,
+  X,
+} from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { ShareResultCard } from '@/components/share/ShareResultCard'
 import type { ShareResult } from '@/store/useShareStore'
@@ -54,8 +61,8 @@ function UploadingCard({
       className={cn(
         'relative p-4 border',
         uploadStatus === 'error'
-          ? 'bg-gradient-to-br from-red-50/30 to-rose-50/30 border-red-200/30 dark:from-red-950/10 dark:to-rose-950/10 dark:border-red-800/20'
-          : 'bg-gradient-to-br from-blue-50/30 to-indigo-50/30 border-blue-200/30 dark:from-blue-950/10 dark:to-indigo-950/10 dark:border-blue-800/20',
+          ? 'bg-linear-to-br from-red-50/30 to-rose-50/30 border-red-200/30 dark:from-red-950/10 dark:to-rose-950/10 dark:border-red-800/20'
+          : 'bg-linear-to-br from-blue-50/30 to-indigo-50/30 border-blue-200/30 dark:from-blue-950/10 dark:to-indigo-950/10 dark:border-blue-800/20',
       )}
     >
       <div className="space-y-3">
@@ -64,7 +71,10 @@ function UploadingCard({
             {uploadStatus === 'error' ? (
               <AlertCircle size={14} className="text-red-500 shrink-0" />
             ) : (
-              <Loader2 size={14} className="text-primary animate-spin shrink-0" />
+              <Loader2
+                size={14}
+                className="text-primary animate-spin shrink-0"
+              />
             )}
             <Skeleton className="h-5 w-20" />
           </div>
@@ -175,9 +185,7 @@ export function ShareResults({
             <p className="text-sm font-medium text-muted-foreground">
               {t('noResultsYet')}
             </p>
-            <p className="text-xs text-muted-foreground">
-              {t('emptyHint')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('emptyHint')}</p>
           </div>
         )}
       </CardContent>

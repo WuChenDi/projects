@@ -26,8 +26,8 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { decryptFile } from '@/lib/crypto'
 import { PocketChestAPI } from '@/lib'
+import { decryptFile } from '@/lib/crypto'
 import type { RetrieveResult } from '@/store/useRetrieveStore'
 
 interface RetrieveResultCardProps {
@@ -63,7 +63,11 @@ export function RetrieveResultCard({
             zip.file(file.filename, file.content)
           } else {
             const blob = await api.downloadFile(file.fileId, result.chestToken)
-            const decrypted = await decryptFile(blob, result.encryptionKey, file.filename)
+            const decrypted = await decryptFile(
+              blob,
+              result.encryptionKey,
+              file.filename,
+            )
             zip.file(file.filename, decrypted)
           }
         }),
@@ -76,7 +80,8 @@ export function RetrieveResultCard({
     }
   }
 
-  const isExpired = !!result.expiryDate && new Date(result.expiryDate) < new Date()
+  const isExpired =
+    !!result.expiryDate && new Date(result.expiryDate) < new Date()
   const fileCount = result.files.length
   const textFiles = result.files.filter((f) => f.isText)
   const binaryFiles = result.files.filter((f) => !f.isText)
@@ -120,9 +125,16 @@ export function RetrieveResultCard({
               {fileCount} {fileCount === 1 ? 'file' : 'files'}
             </span>
             {result.expiryDate && (
-              <span className={cn('flex items-center gap-1', isExpired && 'text-red-500')}>
+              <span
+                className={cn(
+                  'flex items-center gap-1',
+                  isExpired && 'text-red-500',
+                )}
+              >
                 <Clock size={12} />
-                {isExpired ? t('expired') : new Date(result.expiryDate).toLocaleDateString()}
+                {isExpired
+                  ? t('expired')
+                  : new Date(result.expiryDate).toLocaleDateString()}
               </span>
             )}
           </div>
@@ -149,7 +161,9 @@ export function RetrieveResultCard({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Download size={16} className="text-primary" />
-              <code className="font-mono text-primary">{result.retrievalCode}</code>
+              <code className="font-mono text-primary">
+                {result.retrievalCode}
+              </code>
             </DialogTitle>
           </DialogHeader>
 
@@ -165,8 +179,12 @@ export function RetrieveResultCard({
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <FileText size={14} className="text-emerald-500" />
-                    <span className="text-sm font-medium truncate flex-1">{displayName}</span>
-                    <span className="text-xs text-muted-foreground">{formatBytes({ bytes: file.size })}</span>
+                    <span className="text-sm font-medium truncate flex-1">
+                      {displayName}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatBytes({ bytes: file.size })}
+                    </span>
                   </div>
                   {file.content && (
                     <>
@@ -177,7 +195,9 @@ export function RetrieveResultCard({
                       </div>
                       <div className="flex gap-2">
                         <Button
-                          onClick={() => handleCopyText(file.content!, file.fileId)}
+                          onClick={() =>
+                            handleCopyText(file.content!, file.fileId)
+                          }
                           size="sm"
                           variant="outline"
                           className={cn(
@@ -187,13 +207,26 @@ export function RetrieveResultCard({
                           )}
                         >
                           {copiedFileId === file.fileId ? (
-                            <><CheckCircle size={12} />{t('copied')}</>
+                            <>
+                              <CheckCircle size={12} />
+                              {t('copied')}
+                            </>
                           ) : (
-                            <><Copy size={12} />{t('copy')}</>
+                            <>
+                              <Copy size={12} />
+                              {t('copy')}
+                            </>
                           )}
                         </Button>
                         <Button
-                          onClick={() => onDownload(file.fileId, result.chestToken, file.filename, result.encryptionKey)}
+                          onClick={() =>
+                            onDownload(
+                              file.fileId,
+                              result.chestToken,
+                              file.filename,
+                              result.encryptionKey,
+                            )
+                          }
                           size="sm"
                           variant="outline"
                           className="text-xs"
@@ -215,11 +248,22 @@ export function RetrieveResultCard({
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <File size={14} className="text-purple-500" />
-                  <span className="text-sm font-medium truncate">{file.filename}</span>
-                  <span className="text-xs text-muted-foreground shrink-0">{formatBytes({ bytes: file.size })}</span>
+                  <span className="text-sm font-medium truncate">
+                    {file.filename}
+                  </span>
+                  <span className="text-xs text-muted-foreground shrink-0">
+                    {formatBytes({ bytes: file.size })}
+                  </span>
                 </div>
                 <Button
-                  onClick={() => onDownload(file.fileId, result.chestToken, file.filename, result.encryptionKey)}
+                  onClick={() =>
+                    onDownload(
+                      file.fileId,
+                      result.chestToken,
+                      file.filename,
+                      result.encryptionKey,
+                    )
+                  }
                   size="sm"
                   variant="outline"
                   className="text-xs ml-2 shrink-0"
@@ -239,9 +283,15 @@ export function RetrieveResultCard({
               className="w-full"
             >
               {isDownloadingAll ? (
-                <><Loader2 size={14} className="animate-spin" />{t('downloadingAll')}</>
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  {t('downloadingAll')}
+                </>
               ) : (
-                <><FileArchive size={14} />{t('downloadAll')}</>
+                <>
+                  <FileArchive size={14} />
+                  {t('downloadAll')}
+                </>
               )}
             </Button>
           </DialogFooter>

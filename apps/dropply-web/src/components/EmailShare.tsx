@@ -126,9 +126,7 @@ export function EmailShare({
               <h4 className="text-lg font-semibold text-green-600 mb-2">
                 {t('sentTitle')}
               </h4>
-              <p className="text-muted-foreground">
-                {t('sentMessage')}
-              </p>
+              <p className="text-muted-foreground">{t('sentMessage')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -214,7 +212,7 @@ export function EmailShare({
                   onClick={handleSend}
                   disabled={!recipientEmail.trim() || isSending}
                   className={cn(
-                    'flex-1 h-12 bg-gradient-to-r from-purple-500 to-blue-500',
+                    'flex-1 h-12 bg-linear-to-r from-purple-500 to-blue-500',
                     'hover:from-purple-600 hover:to-blue-600 text-white border-none',
                     'disabled:opacity-50 disabled:cursor-not-allowed',
                   )}
