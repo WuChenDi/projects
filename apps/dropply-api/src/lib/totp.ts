@@ -89,10 +89,10 @@ export async function generateTOTP(
   const offset = (hmac[hmac.length - 1] ?? 0) & 0x0f
 
   const code =
-    (((hmac[offset] ?? 0 & 0x7f) << 24) |
-      ((hmac[offset + 1] ?? 0 & 0xff) << 16) |
-      ((hmac[offset + 2] ?? 0 & 0xff) << 8) |
-      (hmac[offset + 3] ?? 0 & 0xff)) %
+    ((((hmac[offset] ?? 0) & 0x7f) << 24) |
+      (((hmac[offset + 1] ?? 0) & 0xff) << 16) |
+      (((hmac[offset + 2] ?? 0) & 0xff) << 8) |
+      ((hmac[offset + 3] ?? 0) & 0xff)) %
     1000000
 
   return code.toString().padStart(6, '0')

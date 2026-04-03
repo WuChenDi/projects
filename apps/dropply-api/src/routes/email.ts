@@ -169,6 +169,15 @@ emailRoutes.post(
   },
 )
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 function generateEmailTemplate(
   baseUrl: string,
   retrievalCode: string,
@@ -281,15 +290,15 @@ function generateEmailTemplate(
   <div class="container">
     <div class="header">
       <div class="logo">Dropply</div>
-      <h1 class="title">${senderName ? `${senderName} shared` : 'Someone shared'} files with you</h1>
+      <h1 class="title">${senderName ? `${escapeHtml(senderName)} shared` : 'Someone shared'} files with you</h1>
     </div>
 
     <div class="content">
-      ${recipientName ? `<p>Hi ${recipientName},</p>` : '<p>Hi there,</p>'}
+      ${recipientName ? `<p>Hi ${escapeHtml(recipientName)},</p>` : '<p>Hi there,</p>'}
       
-      <p>You've received ${fileCount} file${fileCount !== 1 ? 's' : ''} through Dropply${senderName ? ` from ${senderName}` : ''}!</p>
+      <p>You've received ${fileCount} file${fileCount !== 1 ? 's' : ''} through Dropply${senderName ? ` from ${escapeHtml(senderName)}` : ''}!</p>
       
-      ${message ? `<div class="message-box"><strong>Personal message:</strong><br>${message.replace(/\n/g, '<br>')}</div>` : ''}
+      ${message ? `<div class="message-box"><strong>Personal message:</strong><br>${escapeHtml(message).replace(/\n/g, '<br>')}</div>` : ''}
       
       <div class="file-list">
         <h3 style="margin-top: 0; color: #333;">Files shared (${formatBytes({ bytes: totalSize })} total)</h3>
@@ -298,7 +307,7 @@ function generateEmailTemplate(
             ?.slice(0, 5)
             .map(
               (file) =>
-                `<div class="file-info"><span class="file-icon">📄</span><span>${file.originalFilename} (${formatBytes({ bytes: file.fileSize })})</span></div>`,
+                `<div class="file-info"><span class="file-icon">📄</span><span>${escapeHtml(file.originalFilename)} (${formatBytes({ bytes: file.fileSize })})</span></div>`,
             )
             .join('') || ''
         }

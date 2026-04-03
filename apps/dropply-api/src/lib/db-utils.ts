@@ -1,5 +1,5 @@
 import type { SQL } from 'drizzle-orm'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, gt, isNull, or, sql } from 'drizzle-orm'
 
 /**
  * Helper function to add isDeleted = 0 condition to queries
@@ -29,10 +29,11 @@ export function withNotDeleted<T extends { isDeleted: any }>(
 }
 
 /**
- * Helper function to check if a record is expired
+ * Helper function to check if a record is not expired
+ * Matches records where expiresAt is NULL (never expires) or in the future
  */
 export function isNotExpired<T extends { expiresAt: any }>(table: T) {
-  return eq(table.expiresAt, null) // null means never expires
+  return or(isNull(table.expiresAt), gt(table.expiresAt, sql`unixepoch()`))
 }
 
 /**
@@ -42,11 +43,10 @@ export function withNotDeletedAndNotExpired<
   T extends { isDeleted: any; expiresAt: any },
 >(table: T, condition?: SQL | undefined) {
   const notDeletedCondition = notDeleted(table)
-  const baseCondition = condition
-    ? and(notDeletedCondition, condition)
-    : notDeletedCondition
+  const notExpiredCondition = isNotExpired(table)
+  const combined = and(notDeletedCondition, notExpiredCondition)
 
-  return baseCondition
+  return condition ? and(combined, condition) : combined
 }
 
 /**

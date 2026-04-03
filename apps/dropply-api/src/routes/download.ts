@@ -119,7 +119,7 @@ downloadRoutes.get(
     return new Response(r2Object.body, {
       headers: {
         'Content-Type': result.files.mimeType,
-        'Content-Disposition': `attachment; filename="${downloadFilename}"`,
+        'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(downloadFilename)}`,
         'Content-Length': String(result.files.fileSize),
       },
     })

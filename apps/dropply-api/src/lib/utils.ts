@@ -1,18 +1,16 @@
-import { randomUUID } from '@cdlab996/uncrypto'
+import { getRandomValues, randomUUID } from '@cdlab996/uncrypto'
 
 // Generate UUID v4
 export function generateUUID(): string {
   return randomUUID()
 }
 
-// Generate 6-digit alphanumeric retrieval code
+// Generate 6-digit alphanumeric retrieval code using CSPRNG
 export function generateRetrievalCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-  let result = ''
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result
+  const bytes = new Uint8Array(6)
+  getRandomValues(bytes)
+  return Array.from(bytes, (b) => chars[b % chars.length]).join('')
 }
 
 // Validate UUID format
