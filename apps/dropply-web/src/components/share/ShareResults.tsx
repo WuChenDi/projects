@@ -69,12 +69,9 @@ function UploadingCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {uploadStatus === 'error' ? (
-              <AlertCircle size={14} className="text-red-500 shrink-0" />
+              <AlertCircle className="size-4 text-red-500 shrink-0" />
             ) : (
-              <Loader2
-                size={14}
-                className="text-primary animate-spin shrink-0"
-              />
+              <Loader2 className="size-4 text-primary animate-spin shrink-0" />
             )}
             <Skeleton className="h-5 w-20" />
           </div>
@@ -85,7 +82,7 @@ function UploadingCard({
               className="h-6 w-6 p-0 text-muted-foreground hover:text-red-500"
               onClick={onCancel}
             >
-              <X size={14} />
+              <X className="size-4" />
             </Button>
           )}
         </div>
@@ -109,7 +106,7 @@ function UploadingCard({
               variant="outline"
               className="flex-1 text-xs text-red-600 border-red-300"
             >
-              <RotateCcw size={12} />
+              <RotateCcw className="size-4" />
               {t('retry')}
             </Button>
           ) : (
@@ -149,7 +146,7 @@ export function ShareResults({
         <CardAction>
           {results.length > 0 && (
             <Button onClick={onClearAll} size="sm" variant="secondary">
-              <Trash2 size={14} />
+              <Trash2 className="size-4" />
               {t('clearAll')}
             </Button>
           )}
@@ -180,7 +177,7 @@ export function ShareResults({
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center py-16 text-center gap-3">
             <div className="p-4 rounded-full bg-muted/50">
-              <Archive size={24} className="text-muted-foreground" />
+              <Archive className="size-6 text-muted-foreground" />
             </div>
             <p className="text-sm font-medium text-muted-foreground">
               {t('noResultsYet')}

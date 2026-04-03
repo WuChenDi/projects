@@ -12,7 +12,9 @@ export function generateEncryptionKey(): string {
   const bytes = new Uint8Array(32)
   crypto.getRandomValues(bytes)
   // base64url encode (no padding)
-  const base64 = btoa(String.fromCharCode(...bytes))
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+  const base64 = btoa(binary)
   return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
 

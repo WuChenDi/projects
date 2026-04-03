@@ -617,16 +617,18 @@ export class PocketChestAPI {
     chestToken: string,
     filename: string,
   ): Promise<void> {
-    // Create direct download link that bypasses JavaScript memory entirely
-    const downloadUrl = `${this.baseUrl}/api/download/${fileId}?token=${encodeURIComponent(chestToken)}&filename=${encodeURIComponent(filename)}`
+    const response = await fetch(`${this.baseUrl}/api/download/${fileId}`, {
+      headers: {
+        Authorization: `Bearer ${chestToken}`,
+      },
+    })
 
-    // Use direct link approach - browser handles download natively
-    const a = document.createElement('a')
-    a.href = downloadUrl
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
+    if (!response.ok) {
+      throw new Error('Failed to download file')
+    }
+
+    const blob = await response.blob()
+    this.triggerDownload(blob, filename)
   }
 
   // Multipart upload methods

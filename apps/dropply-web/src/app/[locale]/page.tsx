@@ -11,6 +11,7 @@ import { RetrieveTab } from '@/components/retrieve/RetrieveTab'
 import { ShareTab } from '@/components/share/ShareTab'
 import { TOTPModal } from '@/components/TOTPModal'
 import { PocketChestAPI } from '@/lib'
+import { useAuthStore } from '@/store/useAuthStore'
 
 type TabMode = 'share' | 'retrieve'
 
@@ -29,7 +30,7 @@ function HomeContent() {
   // TOTP state
   const [showTOTPModal, setShowTOTPModal] = useState(false)
   const [totpError, setTotpError] = useState('')
-  const [totpToken, setTotpToken] = useState<string | null>(null)
+  const { totpToken, setTotpToken } = useAuthStore()
 
   // Email share state
   const [showEmailShare, setShowEmailShare] = useState(false)
@@ -58,6 +59,8 @@ function HomeContent() {
         setRequireTOTP(config.requireTOTP)
         setEmailShareEnabled(config.emailShareEnabled)
         if (!config.requireTOTP) {
+          setIsShareUnlocked(true)
+        } else if (useAuthStore.getState().totpToken) {
           setIsShareUnlocked(true)
         }
       })
@@ -107,7 +110,7 @@ function HomeContent() {
               size="sm"
               className="text-red-500 hover:text-red-700 h-auto p-1"
             >
-              <X size={16} />
+              <X className="size-4" />
             </Button>
           </div>
         )}
@@ -162,7 +165,7 @@ export default function Home() {
     <Suspense
       fallback={
         <div className="fixed inset-0 flex items-center justify-center">
-          <Loader2 size={32} className="text-muted-foreground animate-spin" />
+          <Loader2 className="size-12 text-muted-foreground animate-spin" />
         </div>
       }
     >

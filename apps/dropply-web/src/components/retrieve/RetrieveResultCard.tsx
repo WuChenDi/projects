@@ -104,7 +104,7 @@ export function RetrieveResultCard({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Download size={14} className="text-primary shrink-0" />
+              <Download className="size-4 text-primary shrink-0" />
               <code className="font-mono font-bold text-primary text-lg">
                 {result.retrievalCode}
               </code>
@@ -115,13 +115,13 @@ export function RetrieveResultCard({
               className="h-6 w-6 p-0 text-muted-foreground hover:text-red-500"
               onClick={() => onRemove(result.id)}
             >
-              <X size={14} />
+              <X className="size-4" />
             </Button>
           </div>
 
           <div className="flex items-center gap-3 text-xs text-muted-foreground bg-muted/50 p-2 rounded-lg">
             <span className="flex items-center gap-1">
-              <File size={12} />
+              <File className="size-4" />
               {fileCount} {fileCount === 1 ? 'file' : 'files'}
             </span>
             {result.expiryDate && (
@@ -131,7 +131,7 @@ export function RetrieveResultCard({
                   isExpired && 'text-red-500',
                 )}
               >
-                <Clock size={12} />
+                <Clock className="size-4" />
                 {isExpired
                   ? t('expired')
                   : new Date(result.expiryDate).toLocaleDateString()}
@@ -146,7 +146,7 @@ export function RetrieveResultCard({
             className="w-full text-xs"
             disabled={isExpired}
           >
-            <FolderOpen size={12} />
+            <FolderOpen className="size-4" />
             {t('viewFiles')}
           </Button>
 
@@ -160,7 +160,7 @@ export function RetrieveResultCard({
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Download size={16} className="text-primary" />
+              <Download className="size-5 text-primary" />
               <code className="font-mono text-primary">
                 {result.retrievalCode}
               </code>
@@ -178,7 +178,7 @@ export function RetrieveResultCard({
                   className="p-3 rounded-lg border border-border/30 bg-muted/20"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <FileText size={14} className="text-emerald-500" />
+                    <FileText className="size-4 text-emerald-500" />
                     <span className="text-sm font-medium truncate flex-1">
                       {displayName}
                     </span>
@@ -208,12 +208,12 @@ export function RetrieveResultCard({
                         >
                           {copiedFileId === file.fileId ? (
                             <>
-                              <CheckCircle size={12} />
+                              <CheckCircle className="size-4" />
                               {t('copied')}
                             </>
                           ) : (
                             <>
-                              <Copy size={12} />
+                              <Copy className="size-4" />
                               {t('copy')}
                             </>
                           )}
@@ -232,7 +232,7 @@ export function RetrieveResultCard({
                           className="text-xs"
                           disabled={isExpired}
                         >
-                          <Download size={12} />
+                          <Download className="size-4" />
                         </Button>
                       </div>
                     </>
@@ -247,7 +247,7 @@ export function RetrieveResultCard({
                 className="p-3 rounded-lg border border-border/30 bg-muted/20 flex items-center justify-between"
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <File size={14} className="text-purple-500" />
+                  <File className="size-4 text-purple-500" />
                   <span className="text-sm font-medium truncate">
                     {file.filename}
                   </span>
@@ -269,7 +269,7 @@ export function RetrieveResultCard({
                   className="text-xs ml-2 shrink-0"
                   disabled={isExpired}
                 >
-                  <Download size={12} />
+                  <Download className="size-4" />
                   {t('download')}
                 </Button>
               </div>
@@ -284,12 +284,12 @@ export function RetrieveResultCard({
             >
               {isDownloadingAll ? (
                 <>
-                  <Loader2 size={14} className="animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                   {t('downloadingAll')}
                 </>
               ) : (
                 <>
-                  <FileArchive size={14} />
+                  <FileArchive className="size-4" />
                   {t('downloadAll')}
                 </>
               )}

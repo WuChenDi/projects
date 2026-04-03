@@ -1,14 +1,5 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@cdlab996/ui/components/card'
-import { ShieldCheck } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { ShareForm } from '@/components/share/ShareForm'
@@ -112,27 +103,12 @@ export function ShareTab({
     }
   }
 
-  if (requireTOTP && !isShareUnlocked) {
-    return (
-      <Card className="max-w-md mx-auto">
-        <CardHeader className="text-center">
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-muted mx-auto mb-2">
-            <ShieldCheck size={32} className="text-muted-foreground" />
-          </div>
-          <CardTitle>{t('authRequired')}</CardTitle>
-          <CardDescription>{t('authDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent className="text-center">
-          <Button onClick={onUnlockTOTP}>{t('unlockWithTOTP')}</Button>
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-4 h-full">
       <div className="space-y-4">
         <ShareForm
+          locked={requireTOTP && !isShareUnlocked}
+          onUnlock={onUnlockTOTP}
           files={files}
           textItems={textItems}
           validityDays={validityDays}

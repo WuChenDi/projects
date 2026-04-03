@@ -44,7 +44,7 @@ export function ShareResultCard({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Link2 size={14} className="text-primary shrink-0" />
+            <Link2 className="size-4 text-primary shrink-0" />
             <code className="font-mono font-bold text-primary text-lg">
               {result.retrievalCode}
             </code>
@@ -55,7 +55,7 @@ export function ShareResultCard({
             className="h-6 w-6 p-0 text-muted-foreground hover:text-red-500"
             onClick={() => onRemove(result.id)}
           >
-            <X size={14} />
+            <X className="size-4" />
           </Button>
         </div>
 
@@ -76,12 +76,12 @@ export function ShareResultCard({
           >
             {copied ? (
               <>
-                <CheckCircle size={12} />
+                <CheckCircle className="size-4" />
                 {t('copied')}
               </>
             ) : (
               <>
-                <Copy size={12} />
+                <Copy className="size-4" />
                 {t('copyLink')}
               </>
             )}
@@ -93,7 +93,7 @@ export function ShareResultCard({
               variant="outline"
               className="text-xs"
             >
-              <Mail size={12} />
+              <Mail className="size-4" />
             </Button>
           )}
         </div>

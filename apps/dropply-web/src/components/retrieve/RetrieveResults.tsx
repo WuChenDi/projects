@@ -42,7 +42,7 @@ function RetrievingCard() {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Loader2 size={14} className="text-primary animate-spin shrink-0" />
+            <Loader2 className="size-4 text-primary animate-spin shrink-0" />
             <Skeleton className="h-5 w-20" />
           </div>
         </div>
@@ -72,7 +72,7 @@ export function RetrieveResults({
         <CardAction>
           {results.length > 0 && (
             <Button onClick={onClearAll} size="sm" variant="secondary">
-              <Trash2 size={14} />
+              <Trash2 className="size-4" />
               {t('clearAll')}
             </Button>
           )}
@@ -82,7 +82,7 @@ export function RetrieveResults({
         {error && (
           <div className="flex items-center justify-between gap-3 p-4 rounded-lg border border-red-200/50 bg-red-50/80 dark:bg-red-950/30 dark:border-red-800/50">
             <div className="flex items-center gap-2">
-              <AlertCircle size={16} className="text-red-500 shrink-0" />
+              <AlertCircle className="size-4 text-red-500 shrink-0" />
               <p className="text-sm text-red-700 dark:text-red-300 font-medium">
                 {error}
               </p>
@@ -93,7 +93,7 @@ export function RetrieveResults({
               size="sm"
               className="text-red-500 hover:text-red-700 h-auto p-1 shrink-0"
             >
-              <X size={14} />
+              <X className="size-4" />
             </Button>
           </div>
         )}
@@ -113,7 +113,7 @@ export function RetrieveResults({
         ) : !error ? (
           <div className="flex flex-1 flex-col items-center justify-center py-16 text-center gap-3">
             <div className="p-4 rounded-full bg-muted/50">
-              <Download size={24} className="text-muted-foreground" />
+              <Download className="size-6 text-muted-foreground" />
             </div>
             <p className="text-sm font-medium text-muted-foreground">
               {t('noResultsYet')}

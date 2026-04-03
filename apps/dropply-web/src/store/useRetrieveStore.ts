@@ -118,8 +118,9 @@ export const useRetrieveStore = create<RetrieveStore>()(
       name: 'dropply-retrieve-results',
       partialize: (state) => ({
         ...state,
-        results: state.results.map((r) => ({
+        results: state.results.map(({ encryptionKey, ...r }) => ({
           ...r,
+          encryptionKey: '',
           files: r.files.map(({ content, ...file }) => file),
         })),
       }),

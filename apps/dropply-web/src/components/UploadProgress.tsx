@@ -62,19 +62,19 @@ export function UploadProgress({
   const getStatusIcon = (status: FileUploadProgress['status']) => {
     switch (status) {
       case 'waiting':
-        return <Clock size={16} className="text-muted-foreground" />
+        return <Clock className="size-4 text-muted-foreground" />
       case 'starting':
-        return <Loader2 size={16} className="text-amber-500 animate-spin" />
+        return <Loader2 className="size-4 text-amber-500 animate-spin" />
       case 'uploading':
-        return <Upload size={16} className="text-blue-500" />
+        return <Upload className="size-4 text-blue-500" />
       case 'finalizing':
-        return <Zap size={16} className="text-purple-500" />
+        return <Zap className="size-4 text-purple-500" />
       case 'completed':
-        return <CheckCircle size={16} className="text-emerald-500" />
+        return <CheckCircle className="size-4 text-emerald-500" />
       case 'error':
-        return <AlertCircle size={16} className="text-red-500" />
+        return <AlertCircle className="size-4 text-red-500" />
       default:
-        return <File size={16} className="text-muted-foreground" />
+        return <File className="size-4 text-muted-foreground" />
     }
   }
 
@@ -106,13 +106,13 @@ export function UploadProgress({
   const getHeaderIcon = () => {
     switch (uploadStatus) {
       case 'uploading':
-        return <Upload size={20} className="text-blue-500" />
+        return <Upload className="size-5 text-blue-500" />
       case 'success':
-        return <CheckCircle size={20} className="text-emerald-500" />
+        return <CheckCircle className="size-5 text-emerald-500" />
       case 'error':
-        return <AlertCircle size={20} className="text-red-500" />
+        return <AlertCircle className="size-5 text-red-500" />
       default:
-        return <Upload size={20} className="text-muted-foreground" />
+        return <Upload className="size-5 text-muted-foreground" />
     }
   }
 
@@ -149,7 +149,7 @@ export function UploadProgress({
               size="sm"
               className="text-muted-foreground hover:text-red-500"
             >
-              <X size={16} />
+              <X className="size-4" />
             </Button>
           )}
         </div>
@@ -160,7 +160,9 @@ export function UploadProgress({
         {(uploadStatus === 'uploading' || uploadStatus === 'success') && (
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="font-medium">{t('items', { n: totalItems })}</span>
+              <span className="font-medium">
+                {t('items', { n: totalItems })}
+              </span>
               <span className="text-muted-foreground">
                 {uploadStatus === 'success'
                   ? '100%'
@@ -175,8 +177,12 @@ export function UploadProgress({
 
             {progress.total > 0 && (
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{formatBytes({ bytes: progress.loaded })} {t('uploaded')}</span>
-                <span>{formatBytes({ bytes: progress.total })} {t('total')}</span>
+                <span>
+                  {formatBytes({ bytes: progress.loaded })} {t('uploaded')}
+                </span>
+                <span>
+                  {formatBytes({ bytes: progress.total })} {t('total')}
+                </span>
               </div>
             )}
           </div>
@@ -200,9 +206,9 @@ export function UploadProgress({
                     {fileProgressData ? (
                       getStatusIcon(fileProgressData.status)
                     ) : uploadStatus === 'success' ? (
-                      <CheckCircle size={16} className="text-emerald-500" />
+                      <CheckCircle className="size-4 text-emerald-500" />
                     ) : (
-                      <File size={16} className="text-muted-foreground" />
+                      <File className="size-4 text-muted-foreground" />
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">
@@ -246,7 +252,9 @@ export function UploadProgress({
                       <span>
                         {formatBytes({ bytes: fileProgressData.uploadedBytes })}
                       </span>
-                      <span>{formatBytes({ bytes: fileProgressData.totalBytes })}</span>
+                      <span>
+                        {formatBytes({ bytes: fileProgressData.totalBytes })}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -271,9 +279,9 @@ export function UploadProgress({
                     {fileProgressData ? (
                       getStatusIcon(fileProgressData.status)
                     ) : uploadStatus === 'success' ? (
-                      <CheckCircle size={16} className="text-emerald-500" />
+                      <CheckCircle className="size-4 text-emerald-500" />
                     ) : (
-                      <FileText size={16} className="text-muted-foreground" />
+                      <FileText className="size-4 text-muted-foreground" />
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">
@@ -322,7 +330,9 @@ export function UploadProgress({
                       <span>
                         {formatBytes({ bytes: fileProgressData.uploadedBytes })}
                       </span>
-                      <span>{formatBytes({ bytes: fileProgressData.totalBytes })}</span>
+                      <span>
+                        {formatBytes({ bytes: fileProgressData.totalBytes })}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -340,7 +350,7 @@ export function UploadProgress({
             )}
           >
             <div className="flex items-center gap-2 mb-3">
-              <AlertCircle size={16} className="text-red-500" />
+              <AlertCircle className="size-4 text-red-500" />
               <span className="font-medium text-red-900 dark:text-red-100">
                 {t('failed')}
               </span>
@@ -354,7 +364,7 @@ export function UploadProgress({
                 size="sm"
                 className="bg-red-600 hover:bg-red-700 text-white"
               >
-                <RotateCcw size={14} className="mr-2" />
+                <RotateCcw className="size-4 mr-2" />
                 {t('retryUpload')}
               </Button>
               {onCancel && (
@@ -375,7 +385,7 @@ export function UploadProgress({
             )}
           >
             <div className="flex items-center gap-2 mb-2">
-              <CheckCircle size={16} className="text-emerald-500" />
+              <CheckCircle className="size-4 text-emerald-500" />
               <span className="font-medium text-emerald-900 dark:text-emerald-100">
                 {t('successTitle')}
               </span>

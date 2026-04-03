@@ -106,7 +106,7 @@ export function EmailShare({
         <CardContent className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-semibold flex items-center gap-2">
-              <Mail size={20} className="text-primary" />
+              <Mail className="size-5 text-primary" />
               {t('title')}
             </h3>
             <Button
@@ -116,13 +116,13 @@ export function EmailShare({
               disabled={isSending}
               className="text-muted-foreground hover:text-foreground"
             >
-              <X size={16} />
+              <X className="size-4" />
             </Button>
           </div>
 
           {sent ? (
             <div className="text-center py-8">
-              <CheckCircle size={48} className="mx-auto text-green-500 mb-4" />
+              <CheckCircle className="size-12 mx-auto text-green-500 mb-4" />
               <h4 className="text-lg font-semibold text-green-600 mb-2">
                 {t('sentTitle')}
               </h4>
@@ -224,7 +224,7 @@ export function EmailShare({
                     </>
                   ) : (
                     <>
-                      <Send size={16} className="mr-2" />
+                      <Send className="size-4 mr-2" />
                       {t('sendEmail')}
                     </>
                   )}

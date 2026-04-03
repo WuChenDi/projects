@@ -35,6 +35,13 @@ export const useShareStore = create<ShareStore>()(
     }),
     {
       name: 'dropply-share-results',
+      partialize: (state) => ({
+        ...state,
+        results: state.results.map(({ encryptionKey, ...r }) => ({
+          ...r,
+          encryptionKey: '',
+        })),
+      }),
     },
   ),
 )
