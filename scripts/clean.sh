@@ -8,6 +8,7 @@ DIRS_TO_DELETE=(
   "apps/*/.next"
   "apps/*/out"
   "apps/*/dist"
+  "apps/*/.wrangler"
   "packages/*/node_modules"
   "packages/*/.turbo"
   "packages/*/dist"
