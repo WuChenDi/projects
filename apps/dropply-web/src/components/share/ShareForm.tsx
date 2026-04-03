@@ -25,6 +25,7 @@ interface ShareFormProps {
   encryptionKey: string
   isUploading: boolean
   locked?: boolean
+  maxFileSize?: number
   onUnlock?: () => void
   onFilesChange: (files: File[]) => void
   onTextItemsChange: (items: TextItem[]) => void
@@ -40,6 +41,7 @@ export function ShareForm({
   encryptionKey,
   isUploading,
   locked,
+  maxFileSize,
   onUnlock,
   onFilesChange,
   onTextItemsChange,
@@ -78,7 +80,11 @@ export function ShareForm({
 
         <Field>
           <Label>{t('files')}</Label>
-          <FileUpload files={files} onFilesChange={onFilesChange} />
+          <FileUpload
+            files={files}
+            onFilesChange={onFilesChange}
+            maxFileSize={maxFileSize}
+          />
         </Field>
 
         <ExpirySelector value={validityDays} onChange={onValidityDaysChange} />

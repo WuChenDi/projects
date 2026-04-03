@@ -23,14 +23,16 @@ function HomeContent() {
   const [activeTab, setActiveTab] = useState<TabMode>(initialTab)
 
   // Config state
+  const [isConfigLoaded, setIsConfigLoaded] = useState(false)
   const [requireTOTP, setRequireTOTP] = useState(false)
   const [emailShareEnabled, setEmailShareEnabled] = useState(false)
+  const [maxFileSize, setMaxFileSize] = useState(100 * 1024 * 1024)
   const [isShareUnlocked, setIsShareUnlocked] = useState(false)
 
   // TOTP state
   const [showTOTPModal, setShowTOTPModal] = useState(false)
   const [totpError, setTotpError] = useState('')
-  const { totpToken, setTotpToken } = useAuthStore()
+  const { totpToken, setTotpToken, clearTotpToken } = useAuthStore()
 
   // Email share state
   const [showEmailShare, setShowEmailShare] = useState(false)
@@ -58,11 +60,13 @@ function HomeContent() {
       .then((config) => {
         setRequireTOTP(config.requireTOTP)
         setEmailShareEnabled(config.emailShareEnabled)
+        setMaxFileSize(config.maxFileSize)
         if (!config.requireTOTP) {
           setIsShareUnlocked(true)
         } else if (useAuthStore.getState().totpToken) {
           setIsShareUnlocked(true)
         }
+        setIsConfigLoaded(true)
       })
       .catch((err) => {
         console.error('Failed to fetch config:', err)
@@ -73,6 +77,12 @@ function HomeContent() {
   // TOTP handlers
   const handleUnlockShare = () => {
     setTotpError('')
+    setShowTOTPModal(true)
+  }
+
+  const handleAuthExpired = () => {
+    clearTotpToken()
+    setIsShareUnlocked(false)
     setShowTOTPModal(true)
   }
 
@@ -115,16 +125,24 @@ function HomeContent() {
           </div>
         )}
 
+        {!isConfigLoaded && !configError && (
+          <div className="flex items-center justify-center py-32">
+            <Loader2 className="size-8 text-muted-foreground animate-spin" />
+          </div>
+        )}
+
         <Tabs
           value={activeTab}
           onValueChange={(v) => setActiveTab(v as TabMode)}
-          className="h-full"
+          className={isConfigLoaded ? 'h-full' : 'hidden'}
         >
           <TabsContent value="share" className="h-full">
             <ShareTab
               requireTOTP={requireTOTP}
               emailShareEnabled={emailShareEnabled}
+              maxFileSize={maxFileSize}
               onUnlockTOTP={handleUnlockShare}
+              onAuthExpired={handleAuthExpired}
               isShareUnlocked={isShareUnlocked}
               totpToken={totpToken}
               onEmailShare={handleEmailShare}

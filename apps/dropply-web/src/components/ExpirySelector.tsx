@@ -5,6 +5,9 @@ import { Label } from '@cdlab996/ui/components/label'
 import { Slider } from '@cdlab996/ui/components/slider'
 import { useTranslations } from 'next-intl'
 
+// Non-linear steps for better UX: 1-7 daily, then 14, 30, 90, 180, 365
+const EXPIRY_STEPS = [1, 2, 3, 4, 5, 6, 7, 14, 30, 90, 180, 365]
+
 interface ExpirySelectorProps {
   value: number
   onChange: (days: number) => void
@@ -15,13 +18,15 @@ export function ExpirySelector({ value, onChange }: ExpirySelectorProps) {
 
   const formatLabel = (days: number) => {
     if (days === 1) return t('1day')
-    if (days < 7) return t('days', { n: days })
     if (days === 7) return t('1week')
-    if (days < 30) return t('days', { n: days })
     if (days === 30) return t('1month')
-    if (days < 365) return t('days', { n: days })
-    return t('1year')
+    if (days === 365) return t('1year')
+    return t('days', { n: days })
   }
+
+  // Map slider index to days and vice versa
+  const sliderIndex = EXPIRY_STEPS.indexOf(value)
+  const currentIndex = sliderIndex >= 0 ? sliderIndex : 0
 
   return (
     <Field>
@@ -32,11 +37,11 @@ export function ExpirySelector({ value, onChange }: ExpirySelectorProps) {
         </span>
       </div>
       <Slider
-        min={1}
-        max={30}
+        min={0}
+        max={EXPIRY_STEPS.length - 1}
         step={1}
-        value={[value]}
-        onValueChange={([v]) => onChange(v)}
+        value={[currentIndex]}
+        onValueChange={([v]) => onChange(EXPIRY_STEPS[v])}
       />
     </Field>
   )

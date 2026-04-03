@@ -1,5 +1,6 @@
 'use client'
 
+import { logger } from '@cdlab996/utils'
 import { useState } from 'react'
 import { RetrieveForm } from '@/components/retrieve/RetrieveForm'
 import { RetrieveResults } from '@/components/retrieve/RetrieveResults'
@@ -51,7 +52,7 @@ export function RetrieveTab({
       setRetrievalCode('')
       setEncryptionKey(null)
     } catch (err) {
-      console.error('Retrieval failed:', err)
+      logger.error('Retrieval failed:', err)
     }
   }
 
@@ -64,7 +65,7 @@ export function RetrieveTab({
     try {
       await downloadSingleFile(fileId, chestToken, filename, fileEncryptionKey)
     } catch (err) {
-      console.error('Download failed:', err)
+      logger.error('Download failed:', err)
     }
   }
 

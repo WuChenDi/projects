@@ -1,3 +1,4 @@
+import { logger } from '@cdlab996/utils'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import {
@@ -126,12 +127,12 @@ export const useRetrieveStore = create<RetrieveStore>()(
       }),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
-          console.error('Failed to rehydrate retrieve store:', error)
+          logger.error('Failed to rehydrate retrieve store:', error)
           useRetrieveStore.setState({ isHydrated: true })
           return
         }
         state?.rehydrateTextContents().catch((err) => {
-          console.error('Failed to rehydrate text contents:', err)
+          logger.error('Failed to rehydrate text contents:', err)
           useRetrieveStore.setState({ isHydrated: true })
         })
       },

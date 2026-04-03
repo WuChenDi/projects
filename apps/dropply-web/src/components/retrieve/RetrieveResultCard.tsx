@@ -25,7 +25,7 @@ import {
   X,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { PocketChestAPI } from '@/lib'
 import { decryptFile } from '@/lib/crypto'
 import type { RetrieveResult } from '@/store/useRetrieveStore'
@@ -50,9 +50,11 @@ export function RetrieveResultCard({
   const [open, setOpen] = useState(false)
   const [copiedFileId, setCopiedFileId] = useState<string | null>(null)
   const [isDownloadingAll, setIsDownloadingAll] = useState(false)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
 
-  const handleDownloadAll = async () => {
+  const handleDownloadAll = useCallback(async () => {
     setIsDownloadingAll(true)
+    setDownloadError(null)
     try {
       const api = new PocketChestAPI()
       const zip = new JSZip()
@@ -75,10 +77,12 @@ export function RetrieveResultCard({
 
       const zipBlob = await zip.generateAsync({ type: 'blob' })
       api.triggerDownload(zipBlob, `${result.retrievalCode}.zip`)
+    } catch {
+      setDownloadError(t('downloadAllFailed'))
     } finally {
       setIsDownloadingAll(false)
     }
-  }
+  }, [result, t])
 
   const isExpired =
     !!result.expiryDate && new Date(result.expiryDate) < new Date()
@@ -122,7 +126,7 @@ export function RetrieveResultCard({
           <div className="flex items-center gap-3 text-xs text-muted-foreground bg-muted/50 p-2 rounded-lg">
             <span className="flex items-center gap-1">
               <File className="size-4" />
-              {fileCount} {fileCount === 1 ? 'file' : 'files'}
+              {t('fileCount', { count: fileCount })}
             </span>
             {result.expiryDate && (
               <span
@@ -275,6 +279,12 @@ export function RetrieveResultCard({
               </div>
             ))}
           </div>
+
+          {downloadError && (
+            <p className="text-sm text-red-600 dark:text-red-400 bg-red-50/80 dark:bg-red-950/30 p-2 rounded-lg">
+              {downloadError}
+            </p>
+          )}
 
           <DialogFooter className="mt-4">
             <Button

@@ -10,6 +10,17 @@ import {
 } from '@cdlab996/ui/components/card'
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { cn } from '@cdlab996/ui/lib/utils'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@cdlab996/ui/components/alert-dialog'
 import { AlertCircle, Download, Loader2, Trash2, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { RetrieveResultCard } from '@/components/retrieve/RetrieveResultCard'
@@ -71,10 +82,28 @@ export function RetrieveResults({
         <CardTitle>{t('results')}</CardTitle>
         <CardAction>
           {results.length > 0 && (
-            <Button onClick={onClearAll} size="sm" variant="secondary">
-              <Trash2 className="size-4" />
-              {t('clearAll')}
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="secondary">
+                  <Trash2 className="size-4" />
+                  {t('clearAll')}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t('clearAll')}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('clearAllConfirm')}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={onClearAll}>
+                    {t('confirm')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </CardAction>
       </CardHeader>

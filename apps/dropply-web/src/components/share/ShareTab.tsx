@@ -1,5 +1,6 @@
 'use client'
 
+import { logger } from '@cdlab996/utils'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { ShareForm } from '@/components/share/ShareForm'
@@ -12,7 +13,9 @@ import type { TextItem, ValidityDays } from '@/types'
 interface ShareTabProps {
   requireTOTP: boolean
   emailShareEnabled: boolean
+  maxFileSize: number
   onUnlockTOTP: () => void
+  onAuthExpired: () => void
   isShareUnlocked: boolean
   totpToken: string | null
   onEmailShare: (code: string) => void
@@ -21,7 +24,9 @@ interface ShareTabProps {
 export function ShareTab({
   requireTOTP,
   emailShareEnabled,
+  maxFileSize,
   onUnlockTOTP,
+  onAuthExpired,
   isShareUnlocked,
   totpToken,
   onEmailShare,
@@ -57,7 +62,17 @@ export function ShareTab({
   const doUpload = async (filesToUpload: File[], textsToUpload: TextItem[]) => {
     setIsStarting(true)
     try {
-      const session = await api.createChest(totpToken ?? undefined)
+      let session: Awaited<ReturnType<typeof api.createChest>>
+      try {
+        session = await api.createChest(totpToken ?? undefined)
+      } catch (err) {
+        const status = (err as { status?: number }).status
+        if (status === 401) {
+          onAuthExpired()
+          return
+        }
+        throw err
+      }
 
       const result = await uploadWithSession(
         session.sessionId,
@@ -91,7 +106,7 @@ export function ShareTab({
     try {
       await doUpload(files, textItems)
     } catch (err) {
-      console.error('Upload failed:', err)
+      logger.error('Upload failed:', err)
     }
   }
 
@@ -99,7 +114,7 @@ export function ShareTab({
     try {
       await doUpload(files, textItems)
     } catch (err) {
-      console.error('Retry failed:', err)
+      logger.error('Retry failed:', err)
     }
   }
 
@@ -108,6 +123,7 @@ export function ShareTab({
       <div className="space-y-4">
         <ShareForm
           locked={requireTOTP && !isShareUnlocked}
+          maxFileSize={maxFileSize}
           onUnlock={onUnlockTOTP}
           files={files}
           textItems={textItems}

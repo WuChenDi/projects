@@ -55,9 +55,11 @@ export class PocketChestAPI {
 
     if (result.code === 0) {
       return result.data!
-    } else {
-      throw new Error(result.message)
     }
+
+    const error = new Error(result.message) as Error & { status?: number }
+    error.status = response.status
+    throw error
   }
 
   async uploadContent(
@@ -127,14 +129,18 @@ export class PocketChestAPI {
         }
         updateFileProgress()
 
-        const encryptedBlob = await encryptFile(file, encryptionPassword, (pct) => {
-          const fp = fileProgressMap.get(file.name)
-          if (fp) {
-            fp.percentage = Math.round(pct / 2) // encrypting is first 50%
-            fp.uploadedBytes = Math.round((file.size * pct) / 100)
-          }
-          updateFileProgress()
-        })
+        const encryptedBlob = await encryptFile(
+          file,
+          encryptionPassword,
+          (pct) => {
+            const fp = fileProgressMap.get(file.name)
+            if (fp) {
+              fp.percentage = Math.round(pct / 2) // encrypting is first 50%
+              fp.uploadedBytes = Math.round((file.size * pct) / 100)
+            }
+            updateFileProgress()
+          },
+        )
 
         const encryptedFile = new File([encryptedBlob], file.name, {
           type: 'application/octet-stream',
@@ -155,7 +161,8 @@ export class PocketChestAPI {
       // Encrypt text items
       const encryptedTextItems: TextItem[] = []
       for (const textItem of textItems) {
-        const key = textItem.filename || `text-${textItems.indexOf(textItem) + 1}`
+        const key =
+          textItem.filename || `text-${textItems.indexOf(textItem) + 1}`
         const fp = fileProgressMap.get(key)
         if (fp) {
           fp.status = 'encrypting'
@@ -855,32 +862,52 @@ export class PocketChestAPI {
         const uploadPromise = (async () => {
           const arrayBuffer = await chunk.arrayBuffer()
 
-          const result = await this.uploadPart(
-            sessionId,
-            multipartToken,
-            fileId,
-            partNumber,
-            arrayBuffer,
-            (loaded, total) => {
-              // Update progress for this specific part
-              partProgress.set(partNumber, loaded)
+          const MAX_RETRIES = 3
+          let lastError: Error | null = null
+          let result: UploadPartResponse | null = null
 
-              // Calculate total progress atomically
-              const totalUploaded = calculateTotalProgress()
-
-              if (onProgress) {
-                onProgress({
-                  fileId,
-                  filename: file.name,
-                  uploadedParts: completedPartsCount,
-                  totalParts,
-                  uploadedBytes: totalUploaded,
-                  totalBytes: file.size,
-                  percentage: Math.round((totalUploaded / file.size) * 100),
-                })
+          for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+            try {
+              if (attempt > 0) {
+                partProgress.set(partNumber, 0)
+                await new Promise((r) => setTimeout(r, 1000 * attempt))
               }
-            },
-          )
+              result = await this.uploadPart(
+                sessionId,
+                multipartToken,
+                fileId,
+                partNumber,
+                arrayBuffer,
+                (loaded, total) => {
+                  // Update progress for this specific part
+                  partProgress.set(partNumber, loaded)
+
+                  // Calculate total progress atomically
+                  const totalUploaded = calculateTotalProgress()
+
+                  if (onProgress) {
+                    onProgress({
+                      fileId,
+                      filename: file.name,
+                      uploadedParts: completedPartsCount,
+                      totalParts,
+                      uploadedBytes: totalUploaded,
+                      totalBytes: file.size,
+                      percentage: Math.round((totalUploaded / file.size) * 100),
+                    })
+                  }
+                },
+              )
+              lastError = null
+              break
+            } catch (err) {
+              lastError = err instanceof Error ? err : new Error(String(err))
+            }
+          }
+
+          if (lastError || !result) {
+            throw lastError ?? new Error(`Failed to upload part ${partNumber}`)
+          }
 
           uploadedParts.push({
             partNumber,

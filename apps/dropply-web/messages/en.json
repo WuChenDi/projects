@@ -40,6 +40,9 @@
     "uploadAndGenerate": "Upload & Generate Code",
     "results": "Results",
     "clearAll": "Clear All",
+    "clearAllConfirm": "Are you sure you want to clear all share results?",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
     "noResultsYet": "No results yet",
     "emptyHint": "Add files or text on the left, then click upload",
     "copyLink": "Copy Link",
@@ -58,6 +61,9 @@
     "accessFiles": "Access Files",
     "results": "Results",
     "clearAll": "Clear All",
+    "clearAllConfirm": "Are you sure you want to clear all retrieve results?",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
     "retrievingFiles": "Retrieving files...",
     "noResultsYet": "No results yet",
     "emptyHint": "Enter a retrieval code and key to access shared files",
@@ -67,12 +73,16 @@
     "download": "Download",
     "viewFiles": "View Files",
     "downloadAll": "Download All as ZIP",
-    "downloadingAll": "Packaging..."
+    "downloadingAll": "Packaging...",
+    "fileCount": "{count, plural, one {# file} other {# files}}",
+    "downloadAllFailed": "Failed to download files. Please try again."
   },
   "fileUpload": {
     "dropHere": "Drop files here",
     "clickToSelect": "Click to select a file",
-    "selectedFiles": "Selected Files"
+    "selectedFiles": "Selected Files",
+    "fileTooLarge": "File \"{name}\" ({size}) exceeds the {limit} limit and was skipped.",
+    "maxFileSize": "Max file size: {limit}"
   },
   "textInput": {
     "placeholder": "Enter text content, code snippets, notes...",

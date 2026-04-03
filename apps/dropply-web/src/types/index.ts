@@ -8,6 +8,7 @@ export interface ApiResponse<T = any> {
 export interface ConfigResponse {
   requireTOTP: boolean
   emailShareEnabled: boolean
+  maxFileSize: number
 }
 
 export interface CreateChestResponse {

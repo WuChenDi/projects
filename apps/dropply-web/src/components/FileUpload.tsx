@@ -18,6 +18,7 @@ import { getFileIcon } from '@/lib'
 interface FileUploadProps {
   onFilesChange: (files: File[]) => void
   files: File[]
+  maxFileSize?: number
 }
 
 function FilePreviewModal({
@@ -69,16 +70,35 @@ function FilePreviewModal({
   )
 }
 
-export function FileUpload({ onFilesChange, files }: FileUploadProps) {
+export function FileUpload({ onFilesChange, files, maxFileSize }: FileUploadProps) {
   const t = useTranslations('fileUpload')
   const [previewFile, setPreviewFile] = useState<File | null>(null)
+  const [sizeError, setSizeError] = useState<string | null>(null)
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      const newFiles = [...files, ...acceptedFiles]
-      onFilesChange(newFiles)
+      setSizeError(null)
+      if (maxFileSize) {
+        const rejected = acceptedFiles.filter((f) => f.size > maxFileSize)
+        const accepted = acceptedFiles.filter((f) => f.size <= maxFileSize)
+        if (rejected.length > 0) {
+          const file = rejected[0]
+          setSizeError(
+            t('fileTooLarge', {
+              name: file.name,
+              size: formatBytes({ bytes: file.size }),
+              limit: formatBytes({ bytes: maxFileSize }),
+            }),
+          )
+        }
+        const newFiles = [...files, ...accepted]
+        onFilesChange(newFiles)
+      } else {
+        const newFiles = [...files, ...acceptedFiles]
+        onFilesChange(newFiles)
+      }
     },
-    [files, onFilesChange],
+    [files, onFilesChange, maxFileSize, t],
   )
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -127,8 +147,19 @@ export function FileUpload({ onFilesChange, files }: FileUploadProps) {
             >
               {isDragActive ? t('dropHere') : t('clickToSelect')}
             </span>
+            {maxFileSize && (
+              <span className="text-xs text-muted-foreground">
+                {t('maxFileSize', { limit: formatBytes({ bytes: maxFileSize }) })}
+              </span>
+            )}
           </div>
         </div>
+
+        {sizeError && (
+          <p className="text-xs text-red-600 dark:text-red-400 bg-red-50/80 dark:bg-red-950/30 p-2 rounded-lg">
+            {sizeError}
+          </p>
+        )}
 
         {files.length > 0 && (
           <div className="space-y-4">
