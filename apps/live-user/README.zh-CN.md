@@ -10,7 +10,7 @@
 
 ```html
 <div id="liveuser">0</div>
-<script src="https://live-user.chendi.workers.dev/liveuser.js"></script>
+<script src="https://live-user.cdlab.workers.dev/liveuser.js"></script>
 ```
 
 同时显示总访问量：
@@ -18,7 +18,7 @@
 ```html
 <div>在线: <span id="liveuser">0</span></div>
 <div>总访问: <span id="liveuser_totalvisits">0</span></div>
-<script src="https://live-user.chendi.workers.dev/liveuser.js?enableTotalCount=true"></script>
+<script src="https://live-user.cdlab.workers.dev/liveuser.js?enableTotalCount=true"></script>
 ```
 
 ## 参数说明

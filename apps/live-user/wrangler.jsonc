@@ -21,5 +21,6 @@
       "tag": "v1",
       "new_sqlite_classes": ["SiteManager"]
     }
-  ]
+  ],
+  "account_id": ""
 }

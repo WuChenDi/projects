@@ -10,7 +10,7 @@ Built with [Hono](https://hono.dev/) + Cloudflare Workers + Durable Objects (Web
 
 ```html
 <div id="liveuser">0</div>
-<script src="https://live-user.chendi.workers.dev/liveuser.js"></script>
+<script src="https://live-user.cdlab.workers.dev/liveuser.js"></script>
 ```
 
 With total visit counter:
@@ -18,7 +18,7 @@ With total visit counter:
 ```html
 <div>Online: <span id="liveuser">0</span></div>
 <div>Total: <span id="liveuser_totalvisits">0</span></div>
-<script src="https://live-user.chendi.workers.dev/liveuser.js?enableTotalCount=true"></script>
+<script src="https://live-user.cdlab.workers.dev/liveuser.js?enableTotalCount=true"></script>
 ```
 
 ## Parameters
