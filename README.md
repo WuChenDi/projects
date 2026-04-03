@@ -153,6 +153,17 @@ https://values.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/value-vision/og-image.png" alt="value-vision" />
 </details>
 
+### LiveUser
+
+**Real-time Online User Counter**
+
+https://live-user.chendi.workers.dev/
+
+- Embed a single script tag to display real-time online user count and total visits on any webpage
+- WebSocket Hibernation API — Durable Object hibernates when idle to minimize costs
+- Visit counter stored in DO-embedded SQLite with atomic updates (no data loss under concurrency)
+- Tech: Hono + Cloudflare Workers + Durable Objects + SQLite
+
 ### repo-changelog
 
 **Open Source Release / Changelog Aggregation Dashboard**
@@ -196,6 +207,7 @@ pnpm --filter value-vision dev     # Start Value Vision only (port 3011)
 pnpm --filter byplay dev           # Start ByPlay only (port 3016)
 pnpm --filter byplay-log dev       # Start ByPlay Log only (port 3017)
 pnpm --filter dropply-web dev      # Start Dropply Web only (port 3013)
+pnpm --filter @cdlab996/live-user dev  # Start LiveUser only (port 3021)
 pnpm --filter repo-changelog dev   # Start Repo Changelog only (port 3019)
 pnpm build                         # Build all apps
 pnpm --filter clearify run build
@@ -224,6 +236,7 @@ pnpm clean                         # Clean node_modules / cache / build artifact
 │   ├── clearify/          # Image & Video Toolbox
 │   ├── dropply-api/       # Dropply File Sharing Cloudflare API
 │   ├── dropply-web/       # Dropply File Sharing Web Frontend
+│   ├── live-user/         # Real-time Online User Counter
 │   ├── vidl/              # Video Downloader (M3U8/HLS, MP4, etc.)
 │   ├── repo-changelog/    # GitHub Release / Changelog Aggregation
 │   ├── SecureC/           # Encryption Tool
