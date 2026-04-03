@@ -15,6 +15,9 @@
     // The authentication token for accessing the LibSQL
     "LIBSQL_AUTH_TOKEN": "your_libsql_auth_token",
 
+    // Max file size in MB (default: 100)
+    "MAX_FILE_SIZE_MB": "100",
+
     "REQUIRE_TOTP": "false",
     "JWT_SECRET": "your_jwt_secret",
     "TOTP_SECRETS": "your_totp_secrets",

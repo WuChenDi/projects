@@ -5,6 +5,9 @@ export interface CloudflareEnv {
   TOTP_SECRETS?: string
   REQUIRE_TOTP?: string
 
+  // Storage limits
+  MAX_FILE_SIZE_MB?: string
+
   // Email Configuration
   ENABLE_EMAIL_SHARE?: string
   RESEND_API_KEY?: string
@@ -48,6 +51,7 @@ export interface ApiResponse<T = any> {
 export interface ConfigResponse {
   requireTOTP: boolean
   emailShareEnabled: boolean
+  maxFileSize: number
 }
 
 export interface CreateChestResponse {
