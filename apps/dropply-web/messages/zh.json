@@ -75,7 +75,14 @@
     "downloadAll": "打包下载 ZIP",
     "downloadingAll": "打包中...",
     "fileCount": "{count} 个文件",
-    "downloadAllFailed": "下载文件失败，请重试。"
+    "downloadAllFailed": "下载文件失败，请重试。",
+    "preview": "预览",
+    "previewLoading": "正在解密并加载预览...",
+    "previewFailed": "加载预览失败，请重试。",
+    "previewRetry": "重试",
+    "keyRequired": "需要加密密钥才能访问文件",
+    "enterKeyToUnlock": "输入加密密钥以解锁",
+    "unlock": "解锁"
   },
   "fileUpload": {
     "dropHere": "拖放文件到这里",

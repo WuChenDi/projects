@@ -75,7 +75,14 @@
     "downloadAll": "Download All as ZIP",
     "downloadingAll": "Packaging...",
     "fileCount": "{count, plural, one {# file} other {# files}}",
-    "downloadAllFailed": "Failed to download files. Please try again."
+    "downloadAllFailed": "Failed to download files. Please try again.",
+    "preview": "Preview",
+    "previewLoading": "Decrypting and loading preview...",
+    "previewFailed": "Failed to load preview. Please try again.",
+    "previewRetry": "Retry",
+    "keyRequired": "Encryption key required to access files",
+    "enterKeyToUnlock": "Enter encryption key to unlock",
+    "unlock": "Unlock"
   },
   "fileUpload": {
     "dropHere": "Drop files here",
