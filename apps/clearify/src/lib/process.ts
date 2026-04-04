@@ -211,8 +211,10 @@ export async function processImage(image: File): Promise<File> {
     )
   }
 
+  const imageUrl = URL.createObjectURL(image)
   try {
-    const img = await RawImage.fromURL(URL.createObjectURL(image))
+    const img = await RawImage.fromURL(imageUrl)
+    URL.revokeObjectURL(imageUrl)
     const { pixel_values } = await state.processor(img)
     const { output } = await state.model({ input: pixel_values })
 
@@ -253,6 +255,7 @@ export async function processImage(image: File): Promise<File> {
     const [fileName] = image.name.split('.')
     return new File([blob], `${fileName}-bg-blasted.png`, { type: 'image/png' })
   } catch (error) {
+    URL.revokeObjectURL(imageUrl)
     logger.error('Image processing failed:', error)
     throw new Error('Image processing failed')
   }

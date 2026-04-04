@@ -22,7 +22,9 @@ import {
 import type { ConversionSettings } from '@/types'
 import { defaultSettings } from '@/types'
 
-const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd'
+// Use multi-threaded FFmpeg core for better performance
+const baseURL = 'https://unpkg.com/@ffmpeg/core-mt@0.12.10/dist/umd'
+const fallbackBaseURL = 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd'
 
 export default function Compress() {
   const ffmpegRef = useRef<FFmpeg | null>(null)
@@ -39,7 +41,7 @@ export default function Compress() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const previewRef = useRef<HTMLVideoElement>(null)
 
-  // Load FFmpeg with logging enabled
+  // Load FFmpeg — try multi-threaded first, fall back to single-threaded
   const loadFFmpeg = async () => {
     try {
       setIsLoading(true)
@@ -54,16 +56,63 @@ export default function Compress() {
         ffmpeg.on('log', ({ type, message }) => {
           logger.log(`[FFmpeg Log] [${type}]`, message)
         })
-        await ffmpeg.load({
-          coreURL: await toBlobURL(
-            `${baseURL}/ffmpeg-core.js`,
-            'text/javascript',
-          ),
-          wasmURL: await toBlobURL(
-            `${baseURL}/ffmpeg-core.wasm`,
-            'application/wasm',
-          ),
-        })
+
+        // Try multi-threaded version first (requires SharedArrayBuffer)
+        const useMultiThread =
+          typeof SharedArrayBuffer !== 'undefined' &&
+          typeof crossOriginIsolated !== 'undefined' &&
+          crossOriginIsolated
+
+        const url = useMultiThread ? baseURL : fallbackBaseURL
+
+        try {
+          const loadConfig: Parameters<typeof ffmpeg.load>[0] = {
+            coreURL: await toBlobURL(
+              `${url}/ffmpeg-core.js`,
+              'text/javascript',
+            ),
+            wasmURL: await toBlobURL(
+              `${url}/ffmpeg-core.wasm`,
+              'application/wasm',
+            ),
+          }
+          if (useMultiThread) {
+            loadConfig.workerURL = await toBlobURL(
+              `${url}/ffmpeg-core.worker.js`,
+              'text/javascript',
+            )
+          }
+          await ffmpeg.load(loadConfig)
+          logger.log(
+            `FFmpeg loaded (${useMultiThread ? 'multi-threaded' : 'single-threaded'})`,
+          )
+        } catch {
+          // Fallback to single-threaded if multi-threaded fails
+          if (useMultiThread) {
+            logger.warn(
+              'Multi-threaded FFmpeg failed, falling back to single-threaded',
+            )
+            ffmpegRef.current = new FFmpeg()
+            const fallbackFfmpeg = ffmpegRef.current
+            fallbackFfmpeg.on('log', ({ type, message }) => {
+              logger.log(`[FFmpeg Log] [${type}]`, message)
+            })
+            await fallbackFfmpeg.load({
+              coreURL: await toBlobURL(
+                `${fallbackBaseURL}/ffmpeg-core.js`,
+                'text/javascript',
+              ),
+              wasmURL: await toBlobURL(
+                `${fallbackBaseURL}/ffmpeg-core.wasm`,
+                'application/wasm',
+              ),
+            })
+            logger.log('FFmpeg loaded (single-threaded fallback)')
+          } else {
+            throw new Error('Failed to load video processor')
+          }
+        }
+
         setIsReady(true)
         toast.success('Video processor loaded successfully')
       }
@@ -92,6 +141,14 @@ export default function Compress() {
     if (videoRef.current) videoRef.current.src = ''
     if (previewRef.current) previewRef.current.src = ''
   }
+
+  // Clean up URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+      if (outputUrl) URL.revokeObjectURL(outputUrl)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Generate preview URL for selected video
   useEffect(() => {
@@ -132,6 +189,12 @@ export default function Compress() {
       })
 
       const args = ['-i', 'input.mp4', '-c:v', settings.videoCodec]
+
+      // Encoding speed preset (ultrafast > veryfast > fast > medium > slow)
+      if (settings.videoCodec === 'libx264' || settings.videoCodec === 'libx265') {
+        args.push('-preset', settings.preset)
+      }
+
       switch (settings.compressionMethod) {
         case 'bitrate':
           args.push('-b:v', settings.videoBitrate)
@@ -139,20 +202,29 @@ export default function Compress() {
         case 'crf':
           args.push('-crf', settings.crfValue || '23')
           break
-        case 'percentage':
+        case 'percentage': {
           const crf = Math.round(
             51 - (parseInt(settings.targetPercentage || '100') / 100) * 33,
           )
           args.push('-crf', crf.toString())
           break
-        case 'filesize':
+        }
+        case 'filesize': {
           const targetBitrate = Math.round(
             (parseInt(settings.targetFilesize || '100') * 8192) /
               (videoRef.current?.duration || 60),
           )
           args.push('-b:v', `${targetBitrate}k`)
           break
+        }
       }
+
+      // Apply resolution scale filter if not original
+      if (settings.resolution && settings.resolution !== '1920x1080') {
+        const [w, h] = settings.resolution.split('x')
+        args.push('-vf', `scale=${w}:${h}:force_original_aspect_ratio=decrease,pad=${w}:${h}:(ow-iw)/2:(oh-ih)/2`)
+      }
+
       args.push(
         '-c:a',
         settings.audioCodec,
@@ -160,6 +232,8 @@ export default function Compress() {
         settings.audioBitrate,
         '-r',
         settings.frameRate,
+        '-movflags',
+        '+faststart',
         'output.mp4',
       )
 

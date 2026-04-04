@@ -9,6 +9,7 @@ export interface ConversionSettings {
   audioBitrate: string
   frameRate: string
   resolution: string
+  preset: string
 }
 
 export const defaultSettings: ConversionSettings = {
@@ -19,4 +20,5 @@ export const defaultSettings: ConversionSettings = {
   audioBitrate: '128k',
   frameRate: '30',
   resolution: '1920x1080',
+  preset: 'veryfast',
 }

@@ -157,7 +157,31 @@ export function CompressionSettings({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="libx264">H.264</SelectItem>
-                  <SelectItem value="libx265">H.265</SelectItem>
+                  <SelectItem value="libx265">H.265 (Slow)</SelectItem>
+                </SelectContent>
+              </Select>
+              {settings.videoCodec === 'libx265' && (
+                <p className="text-xs text-amber-500">
+                  H.265 is significantly slower in browser. Use H.264 for faster compression.
+                </p>
+              )}
+            </Field>
+
+            <Field>
+              <Label>Encoding Speed</Label>
+              <Select
+                value={settings.preset}
+                onValueChange={(value) => onSettingChange('preset', value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ultrafast">Ultra Fast</SelectItem>
+                  <SelectItem value="veryfast">Very Fast</SelectItem>
+                  <SelectItem value="fast">Fast</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="slow">Slow (Best Quality)</SelectItem>
                 </SelectContent>
               </Select>
             </Field>
@@ -229,9 +253,9 @@ export function CompressionSettings({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1920x1080">1080p (1920px)</SelectItem>
-                <SelectItem value="1280x720">720p (1280px)</SelectItem>
-                <SelectItem value="854x480">480p (854px)</SelectItem>
+                <SelectItem value="1920x1080">Original / 1080p</SelectItem>
+                <SelectItem value="1280x720">720p (Faster)</SelectItem>
+                <SelectItem value="854x480">480p (Fastest)</SelectItem>
               </SelectContent>
             </Select>
           </Field>
