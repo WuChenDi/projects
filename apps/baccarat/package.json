@@ -1,0 +1,33 @@
+{
+  "name": "@cdlab996/baccarat",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Telegram Baccarat game bot on Cloudflare Workers with Durable Objects",
+  "author": "wudi <wuchendi96@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/WuChenDi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WuChenDi/projects.git",
+    "directory": "apps/baccarat"
+  },
+  "scripts": {
+    "dev": "wrangler dev --ip 0.0.0.0 --port 3020 src/index.ts",
+    "deploy": "wrangler deploy --minify",
+    "deploy:dev": "wrangler deploy --env development --minify",
+    "deploy:prod": "wrangler deploy --env production --minify",
+    "build": "bun build src/index.ts --outdir dist --target browser",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+  },
+  "dependencies": {
+    "grammy": "^1.37.0",
+    "hono": "catalog:prod"
+  },
+  "devDependencies": {
+    "@cdlab996/tsconfig": "workspace:*",
+    "@cloudflare/workers-types": "catalog:dev",
+    "@types/node": "catalog:dev",
+    "wrangler": "catalog:dev"
+  }
+}
