@@ -3,6 +3,7 @@
 import { Button } from '@cdlab996/ui/components/button'
 import { formatFileSize } from '@cdlab996/utils'
 import { X } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ReactCompareSlider,
   ReactCompareSliderImage,
@@ -20,10 +21,31 @@ export const ImageComparisonModal = ({
   isOpen,
   onClose,
 }: ImageComparisonModalProps) => {
-  if (!isOpen || !image.file || !image.blob) return null
+  const [urls, setUrls] = useState<{
+    original: string
+    compressed: string
+  } | null>(null)
 
-  const originalImageUrl = URL.createObjectURL(image.file)
-  const compressedImageUrl = URL.createObjectURL(image.blob)
+  const sources = useMemo(
+    () => (isOpen && image.file && image.blob ? { file: image.file, blob: image.blob } : null),
+    [isOpen, image.file, image.blob],
+  )
+
+  useEffect(() => {
+    if (!sources) {
+      setUrls(null)
+      return
+    }
+    const original = URL.createObjectURL(sources.file)
+    const compressed = URL.createObjectURL(sources.blob)
+    setUrls({ original, compressed })
+    return () => {
+      URL.revokeObjectURL(original)
+      URL.revokeObjectURL(compressed)
+    }
+  }, [sources])
+
+  if (!isOpen || !image.file || !image.blob || !urls) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -74,14 +96,14 @@ export const ImageComparisonModal = ({
             <ReactCompareSlider
               itemOne={
                 <ReactCompareSliderImage
-                  src={originalImageUrl}
+                  src={urls.original}
                   alt="Original image"
                   style={{ objectFit: 'contain' }}
                 />
               }
               itemTwo={
                 <ReactCompareSliderImage
-                  src={compressedImageUrl}
+                  src={urls.compressed}
                   alt="Compressed image"
                   style={{ objectFit: 'contain' }}
                 />

@@ -13,7 +13,7 @@ import { IKPageContainer } from '@cdlab996/ui/IK'
 import { logger } from '@cdlab996/utils'
 import { Trash2 } from 'lucide-react'
 import type React from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
 import { LeftPanel, RightPanel } from '@/components/pages/bg'
@@ -31,11 +31,16 @@ export default function BG() {
   const [images, setImages] = useState<BgImageFile[]>([])
   const [modelStatus, setModelStatus] = useState<ModelStatus>('unavailable')
   const [isModelInitialized, setIsModelInitialized] = useState(false)
+  const abortRef = useRef(false)
 
   useEffect(() => {
-    // Only check device capabilities, don't initialize model
     const { isIOS: isIOSDevice } = getModelInfo()
     setIsIOS(isIOSDevice)
+
+    return () => {
+      // Abort any in-progress processing and clean up URLs on unmount
+      abortRef.current = true
+    }
   }, [])
 
   // Initialize model on first use
@@ -155,9 +160,11 @@ export default function BG() {
       setImages((prev) => [...prev, ...newImages])
       toast.info(`Processing ${acceptedFiles.length} image(s)...`)
 
+      abortRef.current = false
       for (const image of newImages) {
+        if (abortRef.current) break
+
         try {
-          // Update status to processing
           setImages((prev) =>
             prev.map((img) =>
               img.id === image.id
@@ -167,6 +174,14 @@ export default function BG() {
           )
 
           const result = await processImages([image.file])
+          if (abortRef.current) {
+            // Clean up any URLs created during aborted processing
+            result?.forEach((file) => {
+              if (file) URL.revokeObjectURL(URL.createObjectURL(file))
+            })
+            break
+          }
+
           if (result && result.length > 0) {
             const processedBlob = result[0]
             const processedUrl = URL.createObjectURL(processedBlob!)

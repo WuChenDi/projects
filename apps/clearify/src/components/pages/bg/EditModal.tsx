@@ -225,7 +225,13 @@ export function EditModal({ image, isOpen, onClose, onSave }: EditModalProps) {
 
     const img = new window.Image()
     img.src = processedURL
-    await new Promise((resolve) => (img.onload = resolve))
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve()
+      img.onerror = () => reject(new Error('Failed to load processed image'))
+      setTimeout(() => reject(new Error('Image load timeout')), 10000)
+    }).catch(() => {})
+
+    if (!img.width || !img.height) return
 
     canvas.width = img.width
     canvas.height = img.height
@@ -235,9 +241,15 @@ export function EditModal({ image, isOpen, onClose, onSave }: EditModalProps) {
       ctx.fillStyle = bgColor
       ctx.fillRect(0, 0, canvas.width, canvas.height)
     } else if (bgType === 'image' && customBgImage) {
+      const bgUrl = URL.createObjectURL(customBgImage)
       const bgImg = new window.Image()
-      bgImg.src = URL.createObjectURL(customBgImage)
-      await new Promise((resolve) => (bgImg.onload = resolve))
+      bgImg.src = bgUrl
+      await new Promise<void>((resolve) => {
+        bgImg.onload = () => resolve()
+        bgImg.onerror = () => resolve()
+        setTimeout(() => resolve(), 10000)
+      })
+      URL.revokeObjectURL(bgUrl)
       ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height)
     } else if (bgType === 'pattern') {
       const pattern = predefinedPatterns.find((p) => p.id === selectedPattern)
@@ -283,9 +295,9 @@ export function EditModal({ image, isOpen, onClose, onSave }: EditModalProps) {
           const factor =
             (259 * (contrastValue + 255)) / (255 * (259 - contrastValue))
           for (let i = 0; i < data.length; i += 4) {
-            data[i] = factor * (data[i] - 128) + 128
-            data[i + 1] = factor * (data[i + 1] - 128) + 128
-            data[i + 2] = factor * (data[i + 2] - 128) + 128
+            data[i] = Math.max(0, Math.min(255, factor * (data[i] - 128) + 128))
+            data[i + 1] = Math.max(0, Math.min(255, factor * (data[i + 1] - 128) + 128))
+            data[i + 2] = Math.max(0, Math.min(255, factor * (data[i + 2] - 128) + 128))
           }
           ctx.putImageData(imageData, 0, 0)
           break
@@ -308,11 +320,14 @@ export function EditModal({ image, isOpen, onClose, onSave }: EditModalProps) {
     contrastValue,
   ])
 
+  // Only auto-apply on initial image load, not on every parameter change
+  // Users click "Apply Changes" button for subsequent updates
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only trigger on processedUrl change
   useEffect(() => {
     if (image.processedUrl) {
       void applyChanges()
     }
-  }, [image.processedUrl, applyChanges])
+  }, [image.processedUrl])
 
   const handleSave = () => {
     onSave(exportUrl)

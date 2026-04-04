@@ -13,15 +13,34 @@ export function useImageQueue(
   const [queue, setQueue] = useState<string[]>([])
   const processingCount = useRef(0)
   const processingImages = useRef(new Set<string>())
+  const optionsRef = useRef(options)
+  const outputTypeRef = useRef(outputType)
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  // Keep refs in sync to avoid stale closures
+  useEffect(() => {
+    optionsRef.current = options
+  }, [options])
+
+  useEffect(() => {
+    outputTypeRef.current = outputType
+  }, [outputType])
+
   const processImage = useCallback(
     async (image: ImageFile) => {
       if (processingImages.current.has(image.id)) {
-        return // Skip if already processing this image
+        return
       }
+
+      // Atomic guard: check count before incrementing
+      if (processingCount.current >= MAX_PARALLEL_PROCESSING) {
+        return
+      }
+
       processingImages.current.add(image.id)
       processingCount.current++
+
+      const currentOptions = optionsRef.current
+      const currentOutputType = outputTypeRef.current
 
       try {
         setImages((prev) =>
@@ -39,22 +58,24 @@ export function useImageQueue(
           throw new Error('Empty file')
         }
 
-        // Decode the image
         const imageData = await decode(sourceType, fileBuffer)
 
         if (!imageData || !imageData.width || !imageData.height) {
           throw new Error('Invalid image data')
         }
 
-        // Encode to the target format
-        const compressedBuffer = await encode(outputType, imageData, options)
+        const compressedBuffer = await encode(
+          currentOutputType,
+          imageData,
+          currentOptions,
+        )
 
         if (!compressedBuffer.byteLength) {
           throw new Error('Failed to compress image')
         }
 
         const blob = new Blob([compressedBuffer], {
-          type: `image/${outputType}`,
+          type: `image/${currentOutputType}`,
         })
         const preview = URL.createObjectURL(blob)
 
@@ -67,7 +88,7 @@ export function useImageQueue(
                   preview,
                   blob,
                   compressedSize: compressedBuffer.byteLength,
-                  outputType,
+                  outputType: currentOutputType,
                 }
               : img,
           ),
@@ -91,11 +112,9 @@ export function useImageQueue(
       } finally {
         processingImages.current.delete(image.id)
         processingCount.current--
-        // Try to process next images if any
-        setTimeout(processNextInQueue, 0)
       }
     },
-    [options, outputType, setImages],
+    [setImages],
   )
 
   const processNextInQueue = useCallback(() => {
@@ -107,34 +126,40 @@ export function useImageQueue(
 
     if (queue.length === 0) return
 
-    // Get all images we can process in this batch
     setImages((prev) => {
-      const imagesToProcess = prev.filter(
-        (img) =>
-          queue.includes(img.id) &&
-          !processingImages.current.has(img.id) &&
-          processingCount.current < MAX_PARALLEL_PROCESSING,
-      )
+      const availableSlots =
+        MAX_PARALLEL_PROCESSING - processingCount.current
+      if (availableSlots <= 0) return prev
+
+      const imagesToProcess = prev
+        .filter(
+          (img) =>
+            queue.includes(img.id) &&
+            !processingImages.current.has(img.id),
+        )
+        .slice(0, availableSlots)
 
       logger.log('Found images to process:', imagesToProcess.length)
 
       if (imagesToProcess.length === 0) return prev
 
-      // Start processing these images
-      imagesToProcess.forEach((image, index) => {
-        setTimeout(() => {
-          void processImage(image)
-        }, index * 100)
-      })
+      const idsToProcess = imagesToProcess.map((img) => img.id)
 
-      // Remove these from queue
+      // Start processing these images
+      for (const image of imagesToProcess) {
+        void processImage(image).then(() => {
+          // After each image completes, trigger next batch
+          setQueue((q) => [...q])
+        })
+      }
+
+      // Remove from queue
       setQueue((current) =>
-        current.filter((id) => !imagesToProcess.some((img) => img.id === id)),
+        current.filter((id) => !idsToProcess.includes(id)),
       )
 
-      // Update status to queued
       return prev.map((img) =>
-        imagesToProcess.some((processImg) => processImg.id === img.id)
+        idsToProcess.includes(img.id)
           ? { ...img, status: 'queued' as const }
           : img,
       )
