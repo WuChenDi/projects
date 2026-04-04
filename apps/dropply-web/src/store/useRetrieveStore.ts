@@ -35,6 +35,7 @@ interface RetrieveStore {
   removeResult: (id: string) => void
   clearResults: () => void
   hasCode: (code: string) => boolean
+  updateEncryptionKey: (id: string, key: string) => void
   rehydrateTextContents: () => Promise<void>
 }
 
@@ -82,6 +83,13 @@ export const useRetrieveStore = create<RetrieveStore>()(
 
       hasCode: (code) => get().results.some((r) => r.retrievalCode === code),
 
+      updateEncryptionKey: (id, key) =>
+        set((state) => ({
+          results: state.results.map((r) =>
+            r.id === id ? { ...r, encryptionKey: key } : r,
+          ),
+        })),
+
       rehydrateTextContents: async () => {
         const results = get().results
         const contentMap = new Map<string, string>()
@@ -119,9 +127,8 @@ export const useRetrieveStore = create<RetrieveStore>()(
       name: 'dropply-retrieve-results',
       partialize: (state) => ({
         ...state,
-        results: state.results.map(({ encryptionKey, ...r }) => ({
+        results: state.results.map((r) => ({
           ...r,
-          encryptionKey: '',
           files: r.files.map(({ content, ...file }) => file),
         })),
       }),
