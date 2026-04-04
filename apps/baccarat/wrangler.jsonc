@@ -1,0 +1,45 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "baccarat",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-02-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "BOT_TOKEN": "your-bot-token",
+    "ALLOWED_CHAT_IDS": "your-allowed-chat-ids",
+    // Timing: core game
+    "BETTING_DURATION_MS": "30000",
+    "AUTO_GAME_INTERVAL_MS": "10000",
+    // Timing: dice
+    "DICE_ROLL_TIMEOUT_MS": "10000",
+    "DICE_ROLL_MAX_RETRIES": "2",
+    "DICE_ANIMATION_WAIT_MS": "4000",
+    "DICE_RESULT_DELAY_MS": "1000",
+    // Timing: flow control
+    "CARD_DEAL_DELAY_MS": "500",
+    "MESSAGE_DELAY_MS": "2000",
+    // Timing: system protection
+    "GLOBAL_PROCESS_TIMEOUT_MS": "90000",
+    "CLEANUP_DELAY_MS": "30000"
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "GAME_ROOMS",
+        "class_name": "BaccaratGameRoom"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "BaccaratGameRoom"
+      ]
+    }
+  ]
+}
