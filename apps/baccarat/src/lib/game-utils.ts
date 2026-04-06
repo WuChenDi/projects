@@ -130,7 +130,7 @@ export function formatGameResult(
 }
 
 export function formatGameHistory(history: GameRecord[]): string {
-  let message = `📊 **Last 10 Game Records**\n\n`
+  let message = `📊 **Last ${history.length} Game Records**\n\n`
 
   history.forEach((record, index) => {
     const winnerText = {

@@ -1,10 +1,11 @@
 import { Bot } from 'grammy'
+import type { Context } from 'hono'
 import { Hono } from 'hono'
 import { sendMessage, setWebhook } from '@/lib/bot'
 import type { Env } from '@/types'
 import { createConfig } from '@/types'
 
-function validateChatId(env: Env, chatId: string): boolean {
+export function validateChatId(env: Env, chatId: string): boolean {
   const allowedChatIds = env.ALLOWED_CHAT_IDS?.split(',').map((id: string) =>
     id.trim(),
   )
@@ -14,7 +15,21 @@ function validateChatId(env: Env, chatId: string): boolean {
   return true
 }
 
-async function proxyToGameRoom(c: any, doPath: string): Promise<Response> {
+function requireApiSecret(c: Context<{ Bindings: Env }>): Response | null {
+  const secret = c.env.API_SECRET
+  if (!secret) return null // no secret configured, skip check
+  const provided =
+    c.req.header('X-API-Key') || c.req.query('api_key')
+  if (provided !== secret) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+  return null
+}
+
+async function proxyToGameRoom(
+  c: Context<{ Bindings: Env }>,
+  doPath: string,
+): Promise<Response> {
   try {
     const chatId = c.req.param('chatId')
 
@@ -115,9 +130,12 @@ export function createRoutes(): Hono<{ Bindings: Env }> {
   })
 
   // Game history (proxied to DO since data lives in DO SQLite)
-  app.get('/game-history/:chatId', (c) =>
-    proxyToGameRoom(c, `/game-history?limit=${c.req.query('limit') || '10'}`),
-  )
+  app.get('/game-history/:chatId', (c) => {
+    const rawLimit = parseInt(c.req.query('limit') || '10')
+    const limit = Math.min(Math.max(1, rawLimit || 10), 100)
+    const chatId = c.req.param('chatId')
+    return proxyToGameRoom(c, `/game-history?limit=${limit}&chatId=${chatId}`)
+  })
 
   // Game detail (proxied to DO)
   app.get('/game-detail/:gameNumber', async (c) => {
@@ -131,11 +149,11 @@ export function createRoutes(): Hono<{ Bindings: Env }> {
       )
     }
 
-    if (!/^\d{17}$/.test(gameNumber)) {
+    if (!/^\d+$/.test(gameNumber)) {
       return c.json(
         {
           success: false,
-          error: 'Invalid game number format. Expected 17 digits.',
+          error: 'Invalid game number format. Expected numeric digits.',
         },
         400,
       )
@@ -165,16 +183,38 @@ export function createRoutes(): Hono<{ Bindings: Env }> {
     }
   })
 
-  // DO proxy routes - forward to Durable Object
-  app.post('/auto-game/:chatId', (c) => proxyToGameRoom(c, '/start-game'))
-  app.post('/enable-auto/:chatId', (c) => proxyToGameRoom(c, '/enable-auto'))
-  app.post('/disable-auto/:chatId', (c) => proxyToGameRoom(c, '/disable-auto'))
-  app.post('/process-game/:chatId', (c) => proxyToGameRoom(c, '/process-game'))
+  // DO proxy routes - forward to Durable Object (require API secret)
+  app.post('/auto-game/:chatId', (c) => {
+    const denied = requireApiSecret(c)
+    if (denied) return denied
+    return proxyToGameRoom(c, '/start-game')
+  })
+  app.post('/enable-auto/:chatId', (c) => {
+    const denied = requireApiSecret(c)
+    if (denied) return denied
+    return proxyToGameRoom(c, '/enable-auto')
+  })
+  app.post('/disable-auto/:chatId', (c) => {
+    const denied = requireApiSecret(c)
+    if (denied) return denied
+    return proxyToGameRoom(c, '/disable-auto')
+  })
+  app.post('/process-game/:chatId', (c) => {
+    const denied = requireApiSecret(c)
+    if (denied) return denied
+    return proxyToGameRoom(c, '/process-game')
+  })
   app.get('/game-status/:chatId', (c) => proxyToGameRoom(c, '/get-status'))
-  app.post('/place-bet/:chatId', (c) => proxyToGameRoom(c, '/place-bet'))
+  app.post('/place-bet/:chatId', (c) => {
+    const denied = requireApiSecret(c)
+    if (denied) return denied
+    return proxyToGameRoom(c, '/place-bet')
+  })
 
-  // Send message
+  // Send message (require API secret)
   app.post('/send-message', async (c) => {
+    const denied = requireApiSecret(c)
+    if (denied) return denied
     try {
       const { chatId, message, parseMode } = await c.req.json()
 
@@ -221,8 +261,11 @@ export function createRoutes(): Hono<{ Bindings: Env }> {
     }
   })
 
-  // Set webhook
+  // Set webhook (require API secret)
   app.post('/set-webhook', async (c) => {
+    const denied = requireApiSecret(c)
+    if (denied) return denied
+
     try {
       const { url } = await c.req.json()
       if (!url) {

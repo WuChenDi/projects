@@ -1,4 +1,5 @@
 import type { MessageSender } from '@/game/message-sender'
+import { genid } from '@/lib/genid'
 import type { GameResultOptions } from '@/lib/game-utils'
 import {
   calculatePoints,
@@ -345,20 +346,27 @@ export class GameEngine {
   // Process game (close betting, reveal)
   // -------------------------------------------------------------------------
 
-  async processGame(): Promise<{ success: boolean; gameNumber?: string }> {
-    await this.safeProcessGame()
-    return { success: true, gameNumber: this.game?.gameNumber }
+  async processGame(): Promise<{
+    success: boolean
+    gameNumber?: string
+    error?: string
+  }> {
+    return await this.safeProcessGame()
   }
 
-  private async safeProcessGame(): Promise<void> {
+  private async safeProcessGame(): Promise<{
+    success: boolean
+    gameNumber?: string
+    error?: string
+  }> {
     if (!this.game || this.game.state !== GameState.Betting) {
       console.warn('[GameEngine] No processable game or not in betting state')
-      return
+      return { success: false, error: 'No active betting game to process' }
     }
 
     if (this.isProcessing) {
       console.warn('[GameEngine] Already processing, skipping')
-      return
+      return { success: false, error: 'Game is already being processed' }
     }
 
     this.isProcessing = true
@@ -393,11 +401,15 @@ export class GameEngine {
       await this.startRevealing()
 
       if (globalTimeout) clearTimeout(globalTimeout)
+      return { success: true, gameNumber: this.game?.gameNumber }
     } catch (error) {
       if (globalTimeout) clearTimeout(globalTimeout)
       console.error('[GameEngine] Processing failed:', error)
       await this.forceCleanup('processing failed')
-      throw error
+      return {
+        success: false,
+        error: 'Game processing failed unexpectedly',
+      }
     } finally {
       this.isProcessing = false
     }
@@ -514,20 +526,44 @@ export class GameEngine {
     let bankerNeedCard = false
     let bankerReason = ''
 
-    if (bankerSum <= 4) {
-      // Banker 0-4 always draws
+    if (bankerSum <= 2) {
+      // Banker 0-2 always draws
       bankerNeedCard = true
       bankerReason = `${bankerSum} points, must draw`
     } else if (bankerSum >= 7) {
       // 7 or above stands
       bankerNeedCard = false
       bankerReason = `${bankerSum} points, stands`
-    } else if (bankerSum === 5) {
-      // When banker is 5: draws if player third card is 1,4,5,6
-      if (playerThirdCard === null) {
+    } else if (playerThirdCard === null) {
+      // Player stood (6 or 7): banker draws on 0-5, stands on 6
+      if (bankerSum <= 5) {
         bankerNeedCard = true
-        bankerReason = '5 points, player stood, must draw'
-      } else if ([1, 4, 5, 6].includes(playerThirdCard)) {
+        bankerReason = `${bankerSum} points, player stood, must draw`
+      } else {
+        bankerNeedCard = false
+        bankerReason = '6 points, player stood, stands'
+      }
+    } else if (bankerSum === 3) {
+      // Banker 3: draws unless player third card is 8
+      if (playerThirdCard === 8) {
+        bankerNeedCard = false
+        bankerReason = `3 points, player drew 8, stands`
+      } else {
+        bankerNeedCard = true
+        bankerReason = `3 points, player drew ${playerThirdCard}, must draw`
+      }
+    } else if (bankerSum === 4) {
+      // Banker 4: draws if player third card is 2-7
+      if ([2, 3, 4, 5, 6, 7].includes(playerThirdCard)) {
+        bankerNeedCard = true
+        bankerReason = `4 points, player drew ${playerThirdCard}, must draw`
+      } else {
+        bankerNeedCard = false
+        bankerReason = `4 points, player drew ${playerThirdCard}, stands`
+      }
+    } else if (bankerSum === 5) {
+      // Banker 5: draws if player third card is 4-7
+      if ([4, 5, 6, 7].includes(playerThirdCard)) {
         bankerNeedCard = true
         bankerReason = `5 points, player drew ${playerThirdCard}, must draw`
       } else {
@@ -535,13 +571,10 @@ export class GameEngine {
         bankerReason = `5 points, player drew ${playerThirdCard}, stands`
       }
     } else if (bankerSum === 6) {
-      // When banker is 6: draws only if player third card is 6
-      if (playerThirdCard === null) {
-        bankerNeedCard = false
-        bankerReason = '6 points, player stood, stands'
-      } else if (playerThirdCard === 6) {
+      // Banker 6: draws if player third card is 6 or 7
+      if ([6, 7].includes(playerThirdCard)) {
         bankerNeedCard = true
-        bankerReason = '6 points, player drew 6, must draw'
+        bankerReason = `6 points, player drew ${playerThirdCard}, must draw`
       } else {
         bankerNeedCard = false
         bankerReason = `6 points, player drew ${playerThirdCard}, stands`
@@ -903,14 +936,7 @@ export class GameEngine {
   // -------------------------------------------------------------------------
 
   private generateGameNumber(): string {
-    const now = new Date()
-    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '')
-    const timeStr =
-      String(now.getHours()).padStart(2, '0') +
-      String(now.getMinutes()).padStart(2, '0') +
-      String(now.getSeconds()).padStart(2, '0')
-    const randomStr = String(Math.floor(Math.random() * 1000)).padStart(3, '0')
-    return `${dateStr}${timeStr}${randomStr}`
+    return genid.nextId().toString()
   }
 
   private calculateUserTotalBets(userBets: UserBets): number {

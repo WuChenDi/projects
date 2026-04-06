@@ -1,5 +1,6 @@
 export interface Env {
   BOT_TOKEN: string
+  API_SECRET?: string
   ALLOWED_CHAT_IDS?: string
   GAME_ROOMS: DurableObjectNamespace
   // Timing config (all ms, string from env vars)
@@ -61,7 +62,7 @@ export interface UserBets {
 }
 
 export interface GameData {
-  gameNumber: string // 17-digit
+  gameNumber: string
   state: GameState
   bets: Record<string, UserBets>
   cards: { banker: number[]; player: number[] }
