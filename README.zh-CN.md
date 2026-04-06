@@ -153,6 +153,15 @@ https://values.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/value-vision/og-image.png" alt="value-vision" />
 </details>
 
+### Baccarat
+
+**Telegram 百家乐游戏机器人**
+
+- 完整的百家乐游戏逻辑，含下注、骰子发牌与自动结算
+- 自动游戏模式，可配置局间间隔，每个群组通过 Durable Objects 独立维护游戏状态
+- 游戏历史记录通过 Durable Objects SQLite 持久化存储
+- 核心技术：Hono + Grammy + Cloudflare Workers + Durable Objects
+
 ### LiveUser
 
 **实时在线用户计数器**
@@ -199,6 +208,7 @@ pnpm install
 ```bash
 pnpm dev                           # 启动所有应用（并行开发）
 pnpm --filter clearify dev         # 只启动 Clearify
+pnpm --filter @cdlab996/baccarat dev  # 只启动 Baccarat (port 3020)
 pnpm --filter @cdlab996/bycut dev  # 只启动 ByCut (port 3020)
 pnpm --filter vidl dev             # 只启动 vidl (port 3010)
 pnpm --filter securec dev          # 只启动 SecureC (port 3009)
@@ -230,6 +240,7 @@ pnpm clean                         # 清理 node_modules / 缓存 / 构建产物
 ```text
 .
 ├── apps/
+│   ├── baccarat/          # Telegram 百家乐游戏机器人
 │   ├── bycut/             # 浏览器端视频编辑器
 │   ├── byplay/            # 在线视频播放器
 │   ├── byplay-log/        # ByPlay 播放器监控与分析服务

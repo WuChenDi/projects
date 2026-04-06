@@ -1,5 +1,4 @@
 import type { MessageSender } from '@/game/message-sender'
-import { getGenid } from '@/lib/genid'
 import type { GameResultOptions } from '@/lib/game-utils'
 import {
   calculatePoints,
@@ -181,7 +180,7 @@ export class GameEngine {
       await this.cleanupGame('starting new game')
       this.resetFlags()
 
-      const gameNumber = String(getGenid().nextId())
+      const gameNumber = this.generateGameNumber()
       const now = Date.now()
 
       this.game = {
@@ -934,6 +933,17 @@ export class GameEngine {
   // -------------------------------------------------------------------------
   // Helpers
   // -------------------------------------------------------------------------
+
+  private generateGameNumber(): string {
+    const now = new Date()
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '')
+    const timeStr =
+      String(now.getHours()).padStart(2, '0') +
+      String(now.getMinutes()).padStart(2, '0') +
+      String(now.getSeconds()).padStart(2, '0')
+    const randomStr = String(Math.floor(Math.random() * 1000000)).padStart(6, '0')
+    return `${dateStr}${timeStr}${randomStr}`
+  }
 
   private calculateUserTotalBets(userBets: UserBets): number {
     return Object.entries(userBets).reduce((sum: number, [key, value]) => {

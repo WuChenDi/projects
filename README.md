@@ -153,6 +153,15 @@ https://values.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/value-vision/og-image.png" alt="value-vision" />
 </details>
 
+### Baccarat
+
+**Telegram Baccarat Game Bot**
+
+- Full baccarat game logic with betting, dice-based card dealing, and automatic settlement
+- Auto-game mode with configurable intervals, per-group game isolation via Durable Objects
+- Game history persistence via Durable Objects SQLite
+- Tech: Hono + Grammy + Cloudflare Workers + Durable Objects
+
 ### LiveUser
 
 **Real-time Online User Counter**
@@ -199,6 +208,7 @@ pnpm install
 ```bash
 pnpm dev                           # Start all apps (parallel dev)
 pnpm --filter clearify dev         # Start Clearify only
+pnpm --filter @cdlab996/baccarat dev  # Start Baccarat only (port 3020)
 pnpm --filter @cdlab996/bycut dev  # Start ByCut only (port 3020)
 pnpm --filter vidl dev             # Start vidl only (port 3010)
 pnpm --filter securec dev          # Start SecureC only (port 3009)
@@ -230,6 +240,7 @@ pnpm clean                         # Clean node_modules / cache / build artifact
 ```text
 .
 ├── apps/
+│   ├── baccarat/          # Telegram Baccarat Game Bot
 │   ├── bycut/             # Browser-based Video Editor
 │   ├── byplay/            # Online Video Player
 │   ├── byplay-log/        # ByPlay Monitoring & Analytics Service

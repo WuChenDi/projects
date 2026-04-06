@@ -13,7 +13,7 @@
     "directory": "apps/baccarat"
   },
   "scripts": {
-    "dev": "wrangler dev --ip 0.0.0.0 --port 3020 src/index.ts",
+    "dev": "wrangler dev --ip 0.0.0.0 --port 3022 src/index.ts",
     "deploy": "wrangler deploy --minify",
     "deploy:dev": "wrangler deploy --env development --minify",
     "deploy:prod": "wrangler deploy --env production --minify",
@@ -21,7 +21,6 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
-    "@cdlab996/genid": "catalog:prod",
     "grammy": "^1.42.0",
     "hono": "catalog:prod"
   },

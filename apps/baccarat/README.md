@@ -10,7 +10,7 @@ A Telegram Baccarat game bot deployed on Cloudflare Workers with Durable Objects
 - Immersive card dealing with dice animations
 - Auto-game mode with configurable intervals
 - Per-group game isolation via Durable Objects
-- Game history persistence via Cloudflare KV
+- Game history persistence via Durable Objects SQLite
 
 ## Bot Commands
 
@@ -35,7 +35,7 @@ A Telegram Baccarat game bot deployed on Cloudflare Workers with Durable Objects
 - **Points**: Dice values 1-6, total mod 10
 - **Natural**: Either side totals 8 or 9 — no third card
 - **Player draw**: Draws at 5 or below, stands at 6+
-- **Banker draw**: Always draws at 0-4, stands at 7+. At 5: draws if player drew 1/4/5/6. At 6: draws only if player drew 6
+- **Banker draw**: Always draws at 0-2, stands at 7+. At 3: draws unless player drew 8. At 4: draws if player drew 2-7. At 5: draws if player drew 4-7. At 6: draws if player drew 6-7. If player stood, banker draws at 0-5 and stands at 6-7
 
 ## HTTP API
 
@@ -64,7 +64,7 @@ src/
   types.ts                  — Domain types: Env, Config, GameData, BetType
   lib/
     bot.ts                  — Grammy wrapper (sendMessage, sendDice, setWebhook)
-    storage.ts              — KV helpers (save/get game records)
+    storage.ts              — SQLite helpers (save/get game records)
     game-utils.ts           — Card calculation, Telegram message formatting
   game/
     message-sender.ts       — Sequential message sender with dice animation

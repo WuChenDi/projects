@@ -229,9 +229,6 @@ importers:
 
   apps/baccarat:
     dependencies:
-      '@cdlab996/genid':
-        specifier: catalog:prod
-        version: 1.3.0
       grammy:
         specifier: ^1.42.0
         version: 1.42.0

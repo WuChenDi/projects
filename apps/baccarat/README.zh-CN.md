@@ -10,7 +10,7 @@
 - 沉浸式发牌体验，骰子动画 + 逐张开牌
 - 自动游戏模式，可配置局间间隔
 - 每个群组通过 Durable Objects 独立维护游戏状态
-- 游戏历史记录通过 Cloudflare KV 持久化存储
+- 游戏历史记录通过 Durable Objects SQLite 持久化存储
 
 ## Bot 命令
 
@@ -35,7 +35,7 @@
 - **点数计算**：骰子点数 1-6，总和取个位数
 - **天牌**：任一方前两张牌合计 8 或 9，双方不补牌
 - **闲家补牌**：合计 5 以下补牌，6 以上不补
-- **庄家补牌**：0-4 必补，7 以上不补。5 点时：闲家补 1/4/5/6 则补牌。6 点时：仅闲家补 6 时补牌
+- **庄家补牌**：0-2 必补，7 以上不补。3 点：闲家补牌非 8 则补。4 点：闲家补 2-7 则补。5 点：闲家补 4-7 则补。6 点：闲家补 6-7 则补。闲家未补牌时，庄家 0-5 补牌、6-7 不补
 
 ## HTTP API
 
@@ -64,7 +64,7 @@ src/
   types.ts                  — 领域类型：Env、Config、GameData、BetType
   lib/
     bot.ts                  — Grammy 封装（sendMessage、sendDice、setWebhook）
-    storage.ts              — KV 辅助函数（游戏记录读写）
+    storage.ts              — SQLite 辅助函数（游戏记录读写）
     game-utils.ts           — 牌点计算、Telegram 消息格式化
   game/
     message-sender.ts       — 顺序消息发送器（含骰子动画）
