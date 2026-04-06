@@ -14,10 +14,17 @@ async function callGameRoom(
   const roomId = env.GAME_ROOMS.idFromName(chatId)
   const room = env.GAME_ROOMS.get(roomId)
 
+  let url = `https://game.room${path}`
   const requestBody = method === 'POST' ? { ...data, chatId } : undefined
 
+  // For GET requests, append chatId to query string
+  if (method === 'GET') {
+    const separator = url.includes('?') ? '&' : '?'
+    url += `${separator}chatId=${chatId}`
+  }
+
   const response = await room.fetch(
-    new Request(`https://game.room${path}`, {
+    new Request(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: requestBody ? JSON.stringify(requestBody) : undefined,
