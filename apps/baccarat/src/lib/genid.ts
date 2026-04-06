@@ -1,5 +1,10 @@
 import { GenidOptimized } from '@cdlab996/genid'
 
-const genid = new GenidOptimized({ workerId: 1 })
+let _genid: GenidOptimized | null = null
 
-export { genid }
+export function getGenid(): GenidOptimized {
+  if (!_genid) {
+    _genid = new GenidOptimized({ workerId: 1 })
+  }
+  return _genid
+}
