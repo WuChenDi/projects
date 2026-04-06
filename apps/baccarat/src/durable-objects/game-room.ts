@@ -135,9 +135,10 @@ export class BaccaratGameRoom {
       )
     }
 
-    if (typeof amount !== 'number' || amount <= 0 || amount > 10000) {
+    const config = createConfig(this.env)
+    if (typeof amount !== 'number' || amount <= 0 || amount > config.maxBetAmount) {
       return Response.json(
-        { success: false, error: 'Bet amount must be between 1 and 10000' },
+        { success: false, error: `Bet amount must be between 1 and ${config.maxBetAmount}` },
         { status: 400 },
       )
     }
@@ -297,11 +298,10 @@ export class BaccaratGameRoom {
   }
 
   private async handleGameHistory(url: URL): Promise<Response> {
-    const limit = parseInt(url.searchParams.get('limit') || '10')
-    const history = await this.gameStorage!.getGameHistory(
-      this.currentChatId || '',
-      limit,
-    )
+    const rawLimit = parseInt(url.searchParams.get('limit') || '10')
+    const limit = Math.min(Math.max(1, rawLimit || 10), 100)
+    const chatId = url.searchParams.get('chatId') || this.currentChatId || ''
+    const history = await this.gameStorage!.getGameHistory(chatId, limit)
     return Response.json({ success: true, history, total: history.length })
   }
 

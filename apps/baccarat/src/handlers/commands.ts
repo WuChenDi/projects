@@ -1,5 +1,6 @@
 import type { Bot, Context } from 'grammy'
 import { formatGameHistory, formatGameInfo } from '@/lib/game-utils'
+import { validateChatId } from '@/handlers/routes'
 import type { Config, Env, GameRecord } from '@/types'
 import { BetType } from '@/types'
 
@@ -31,6 +32,15 @@ function getMatchText(ctx: Context): string | undefined {
 }
 
 export function registerCommands(bot: Bot, env: Env, config: Config): void {
+  // Guard: only allow commands from permitted chat IDs
+  bot.use(async (ctx, next) => {
+    const chatId = ctx.chat?.id?.toString()
+    if (chatId && !validateChatId(env, chatId)) {
+      return // silently ignore commands from unauthorized chats
+    }
+    await next()
+  })
+
   bot.command('start', async (ctx) => {
     const chatId = ctx.chat?.id
     const chatType = ctx.chat?.type
@@ -258,7 +268,7 @@ export function registerCommands(bot: Bot, env: Env, config: Config): void {
 
         message += `Total bets: ${result.totalBetsAmount || 0} pts`
 
-        await ctx.reply(`✅ ${message}`)
+        await ctx.reply(message)
       } else {
         await ctx.reply(`❌ ${result.error || 'Failed to place bet'}`)
       }
@@ -341,7 +351,7 @@ export function registerCommands(bot: Bot, env: Env, config: Config): void {
         }
 
         if (status.timeRemaining && status.timeRemaining > 0) {
-          message += `⏰ Time remaining: ${Math.ceil(status.timeRemaining / 1000)}s\n`
+          message += `⏰ Time remaining: ${status.timeRemaining}s\n`
         }
 
         await ctx.reply(message, { parse_mode: 'Markdown' })
@@ -388,13 +398,13 @@ export function registerCommands(bot: Bot, env: Env, config: Config): void {
 
     if (!gameNumber) {
       await ctx.reply(
-        '❌ Please provide a game number\nFormat: /gameinfo 20250719123456789',
+        '❌ Please provide a game number\nFormat: /gameinfo <game_number>',
       )
       return
     }
 
-    if (!/^\d{17}$/.test(gameNumber)) {
-      await ctx.reply('❌ Invalid game number format\nExpected 17 digits')
+    if (!/^\d+$/.test(gameNumber)) {
+      await ctx.reply('❌ Invalid game number format\nExpected numeric digits')
       return
     }
 
