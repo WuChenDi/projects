@@ -1,18 +1,18 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState } from 'react'
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
 import { Card, CardContent } from '@cdlab996/ui/components/card'
 import { Separator } from '@cdlab996/ui/components/separator'
 import { Switch } from '@cdlab996/ui/components/switch'
+import { useSearchParams } from 'next/navigation'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useHistory } from '@/lib/store/history-store'
 import { KVideoPlayer } from '../KVideoPlayer'
+import { usePlayerSettings } from './hooks/usePlayerSettings'
 import { NativePlayer } from './NativePlayer'
 import { VideoPlayerEmpty } from './VideoPlayerEmpty'
 import { VideoPlayerError } from './VideoPlayerError'
-import { usePlayerSettings } from './hooks/usePlayerSettings'
 
 interface VideoPlayerProps {
   playUrl: string
@@ -100,7 +100,17 @@ export function VideoPlayer({
   const saveProgress = useCallback(
     (currentTime: number, duration: number) => {
       if (!videoId || !playUrl || duration === 0 || currentTime <= 1) return
-      addToHistory(videoId, title, playUrl, currentEpisode, source, currentTime, duration, undefined, [])
+      addToHistory(
+        videoId,
+        title,
+        playUrl,
+        currentEpisode,
+        source,
+        currentTime,
+        duration,
+        undefined,
+        [],
+      )
     },
     [videoId, playUrl, title, currentEpisode, source, addToHistory],
   )
@@ -158,10 +168,7 @@ export function VideoPlayer({
     setRetryCount(0)
   }
 
-  const cycleSkipSeconds = (
-    current: number,
-    setter: (v: number) => void,
-  ) => {
+  const cycleSkipSeconds = (current: number, setter: (v: number) => void) => {
     const presets = [15, 30, 45, 60, 90, 120]
     const next = presets[(presets.indexOf(current) + 1) % presets.length]
     setter(next ?? 30)
@@ -180,8 +187,7 @@ export function VideoPlayer({
   const adFilterEnabled = adFilterMode !== 'off'
 
   return (
-    <div className="space-y-2">
-      {/* Video */}
+    <div className="space-y-4">
       <Card className="p-0 overflow-hidden">
         <div className="relative aspect-video bg-black">
           {playerEngine === 'veplayer' ? (
@@ -217,15 +223,13 @@ export function VideoPlayer({
         </div>
       </Card>
 
-      {/* Control bar */}
       <Card>
         <CardContent className="py-3 px-4 space-y-3">
-
-          {/* Row 1: Engine + Speed */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            {/* Engine selector */}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground shrink-0">播放器</span>
+              <span className="text-xs text-muted-foreground shrink-0">
+                播放器
+              </span>
               <div className="flex gap-1">
                 <Button
                   size="sm"
@@ -246,12 +250,16 @@ export function VideoPlayer({
               </div>
             </div>
 
-            {/* Speed — only meaningful for native player */}
             {isNative && (
               <>
-                <Separator orientation="vertical" className="h-5 hidden sm:block" />
+                <Separator
+                  orientation="vertical"
+                  className="h-5 hidden sm:block"
+                />
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground shrink-0">速度</span>
+                  <span className="text-xs text-muted-foreground shrink-0">
+                    速度
+                  </span>
                   <div className="flex gap-1">
                     {SPEED_OPTIONS.map((s) => (
                       <Button
@@ -269,7 +277,6 @@ export function VideoPlayer({
               </>
             )}
 
-            {/* Proxy badge — right side on desktop */}
             {canToggleProxy && (
               <div className="ml-auto">
                 <Badge
@@ -289,9 +296,7 @@ export function VideoPlayer({
 
           <Separator />
 
-          {/* Row 2: Behavior toggles */}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            {/* Auto-next */}
             {hasMultipleEpisodes && (
               <label className="flex items-center gap-1.5 cursor-pointer select-none">
                 <Switch
@@ -302,7 +307,6 @@ export function VideoPlayer({
               </label>
             )}
 
-            {/* Skip intro */}
             <div className="flex items-center gap-1.5">
               <Switch
                 checked={autoSkipIntro}
@@ -312,7 +316,9 @@ export function VideoPlayer({
               {autoSkipIntro && (
                 <button
                   className="text-xs text-primary underline underline-offset-2 tabular-nums"
-                  onClick={() => cycleSkipSeconds(skipIntroSeconds, setSkipIntroSeconds)}
+                  onClick={() =>
+                    cycleSkipSeconds(skipIntroSeconds, setSkipIntroSeconds)
+                  }
                   title="点击切换秒数"
                 >
                   {skipIntroSeconds}s
@@ -320,7 +326,6 @@ export function VideoPlayer({
               )}
             </div>
 
-            {/* Skip outro */}
             <div className="flex items-center gap-1.5">
               <Switch
                 checked={autoSkipOutro}
@@ -330,7 +335,9 @@ export function VideoPlayer({
               {autoSkipOutro && (
                 <button
                   className="text-xs text-primary underline underline-offset-2 tabular-nums"
-                  onClick={() => cycleSkipSeconds(skipOutroSeconds, setSkipOutroSeconds)}
+                  onClick={() =>
+                    cycleSkipSeconds(skipOutroSeconds, setSkipOutroSeconds)
+                  }
                   title="点击切换秒数"
                 >
                   {skipOutroSeconds}s
@@ -338,16 +345,16 @@ export function VideoPlayer({
               )}
             </div>
 
-            {/* Ad filter */}
             <label className="flex items-center gap-1.5 cursor-pointer select-none">
               <Switch
                 checked={adFilterEnabled}
-                onCheckedChange={(v) => setAdFilterMode(v ? 'heuristic' : 'off')}
+                onCheckedChange={(v) =>
+                  setAdFilterMode(v ? 'heuristic' : 'off')
+                }
               />
               <span className="text-xs text-muted-foreground">广告过滤</span>
             </label>
           </div>
-
         </CardContent>
       </Card>
     </div>

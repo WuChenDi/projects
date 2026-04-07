@@ -1,6 +1,6 @@
 'use client'
 
-import { IKPageContainer } from '@cdlab996/ui/IK'
+import { IKConfirmDialog, IKPageContainer } from '@cdlab996/ui/IK'
 import { Header } from '@/components/layout'
 import { AddSourceModal } from '@/components/settings/AddSourceModal'
 import { DataSettings } from '@/components/settings/DataSettings'
@@ -11,9 +11,7 @@ import { PasswordSettings } from '@/components/settings/PasswordSettings'
 import { PlayerSettings } from '@/components/settings/PlayerSettings'
 import { SortSettings } from '@/components/settings/SortSettings'
 import { SourceSettings } from '@/components/settings/SourceSettings'
-import { IKConfirmDialog } from '@cdlab996/ui/IK'
 import { useSettingsPage } from './hooks/useSettingsPage'
-
 
 export default function SettingsPage() {
   const {
@@ -66,61 +64,60 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen">
-      <Header />
+      <Header isBack />
       <IKPageContainer>
         <div className="max-w-4xl mx-auto w-full space-y-8 pb-8">
+          {/* Player Settings */}
+          <PlayerSettings
+            fullscreenType={fullscreenType}
+            onFullscreenTypeChange={handleFullscreenTypeChange}
+            proxyMode={proxyMode}
+            onProxyModeChange={handleProxyModeChange}
+            playerEngine={playerEngine}
+            onPlayerEngineChange={handlePlayerEngineChange}
+          />
 
-        {/* Player Settings */}
-        <PlayerSettings
-          fullscreenType={fullscreenType}
-          onFullscreenTypeChange={handleFullscreenTypeChange}
-          proxyMode={proxyMode}
-          onProxyModeChange={handleProxyModeChange}
-          playerEngine={playerEngine}
-          onPlayerEngineChange={handlePlayerEngineChange}
-        />
+          {/* Password Settings */}
+          <PasswordSettings
+            enabled={passwordAccess}
+            passwords={accessPasswords}
+            envPasswordSet={envPasswordSet}
+            onToggle={handlePasswordToggle}
+            onAdd={handleAddPassword}
+            onRemove={handleRemovePassword}
+          />
 
-        {/* Password Settings */}
-        <PasswordSettings
-          enabled={passwordAccess}
-          passwords={accessPasswords}
-          envPasswordSet={envPasswordSet}
-          onToggle={handlePasswordToggle}
-          onAdd={handleAddPassword}
-          onRemove={handleRemovePassword}
-        />
+          {/* Display Settings */}
+          <DisplaySettings
+            realtimeLatency={realtimeLatency}
+            searchDisplayMode={searchDisplayMode}
+            rememberScrollPosition={rememberScrollPosition}
+            onRealtimeLatencyChange={handleRealtimeLatencyChange}
+            onSearchDisplayModeChange={handleSearchDisplayModeChange}
+            onRememberScrollPositionChange={handleRememberScrollPositionChange}
+          />
 
-        {/* Display Settings */}
-        <DisplaySettings
-          realtimeLatency={realtimeLatency}
-          searchDisplayMode={searchDisplayMode}
-          rememberScrollPosition={rememberScrollPosition}
-          onRealtimeLatencyChange={handleRealtimeLatencyChange}
-          onSearchDisplayModeChange={handleSearchDisplayModeChange}
-          onRememberScrollPositionChange={handleRememberScrollPositionChange}
-        />
+          {/* Source Management */}
+          <SourceSettings
+            sources={sources}
+            onSourcesChange={handleSourcesChange}
+            onRestoreDefaults={() => setIsRestoreDefaultsDialogOpen(true)}
+            onAddSource={() => {
+              setEditingSource(null)
+              setIsAddModalOpen(true)
+            }}
+            onEditSource={handleEditSource}
+          />
 
-        {/* Source Management */}
-        <SourceSettings
-          sources={sources}
-          onSourcesChange={handleSourcesChange}
-          onRestoreDefaults={() => setIsRestoreDefaultsDialogOpen(true)}
-          onAddSource={() => {
-            setEditingSource(null)
-            setIsAddModalOpen(true)
-          }}
-          onEditSource={handleEditSource}
-        />
+          {/* Sort Options */}
+          <SortSettings sortBy={sortBy} onSortChange={handleSortChange} />
 
-        {/* Sort Options */}
-        <SortSettings sortBy={sortBy} onSortChange={handleSortChange} />
-
-        {/* Data Management */}
-        <DataSettings
-          onExport={() => setIsExportModalOpen(true)}
-          onImport={() => setIsImportModalOpen(true)}
-          onReset={() => setIsResetDialogOpen(true)}
-        />
+          {/* Data Management */}
+          <DataSettings
+            onExport={() => setIsExportModalOpen(true)}
+            onImport={() => setIsImportModalOpen(true)}
+            onReset={() => setIsResetDialogOpen(true)}
+          />
         </div>
       </IKPageContainer>
 
@@ -174,5 +171,4 @@ export default function SettingsPage() {
       />
     </div>
   )
-
 }

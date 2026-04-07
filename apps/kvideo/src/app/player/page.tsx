@@ -1,17 +1,18 @@
 'use client'
 
+import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
+import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { FavoritesSidebar } from '@/components/favorites/FavoritesSidebar'
 import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar'
+import { Header } from '@/components/layout'
 import { EpisodeList } from '@/components/player/EpisodeList'
 import { PlayerError } from '@/components/player/PlayerError'
-import { PlayerNavbar } from '@/components/player/PlayerNavbar'
 import type { SourceInfo } from '@/components/player/SourceSelector'
 import { SourceSelector } from '@/components/player/SourceSelector'
 import { VideoMetadata } from '@/components/player/VideoMetadata'
 import { VideoPlayer } from '@/components/player/VideoPlayer'
-import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
 import { useVideoPlayer } from '@/lib/hooks/useVideoPlayer'
 import { useHistory } from '@/lib/store/history-store'
 import { settingsStore } from '@/lib/store/settings-store'
@@ -33,7 +34,9 @@ function PlayerContent() {
       ? settingsStore.getSettings().episodeReverseOrder
       : false,
   )
-  const [activeTab, setActiveTab] = useState<'episodes' | 'info' | 'sources'>('episodes')
+  const [activeTab, setActiveTab] = useState<'episodes' | 'info' | 'sources'>(
+    'episodes',
+  )
 
   useEffect(() => {
     setIsReversed(settingsStore.getSettings().episodeReverseOrder)
@@ -59,10 +62,19 @@ function PlayerContent() {
   const groupedSources = useMemo<SourceInfo[]>(() => {
     let sources: SourceInfo[] = []
     if (groupedSourcesParam) {
-      try { sources = JSON.parse(groupedSourcesParam) } catch { sources = [] }
+      try {
+        sources = JSON.parse(groupedSourcesParam)
+      } catch {
+        sources = []
+      }
     }
     if (source && !sources.find((s) => s.source === source)) {
-      sources.unshift({ id: videoId || '', source, sourceName: source, pic: videoData?.vod_pic })
+      sources.unshift({
+        id: videoId || '',
+        source,
+        sourceName: source,
+        pic: videoData?.vod_pic,
+      })
     }
     return sources
   }, [groupedSourcesParam, source, videoId, videoData?.vod_pic])
@@ -71,12 +83,23 @@ function PlayerContent() {
 
   useEffect(() => {
     if (videoData && playUrl && videoId) {
-      const mappedEpisodes = videoData.episodes?.map((ep, idx) => ({
-        name: ep.name || `第${idx + 1}集`,
-        url: ep.url,
-        index: idx,
-      })) || []
-      addToHistory(videoId, videoData.vod_name || title || '未知视频', playUrl, currentEpisode, source, 0, 0, videoData.vod_pic, mappedEpisodes)
+      const mappedEpisodes =
+        videoData.episodes?.map((ep, idx) => ({
+          name: ep.name || `第${idx + 1}集`,
+          url: ep.url,
+          index: idx,
+        })) || []
+      addToHistory(
+        videoId,
+        videoData.vod_name || title || '未知视频',
+        playUrl,
+        currentEpisode,
+        source,
+        0,
+        0,
+        videoData.vod_pic,
+        mappedEpisodes,
+      )
     }
   }, [videoData, playUrl, videoId, currentEpisode, source, title, addToHistory])
 
@@ -133,7 +156,8 @@ function PlayerContent() {
             params.set('id', String(newSource.id))
             params.set('source', newSource.source)
             params.set('title', title || '')
-            if (groupedSourcesParam) params.set('groupedSources', groupedSourcesParam)
+            if (groupedSourcesParam)
+              params.set('groupedSources', groupedSourcesParam)
             setCurrentSourceId(newSource.source)
             router.replace(`/player?${params.toString()}`, { scroll: false })
           }}
@@ -144,14 +168,16 @@ function PlayerContent() {
 
   return (
     <div className="min-h-screen">
-      <PlayerNavbar isPremium={isPremium} />
+      <Header isPremiumMode={isPremium} isBack />
 
-      <main className="p-4 md:px-6 pt-0">
+      <IKPageContainer>
         <div className="max-w-7xl mx-auto w-full pb-20">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
-              <p className="text-sm text-muted-foreground">正在加载视频详情...</p>
+              <p className="text-sm text-muted-foreground">
+                正在加载视频详情...
+              </p>
             </div>
           ) : videoError && !videoData ? (
             <PlayerError
@@ -160,7 +186,7 @@ function PlayerContent() {
               onRetry={fetchVideoDetails}
             />
           ) : (
-            <div className="grid lg:grid-cols-3 gap-6 items-start">
+            <div className="grid lg:grid-cols-3 gap-4 items-start">
               {/* Left column */}
               <div className="lg:col-span-2 space-y-4">
                 <VideoPlayer
@@ -176,11 +202,16 @@ function PlayerContent() {
 
                 {/* Mobile tabs */}
                 <div className="lg:hidden space-y-4">
-                  <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+                  <Tabs
+                    value={activeTab}
+                    onValueChange={(v) => setActiveTab(v as typeof activeTab)}
+                  >
                     <TabsList>
                       <TabsTrigger value="episodes">选集</TabsTrigger>
                       <TabsTrigger value="info">简介</TabsTrigger>
-                      {hasMultipleSources && <TabsTrigger value="sources">来源</TabsTrigger>}
+                      {hasMultipleSources && (
+                        <TabsTrigger value="sources">来源</TabsTrigger>
+                      )}
                     </TabsList>
                   </Tabs>
                   {activeTab === 'episodes' && (
@@ -193,7 +224,13 @@ function PlayerContent() {
                     />
                   )}
                   {activeTab === 'info' && (
-                    <VideoMetadata videoData={videoData} source={source} title={title} videoId={videoId} isPremium={isPremium} />
+                    <VideoMetadata
+                      videoData={videoData}
+                      source={source}
+                      title={title}
+                      videoId={videoId}
+                      isPremium={isPremium}
+                    />
                   )}
                   {activeTab === 'sources' && hasMultipleSources && (
                     <SourceSelector
@@ -204,9 +241,12 @@ function PlayerContent() {
                         params.set('id', String(newSource.id))
                         params.set('source', newSource.source)
                         params.set('title', title || '')
-                        if (groupedSourcesParam) params.set('groupedSources', groupedSourcesParam)
+                        if (groupedSourcesParam)
+                          params.set('groupedSources', groupedSourcesParam)
                         setCurrentSourceId(newSource.source)
-                        router.replace(`/player?${params.toString()}`, { scroll: false })
+                        router.replace(`/player?${params.toString()}`, {
+                          scroll: false,
+                        })
                       }}
                     />
                   )}
@@ -214,7 +254,13 @@ function PlayerContent() {
 
                 {/* Desktop metadata */}
                 <div className="hidden lg:block">
-                  <VideoMetadata videoData={videoData} source={source} title={title} videoId={videoId} isPremium={isPremium} />
+                  <VideoMetadata
+                    videoData={videoData}
+                    source={source}
+                    title={title}
+                    videoId={videoId}
+                    isPremium={isPremium}
+                  />
                 </div>
               </div>
 
@@ -227,7 +273,7 @@ function PlayerContent() {
             </div>
           )}
         </div>
-      </main>
+      </IKPageContainer>
 
       <FavoritesSidebar isPremium={isPremium} />
       <WatchHistorySidebar isPremium={isPremium} />
