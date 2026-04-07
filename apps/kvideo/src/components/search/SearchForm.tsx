@@ -153,7 +153,7 @@ export function SearchForm({
                     清空全部
                   </button>
                 </div>
-                <ComboboxSeparator />
+                <ComboboxSeparator className="my-0" />
                 <ComboboxList>
                   <ComboboxEmpty>暂无搜索历史</ComboboxEmpty>
                   {historyItems.map((q) => (
