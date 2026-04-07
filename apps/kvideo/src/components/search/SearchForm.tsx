@@ -128,6 +128,7 @@ export function SearchForm({
                   <InputGroupButton
                     size="xs"
                     type="button"
+                    variant="outline"
                     onClick={() => handleSearch()}
                     disabled={!query.trim()}
                   >

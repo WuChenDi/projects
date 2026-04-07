@@ -176,14 +176,14 @@ export function TagManager({
   const activeTag = tags.find((t) => t.id === activeId)
 
   return (
-    <div className="mb-8">
+    <div className="mb-4">
       <div className="mb-2 flex items-center justify-between">
         <Button
           variant="ghost"
           onClick={onToggleManager}
           className="flex items-center gap-2"
         >
-          <TagIcon size={18} />
+          <TagIcon className="size-4" />
           {showTagManager ? '完成编辑' : '管理标签'}
         </Button>
 
@@ -193,14 +193,14 @@ export function TagManager({
             onClick={onRestoreDefaults}
             className="flex items-center gap-2 text-destructive hover:text-destructive"
           >
-            <RefreshCw size={18} />
+            <RefreshCw className="size-4" />
             恢复默认
           </Button>
         )}
       </div>
 
       {showTagManager && (
-        <div className="mb-6 flex gap-3">
+        <div className="mb-4 flex gap-3">
           <Input
             type="text"
             value={newTagInput}

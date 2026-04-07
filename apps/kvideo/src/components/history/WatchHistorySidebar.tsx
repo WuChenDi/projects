@@ -1,6 +1,5 @@
 'use client'
 
-import { IKConfirmDialog } from '@cdlab996/ui/IK'
 import { Button } from '@cdlab996/ui/components/button'
 import {
   Drawer,
@@ -10,15 +9,21 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@cdlab996/ui/components/drawer'
-import { HistoryIcon, TrashIcon, XIcon } from 'lucide-react'
+import { IKConfirmDialog } from '@cdlab996/ui/IK'
+import { TrashIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useHistory } from '@/lib/store/history-store'
 import { useSidebarStore } from '@/lib/store/sidebar-store'
 import { HistoryList } from './HistoryList'
 
-export function WatchHistorySidebar({ isPremium = false }: { isPremium?: boolean }) {
+export function WatchHistorySidebar({
+  isPremium = false,
+}: {
+  isPremium?: boolean
+}) {
   const { historyOpen, setHistoryOpen } = useSidebarStore()
-  const { viewingHistory, removeFromHistory, clearHistory } = useHistory(isPremium)
+  const { viewingHistory, removeFromHistory, clearHistory } =
+    useHistory(isPremium)
   const [deleteConfirm, setDeleteConfirm] = useState<{
     isOpen: boolean
     videoId?: string
@@ -41,13 +46,14 @@ export function WatchHistorySidebar({ isPremium = false }: { isPremium?: boolean
 
   return (
     <>
-      <Drawer open={historyOpen} onOpenChange={setHistoryOpen} direction="right">
+      <Drawer
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+        direction="right"
+      >
         <DrawerContent className="flex flex-col">
           <DrawerHeader className="flex-row items-center justify-between border-b">
-            <div className="flex items-center gap-2">
-              <HistoryIcon className="size-5 text-primary" />
-              <DrawerTitle>观看历史</DrawerTitle>
-            </div>
+            <DrawerTitle>观看历史</DrawerTitle>
             <DrawerClose asChild>
               <Button variant="ghost" size="icon-xs">
                 <XIcon className="size-4" />
@@ -63,7 +69,9 @@ export function WatchHistorySidebar({ isPremium = false }: { isPremium?: boolean
             <DrawerFooter className="border-t">
               <Button
                 variant="outline"
-                onClick={() => setDeleteConfirm({ isOpen: true, isClearAll: true })}
+                onClick={() =>
+                  setDeleteConfirm({ isOpen: true, isClearAll: true })
+                }
                 className="w-full"
               >
                 <TrashIcon className="size-4" />

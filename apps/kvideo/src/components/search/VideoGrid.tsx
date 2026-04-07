@@ -205,7 +205,7 @@ export const VideoGrid = memo(function VideoGrid({
       <div
         ref={gridRef}
         className={cn(
-          'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-6 gap-4 md:gap-6 max-w-[1920px] mx-auto',
+          'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-6 gap-4 max-w-[1920px] mx-auto',
           className,
         )}
         role="list"
