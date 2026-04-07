@@ -1,6 +1,5 @@
 'use client'
 
-import { IKConfirmDialog } from '@cdlab996/ui/IK'
 import { Button } from '@cdlab996/ui/components/button'
 import {
   Drawer,
@@ -10,13 +9,18 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@cdlab996/ui/components/drawer'
-import { HeartIcon, TrashIcon, XIcon } from 'lucide-react'
+import { IKConfirmDialog } from '@cdlab996/ui/IK'
+import { TrashIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useFavorites } from '@/lib/store/favorites-store'
 import { useSidebarStore } from '@/lib/store/sidebar-store'
 import { FavoritesList } from './FavoritesList'
 
-export function FavoritesSidebar({ isPremium = false }: { isPremium?: boolean }) {
+export function FavoritesSidebar({
+  isPremium = false,
+}: {
+  isPremium?: boolean
+}) {
   const { favoritesOpen, setFavoritesOpen } = useSidebarStore()
   const { favorites, removeFavorite, clearFavorites } = useFavorites(isPremium)
   const [deleteConfirm, setDeleteConfirm] = useState<{
@@ -41,13 +45,14 @@ export function FavoritesSidebar({ isPremium = false }: { isPremium?: boolean })
 
   return (
     <>
-      <Drawer open={favoritesOpen} onOpenChange={setFavoritesOpen} direction="left">
+      <Drawer
+        open={favoritesOpen}
+        onOpenChange={setFavoritesOpen}
+        direction="right"
+      >
         <DrawerContent className="flex flex-col">
           <DrawerHeader className="flex-row items-center justify-between border-b">
-            <div className="flex items-center gap-2">
-              <HeartIcon className="size-5 text-primary" />
-              <DrawerTitle>我的收藏</DrawerTitle>
-            </div>
+            <DrawerTitle>我的收藏</DrawerTitle>
             <DrawerClose asChild>
               <Button variant="ghost" size="icon-xs">
                 <XIcon className="size-4" />
@@ -67,7 +72,9 @@ export function FavoritesSidebar({ isPremium = false }: { isPremium?: boolean })
             <DrawerFooter className="border-t">
               <Button
                 variant="outline"
-                onClick={() => setDeleteConfirm({ isOpen: true, isClearAll: true })}
+                onClick={() =>
+                  setDeleteConfirm({ isOpen: true, isClearAll: true })
+                }
                 className="w-full"
               >
                 <TrashIcon className="size-4" />
