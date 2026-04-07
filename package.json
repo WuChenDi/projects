@@ -31,6 +31,7 @@
     "dev:repo-changelog": "turbo dev --filter=./apps/repo-changelog",
     "dev:live-user": "turbo dev --filter=./apps/live-user",
     "dev:baccarat": "turbo dev --filter=./apps/baccarat",
+    "dev:kvideo": "turbo dev --filter=./apps/kvideo",
     "preview:text2img": "turbo preview --filter=./apps/text2img",
     "deploy:dropply-api": "turbo deploy --filter=./apps/dropply-api",
     "deploy:text2img": "turbo deploy --filter=./apps/text2img",

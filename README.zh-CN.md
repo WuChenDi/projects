@@ -162,6 +162,15 @@ https://values.pages.dev/
 - 游戏历史记录通过 Durable Objects SQLite 持久化存储
 - 核心技术：Hono + Grammy + Cloudflare Workers + Durable Objects
 
+### KVideo
+
+**视频聚合与播放平台**
+
+- 多源并行视频搜索，实时流式返回结果（SSE），内置 38+ 视频源
+- HLS/M3U8 播放，支持广告过滤（关键词、启发式、SCTE-35）、代理模式、自动下一集
+- Service Worker 缓存、观看历史、收藏夹、密码保护、Premium 模式隔离
+- 核心技术：Next.js 16（App Router）+ React 19 + Zustand + HLS.js + Volcengine VePlayer + Tailwind CSS 4
+
 ### LiveUser
 
 **实时在线用户计数器**
@@ -217,6 +226,7 @@ pnpm --filter value-vision dev     # 只启动 Value Vision (port 3011)
 pnpm --filter byplay dev           # 只启动 ByPlay (port 3016)
 pnpm --filter byplay-log dev       # 只启动 ByPlay Log (port 3017)
 pnpm --filter dropply-web dev      # 只启动 Dropply Web (port 3013)
+pnpm --filter @cdlab996/kvideo dev     # 只启动 KVideo (port 3023)
 pnpm --filter @cdlab996/live-user dev  # 只启动 LiveUser (port 3021)
 pnpm --filter repo-changelog dev   # 只启动 Repo Changelog (port 3019)
 pnpm build                         # 构建所有应用
@@ -247,6 +257,7 @@ pnpm clean                         # 清理 node_modules / 缓存 / 构建产物
 │   ├── clearify/          # 图像 & 视频工具箱
 │   ├── dropply-api/       # Dropply 文件分享 Cloudflare API
 │   ├── dropply-web/       # Dropply 文件分享 Web 前端
+│   ├── kvideo/            # 视频聚合与播放平台
 │   ├── live-user/         # 实时在线用户计数器
 │   ├── vidl/              # 视频下载工具（M3U8/HLS、MP4 等）
 │   ├── repo-changelog/    # GitHub Release / Changelog 聚合工具
