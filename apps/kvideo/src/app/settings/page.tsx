@@ -66,7 +66,7 @@ export default function SettingsPage() {
     <div className="min-h-screen">
       <Header isBack />
       <IKPageContainer>
-        <div className="max-w-4xl mx-auto w-full space-y-8 pb-8">
+        <div className="max-w-4xl mx-auto w-full space-y-4 pb-8">
           {/* Player Settings */}
           <PlayerSettings
             fullscreenType={fullscreenType}
