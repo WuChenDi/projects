@@ -22,6 +22,19 @@ export function useHlsPlayer({
   const { adFilterMode, adKeywords } = usePlayerSettings()
   const isAdFilterEnabled = adFilterMode !== 'off'
 
+  // Use refs for values that should NOT trigger player reinitialization.
+  // adKeywords is an array (new reference every render when store updates),
+  // and callbacks may be non-memoized, so both would cause spurious restarts.
+  const adKeywordsRef = useRef(adKeywords)
+  adKeywordsRef.current = adKeywords
+  const adFilterModeRef = useRef(adFilterMode)
+  adFilterModeRef.current = adFilterMode
+  const onErrorRef = useRef(onError)
+  onErrorRef.current = onError
+  const onAutoPlayPreventedRef = useRef(onAutoPlayPrevented)
+  onAutoPlayPreventedRef.current = onAutoPlayPrevented
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   useEffect(() => {
     const video = videoRef.current
     if (!video || !src) return
@@ -64,8 +77,8 @@ export function useHlsPlayer({
                   response.data = filterM3u8Ad(
                     response.data,
                     context.url,
-                    adFilterMode,
-                    adKeywords,
+                    adFilterModeRef.current,
+                    adKeywordsRef.current,
                   )
                 } catch (e) {
                   console.warn('[HLS] Ad filter error:', e)
@@ -157,7 +170,9 @@ export function useHlsPlayer({
               )
               if (hasHEVC) {
                 console.warn('[HLS] ⚠️ HEVC detected')
-                onError?.('检测到 HEVC/H.265 编码，当前浏览器可能不支持')
+                onErrorRef.current?.(
+                  '检测到 HEVC/H.265 编码，当前浏览器可能不支持',
+                )
               }
             }
           }
@@ -165,7 +180,7 @@ export function useHlsPlayer({
           if (autoPlay) {
             video.play().catch((err) => {
               // console.warn('[HLS] Autoplay prevented:', err);
-              onAutoPlayPrevented?.(err)
+              onAutoPlayPreventedRef.current?.(err)
             })
           }
         })
@@ -183,7 +198,7 @@ export function useHlsPlayer({
                 if (networkErrorRetries <= MAX_RETRIES) {
                   hls?.startLoad()
                 } else {
-                  onError?.('网络错误：无法加载视频流')
+                  onErrorRef.current?.('网络错误：无法加载视频流')
                   hls?.destroy()
                 }
                 break
@@ -192,13 +207,13 @@ export function useHlsPlayer({
                 if (mediaErrorRetries <= MAX_RETRIES) {
                   hls?.recoverMediaError()
                 } else {
-                  onError?.('媒体错误：视频格式不支持或已损坏')
+                  onErrorRef.current?.('媒体错误：视频格式不支持或已损坏')
                   hls?.destroy()
                 }
                 break
               default:
                 console.error('[HLS] Fatal error, cannot recover:', data)
-                onError?.(`致命错误：${data.details || '未知错误'}`)
+                onErrorRef.current?.(`致命错误：${data.details || '未知错误'}`)
                 hls?.destroy()
                 break
             }
@@ -377,7 +392,7 @@ export function useHlsPlayer({
               '[HLS Native] Ad filtering failed, falling back to original source.',
               e,
             )
-            onError?.('广告过滤失败，已回退到原始视频流')
+            onErrorRef.current?.('广告过滤失败，已回退到原始视频流')
             video.src = src
           })
       } else {
@@ -385,7 +400,7 @@ export function useHlsPlayer({
       }
     } else {
       console.error('[HLS] HLS not supported')
-      onError?.('当前浏览器不支持 HLS 视频播放')
+      onErrorRef.current?.('当前浏览器不支持 HLS 视频播放')
     }
 
     return () => {
@@ -394,14 +409,5 @@ export function useHlsPlayer({
       }
       extraBlobs.forEach((url) => URL.revokeObjectURL(url))
     }
-  }, [
-    src,
-    videoRef,
-    autoPlay,
-    onAutoPlayPrevented,
-    onError,
-    isAdFilterEnabled,
-    adFilterMode,
-    adKeywords,
-  ])
+  }, [src, videoRef, autoPlay, isAdFilterEnabled])
 }
