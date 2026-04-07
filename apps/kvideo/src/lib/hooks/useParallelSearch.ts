@@ -1,0 +1,93 @@
+'use client'
+
+import { useCallback } from 'react'
+import type { SortOption } from '@/lib/store/settings-store'
+import type { SourceBadge, Video } from '@/lib/types'
+import { sortVideos } from '@/lib/utils/sort'
+import { useSearchAction } from './useSearchAction'
+import { useSearchState } from './useSearchState'
+
+interface ParallelSearchResult {
+  loading: boolean
+  results: Video[]
+  availableSources: SourceBadge[]
+  completedSources: number
+  totalSources: number
+  totalVideosFound: number
+  performSearch: (
+    query: string,
+    sources?: any[],
+    sortBy?: SortOption,
+  ) => Promise<void>
+  resetSearch: () => void
+  loadCachedResults: (results: Video[], sources: any[]) => void
+  applySorting: (sortBy: SortOption) => void
+}
+
+export function useParallelSearch(
+  onCacheUpdate: (query: string, results: any[], sources: any[]) => void,
+  onUrlUpdate: (query: string) => void,
+): ParallelSearchResult {
+  const state = useSearchState()
+  const {
+    loading,
+    results,
+    availableSources,
+    completedSources,
+    totalSources,
+    totalVideosFound,
+    setResults,
+    setAvailableSources,
+    setTotalVideosFound,
+    resetState,
+  } = state
+
+  const { performSearch, cancelSearch } = useSearchAction({
+    state,
+    onCacheUpdate,
+    onUrlUpdate,
+  })
+
+  /**
+   * Reset search state
+   */
+  const resetSearch = useCallback(() => {
+    cancelSearch()
+    resetState()
+  }, [cancelSearch, resetState])
+
+  /**
+   * Load cached results
+   */
+  const loadCachedResults = useCallback(
+    (cachedResults: Video[], cachedSources: any[]) => {
+      setResults(cachedResults)
+      setAvailableSources(cachedSources)
+      setTotalVideosFound(cachedResults.length)
+    },
+    [setResults, setAvailableSources, setTotalVideosFound],
+  )
+
+  /**
+   * Apply sorting to current results
+   */
+  const applySorting = useCallback(
+    (sortBy: SortOption) => {
+      setResults((currentResults) => sortVideos(currentResults, sortBy))
+    },
+    [setResults],
+  )
+
+  return {
+    loading,
+    results,
+    availableSources,
+    completedSources,
+    totalSources,
+    totalVideosFound,
+    performSearch,
+    resetSearch,
+    loadCachedResults,
+    applySorting,
+  }
+}

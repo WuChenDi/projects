@@ -1,0 +1,94 @@
+/**
+ * Performance Optimization CSS
+ * Improves scrolling performance for video grids
+ */
+
+/* Enable smooth scrolling with hardware acceleration */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimize scrolling container */
+.video-grid-container {
+  /* Use momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+
+  /* Force GPU layer for scrolling */
+  transform: translate3d(0, 0, 0);
+  will-change: auto;
+}
+
+/* Optimize video cards for rendering */
+.video-card-wrapper {
+  /* CSS containment for isolation */
+  contain: layout style paint;
+
+  /* Content visibility for lazy rendering */
+  content-visibility: auto;
+
+  /* Reduce layout shifts */
+  contain-intrinsic-size: auto 400px;
+}
+
+/* Reduce repaints on images */
+.video-card-image {
+  /* Force GPU rendering */
+  transform: translate3d(0, 0, 0);
+
+  /* Prevent unnecessary repaints */
+  will-change: auto;
+
+  /* Optimize image decoding */
+  image-rendering: auto;
+}
+
+/* Optimize badges and overlays */
+.video-card-badge {
+  /* Force GPU layer */
+  transform: translate3d(0, 0, 0);
+
+  /* No backdrop filter during scroll */
+  will-change: auto;
+}
+
+/* Disable expensive effects during scroll */
+@media (prefers-reduced-motion: no-preference) {
+  .video-card:not(:hover) .expensive-effect {
+    /* Disable blur effects when not hovering */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Optimize for mobile devices */
+@media (max-width: 768px) {
+  /* Reduce visual complexity on mobile */
+  .video-card {
+    /* Simpler rendering */
+    will-change: auto;
+  }
+
+  /* Disable expensive hover effects on mobile */
+  .video-card-overlay {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Grid optimization */
+.optimized-grid {
+  /* Grid-specific containment */
+  contain: layout style;
+
+  /* Prevent layout thrashing */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+/* Passive event listeners hint */
+html {
+  /* Hint to browser for passive touch events */
+  touch-action: pan-y;
+}

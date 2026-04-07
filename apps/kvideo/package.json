@@ -1,0 +1,49 @@
+{
+  "name": "@cdlab996/kvideo",
+  "version": "0.0.1",
+  "private": true,
+  "description": "A modern video aggregation and playback platform with multi-source parallel search",
+  "author": "wudi <wuchendi96@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/WuChenDi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WuChenDi/projects.git",
+    "directory": "apps/kvideo"
+  },
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0 --port 3023",
+    "build": "next build",
+    "build:cf": "npx @cloudflare/next-on-pages@latest",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cdlab996/genid": "catalog:prod",
+    "@cdlab996/ui": "workspace:*",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@vercel/analytics": "^1.6.1",
+    "@volcengine/veplayer": "1.10.0",
+    "hls.js": "^1.6.15",
+    "lucide-react": "catalog:prod",
+    "next": "catalog:prod",
+    "next-themes": "catalog:prod",
+    "react": "catalog:prod",
+    "react-dom": "catalog:prod",
+    "zustand": "catalog:prod"
+  },
+  "devDependencies": {
+    "@cdlab996/tsconfig": "workspace:*",
+    "@cloudflare/next-on-pages": "^1.13.16",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "tailwindcss": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}
