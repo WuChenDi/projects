@@ -1,3 +1,16 @@
+'use client'
+
+import { Button } from '@cdlab996/ui/components/button'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@cdlab996/ui/components/card'
+import { Input } from '@cdlab996/ui/components/input'
 import { useState } from 'react'
 import { SourceManager } from '@/components/settings/SourceManager'
 import { DEFAULT_SOURCES } from '@/lib/api/default-sources'
@@ -22,9 +35,9 @@ export function SourceSettings({
   const [searchQuery, setSearchQuery] = useState('')
 
   const filteredSources = sources.filter(
-    (source) =>
-      source.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      source.baseUrl.toLowerCase().includes(searchQuery.toLowerCase()),
+    (s) =>
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.baseUrl.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
   const displayedSources =
@@ -40,93 +53,71 @@ export function SourceSettings({
   }
 
   const handleDelete = (id: string) => {
-    const updated = sources.filter((s) => s.id !== id)
-    onSourcesChange(updated)
+    onSourcesChange(sources.filter((s) => s.id !== id))
   }
 
   const handleReorder = (id: string, direction: 'up' | 'down') => {
-    const currentIndex = sources.findIndex((s) => s.id === id)
-    if (currentIndex === -1) return
+    const index = sources.findIndex((s) => s.id === id)
+    if (index === -1) return
 
-    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+    const newIndex = direction === 'up' ? index - 1 : index + 1
     if (newIndex < 0 || newIndex >= sources.length) return
 
     const updated = [...sources]
-    ;[updated[currentIndex], updated[newIndex]] = [
-      updated[newIndex],
-      updated[currentIndex],
-    ]
+    ;[updated[index], updated[newIndex]] = [updated[newIndex], updated[index]]
 
-    // Update priorities
-    updated.forEach((s, idx) => (s.priority = idx + 1))
-    onSourcesChange(updated)
+    const normalized = updated.map((s, i) => ({
+      ...s,
+      priority: i + 1,
+    }))
+
+    onSourcesChange(normalized)
   }
 
   return (
-    <div className="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-sm)] p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-[var(--text-color)]">
-          视频源管理
-        </h2>
-        <div className="flex gap-2">
-          <button
-            onClick={onRestoreDefaults}
-            className="px-4 py-2 rounded-[var(--radius-2xl)] bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--text-color)] text-sm font-medium hover:bg-[color-mix(in_srgb,var(--accent-color)_10%,transparent)] transition-all duration-200 cursor-pointer"
-          >
+    <Card>
+      <CardHeader>
+        <CardTitle>视频源管理</CardTitle>
+        <CardDescription>管理视频来源，调整优先级和启用状态</CardDescription>
+        <CardAction className="space-x-2">
+          <Button variant="outline" size="sm" onClick={onRestoreDefaults}>
             恢复默认
-          </button>
-          <button
-            onClick={onAddSource}
-            className="px-4 py-2 rounded-[var(--radius-2xl)] bg-[var(--accent-color)] text-white text-sm font-semibold hover:brightness-110 hover:-translate-y-0.5 shadow-[var(--shadow-sm)] transition-all duration-200 cursor-pointer"
-          >
-            + 添加源
-          </button>
-        </div>
-      </div>
-      <p className="text-sm text-[var(--text-color-secondary)] mb-6">
-        管理视频来源，调整优先级和启用状态
-      </p>
+          </Button>
+          <Button size="sm" onClick={onAddSource}>
+            添加源
+          </Button>
+        </CardAction>
+      </CardHeader>
 
-      {/* Search Bar */}
-      <div className="relative mb-4">
-        <input
-          type="text"
+      <CardContent>
+        <Input
           placeholder="搜索源..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-2 pl-10 rounded-[var(--radius-2xl)] bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--text-color)] placeholder-[var(--text-color-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] transition-all duration-200"
+          className="mb-4"
         />
-        <svg
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-color-secondary)]"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
-      </div>
 
-      <SourceManager
-        sources={displayedSources}
-        onToggle={handleToggle}
-        onDelete={handleDelete}
-        onReorder={handleReorder}
-        onEdit={onEditSource}
-        defaultIds={DEFAULT_SOURCES.map((s) => s.id)}
-      />
+        <SourceManager
+          sources={displayedSources}
+          onToggle={handleToggle}
+          onDelete={handleDelete}
+          onReorder={handleReorder}
+          onEdit={onEditSource}
+          defaultIds={DEFAULT_SOURCES.map((s) => s.id)}
+        />
+      </CardContent>
+
       {!searchQuery && sources.length > 10 && (
-        <button
-          onClick={() => setShowAllSources(!showAllSources)}
-          className="w-full mt-4 px-4 py-3 rounded-[var(--radius-2xl)] bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--text-color)] text-sm font-medium hover:bg-[color-mix(in_srgb,var(--accent-color)_10%,transparent)] transition-all duration-200 cursor-pointer"
-        >
-          {showAllSources ? '收起' : `显示全部 (${sources.length})`}
-        </button>
+        <CardFooter>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => setShowAllSources(!showAllSources)}
+          >
+            {showAllSources ? '收起' : `显示全部 (${sources.length})`}
+          </Button>
+        </CardFooter>
       )}
-    </div>
+    </Card>
   )
 }

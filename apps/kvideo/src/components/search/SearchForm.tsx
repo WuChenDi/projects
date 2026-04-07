@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from '@cdlab996/ui/components/badge'
 import {
   Combobox,
   ComboboxContent,
@@ -13,11 +14,65 @@ import {
   InputGroupAddon,
   InputGroupButton,
 } from '@cdlab996/ui/components/input-group'
+import { Progress } from '@cdlab996/ui/components/progress'
+import { Spinner } from '@cdlab996/ui/components/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
 import { HistoryIcon, SearchIcon, XIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { SearchLoadingAnimation } from '@/components/SearchLoadingAnimation'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchHistoryStore } from '@/lib/store/search-history-store'
+
+function SearchLoadingAnimation({
+  checkedSources = 0,
+  totalSources = 16,
+}: {
+  checkedSources?: number
+  totalSources?: number
+}) {
+  const [dots, setDots] = useState('')
+  const dotIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const progress = totalSources > 0 ? (checkedSources / totalSources) * 100 : 0
+  const isComplete = progress >= 100
+
+  useEffect(() => {
+    if (isComplete) {
+      if (dotIntervalRef.current) clearInterval(dotIntervalRef.current)
+      return
+    }
+
+    dotIntervalRef.current = setInterval(() => {
+      setDots((prev) => (prev.length >= 3 ? '' : prev + '.'))
+    }, 600)
+
+    return () => {
+      if (dotIntervalRef.current) clearInterval(dotIntervalRef.current)
+    }
+  }, [isComplete])
+
+  return (
+    <div className="mt-4 w-full space-y-2">
+      <div className="flex items-center justify-center gap-2">
+        <Spinner className="size-4 text-primary" />
+        <span className="text-sm text-muted-foreground">
+          正在搜索视频源{dots}
+        </span>
+      </div>
+
+      <Progress value={progress} />
+
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          {checkedSources}/{totalSources} 个源
+          {isComplete && (
+            <Badge variant="default" className="text-[10px] h-4">
+              完成
+            </Badge>
+          )}
+        </span>
+        <span className="font-medium">{Math.round(progress)}%</span>
+      </div>
+    </div>
+  )
+}
 
 interface SearchFormProps {
   onSearch: (query: string) => void
@@ -139,7 +194,6 @@ export function SearchForm({
               </ComboboxInput>
             </div>
 
-            {/* 搜索历史下拉菜单 */}
             {searchHistory.length > 0 && (
               <ComboboxContent>
                 <div className="flex items-center justify-between px-2 py-1.5">
@@ -181,15 +235,11 @@ export function SearchForm({
         </div>
       </div>
 
-      {/* 搜索加载动画 */}
       {isLoading && (
-        <div className="mt-4">
-          <SearchLoadingAnimation
-            currentSource={currentSource}
-            checkedSources={checkedSources}
-            totalSources={totalSources}
-          />
-        </div>
+        <SearchLoadingAnimation
+          checkedSources={checkedSources}
+          totalSources={totalSources}
+        />
       )}
     </div>
   )
