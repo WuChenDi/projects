@@ -23,6 +23,7 @@
   "dependencies": {
     "@cdlab996/genid": "catalog:prod",
     "@cdlab996/ui": "workspace:*",
+    "@cdlab996/utils": "workspace:*",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",

@@ -5,6 +5,13 @@ import { Button } from '@cdlab996/ui/components/button'
 import { Card, CardContent } from '@cdlab996/ui/components/card'
 import { Separator } from '@cdlab996/ui/components/separator'
 import { Switch } from '@cdlab996/ui/components/switch'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@cdlab996/ui/components/tooltip'
+import { copyToClipboard } from '@cdlab996/utils'
+import { CheckIcon, CopyIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useHistory } from '@/lib/store/history-store'
@@ -44,6 +51,7 @@ export function VideoPlayer({
   const [shouldAutoPlay, setShouldAutoPlay] = useState(true)
   const [retryCount, setRetryCount] = useState(0)
   const [playbackRate, setPlaybackRate] = useState(1)
+  const [copied, setCopied] = useState(false)
   const MAX_MANUAL_RETRIES = 20
   const lastSaveTimeRef = useRef(0)
   const currentTimeRef = useRef(0)
@@ -168,6 +176,14 @@ export function VideoPlayer({
     setRetryCount(0)
   }
 
+  const copyPlayUrl = async () => {
+    const ok = await copyToClipboard(playUrl)
+    if (ok) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
   const cycleSkipSeconds = (current: number, setter: (v: number) => void) => {
     const presets = [15, 30, 45, 60, 90, 120]
     const next = presets[(presets.indexOf(current) + 1) % presets.length]
@@ -277,8 +293,8 @@ export function VideoPlayer({
               </>
             )}
 
-            {canToggleProxy && (
-              <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              {canToggleProxy && (
                 <Badge
                   variant="outline"
                   onClick={toggleProxy}
@@ -290,8 +306,27 @@ export function VideoPlayer({
                 >
                   {useProxy ? '代理模式' : '直连模式'}
                 </Badge>
-              </div>
-            )}
+              )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon-sm"
+                    variant="outline"
+                    onClick={copyPlayUrl}
+                    aria-label="复制播放地址"
+                  >
+                    {copied ? (
+                      <CheckIcon className="size-3.5 text-green-500" />
+                    ) : (
+                      <CopyIcon className="size-3.5" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {copied ? '已复制' : '复制播放地址'}
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
 
           <Separator />

@@ -680,6 +680,9 @@ importers:
       '@cdlab996/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@cdlab996/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
