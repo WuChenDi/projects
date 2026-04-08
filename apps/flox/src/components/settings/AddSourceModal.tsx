@@ -45,7 +45,7 @@ export function AddSourceModal({
             : 'opacity-0 -translate-y-[40%] scale-95 pointer-events-none'
         }`}
       >
-        <div className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-md)] p-6">
+        <div className="bg-background/95 backdrop-blur-xl border border-border rounded-2xl shadow-md p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-semibold">{initialValues ? '编辑视频源' : '添加自定义源'}</h3>
             <button type="button" onClick={onClose} aria-label="Close" className="p-1 rounded hover:bg-black/10 transition-colors">
@@ -57,7 +57,7 @@ export function AddSourceModal({
             <div>
               <label
                 htmlFor="source-name"
-                className="block mb-2 font-medium text-[var(--text-color)]"
+                className="block mb-2 font-medium text-foreground"
               >
                 源名称
               </label>
@@ -67,14 +67,14 @@ export function AddSourceModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="例如：新视频源"
-                className="w-full bg-[var(--glass-bg)] backdrop-blur-md border border-[var(--glass-border)] rounded-[var(--radius-2xl)] px-4 py-3 text-[var(--text-color)] placeholder:text-[var(--text-color-secondary)] focus:outline-none focus:border-[var(--accent-color)] focus:ring-4 focus:ring-[color-mix(in_srgb,var(--accent-color)_30%,transparent)] transition-all duration-[0.4s]"
+                className="w-full bg-background/95 backdrop-blur-md border border-border rounded-2xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/30 transition-all duration-[0.4s]"
               />
             </div>
 
             <div>
               <label
                 htmlFor="source-url"
-                className="block mb-2 font-medium text-[var(--text-color)]"
+                className="block mb-2 font-medium text-foreground"
               >
                 接口地址
               </label>
@@ -84,12 +84,12 @@ export function AddSourceModal({
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://example.com/api.php/provide/vod"
-                className="w-full bg-[var(--glass-bg)] backdrop-blur-md border border-[var(--glass-border)] rounded-[var(--radius-2xl)] px-4 py-3 text-[var(--text-color)] placeholder:text-[var(--text-color-secondary)] focus:outline-none focus:border-[var(--accent-color)] focus:ring-4 focus:ring-[color-mix(in_srgb,var(--accent-color)_30%,transparent)] transition-all duration-[0.4s]"
+                className="w-full bg-background/95 backdrop-blur-md border border-border rounded-2xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/30 transition-all duration-[0.4s]"
               />
             </div>
 
             {error && (
-              <div className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 rounded-[var(--radius-2xl)] px-4 py-2">
+              <div className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 rounded-2xl px-4 py-2">
                 {error}
               </div>
             )}
@@ -98,13 +98,13 @@ export function AddSourceModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-6 py-3 rounded-[var(--radius-2xl)] bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--text-color)] font-semibold hover:bg-[color-mix(in_srgb,var(--text-color)_10%,transparent)] transition-all duration-200"
+                className="flex-1 px-6 py-3 rounded-2xl bg-background/95 border border-border text-foreground font-semibold hover:bg-foreground/10 transition-all duration-200"
               >
                 取消
               </button>
               <button
                 type="submit"
-                className="flex-1 px-6 py-3 rounded-[var(--radius-2xl)] bg-[var(--accent-color)] text-white font-semibold hover:brightness-110 hover:-translate-y-0.5 shadow-[var(--shadow-sm)] transition-all duration-200"
+                className="flex-1 px-6 py-3 rounded-2xl bg-primary text-white font-semibold hover:brightness-110 hover:-translate-y-0.5 shadow-sm transition-all duration-200"
               >
                 {initialValues ? '保存' : '添加'}
               </button>

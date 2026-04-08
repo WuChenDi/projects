@@ -1,12 +1,14 @@
+/** biome-ignore-all lint/security/noDangerouslySetInnerHtml: Required for JSON-LD structured data */
+
+import { Toaster } from '@cdlab996/ui/components/sonner'
+import fs from 'fs'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import path from 'path'
 import type React from 'react'
 import { Suspense } from 'react'
+
 import '@cdlab996/ui/globals.css'
-import './globals.css'
-import { Analytics } from '@vercel/analytics/react'
-import fs from 'fs'
-import path from 'path'
 import { AdKeywordsInjector } from '@/components/AdKeywordsInjector'
 import { FavoritesSidebar } from '@/components/favorites/FavoritesSidebar'
 import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar'
@@ -78,8 +80,59 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: siteConfig.title,
   description: siteConfig.description,
-  icons: {
-    icon: '/icon.png',
+  icons: 'https://notes-wudi.pages.dev/images/logo.png',
+  keywords: [
+    '视频聚合',
+    '在线视频',
+    '视频搜索',
+    '影视播放',
+    '视频平台',
+    'HLS播放',
+    'M3U8播放',
+    '流媒体',
+    '免费影视',
+    '在线观看',
+    'video aggregator',
+    'online video',
+    'streaming player',
+  ],
+  referrer: 'no-referrer-when-downgrade',
+  authors: [{ name: 'wudi', url: 'https://github.com/WuChenDi' }],
+  creator: 'wudi',
+  publisher: siteConfig.name,
+  robots: {
+    index: true,
+    follow: true,
+    'max-snippet': -1,
+    'max-image-preview': 'large',
+    'max-video-preview': -1,
+  },
+  alternates: {
+    canonical: '/',
+  },
+  applicationName: siteConfig.name,
+  category: 'Video, Streaming, Entertainment',
+  classification: 'Video Aggregator, Streaming Platform',
+  openGraph: {
+    title: siteConfig.title,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    locale: 'zh_CN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteConfig.title,
+    description: siteConfig.description,
+    creator: '@wuchendi96',
+    site: '@wuchendi96',
+  },
+  other: {
+    'revisit-after': '7 days',
+    distribution: 'global',
+    rating: 'general',
+    copyright: '© 2025 wudi. All rights reserved.',
+    language: 'zh-CN',
   },
 }
 
@@ -90,6 +143,89 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        {/* JSON-LD Structured Data - Website */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: siteConfig.name,
+              description: siteConfig.description,
+              inLanguage: 'zh-CN',
+            }),
+          }}
+        />
+
+        {/* JSON-LD Structured Data - WebApplication */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebApplication',
+              name: siteConfig.name,
+              description: siteConfig.description,
+              applicationCategory: 'MultimediaApplication',
+              operatingSystem: 'Web',
+              browserRequirements:
+                'Requires JavaScript. Compatible with Chrome 90+, Firefox 88+, Safari 14+, Edge 90+',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'USD',
+                availability: 'https://schema.org/InStock',
+              },
+              author: {
+                '@type': 'Person',
+                name: 'wudi',
+                url: 'https://github.com/WuChenDi',
+              },
+              inLanguage: 'zh-CN',
+              isAccessibleForFree: true,
+            }),
+          }}
+        />
+
+        {/* JSON-LD Structured Data - SoftwareApplication */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'SoftwareApplication',
+              name: siteConfig.name,
+              applicationCategory: 'MultimediaApplication',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+              },
+              operatingSystem: 'Any',
+              permissions: 'Browser access',
+            }),
+          }}
+        />
+
+        {/* JSON-LD Structured Data - BreadcrumbList */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                {
+                  '@type': 'ListItem',
+                  position: 1,
+                  name: '首页',
+                  item: '/',
+                },
+              ],
+            }),
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
@@ -105,55 +241,9 @@ export default function RootLayout({
               <WatchHistorySidebar />
             </Suspense>
           </PasswordGate>
-          <Analytics />
           <ServiceWorkerRegister />
+          <Toaster richColors position="top-center" duration={3000} />
         </ClientProviders>
-
-        {/* ARIA Live Region for Screen Reader Announcements */}
-        <div
-          id="aria-live-announcer"
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-          className="sr-only"
-        />
-
-        {/* Google Cast SDK */}
-        <script
-          src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
-          async
-        />
-
-        {/* Scroll Performance Optimization Script */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                let scrollTimer;
-                const body = document.body;
-
-                function handleScroll() {
-                  body.classList.add('scrolling');
-                  clearTimeout(scrollTimer);
-                  scrollTimer = setTimeout(function() {
-                    body.classList.remove('scrolling');
-                  }, 150);
-                }
-
-                let ticking = false;
-                window.addEventListener('scroll', function() {
-                  if (!ticking) {
-                    window.requestAnimationFrame(function() {
-                      handleScroll();
-                      ticking = false;
-                    });
-                    ticking = true;
-                  }
-                }, { passive: true });
-              })();
-            `,
-          }}
-        />
       </body>
     </html>
   )

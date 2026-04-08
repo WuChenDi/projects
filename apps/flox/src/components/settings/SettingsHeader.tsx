@@ -7,7 +7,7 @@ export function SettingsHeader() {
     <div>
       <button
         onClick={() => router.back()}
-        className="inline-flex items-center gap-2 text-[var(--accent-color)] hover:underline mb-4 cursor-pointer"
+        className="inline-flex items-center gap-2 text-primary hover:underline mb-4 cursor-pointer"
       >
         <svg
           className="w-5 h-5"
@@ -21,9 +21,9 @@ export function SettingsHeader() {
         返回上一页
       </button>
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 flex items-center justify-center rounded-[var(--radius-2xl)] bg-[var(--glass-bg)] border border-[var(--glass-border)]">
+        <div className="w-12 h-12 flex items-center justify-center rounded-2xl bg-background/95 border border-border">
           <svg
-            className="w-6 h-6 text-[var(--text-color)]"
+            className="w-6 h-6 text-foreground"
             viewBox="0 -960 960 960"
             fill="currentColor"
           >
@@ -31,8 +31,8 @@ export function SettingsHeader() {
           </svg>
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-[var(--text-color)]">设置</h1>
-          <p className="text-[var(--text-color-secondary)]">管理应用程序配置</p>
+          <h1 className="text-3xl font-bold text-foreground">设置</h1>
+          <p className="text-muted-foreground">管理应用程序配置</p>
         </div>
       </div>
     </div>

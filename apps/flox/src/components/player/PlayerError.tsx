@@ -15,10 +15,10 @@ export function PlayerError({ error, onBack, onRetry }: PlayerErrorProps) {
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <Card className="p-4 md:p-6 max-w-2xl">
         <CircleAlertIcon size={64} className="mx-auto mb-4 text-red-500" />
-        <h2 className="text-2xl font-bold text-[var(--text-color)] mb-4">
+        <h2 className="text-2xl font-bold text-foreground mb-4">
           视频源不可用
         </h2>
-        <p className="text-[var(--text-color-secondary)] mb-6">{error}</p>
+        <p className="text-muted-foreground mb-6">{error}</p>
         <div className="flex gap-3 justify-center">
           <Button
             variant="default"

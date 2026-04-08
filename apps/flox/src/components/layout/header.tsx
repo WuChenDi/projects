@@ -42,11 +42,11 @@ export function Header({
               className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity min-w-0"
             >
               <Image
-                src="/icon.png"
-                alt={siteConfig.name}
-                width={40}
-                height={40}
-                className="w-8 h-8 sm:w-10 sm:h-10 object-contain flex-shrink-0"
+                src="https://notes-wudi.pages.dev/images/logo.png"
+                alt="Chendi Wu Logo"
+                width={32}
+                height={32}
+                className="rounded-full mr-2"
               />
               <div className="flex flex-col min-w-0">
                 <h1 className="text-lg sm:text-2xl font-bold truncate">
@@ -90,7 +90,7 @@ export function Header({
             </Button>
             <Button asChild variant="outline" size="icon" aria-label="GitHub">
               <Link
-                href="https://github.com/WuChenDi/projects/tree/main/apps/kvideo"
+                href="https://github.com/WuChenDi/projects/tree/main/apps/flox"
                 target="_blank"
                 rel="noopener noreferrer"
               >

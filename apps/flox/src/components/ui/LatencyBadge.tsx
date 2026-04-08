@@ -1,3 +1,4 @@
+import { Badge } from '@cdlab996/ui/components/badge'
 import { memo, useMemo } from 'react'
 import { getLatencyInfo } from '@/lib/utils/latency'
 
@@ -8,13 +9,14 @@ interface LatencyBadgeProps {
 
 export const LatencyBadge = memo(function LatencyBadge({
   latency,
-  className = '',
+  className,
 }: LatencyBadgeProps) {
   const info = useMemo(() => getLatencyInfo(latency), [latency])
 
   return (
-    <span
-      className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded-[var(--radius-full)] text-[10px] font-mono font-semibold border ${className}`}
+    <Badge
+      variant="outline"
+      className={`text-[10px] ${className ?? ''}`}
       style={{
         backgroundColor: `${info.color}30`,
         borderColor: info.color,
@@ -24,6 +26,6 @@ export const LatencyBadge = memo(function LatencyBadge({
       aria-label={`Latency: ${info.label}`}
     >
       {info.label}
-    </span>
+    </Badge>
   )
 })

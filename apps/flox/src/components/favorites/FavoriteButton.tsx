@@ -5,8 +5,15 @@
 
 'use client'
 
-import { memo, useCallback, useEffect, useState } from 'react'
+import { Button } from '@cdlab996/ui/components/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@cdlab996/ui/components/tooltip'
 import { HeartIcon } from 'lucide-react'
+import { memo, useCallback, useEffect, useState } from 'react'
 import { useFavorites } from '@/lib/store/favorites-store'
 
 interface FavoriteButtonProps {
@@ -43,7 +50,6 @@ export const FavoriteButton = memo<FavoriteButtonProps>(
     const [isAnimating, setIsAnimating] = useState(false)
     const [isFav, setIsFav] = useState(false)
 
-    // Sync with store on mount and when dependencies change
     useEffect(() => {
       setIsFav(isFavorite(videoId, source))
     }, [videoId, source, isFavorite])
@@ -81,41 +87,46 @@ export const FavoriteButton = memo<FavoriteButtonProps>(
       ],
     )
 
-    return (
-      <button
+    const button = (
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={handleClick}
-        className={`
-        flex items-center justify-center
-        p-2 rounded-full
-        bg-[var(--glass-bg)] backdrop-blur-[8px]
-        border border-[var(--glass-border)]
-        hover:scale-110 active:scale-95
-        transition-all duration-200 ease-out
-        cursor-pointer
-        ${isAnimating ? 'scale-125' : ''}
-        ${className}
-      `}
         aria-label={isFav ? '取消收藏' : '收藏'}
-        title={showTooltip ? (isFav ? '取消收藏' : '收藏') : undefined}
+        className={`rounded-full bg-background/95 backdrop-blur-sm border border-border hover:scale-110 active:scale-95 transition-all duration-200 ease-out ${isAnimating ? 'scale-125' : ''} ${className}`}
       >
         {isFav ? (
           <span
-            className="transition-transform duration-200"
             style={{
               transform: isAnimating ? 'scale(1.2)' : 'scale(1)',
               filter: 'drop-shadow(0 0 4px rgba(239, 68, 68, 0.5))',
               display: 'flex',
             }}
           >
-            <HeartIcon size={size} className="text-red-500" fill="currentColor" />
+            <HeartIcon
+              size={size}
+              className="text-red-500"
+              fill="currentColor"
+            />
           </span>
         ) : (
           <HeartIcon
             size={size}
-            className="text-[var(--text-color-secondary)] hover:text-red-400 transition-colors"
+            className="text-muted-foreground hover:text-red-400 transition-colors"
           />
         )}
-      </button>
+      </Button>
+    )
+
+    if (!showTooltip) return button
+
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipContent>{isFav ? '取消收藏' : '收藏'}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     )
   },
 )

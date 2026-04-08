@@ -2,8 +2,9 @@
  * FavoritesList - Scrollable list of favorite items
  */
 
+import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
+import { InboxIcon } from 'lucide-react'
 import type { FavoriteItem } from '@/lib/types'
-import { FavoritesEmptyState } from './FavoritesEmptyState'
 import { FavoritesItem } from './FavoritesItem'
 
 interface FavoritesListProps {
@@ -18,7 +19,13 @@ export function FavoritesList({
   isPremium = false,
 }: FavoritesListProps) {
   if (favorites.length === 0) {
-    return <FavoritesEmptyState />
+    return (
+      <IKEmpty
+        icon={InboxIcon}
+        title="暂无收藏"
+        hint="点击视频上的心形按钮即可收藏"
+      />
+    )
   }
 
   return (

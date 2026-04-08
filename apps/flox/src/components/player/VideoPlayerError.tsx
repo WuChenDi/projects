@@ -18,7 +18,7 @@ export function VideoPlayerError({
   maxRetries,
 }: VideoPlayerErrorProps) {
   return (
-    <div className="aspect-video bg-black rounded-[var(--radius-2xl)] flex items-center justify-center">
+    <div className="aspect-video bg-black rounded-2xl flex items-center justify-center">
       {/* Glass Card Container */}
       <div
         className="player-error-glass animate-in fade-in zoom-in-95 duration-300"
@@ -48,7 +48,7 @@ export function VideoPlayerError({
           {retryCount < maxRetries && (
             <button
               onClick={onRetry}
-              className="btn-glass px-4 py-2 flex items-center gap-2 !bg-[var(--accent-color)]/80 hover:!bg-[var(--accent-color)]"
+              className="btn-glass px-4 py-2 flex items-center gap-2 bg-primary/80 hover:bg-primary"
             >
               <RefreshCwIcon size={18} />
               <span>
