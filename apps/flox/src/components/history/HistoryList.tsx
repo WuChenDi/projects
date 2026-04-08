@@ -1,5 +1,6 @@
+import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
+import { InboxIcon } from 'lucide-react'
 import type { VideoHistoryItem } from '@/lib/types'
-import { HistoryEmptyState } from './HistoryEmptyState'
 import { HistoryItem } from './HistoryItem'
 
 interface HistoryListProps {
@@ -22,7 +23,7 @@ export function HistoryList({
       }}
     >
       {history.length === 0 ? (
-        <HistoryEmptyState />
+        <IKEmpty icon={InboxIcon} title="暂无观看历史" hint="您观看的视频会自动记录在这里" />
       ) : (
         <div className="space-y-3">
           {history.map((item) => (

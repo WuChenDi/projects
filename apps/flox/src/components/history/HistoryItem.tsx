@@ -3,8 +3,8 @@
  * Displays video thumbnail, title, episode, progress, and delete button
  */
 
-import { FavoriteButton } from '@/components/favorites/FavoriteButton'
 import { TrashIcon } from 'lucide-react'
+import { FavoriteButton } from '@/components/favorites/FavoriteButton'
 import type { VideoHistoryItem } from '@/lib/types'
 import { formatDate, formatTime } from '@/lib/utils/format-utils'
 import { PosterImage } from './PosterImage'
@@ -49,7 +49,7 @@ export function HistoryItem({
       : ''
 
   return (
-    <div className="group bg-[color-mix(in_srgb,var(--glass-bg)_50%,transparent)] rounded-[var(--radius-2xl)] p-3 hover:bg-[color-mix(in_srgb,var(--accent-color)_10%,transparent)] transition-all border border-transparent hover:border-[var(--glass-border)]">
+    <div className="group bg-background/50 rounded-2xl p-3 hover:bg-primary/10 transition-all border border-transparent hover:border-border">
       <a
         href={getVideoUrl()}
         onClick={(e) => {
@@ -72,15 +72,15 @@ export function HistoryItem({
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-medium text-[var(--text-color)] truncate group-hover:text-[var(--accent-color)] transition-colors mb-1">
+            <h3 className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors mb-1">
               {item.title}
             </h3>
             {episodeText && (
-              <p className="text-xs text-[var(--text-color-secondary)] mb-1">
+              <p className="text-xs text-muted-foreground mb-1">
                 {episodeText}
               </p>
             )}
-            <div className="flex items-center justify-between text-xs text-[var(--text-color-secondary)]">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>
                 {formatTime(item.playbackPosition)} /{' '}
                 {formatTime(item.duration)}
@@ -99,7 +99,7 @@ export function HistoryItem({
               poster={item.poster}
               remarks={episodeText}
               size={14}
-              className="!p-1.5 !bg-transparent !border-0 !shadow-none hover:!bg-[var(--glass-bg)]"
+              className="!p-1.5 !bg-transparent !border-0 !shadow-none hover:bg-background/95"
               showTooltip={false}
               isPremium={isPremium}
             />
@@ -111,12 +111,12 @@ export function HistoryItem({
                 e.stopPropagation()
                 onRemove()
               }}
-              className="p-1.5 hover:bg-[var(--glass-bg)] rounded-full cursor-pointer"
+              className="p-1.5 hover:bg-background/95 rounded-full cursor-pointer"
               aria-label="删除"
             >
               <TrashIcon
                 size={14}
-                className="text-[var(--text-color-secondary)]"
+                className="text-muted-foreground"
               />
             </button>
           </div>

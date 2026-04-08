@@ -55,25 +55,25 @@ export function PremiumContentGrid({
               (e.currentTarget.style.zIndex = '1')
             }
           >
-            <Card className="p-0 h-full shadow-[0_2px_8px_var(--shadow-color)] hover:shadow-[0_8px_24px_var(--shadow-color)] transition-shadow duration-200 ease-out">
-              <div className="relative aspect-[2/3] bg-[var(--glass-bg)] rounded-[var(--radius-2xl)]">
+            <Card className="p-0 h-full shadow-sm hover:shadow-md transition-shadow duration-200 ease-out">
+              <div className="relative aspect-[2/3] bg-background/95 rounded-2xl">
                 {video.vod_pic ? (
                   <Image
                     src={video.vod_pic}
                     alt={video.vod_name}
                     fill
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                    className="object-cover transition-transform duration-300 group-hover:scale-105 rounded-[var(--radius-2xl)]"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105 rounded-2xl"
                     loading="eager"
                     unoptimized
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-[var(--text-color-secondary)]">
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                     无封面
                   </div>
                 )}
                 {video.vod_remarks && (
-                  <div className="absolute top-2 right-2 bg-black/80 px-2.5 py-1.5 flex items-center gap-1.5 rounded-[var(--radius-full)]">
+                  <div className="absolute top-2 right-2 bg-black/80 px-2.5 py-1.5 flex items-center gap-1.5 rounded-full">
                     <span className="text-xs font-bold text-white">
                       {video.vod_remarks}
                     </span>
@@ -81,11 +81,11 @@ export function PremiumContentGrid({
                 )}
               </div>
               <div className="p-3">
-                <h3 className="font-semibold text-sm text-[var(--text-color)] line-clamp-2 group-hover:text-[var(--accent-color)] transition-colors">
+                <h3 className="font-semibold text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors">
                   {video.vod_name}
                 </h3>
                 {video.type_name && (
-                  <p className="text-xs text-[var(--text-color-secondary)] mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {video.type_name}
                   </p>
                 )}
@@ -114,8 +114,8 @@ function PremiumGridLoading() {
   return (
     <div className="flex justify-center py-12">
       <div className="flex flex-col items-center gap-3">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-color)] border-t-transparent"></div>
-        <p className="text-sm text-[var(--text-color-secondary)]">加载中...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+        <p className="text-sm text-muted-foreground">加载中...</p>
       </div>
     </div>
   )
@@ -124,7 +124,7 @@ function PremiumGridLoading() {
 function PremiumGridNoMore() {
   return (
     <div className="text-center py-12">
-      <p className="text-[var(--text-color-secondary)]">没有更多内容了</p>
+      <p className="text-muted-foreground">没有更多内容了</p>
     </div>
   )
 }
@@ -134,9 +134,9 @@ function PremiumGridEmpty() {
     <div className="text-center py-20">
       <FilmIcon
         size={64}
-        className="text-[var(--text-color-secondary)] mx-auto mb-4"
+        className="text-muted-foreground mx-auto mb-4"
       />
-      <p className="text-[var(--text-color-secondary)]">暂无内容</p>
+      <p className="text-muted-foreground">暂无内容</p>
     </div>
   )
 }
