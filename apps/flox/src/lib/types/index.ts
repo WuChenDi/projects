@@ -138,3 +138,9 @@ export interface ApiDetailResponse {
     vod_play_url?: string
   }>
 }
+
+export interface Tag {
+  id: string
+  label: string
+  value: string
+}

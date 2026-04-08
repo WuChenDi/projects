@@ -2,9 +2,9 @@ import type { DragEndEvent } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import type { Tag } from '@/components/home/SortableTag'
 import { PREMIUM_STORAGE_KEY } from '@/lib/constants/premium-tags'
 import { settingsStore } from '@/lib/store/settings-store'
+import type { Tag } from '@/lib/types'
 
 async function fetchPremiumTypes(sources: any[]): Promise<Tag[]> {
   const response = await fetch('/api/premium/types', {
@@ -49,7 +49,9 @@ export function usePremiumTagManager() {
   const [tags, setTags] = useState<Tag[]>([])
 
   const queryClient = useQueryClient()
-  const enabledSources = settingsStore.getSettings().premiumSources.filter((s) => s.enabled)
+  const enabledSources = settingsStore
+    .getSettings()
+    .premiumSources.filter((s) => s.enabled)
   const sourcesKey = enabledSources.map((s) => s.id).join(',')
 
   const { data: fetchedTags, isLoading } = useQuery({

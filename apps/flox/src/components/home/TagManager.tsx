@@ -21,12 +21,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { RefreshCw, Tag as TagIcon, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-
-export interface Tag {
-  id: string
-  label: string
-  value: string
-}
+import type { Tag } from '@/lib/types'
 
 interface TagManagerProps {
   tags: Tag[]
