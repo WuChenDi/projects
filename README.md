@@ -162,7 +162,7 @@ https://values.pages.dev/
 - Game history persistence via Durable Objects SQLite
 - Tech: Hono + Grammy + Cloudflare Workers + Durable Objects
 
-### KVideo
+### Flox
 
 **Video Aggregation & Playback Platform**
 
@@ -226,7 +226,7 @@ pnpm --filter value-vision dev     # Start Value Vision only (port 3011)
 pnpm --filter byplay dev           # Start ByPlay only (port 3016)
 pnpm --filter byplay-log dev       # Start ByPlay Log only (port 3017)
 pnpm --filter dropply-web dev      # Start Dropply Web only (port 3013)
-pnpm --filter @cdlab996/kvideo dev     # Start KVideo only (port 3023)
+pnpm --filter @cdlab996/flox dev       # Start Flox only (port 3023)
 pnpm --filter @cdlab996/live-user dev  # Start LiveUser only (port 3021)
 pnpm --filter repo-changelog dev   # Start Repo Changelog only (port 3019)
 pnpm build                         # Build all apps
@@ -257,7 +257,7 @@ pnpm clean                         # Clean node_modules / cache / build artifact
 │   ├── clearify/          # Image & Video Toolbox
 │   ├── dropply-api/       # Dropply File Sharing Cloudflare API
 │   ├── dropply-web/       # Dropply File Sharing Web Frontend
-│   ├── kvideo/            # Video Aggregation & Playback Platform
+│   ├── flox/              # Flox - Video Aggregation & Playback Platform
 │   ├── live-user/         # Real-time Online User Counter
 │   ├── vidl/              # Video Downloader (M3U8/HLS, MP4, etc.)
 │   ├── repo-changelog/    # GitHub Release / Changelog Aggregation
