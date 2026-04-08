@@ -11,19 +11,22 @@ import {
 } from '@cdlab996/ui/components/drawer'
 import { IKConfirmDialog } from '@cdlab996/ui/IK'
 import { TrashIcon, XIcon } from 'lucide-react'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
-import { useHistory } from '@/lib/store/history-store'
+import { useHistoryStore, usePremiumHistoryStore } from '@/lib/store/history-store'
 import { useSidebarStore } from '@/lib/store/sidebar-store'
 import { HistoryList } from './HistoryList'
 
-export function WatchHistorySidebar({
-  isPremium = false,
-}: {
-  isPremium?: boolean
-}) {
+export function WatchHistorySidebar() {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const isPremium = pathname === '/premium' || searchParams.get('premium') === '1'
+
   const { historyOpen, setHistoryOpen } = useSidebarStore()
-  const { viewingHistory, removeFromHistory, clearHistory } =
-    useHistory(isPremium)
+  const normalStore = useHistoryStore()
+  const premiumStore = usePremiumHistoryStore()
+  const { viewingHistory, removeFromHistory, clearHistory } = isPremium ? premiumStore : normalStore
+
   const [deleteConfirm, setDeleteConfirm] = useState<{
     isOpen: boolean
     videoId?: string
@@ -46,11 +49,7 @@ export function WatchHistorySidebar({
 
   return (
     <>
-      <Drawer
-        open={historyOpen}
-        onOpenChange={setHistoryOpen}
-        direction="right"
-      >
+      <Drawer open={historyOpen} onOpenChange={setHistoryOpen} direction="right">
         <DrawerContent className="flex flex-col">
           <DrawerHeader className="flex-row items-center justify-between border-b">
             <DrawerTitle>观看历史</DrawerTitle>
@@ -69,9 +68,7 @@ export function WatchHistorySidebar({
             <DrawerFooter className="border-t">
               <Button
                 variant="outline"
-                onClick={() =>
-                  setDeleteConfirm({ isOpen: true, isClearAll: true })
-                }
+                onClick={() => setDeleteConfirm({ isOpen: true, isClearAll: true })}
                 className="w-full"
               >
                 <TrashIcon className="size-4" />

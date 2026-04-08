@@ -1,5 +1,5 @@
 import type { ApiSearchResponse, VideoItem, VideoSource } from '@/lib/types'
-import { fetchWithTimeout, withRetry } from './http-utils'
+import { fetchWithRetry } from './http-utils'
 
 /**
  * Search videos from a single source
@@ -17,20 +17,12 @@ async function searchVideosBySource(
   url.searchParams.set('pg', page.toString())
 
   try {
-    const response = await withRetry(async () => {
-      const res = await fetchWithTimeout(url.toString(), {
-        method: 'GET',
-        headers: {
-          'User-Agent': 'Mozilla/5.0',
-          ...source.headers,
-        },
-      })
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`)
-      }
-
-      return res
+    const response = await fetchWithRetry(url.toString(), {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        ...source.headers,
+      },
     })
 
     const data: ApiSearchResponse = await response.json()

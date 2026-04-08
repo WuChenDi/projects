@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 import { settingsStore } from '@/lib/store/settings-store'
 
 interface VideoData {
@@ -25,176 +26,99 @@ interface UseVideoPlayerReturn {
   setCurrentEpisode: (index: number) => void
   setPlayUrl: (url: string) => void
   setVideoError: (error: string) => void
-  fetchVideoDetails: () => Promise<void>
+  fetchVideoDetails: () => void
+}
+
+async function fetchVideoDetail(videoId: string, source: string): Promise<VideoData> {
+  const settings = settingsStore.getSettings()
+  const allSources = [...settings.sources, ...settings.premiumSources, ...settings.subscriptions]
+  const sourceConfig = allSources.find((s) => s.id === source)
+
+  const response = sourceConfig
+    ? await fetch('/api/detail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: videoId, source: sourceConfig }),
+      })
+    : await fetch(`/api/detail?id=${videoId}&source=${source}`)
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`)
+  }
+  if (!data.success || !data.data) {
+    throw new Error(data.error || '来自 API 的响应无效')
+  }
+  if (!data.data.episodes?.length) {
+    throw new Error('该来源没有可播放的剧集')
+  }
+
+  return data.data as VideoData
 }
 
 export function useVideoPlayer(
   videoId: string | null,
   source: string | null,
   episodeParam: string | null,
-  isReversed: boolean = false,
+  isReversed = false,
 ): UseVideoPlayerReturn {
-  const [videoData, setVideoData] = useState<VideoData | null>(null)
-  // Initialize loading to true if we have the necessary params to start fetching
-  const [loading, setLoading] = useState(!!(videoId && source))
   const [currentEpisode, setCurrentEpisode] = useState(0)
   const [playUrl, setPlayUrl] = useState('')
-  const [videoError, setVideoError] = useState<string>('')
 
-  // Refs to keep track of latest values for the fetch function without re-triggering it
-  // This solves the stale closure problem while keeping fetchVideoDetails stable for the player
-  const episodeParamRef = useRef(episodeParam)
-  const isReversedRef = useRef(isReversed)
+  const {
+    data: videoData,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['videoDetail', videoId, source],
+    queryFn: () => fetchVideoDetail(videoId!, source!),
+    enabled: !!(videoId && source),
+    staleTime: 5 * 60 * 1000,
+  })
 
+  // Reset UI state when video/source changes
   useEffect(() => {
-    episodeParamRef.current = episodeParam
-  }, [episodeParam])
-
-  useEffect(() => {
-    isReversedRef.current = isReversed
-  }, [isReversed])
-
-  const fetchVideoDetails = useCallback(async () => {
-    if (!videoId || !source) return
-
-    try {
-      // Don't clear error immediately if we are just retrying silently,
-      // but for manual retry or initial load we should.
-      // Let's clear it to show loading state if we want, or keep it.
-      // Standard behavior: clear error and show loading.
-      setVideoError('')
-      setLoading(true)
-
-      const settings = settingsStore.getSettings()
-      const allSources = [
-        ...settings.sources,
-        ...settings.premiumSources,
-        ...settings.subscriptions,
-      ]
-
-      const sourceConfig = allSources.find((s) => s.id === source)
-      let response: Response
-
-      if (sourceConfig) {
-        response = await fetch('/api/detail', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: videoId, source: sourceConfig }),
-        })
-      } else {
-        response = await fetch(`/api/detail?id=${videoId}&source=${source}`)
-      }
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          setVideoError(data.error || '该视频源不可用。请返回并尝试其他来源。')
-          setLoading(false)
-          return
-        }
-        throw new Error(
-          data.error || `HTTP ${response.status}: ${response.statusText}`,
-        )
-      }
-
-      if (data.success && data.data) {
-        setVideoData(data.data)
-        setLoading(false)
-
-        if (data.data.episodes && data.data.episodes.length > 0) {
-          const latestIsReversed = isReversedRef.current
-          const latestEpisodeParam = episodeParamRef.current
-
-          const defaultIndex = latestIsReversed
-            ? data.data.episodes.length - 1
-            : 0
-          const episodeIndex = latestEpisodeParam
-            ? parseInt(latestEpisodeParam, 10)
-            : defaultIndex
-          const validIndex =
-            episodeIndex >= 0 && episodeIndex < data.data.episodes.length
-              ? episodeIndex
-              : defaultIndex
-
-          const episodeUrl = data.data.episodes[validIndex].url
-          setCurrentEpisode(validIndex)
-          setPlayUrl(episodeUrl)
-        } else {
-          setVideoError('该来源没有可播放的剧集')
-          setLoading(false)
-        }
-      } else {
-        throw new Error(data.error || '来自 API 的响应无效')
-      }
-    } catch (error) {
-      console.error('Failed to fetch video details:', error)
-      setVideoError(
-        error instanceof Error ? error.message : '加载视频详情失败。',
-      )
-      setLoading(false)
-    }
+    setCurrentEpisode(0)
+    setPlayUrl('')
   }, [videoId, source])
 
-  // EFFECT: Retry logic when settings change (e.g., sources loaded from subscriptions)
+  // Set initial episode when data first arrives
   useEffect(() => {
-    if (!videoId || !source || !videoError) return
+    if (!videoData?.episodes?.length) return
+    const defaultIndex = isReversed ? videoData.episodes.length - 1 : 0
+    const ep = episodeParam !== null ? parseInt(episodeParam, 10) : NaN
+    const validIndex =
+      !isNaN(ep) && ep >= 0 && ep < videoData.episodes.length ? ep : defaultIndex
+    setCurrentEpisode(validIndex)
+    setPlayUrl(videoData.episodes[validIndex].url)
+  }, [videoData]) // intentionally omit isReversed/episodeParam — only fires on initial load
 
-    const unsubscribe = settingsStore.subscribe(() => {
-      // If we are currently in an error state (likely "Invalid source configuration"),
-      // and settings updated (likely new sources arrived), try fetching again.
-      // We can be smarter: check if the source ID now exists in the store.
-      const settings = settingsStore.getSettings()
-      const allSources = [
-        ...settings.sources,
-        ...settings.premiumSources,
-        ...settings.subscriptions, // note: subscription items aren't usually video sources directly but let's check broadly
-      ]
-
-      // We really need to check if the specific source ID is now available
-      // But since 'subscriptions' in store expands into 'sources'/'premiumSources',
-      // we just check if any sources exist now.
-      if (allSources.length > 0) {
-        console.log('Settings updated, retrying video fetch...')
-        fetchVideoDetails()
-      }
-    })
-
-    return () => unsubscribe()
-  }, [videoId, source, videoError, fetchVideoDetails])
-
-  // Sync state from params if they change externally (e.g. back/forward navigation)
+  // Sync episode index when URL param changes (back/forward navigation)
   useEffect(() => {
-    if (videoData?.episodes && episodeParam !== null) {
-      const index = parseInt(episodeParam, 10)
-      if (!isNaN(index) && index >= 0 && index < videoData.episodes.length) {
-        if (index !== currentEpisode) {
-          setCurrentEpisode(index)
-          setPlayUrl(videoData.episodes[index].url)
-        }
-      }
+    if (!videoData?.episodes || episodeParam === null) return
+    const index = parseInt(episodeParam, 10)
+    if (
+      !isNaN(index) &&
+      index >= 0 &&
+      index < videoData.episodes.length &&
+      index !== currentEpisode
+    ) {
+      setCurrentEpisode(index)
+      setPlayUrl(videoData.episodes[index].url)
     }
-  }, [episodeParam, videoData, currentEpisode])
-
-  useEffect(() => {
-    if (videoId && source) {
-      // Reset state when source changes to ensure clean fetch
-      setVideoData(null)
-      setCurrentEpisode(0)
-      setPlayUrl('')
-      fetchVideoDetails()
-    }
-  }, [videoId, source, fetchVideoDetails])
+  }, [episodeParam, videoData]) // intentionally omit currentEpisode
 
   return {
-    videoData,
-    loading,
-    videoError,
+    videoData: videoData ?? null,
+    loading: isLoading,
+    videoError: error instanceof Error ? error.message : '',
     currentEpisode,
     playUrl,
     setCurrentEpisode,
     setPlayUrl,
-    setVideoError,
-    fetchVideoDetails,
+    setVideoError: () => {}, // kept for call-site compat; error is managed by useQuery
+    fetchVideoDetails: refetch,
   }
 }

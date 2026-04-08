@@ -4,8 +4,6 @@ import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
 import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
-import { FavoritesSidebar } from '@/components/favorites/FavoritesSidebar'
-import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar'
 import { Header } from '@/components/layout'
 import { EpisodeList } from '@/components/player/EpisodeList'
 import { PlayerError } from '@/components/player/PlayerError'
@@ -275,8 +273,6 @@ function PlayerContent() {
         </div>
       </IKPageContainer>
 
-      <FavoritesSidebar isPremium={isPremium} />
-      <WatchHistorySidebar isPremium={isPremium} />
     </div>
   )
 }

@@ -2,8 +2,6 @@
 
 import { IKPageContainer } from '@cdlab996/ui/IK'
 import { Suspense } from 'react'
-import { FavoritesSidebar } from '@/components/favorites/FavoritesSidebar'
-import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar'
 import { SearchResults } from '@/components/home/SearchResults'
 import { Header } from '@/components/layout'
 import { PremiumContent } from '@/components/premium/PremiumContent'
@@ -62,8 +60,6 @@ function PremiumHomePage() {
         </div>
       </IKPageContainer>
 
-      <FavoritesSidebar isPremium={true} />
-      <WatchHistorySidebar isPremium={true} />
     </div>
   )
 }

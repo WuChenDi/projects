@@ -55,6 +55,9 @@ catalogs:
     '@next/third-parties':
       specifier: 16.2.2
       version: 16.2.2
+    '@tanstack/react-query':
+      specifier: ^5.96.1
+      version: 5.96.1
     class-variance-authority:
       specifier: ^0.7.1
       version: 0.7.1
@@ -692,6 +695,9 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.2
         version: 3.2.2(react@19.2.4)
+      '@tanstack/react-query':
+        specifier: catalog:prod
+        version: 5.96.1(react@19.2.4)
       '@vercel/analytics':
         specifier: ^1.6.1
         version: 1.6.1(next@16.2.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(vue-router@4.6.4(vue@3.5.31(typescript@6.0.2)))(vue@3.5.31(typescript@6.0.2))
@@ -825,7 +831,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/utils
       '@tanstack/react-query':
-        specifier: ^5.96.1
+        specifier: catalog:prod
         version: 5.96.1(react@19.2.4)
       class-variance-authority:
         specifier: catalog:prod

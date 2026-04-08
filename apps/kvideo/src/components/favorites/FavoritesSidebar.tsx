@@ -11,18 +11,22 @@ import {
 } from '@cdlab996/ui/components/drawer'
 import { IKConfirmDialog } from '@cdlab996/ui/IK'
 import { TrashIcon, XIcon } from 'lucide-react'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
-import { useFavorites } from '@/lib/store/favorites-store'
+import { useFavoritesStore, usePremiumFavoritesStore } from '@/lib/store/favorites-store'
 import { useSidebarStore } from '@/lib/store/sidebar-store'
 import { FavoritesList } from './FavoritesList'
 
-export function FavoritesSidebar({
-  isPremium = false,
-}: {
-  isPremium?: boolean
-}) {
+export function FavoritesSidebar() {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const isPremium = pathname === '/premium' || searchParams.get('premium') === '1'
+
   const { favoritesOpen, setFavoritesOpen } = useSidebarStore()
-  const { favorites, removeFavorite, clearFavorites } = useFavorites(isPremium)
+  const normalStore = useFavoritesStore()
+  const premiumStore = usePremiumFavoritesStore()
+  const { favorites, removeFavorite, clearFavorites } = isPremium ? premiumStore : normalStore
+
   const [deleteConfirm, setDeleteConfirm] = useState<{
     isOpen: boolean
     videoId?: string
@@ -45,11 +49,7 @@ export function FavoritesSidebar({
 
   return (
     <>
-      <Drawer
-        open={favoritesOpen}
-        onOpenChange={setFavoritesOpen}
-        direction="right"
-      >
+      <Drawer open={favoritesOpen} onOpenChange={setFavoritesOpen} direction="right">
         <DrawerContent className="flex flex-col">
           <DrawerHeader className="flex-row items-center justify-between border-b">
             <DrawerTitle>我的收藏</DrawerTitle>
@@ -72,9 +72,7 @@ export function FavoritesSidebar({
             <DrawerFooter className="border-t">
               <Button
                 variant="outline"
-                onClick={() =>
-                  setDeleteConfirm({ isOpen: true, isClearAll: true })
-                }
+                onClick={() => setDeleteConfirm({ isOpen: true, isClearAll: true })}
                 className="w-full"
               >
                 <TrashIcon className="size-4" />
