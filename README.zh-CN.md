@@ -162,7 +162,7 @@ https://values.pages.dev/
 - 游戏历史记录通过 Durable Objects SQLite 持久化存储
 - 核心技术：Hono + Grammy + Cloudflare Workers + Durable Objects
 
-### KVideo
+### Flox
 
 **视频聚合与播放平台**
 
@@ -226,7 +226,7 @@ pnpm --filter value-vision dev     # 只启动 Value Vision (port 3011)
 pnpm --filter byplay dev           # 只启动 ByPlay (port 3016)
 pnpm --filter byplay-log dev       # 只启动 ByPlay Log (port 3017)
 pnpm --filter dropply-web dev      # 只启动 Dropply Web (port 3013)
-pnpm --filter @cdlab996/kvideo dev     # 只启动 KVideo (port 3023)
+pnpm --filter @cdlab996/flox dev       # 只启动 Flox (port 3023)
 pnpm --filter @cdlab996/live-user dev  # 只启动 LiveUser (port 3021)
 pnpm --filter repo-changelog dev   # 只启动 Repo Changelog (port 3019)
 pnpm build                         # 构建所有应用
@@ -257,7 +257,7 @@ pnpm clean                         # 清理 node_modules / 缓存 / 构建产物
 │   ├── clearify/          # 图像 & 视频工具箱
 │   ├── dropply-api/       # Dropply 文件分享 Cloudflare API
 │   ├── dropply-web/       # Dropply 文件分享 Web 前端
-│   ├── kvideo/            # 视频聚合与播放平台
+│   ├── flox/              # Flox - 视频聚合与播放平台
 │   ├── live-user/         # 实时在线用户计数器
 │   ├── vidl/              # 视频下载工具（M3U8/HLS、MP4 等）
 │   ├── repo-changelog/    # GitHub Release / Changelog 聚合工具
