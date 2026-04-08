@@ -1,12 +1,15 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import type React from 'react'
+import { Suspense } from 'react'
 import '@cdlab996/ui/globals.css'
 import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
 import fs from 'fs'
 import path from 'path'
 import { AdKeywordsInjector } from '@/components/AdKeywordsInjector'
+import { FavoritesSidebar } from '@/components/favorites/FavoritesSidebar'
+import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar'
 import { ClientProviders } from '@/components/layout'
 import { PasswordGate } from '@/components/PasswordGate'
 import { ScrollPositionManager } from '@/components/ScrollPositionManager'
@@ -97,6 +100,10 @@ export default function RootLayout({
             {children}
             <BackToTop />
             <ScrollPositionManager />
+            <Suspense fallback={null}>
+              <FavoritesSidebar />
+              <WatchHistorySidebar />
+            </Suspense>
           </PasswordGate>
           <Analytics />
           <ServiceWorkerRegister />

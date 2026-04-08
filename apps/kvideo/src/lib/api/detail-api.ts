@@ -1,5 +1,5 @@
 import type { ApiDetailResponse, VideoDetail, VideoSource } from '@/lib/types'
-import { fetchWithTimeout, withRetry } from './http-utils'
+import { fetchWithRetry } from './http-utils'
 import { parseEpisodes } from './parsers'
 
 /**
@@ -14,20 +14,12 @@ export async function getVideoDetail(
   url.searchParams.set('ids', id.toString())
 
   try {
-    const response = await withRetry(async () => {
-      const res = await fetchWithTimeout(url.toString(), {
-        method: 'GET',
-        headers: {
-          'User-Agent': 'Mozilla/5.0',
-          ...source.headers,
-        },
-      })
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`)
-      }
-
-      return res
+    const response = await fetchWithRetry(url.toString(), {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        ...source.headers,
+      },
     })
 
     const data: ApiDetailResponse = await response.json()

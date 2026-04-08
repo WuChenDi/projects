@@ -4,8 +4,6 @@ import { Button } from '@cdlab996/ui/components/button'
 import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { Search } from 'lucide-react'
 import { Suspense, useMemo, useState } from 'react'
-import { FavoritesSidebar } from '@/components/favorites/FavoritesSidebar'
-import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar'
 import { PopularFeatures } from '@/components/home/PopularFeatures'
 import { SearchResults } from '@/components/home/SearchResults'
 import { Header } from '@/components/layout'
@@ -93,8 +91,6 @@ function HomePage() {
         </div>
       </IKPageContainer>
 
-      <FavoritesSidebar />
-      <WatchHistorySidebar />
     </div>
   )
 }

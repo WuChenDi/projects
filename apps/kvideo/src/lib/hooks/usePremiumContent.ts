@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll'
-import { settingsStore } from '@/lib/store/settings-store'
+import { useSettingsStore } from '@/lib/store/settings-store'
 
 interface PremiumVideo {
   vod_id: string | number
@@ -14,122 +14,55 @@ interface PremiumVideo {
 const PAGE_LIMIT = 20
 
 export function usePremiumContent(categoryValue: string) {
-  const [videos, setVideos] = useState<PremiumVideo[]>([])
-  const [loading, setLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
-  const [page, setPage] = useState(1)
+  const premiumSources = useSettingsStore((s) =>
+    [
+      ...s.premiumSources,
+      ...s.subscriptions.filter((sub) => (sub as any).group === 'premium'),
+    ].filter((src) => (src as any).enabled !== false),
+  )
 
-  // Track source count to detect meaningful updates
-  const sourceCountRef = useRef(0)
+  // Stable key for query invalidation when sources change
+  const sourcesKey = premiumSources.map((s) => s.id).join(',')
 
-  const loadVideos = useCallback(
-    async (pageNum: number, append = false) => {
-      if (loading) return
-
-      setLoading(true)
-      try {
-        // Get sources from settings
-        const settings = settingsStore.getSettings()
-        // Resolve all relevant sources (premium sources + subscriptions that might be premium)
-        // For simplicity, we send all enabled premium sources.
-        const premiumSources = [
-          ...settings.premiumSources,
-          // Check if any subscription sources are marked as premium
-          ...settings.subscriptions.filter(
-            (s) => (s as any).group === 'premium',
-          ),
-        ].filter((s) => (s as any).enabled !== false)
-
-        if (premiumSources.length === 0) {
-          setLoading(false)
-          return
-        }
-
-        // Should we include normal subscriptions too if categoryValue requests them?
-        // The API handles filtering by categoryValue map.
-        // If categoryValue is empty (Recommend), we use all enabled premium sources.
-
+  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } =
+    useInfiniteQuery({
+      queryKey: ['premiumContent', categoryValue, sourcesKey],
+      queryFn: async ({ pageParam }) => {
         const response = await fetch('/api/premium/category', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             sources: premiumSources,
             category: categoryValue,
-            page: pageNum.toString(),
-            limit: PAGE_LIMIT.toString(),
+            page: String(pageParam),
+            limit: String(PAGE_LIMIT),
           }),
         })
+        if (!response.ok) throw new Error('Failed to fetch premium content')
+        const json = await response.json()
+        return (json.videos ?? []) as PremiumVideo[]
+      },
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+        lastPage.length === PAGE_LIMIT ? (lastPageParam as number) + 1 : undefined,
+      enabled: premiumSources.length > 0,
+      staleTime: 2 * 60 * 1000,
+    })
 
-        if (!response.ok) throw new Error('Failed to fetch')
-
-        const data = await response.json()
-        const newVideos = data.videos || []
-
-        setVideos((prev) => (append ? [...prev, ...newVideos] : newVideos))
-        setHasMore(newVideos.length === PAGE_LIMIT)
-      } catch (error) {
-        console.error('Failed to load videos:', error)
-        setHasMore(false)
-      } finally {
-        setLoading(false)
-      }
-    },
-    [loading, categoryValue],
-  )
-
-  // Initial load and category change
-  useEffect(() => {
-    setPage(1)
-    setVideos([])
-    setHasMore(true)
-
-    // Initial check for sources
-    const settings = settingsStore.getSettings()
-    const sourcesCount =
-      settings.premiumSources.length + settings.subscriptions.length
-    sourceCountRef.current = sourcesCount
-
-    loadVideos(1, false)
-  }, [loadVideos])
-
-  // Subscribe to settings changes to handle async source loading
-  useEffect(() => {
-    const handleSettingsUpdate = () => {
-      const settings = settingsStore.getSettings()
-      const premiumSources = [
-        ...settings.premiumSources,
-        ...settings.subscriptions.filter((s) => (s as any).group === 'premium'),
-      ].filter((s) => (s as any).enabled !== false)
-
-      const currentSourceCount = premiumSources.length
-
-      // If we have 0 videos and suddenly gain sources, we should retry loading
-      // OR if the number of sources significantly changed (e.g. from 0 to N)
-      if (videos.length === 0 && currentSourceCount > 0 && !loading) {
-        // Determine if we should reload.
-        // Mostly needed when initial load failed due to no sources.
-        loadVideos(1, false)
-      }
-    }
-
-    const unsubscribe = settingsStore.subscribe(handleSettingsUpdate)
-    return () => unsubscribe()
-  }, [loadVideos, videos.length, loading])
+  const videos = data?.pages.flat() ?? []
+  const loading = isLoading || isFetchingNextPage
 
   const { prefetchRef, loadMoreRef } = useInfiniteScroll({
-    hasMore,
+    hasMore: !!hasNextPage,
     loading,
-    page,
-    onLoadMore: (nextPage) => {
-      setPage(nextPage)
-      loadVideos(nextPage, true)
-    },
+    page: data?.pages.length ?? 0,
+    onLoadMore: () => fetchNextPage(),
   })
 
   return {
     videos,
     loading,
-    hasMore,
+    hasMore: !!hasNextPage,
     prefetchRef,
     loadMoreRef,
   }
