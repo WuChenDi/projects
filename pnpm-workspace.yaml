@@ -29,7 +29,7 @@ catalogs:
     date-fns: ^4.1.0
     drizzle-orm: ^0.45.1
     'hls.js': ^1.6.15
-    hono: ^4.12.9
+    hono: ^4.12.12
     jszip: ^3.10.1
     lucide-react: ^1.7.0
     motion: ^12.34.3

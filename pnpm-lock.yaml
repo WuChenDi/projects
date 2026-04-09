@@ -83,8 +83,8 @@ catalogs:
       specifier: ^1.6.15
       version: 1.6.15
     hono:
-      specifier: ^4.12.9
-      version: 4.12.9
+      specifier: ^4.12.12
+      version: 4.12.12
     jszip:
       specifier: ^3.10.1
       version: 3.10.1
@@ -246,7 +246,7 @@ importers:
         version: 1.42.0
       hono:
         specifier: catalog:prod
-        version: 4.12.9
+        version: 4.12.12
     devDependencies:
       '@cdlab996/tsconfig':
         specifier: workspace:*
@@ -435,7 +435,7 @@ importers:
         version: link:../../packages/utils
       '@hono/zod-validator':
         specifier: catalog:prod
-        version: 0.7.6(hono@4.12.9)(zod@4.3.6)
+        version: 0.7.6(hono@4.12.12)(zod@4.3.6)
       '@libsql/client':
         specifier: catalog:prod
         version: 0.17.2
@@ -444,7 +444,7 @@ importers:
         version: 0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@types/pg@8.18.0)(@upstash/redis@1.37.0)(kysely@0.28.13)(pg@8.20.0)(postgres@3.4.8)
       hono:
         specifier: catalog:prod
-        version: 4.12.9
+        version: 4.12.12
       winston:
         specifier: catalog:prod
         version: 3.19.0
@@ -575,7 +575,7 @@ importers:
         version: link:../../packages/utils
       '@hono/zod-validator':
         specifier: catalog:prod
-        version: 0.7.6(hono@4.12.9)(zod@4.3.6)
+        version: 0.7.6(hono@4.12.12)(zod@4.3.6)
       '@libsql/client':
         specifier: catalog:prod
         version: 0.17.2
@@ -587,7 +587,7 @@ importers:
         version: 0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@types/pg@8.18.0)(@upstash/redis@1.37.0)(kysely@0.28.13)(pg@8.20.0)(postgres@3.4.8)
       hono:
         specifier: catalog:prod
-        version: 4.12.9
+        version: 4.12.12
       resend:
         specifier: ^6.9.3
         version: 6.9.3(@react-email/render@2.0.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
@@ -755,7 +755,7 @@ importers:
     dependencies:
       hono:
         specifier: catalog:prod
-        version: 4.12.9
+        version: 4.12.12
     devDependencies:
       '@cdlab996/tsconfig':
         specifier: workspace:*
@@ -7809,6 +7809,10 @@ packages:
   hls.js@1.6.15:
     resolution: {integrity: sha512-E3a5VwgXimGHwpRGV+WxRTKeSp2DW5DI5MWv34ulL3t5UNmyJWCQ1KmLEHbYzcfThfXG8amBL+fCYPneGHC4VA==}
 
+  hono@4.12.12:
+    resolution: {integrity: sha512-p1JfQMKaceuCbpJKAPKVqyqviZdS0eUxH9v82oWo1kb9xjQ5wA6iP3FNVAPDFlz5/p7d45lO+BpSk1tuSZMF4Q==}
+    engines: {node: '>=16.9.0'}
+
   hono@4.12.9:
     resolution: {integrity: sha512-wy3T8Zm2bsEvxKZM5w21VdHDDcwVS1yUFFY6i8UobSsKfFceT7TOwhbhfKsDyx7tYQlmRM5FLpIuYvNFyjctiA==}
     engines: {node: '>=16.9.0'}
@@ -12729,9 +12733,9 @@ snapshots:
     dependencies:
       hono: 4.12.9
 
-  '@hono/zod-validator@0.7.6(hono@4.12.9)(zod@4.3.6)':
+  '@hono/zod-validator@0.7.6(hono@4.12.12)(zod@4.3.6)':
     dependencies:
-      hono: 4.12.9
+      hono: 4.12.12
       zod: 4.3.6
 
   '@huggingface/jinja@0.5.5': {}
@@ -18209,6 +18213,8 @@ snapshots:
   hey-listen@1.0.8: {}
 
   hls.js@1.6.15: {}
+
+  hono@4.12.12: {}
 
   hono@4.12.9: {}
 
