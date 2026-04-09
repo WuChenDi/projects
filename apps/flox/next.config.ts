@@ -4,8 +4,8 @@ const nextConfig: NextConfig = {
   env: {
     BUILD_TIME: new Date().toLocaleString(),
   },
-  reactStrictMode: true,
-  poweredByHeader: false,
+  // reactStrictMode: true,
+  // poweredByHeader: false,
   output: 'standalone',
   images: {
     unoptimized: true,
