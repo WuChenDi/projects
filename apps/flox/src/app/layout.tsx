@@ -107,6 +107,7 @@ export const metadata: Metadata = {
     'max-image-preview': 'large',
     'max-video-preview': -1,
   },
+  metadataBase: new URL('https://flox.pages.dev/'),
   alternates: {
     canonical: '/',
   },
@@ -116,6 +117,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: siteConfig.title,
     description: siteConfig.description,
+    url: 'https://flox.pages.dev/',
     siteName: siteConfig.name,
     locale: 'zh_CN',
     type: 'website',
@@ -124,6 +126,9 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: siteConfig.title,
     description: siteConfig.description,
+    images: [
+      'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/flox/index.png',
+    ],
     creator: '@wuchendi96',
     site: '@wuchendi96',
   },
@@ -152,6 +157,7 @@ export default function RootLayout({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
               name: siteConfig.name,
+              url: 'https://flox.pages.dev/',
               description: siteConfig.description,
               inLanguage: 'zh-CN',
             }),
@@ -167,6 +173,7 @@ export default function RootLayout({
               '@type': 'WebApplication',
               name: siteConfig.name,
               description: siteConfig.description,
+              url: 'https://flox.pages.dev/',
               applicationCategory: 'MultimediaApplication',
               operatingSystem: 'Web',
               browserRequirements:
@@ -218,8 +225,8 @@ export default function RootLayout({
                 {
                   '@type': 'ListItem',
                   position: 1,
-                  name: '首页',
-                  item: '/',
+                  name: 'Home',
+                  item: 'https://flox.pages.dev/',
                 },
               ],
             }),

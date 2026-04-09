@@ -166,10 +166,18 @@ https://values.pages.dev/
 
 **Video Aggregation & Playback Platform**
 
+https://flox.pages.dev/
+
 - Multi-source parallel video search with real-time streaming results (SSE), 38+ built-in sources
 - HLS/M3U8 playback with ad filtering (keyword, heuristic, SCTE-35), proxy mode, auto-next episode
 - Service Worker caching, watch history, favorites, password protection, premium mode isolation
 - Tech: Next.js 16 (App Router) + React 19 + Zustand + HLS.js + Volcengine VePlayer + Tailwind CSS 4
+
+<details>
+  <summary>Preview</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/flox/og-image.png" alt="flox" />
+</details>
 
 ### LiveUser
 

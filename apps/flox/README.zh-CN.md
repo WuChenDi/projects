@@ -4,6 +4,10 @@
 
 基于 Next.js 16、React 19 和 Tailwind CSS 4 构建的现代视频聚合与播放平台。
 
+预览：https://flox.pages.dev/
+
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/flox/og-image.png)
+
 ## 功能特性
 
 - **多源并行搜索** - 通过 SSE 流式同时从 38+ 个内置视频源返回结果

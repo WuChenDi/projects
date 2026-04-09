@@ -4,6 +4,10 @@
 
 A modern video aggregation and playback platform built with Next.js 16, React 19, and Tailwind CSS 4.
 
+Preview: https://flox.pages.dev/
+
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/flox/og-image.png)
+
 ## Features
 
 - **Multi-source parallel search** - SSE streaming results from 38+ built-in video sources simultaneously
