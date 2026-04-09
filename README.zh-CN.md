@@ -215,31 +215,32 @@ pnpm install
 ### 常用命令
 
 ```bash
-pnpm dev                           # 启动所有应用（并行开发）
-pnpm --filter clearify dev         # 只启动 Clearify
-pnpm --filter @cdlab996/baccarat dev  # 只启动 Baccarat (port 3020)
-pnpm --filter @cdlab996/bycut dev  # 只启动 ByCut (port 3020)
-pnpm --filter vidl dev             # 只启动 vidl (port 3010)
-pnpm --filter securec dev          # 只启动 SecureC (port 3009)
-pnpm --filter text2img dev         # 只启动 Text2Img (port 3012)
-pnpm --filter value-vision dev     # 只启动 Value Vision (port 3011)
-pnpm --filter byplay dev           # 只启动 ByPlay (port 3016)
-pnpm --filter byplay-log dev       # 只启动 ByPlay Log (port 3017)
-pnpm --filter dropply-web dev      # 只启动 Dropply Web (port 3013)
-pnpm --filter @cdlab996/flox dev       # 只启动 Flox (port 3023)
-pnpm --filter @cdlab996/live-user dev  # 只启动 LiveUser (port 3021)
-pnpm --filter repo-changelog dev   # 只启动 Repo Changelog (port 3019)
-pnpm build                         # 构建所有应用
-pnpm --filter clearify run build
+pnpm dev                                     # 启动所有应用（并行开发）
+pnpm --filter @cdlab996/clearify dev         # 只启动 Clearify
+pnpm --filter @cdlab996/baccarat dev         # 只启动 Baccarat (port 3020)
+pnpm --filter @cdlab996/bycut dev            # 只启动 ByCut (port 3020)
+pnpm --filter @cdlab996/vidl dev             # 只启动 vidl (port 3010)
+pnpm --filter @cdlab996/securec dev          # 只启动 SecureC (port 3009)
+pnpm --filter @cdlab996/text2img dev         # 只启动 Text2Img (port 3012)
+pnpm --filter @cdlab996/values dev           # 只启动 Value Vision (port 3011)
+pnpm --filter @cdlab996/byplay dev           # 只启动 ByPlay (port 3016)
+pnpm --filter @cdlab996/byplay-log dev       # 只启动 ByPlay Log (port 3017)
+pnpm --filter @cdlab996/dropply-web dev      # 只启动 Dropply Web (port 3013)
+pnpm --filter @cdlab996/flox dev             # 只启动 Flox (port 3023)
+pnpm --filter @cdlab996/live-user dev        # 只启动 LiveUser (port 3021)
+pnpm --filter @cdlab996/repo-changelog dev   # 只启动 Repo Changelog (port 3019)
+pnpm build                                   # 构建所有应用
+pnpm --filter @cdlab996/clearify run build
 pnpm --filter @cdlab996/bycut run build
-pnpm --filter vidl run build
-pnpm --filter securec run build
-pnpm --filter text2img run build
-pnpm --filter value-vision run build
-pnpm --filter byplay run build
-pnpm --filter byplay-log run build
-pnpm --filter dropply-web run build
-pnpm --filter repo-changelog run build
+pnpm --filter @cdlab996/vidl run build
+pnpm --filter @cdlab996/securec run build
+pnpm --filter @cdlab996/text2img run build
+pnpm --filter @cdlab996/values run build
+pnpm --filter @cdlab996/byplay run build
+pnpm --filter @cdlab996/byplay-log run build
+pnpm --filter @cdlab996/dropply-web run build
+pnpm --filter @cdlab996/flox run build
+pnpm --filter @cdlab996/repo-changelog run build
 pnpm lint                          # Biome 代码检查
 pnpm format                        # Biome 格式化全部代码
 pnpm clean                         # 清理 node_modules / 缓存 / 构建产物

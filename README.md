@@ -215,31 +215,33 @@ pnpm install
 ### Common Commands
 
 ```bash
-pnpm dev                           # Start all apps (parallel dev)
-pnpm --filter clearify dev         # Start Clearify only
-pnpm --filter @cdlab996/baccarat dev  # Start Baccarat only (port 3020)
-pnpm --filter @cdlab996/bycut dev  # Start ByCut only (port 3020)
-pnpm --filter vidl dev             # Start vidl only (port 3010)
-pnpm --filter securec dev          # Start SecureC only (port 3009)
-pnpm --filter text2img dev         # Start Text2Img only (port 3012)
-pnpm --filter value-vision dev     # Start Value Vision only (port 3011)
-pnpm --filter byplay dev           # Start ByPlay only (port 3016)
-pnpm --filter byplay-log dev       # Start ByPlay Log only (port 3017)
-pnpm --filter dropply-web dev      # Start Dropply Web only (port 3013)
-pnpm --filter @cdlab996/flox dev       # Start Flox only (port 3023)
-pnpm --filter @cdlab996/live-user dev  # Start LiveUser only (port 3021)
-pnpm --filter repo-changelog dev   # Start Repo Changelog only (port 3019)
-pnpm build                         # Build all apps
-pnpm --filter clearify run build
+pnpm dev                                     # Start all apps (parallel dev)
+pnpm --filter @cdlab996/clearify dev         # Start Clearify only
+pnpm --filter @cdlab996/baccarat dev         # Start Baccarat only (port 3020)
+pnpm --filter @cdlab996/bycut dev            # Start ByCut only (port 3020)
+pnpm --filter @cdlab996/vidl dev             # Start vidl only (port 3010)
+pnpm --filter @cdlab996/securec dev          # Start SecureC only (port 3009)
+pnpm --filter @cdlab996/text2img dev         # Start Text2Img only (port 3012)
+pnpm --filter @cdlab996/values dev           # Start Value Vision only (port 3011)
+pnpm --filter @cdlab996/byplay dev           # Start ByPlay only (port 3016)
+pnpm --filter @cdlab996/byplay-log dev       # Start ByPlay Log only (port 3017)
+pnpm --filter @cdlab996/dropply-web dev      # Start Dropply Web only (port 3013)
+pnpm --filter @cdlab996/flox dev             # Start Flox only (port 3023)
+pnpm --filter @cdlab996/live-user dev        # Start LiveUser only (port 3021)
+pnpm --filter @cdlab996/repo-changelog dev   # Start Repo Changelog only (port 3019)
+pnpm build                                   # Build all apps
+pnpm --filter @cdlab996/clearify run build
 pnpm --filter @cdlab996/bycut run build
-pnpm --filter vidl run build
-pnpm --filter securec run build
-pnpm --filter text2img run build
-pnpm --filter value-vision run build
-pnpm --filter byplay run build
-pnpm --filter byplay-log run build
-pnpm --filter dropply-web run build
-pnpm --filter repo-changelog run build
+pnpm --filter @cdlab996/vidl run build
+pnpm --filter @cdlab996/securec run build
+pnpm --filter @cdlab996/text2img run build
+pnpm --filter @cdlab996/values run build
+pnpm --filter @cdlab996/byplay run build
+pnpm --filter @cdlab996/byplay-log run build
+pnpm --filter @cdlab996/dropply-web run build
+pnpm --filter @cdlab996/flox run build
+pnpm --filter @cdlab996/live-user run build
+pnpm --filter @cdlab996/repo-changelog run build
 pnpm lint                          # Biome lint
 pnpm format                        # Biome format all code
 pnpm clean                         # Clean node_modules / cache / build artifacts

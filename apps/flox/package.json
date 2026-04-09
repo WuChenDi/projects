@@ -28,7 +28,6 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@tanstack/react-query": "catalog:prod",
-    "@vercel/analytics": "^2.0.1",
     "@volcengine/veplayer": "1.10.0",
     "hls.js": "catalog:prod",
     "lucide-react": "catalog:prod",
@@ -40,12 +39,10 @@
   },
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",
-    "@cloudflare/next-on-pages": "^1.13.16",
-    "@tailwindcss/postcss": "^4",
+    "@cloudflare/next-on-pages": "catalog:dev",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
-    "tailwindcss": "catalog:dev",
     "typescript": "catalog:dev"
   }
 }
