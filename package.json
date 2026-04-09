@@ -47,7 +47,7 @@
     "@biomejs/biome": "^2.4.10",
     "@cdlab996/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
-    "turbo": "^2.9.3",
+    "turbo": "^2.9.5",
     "typescript": "catalog:dev"
   }
 }
