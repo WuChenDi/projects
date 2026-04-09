@@ -26,6 +26,7 @@ interface EpisodeListProps {
   isReversed?: boolean
   onEpisodeClick: (episode: Episode, index: number) => void
   onToggleReverse?: (reversed: boolean) => void
+  scrollHeight?: string
 }
 
 export function EpisodeList({
@@ -34,6 +35,7 @@ export function EpisodeList({
   isReversed = false,
   onEpisodeClick,
   onToggleReverse,
+  scrollHeight = '400px',
 }: EpisodeListProps) {
   const listRef = useRef<HTMLDivElement>(null)
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([])
@@ -109,7 +111,7 @@ export function EpisodeList({
       </CardHeader>
 
       <CardContent>
-        <ScrollArea className="flex-1">
+        <ScrollArea style={{ height: scrollHeight }}>
           <div
             ref={listRef}
             className="space-y-1"

@@ -3,17 +3,29 @@
 import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
 import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Header } from '@/components/layout'
 import { EpisodeList } from '@/components/player/EpisodeList'
+import type { VideoResolutionInfo } from '@/components/player/hooks/useVideoResolution'
 import { PlayerError } from '@/components/player/PlayerError'
 import type { SourceInfo } from '@/components/player/SourceSelector'
 import { SourceSelector } from '@/components/player/SourceSelector'
 import { VideoMetadata } from '@/components/player/VideoMetadata'
 import { VideoPlayer } from '@/components/player/VideoPlayer'
+import { useResolutionProbe } from '@/lib/hooks/useResolutionProbe'
 import { useVideoPlayer } from '@/lib/hooks/useVideoPlayer'
 import { useHistory } from '@/lib/store/history-store'
 import { settingsStore } from '@/lib/store/settings-store'
+
+type PlayerViewportMode = 'standard' | 'wide' | 'cinema'
+const VIEWPORT_MODE_KEY = 'flox-player-viewport-mode'
 
 function PlayerContent() {
   const searchParams = useSearchParams()
@@ -35,15 +47,28 @@ function PlayerContent() {
   const [activeTab, setActiveTab] = useState<'episodes' | 'info' | 'sources'>(
     'episodes',
   )
+  const [viewportMode, setViewportMode] = useState<PlayerViewportMode>(() => {
+    if (typeof window === 'undefined') return 'standard'
+    const saved = localStorage.getItem(VIEWPORT_MODE_KEY)
+    return saved === 'wide' || saved === 'cinema' ? saved : 'standard'
+  })
+  const playerTimeRef = useRef(0)
+  const [detectedResolution, setDetectedResolution] =
+    useState<VideoResolutionInfo | null>(null)
+  const [currentSourceId, setCurrentSourceId] = useState(source)
 
   useEffect(() => {
     setIsReversed(settingsStore.getSettings().episodeReverseOrder)
   }, [])
 
-  if (!videoId || !source) {
-    router.push('/')
-    return null
-  }
+  useEffect(() => {
+    localStorage.setItem(VIEWPORT_MODE_KEY, viewportMode)
+  }, [viewportMode])
+
+  // Redirect if params missing — must be after all hooks
+  useEffect(() => {
+    if (!videoId || !source) router.push('/')
+  }, [videoId, source, router])
 
   const {
     videoData,
@@ -77,7 +102,18 @@ function PlayerContent() {
     return sources
   }, [groupedSourcesParam, source, videoId, videoData?.vod_pic])
 
-  const [currentSourceId, setCurrentSourceId] = useState(source)
+  const probeList = useMemo(
+    () => groupedSources.map((s) => ({ id: s.id, source: s.source })),
+    [groupedSources],
+  )
+  const { resolutions: sourceResolutions } = useResolutionProbe(probeList)
+
+  const playerGridClass =
+    viewportMode === 'cinema'
+      ? 'lg:grid-cols-[minmax(0,1.9fr)_minmax(260px,0.55fr)]'
+      : viewportMode === 'wide'
+        ? 'lg:grid-cols-[minmax(0,1.65fr)_minmax(280px,0.72fr)]'
+        : 'lg:grid-cols-3'
 
   useEffect(() => {
     if (videoData && playUrl && videoId) {
@@ -92,7 +128,7 @@ function PlayerContent() {
         videoData.vod_name || title || '未知视频',
         playUrl,
         currentEpisode,
-        source,
+        source || '',
         0,
         0,
         videoData.vod_pic,
@@ -136,6 +172,32 @@ function PlayerContent() {
 
   const hasMultipleSources = groupedSources.length > 1
 
+  const handleSourceChange = useCallback(
+    (newSource: SourceInfo) => {
+      const params = new URLSearchParams()
+      params.set('id', String(newSource.id))
+      params.set('source', newSource.source)
+      params.set('title', title || '')
+      params.set('episode', currentEpisode.toString())
+      if (playerTimeRef.current > 1) {
+        params.set('t', Math.floor(playerTimeRef.current).toString())
+      }
+      if (groupedSourcesParam) params.set('groupedSources', groupedSourcesParam)
+      if (isPremium) params.set('premium', '1')
+      setCurrentSourceId(newSource.source)
+      router.replace(`/player?${params.toString()}`, { scroll: false })
+    },
+    [title, currentEpisode, groupedSourcesParam, isPremium, router],
+  )
+
+  const sourceSelectorProps = {
+    sources: groupedSources,
+    currentSource: currentSourceId || source || '',
+    onSourceChange: handleSourceChange,
+    currentResolution: detectedResolution,
+    sourceResolutions,
+  }
+
   const sidebarContent = (
     <>
       <EpisodeList
@@ -144,25 +206,13 @@ function PlayerContent() {
         isReversed={isReversed}
         onEpisodeClick={handleEpisodeClick}
         onToggleReverse={handleToggleReverse}
+        scrollHeight={hasMultipleSources ? '400px' : '640px'}
       />
-      {hasMultipleSources && (
-        <SourceSelector
-          sources={groupedSources}
-          currentSource={currentSourceId || source || ''}
-          onSourceChange={(newSource) => {
-            const params = new URLSearchParams()
-            params.set('id', String(newSource.id))
-            params.set('source', newSource.source)
-            params.set('title', title || '')
-            if (groupedSourcesParam)
-              params.set('groupedSources', groupedSourcesParam)
-            setCurrentSourceId(newSource.source)
-            router.replace(`/player?${params.toString()}`, { scroll: false })
-          }}
-        />
-      )}
+      {hasMultipleSources && <SourceSelector {...sourceSelectorProps} />}
     </>
   )
+
+  if (!videoId || !source) return null
 
   return (
     <div className="min-h-screen">
@@ -184,7 +234,7 @@ function PlayerContent() {
               onRetry={fetchVideoDetails}
             />
           ) : (
-            <div className="grid lg:grid-cols-3 gap-4 items-start">
+            <div className={`grid gap-4 items-start ${playerGridClass}`}>
               {/* Left column */}
               <div className="lg:col-span-2 space-y-4">
                 <VideoPlayer
@@ -196,6 +246,10 @@ function PlayerContent() {
                   onNextEpisode={handleNextEpisode}
                   isReversed={isReversed}
                   isPremium={isPremium}
+                  externalTimeRef={playerTimeRef}
+                  onResolutionDetected={setDetectedResolution}
+                  viewportMode={viewportMode}
+                  onViewportModeChange={setViewportMode}
                 />
 
                 {/* Mobile tabs */}
@@ -231,22 +285,7 @@ function PlayerContent() {
                     />
                   )}
                   {activeTab === 'sources' && hasMultipleSources && (
-                    <SourceSelector
-                      sources={groupedSources}
-                      currentSource={currentSourceId || source || ''}
-                      onSourceChange={(newSource) => {
-                        const params = new URLSearchParams()
-                        params.set('id', String(newSource.id))
-                        params.set('source', newSource.source)
-                        params.set('title', title || '')
-                        if (groupedSourcesParam)
-                          params.set('groupedSources', groupedSourcesParam)
-                        setCurrentSourceId(newSource.source)
-                        router.replace(`/player?${params.toString()}`, {
-                          scroll: false,
-                        })
-                      }}
-                    />
+                    <SourceSelector {...sourceSelectorProps} />
                   )}
                 </div>
 
@@ -272,7 +311,6 @@ function PlayerContent() {
           )}
         </div>
       </IKPageContainer>
-
     </div>
   )
 }

@@ -31,9 +31,21 @@ interface VideoPlayerProps {
   onNextEpisode?: () => void
   isReversed?: boolean
   isPremium?: boolean
+  externalTimeRef?: React.MutableRefObject<number>
+  onResolutionDetected?: (
+    info: import('./hooks/useVideoResolution').VideoResolutionInfo,
+  ) => void
+  viewportMode?: 'standard' | 'wide' | 'cinema'
+  onViewportModeChange?: (mode: 'standard' | 'wide' | 'cinema') => void
 }
 
 const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const
+
+const VIEWPORT_OPTIONS = [
+  { value: 'standard', label: '标准' },
+  { value: 'wide', label: '宽屏' },
+  { value: 'cinema', label: '影院' },
+] as const
 
 export function VideoPlayer({
   playUrl,
@@ -45,6 +57,10 @@ export function VideoPlayer({
   onNextEpisode,
   isReversed = false,
   isPremium = false,
+  externalTimeRef,
+  onResolutionDetected,
+  viewportMode,
+  onViewportModeChange,
 }: VideoPlayerProps) {
   const [videoError, setVideoError] = useState<string>('')
   const [useProxy, setUseProxy] = useState(false)
@@ -52,10 +68,14 @@ export function VideoPlayer({
   const [retryCount, setRetryCount] = useState(0)
   const [playbackRate, setPlaybackRate] = useState(1)
   const [copied, setCopied] = useState(false)
+  const [resolution, setResolution] = useState<
+    import('./hooks/useVideoResolution').VideoResolutionInfo | null
+  >(null)
   const MAX_MANUAL_RETRIES = 20
   const lastSaveTimeRef = useRef(0)
   const currentTimeRef = useRef(0)
   const durationRef = useRef(0)
+  const switchTimeRef = useRef(0)
   const SAVE_INTERVAL = 5000
 
   const {
@@ -88,6 +108,13 @@ export function VideoPlayer({
   const title = searchParams.get('title') || '未知视频'
 
   const getSavedProgress = () => {
+    // Check for explicit time param (from seamless source switch)
+    const timeParam = searchParams.get('t')
+    if (timeParam) {
+      const t = parseFloat(timeParam)
+      if (t > 0 && isFinite(t)) return t
+    }
+
     if (!videoId) return 0
     return (
       viewingHistory.find(
@@ -127,6 +154,7 @@ export function VideoPlayer({
     (currentTime: number, duration: number) => {
       currentTimeRef.current = currentTime
       durationRef.current = duration
+      if (externalTimeRef) externalTimeRef.current = currentTime
       if (!videoId || !playUrl || duration === 0) return
       const now = Date.now()
       if (currentTime > 1 && now - lastSaveTimeRef.current >= SAVE_INTERVAL) {
@@ -134,7 +162,7 @@ export function VideoPlayer({
         saveProgress(currentTime, duration)
       }
     },
-    [videoId, playUrl, saveProgress],
+    [videoId, playUrl, saveProgress, externalTimeRef],
   )
 
   useEffect(() => {
@@ -166,6 +194,7 @@ export function VideoPlayer({
   }
 
   const switchEngine = (engine: typeof playerEngine) => {
+    switchTimeRef.current = currentTimeRef.current
     setPlayerEngine(engine)
     setVideoError('')
   }
@@ -211,6 +240,11 @@ export function VideoPlayer({
               url={finalPlayUrl}
               autoplay
               poster={poster}
+              initialTime={
+                switchTimeRef.current > 0
+                  ? switchTimeRef.current
+                  : getSavedProgress()
+              }
               className="w-full h-full object-contain"
             />
           ) : videoError ? (
@@ -226,13 +260,21 @@ export function VideoPlayer({
               key={`${finalPlayUrl}-${retryCount}`}
               src={finalPlayUrl}
               autoPlay={shouldAutoPlay}
-              initialTime={getSavedProgress()}
+              initialTime={
+                switchTimeRef.current > 0
+                  ? switchTimeRef.current
+                  : getSavedProgress()
+              }
               playbackRate={playbackRate}
               skipIntroSeconds={autoSkipIntro ? skipIntroSeconds : 0}
               skipOutroSeconds={autoSkipOutro ? skipOutroSeconds : 0}
               onError={handleVideoError}
               onTimeUpdate={handleTimeUpdate}
               onEnded={autoNextEpisode ? onNextEpisode : undefined}
+              onResolutionDetected={(info) => {
+                setResolution(info)
+                onResolutionDetected?.(info)
+              }}
               className="w-full h-full"
             />
           )}
@@ -241,11 +283,10 @@ export function VideoPlayer({
 
       <Card>
         <CardContent className="py-3 px-4 space-y-3">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground shrink-0">
-                播放器
-              </span>
+          {/* Row 1: 引擎 + 窗口(desktop) — 右侧固定：分辨率/代理/复制 */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-xs text-muted-foreground">引擎</span>
               <div className="flex gap-1">
                 <Button
                   size="sm"
@@ -266,26 +307,24 @@ export function VideoPlayer({
               </div>
             </div>
 
-            {isNative && (
+            {onViewportModeChange && (
               <>
                 <Separator
                   orientation="vertical"
                   className="h-5 hidden sm:block"
                 />
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground shrink-0">
-                    速度
-                  </span>
+                <div className="hidden sm:flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-muted-foreground">窗口</span>
                   <div className="flex gap-1">
-                    {SPEED_OPTIONS.map((s) => (
+                    {VIEWPORT_OPTIONS.map(({ value, label }) => (
                       <Button
-                        key={s}
+                        key={value}
                         size="sm"
-                        variant={playbackRate === s ? 'default' : 'outline'}
-                        className="h-7 text-xs px-2"
-                        onClick={() => setPlaybackRate(s)}
+                        variant={viewportMode === value ? 'default' : 'outline'}
+                        className="h-7 text-xs px-2.5"
+                        onClick={() => onViewportModeChange(value)}
                       >
-                        {s === 1 ? '1x' : `${s}x`}
+                        {label}
                       </Button>
                     ))}
                   </div>
@@ -293,7 +332,15 @@ export function VideoPlayer({
               </>
             )}
 
-            <div className="ml-auto flex items-center gap-2">
+            {/* 右侧始终固定，不参与换行 */}
+            <div className="ml-auto flex items-center gap-2 shrink-0">
+              {resolution && (
+                <span
+                  className={`text-[10px] font-bold text-white px-1.5 py-0.5 rounded ${resolution.color}`}
+                >
+                  {resolution.label}
+                </span>
+              )}
               {canToggleProxy && (
                 <Badge
                   variant="outline"
@@ -304,7 +351,7 @@ export function VideoPlayer({
                       : 'border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950'
                   }`}
                 >
-                  {useProxy ? '代理模式' : '直连模式'}
+                  {useProxy ? '代理' : '直连'}
                 </Badge>
               )}
               <Tooltip>
@@ -329,9 +376,32 @@ export function VideoPlayer({
             </div>
           </div>
 
+          {/* Row 2: 速度 — 单独一行，移动端也展示完整 */}
+          {isNative && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground shrink-0">
+                速度
+              </span>
+              <div className="flex flex-wrap gap-1">
+                {SPEED_OPTIONS.map((s) => (
+                  <Button
+                    key={s}
+                    size="sm"
+                    variant={playbackRate === s ? 'default' : 'outline'}
+                    className="h-7 text-xs px-2"
+                    onClick={() => setPlaybackRate(s)}
+                  >
+                    {s === 1 ? '1x' : `${s}x`}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <Separator />
 
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          {/* Row 3: 播放行为开关 */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             {hasMultipleEpisodes && (
               <label className="flex items-center gap-1.5 cursor-pointer select-none">
                 <Switch

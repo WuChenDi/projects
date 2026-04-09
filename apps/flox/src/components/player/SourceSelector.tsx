@@ -1,14 +1,23 @@
 'use client'
 
-import Image from 'next/image'
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@cdlab996/ui/components/card'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@cdlab996/ui/components/card'
 import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { LayersIcon, PlayIcon, RefreshCwIcon } from 'lucide-react'
+import Image from 'next/image'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LatencyBadge } from '@/components/ui/LatencyBadge'
+import type { ResolutionInfo } from '@/lib/hooks/useResolutionProbe'
+import { extractQualityLabel } from '@/lib/utils/video'
+import type { VideoResolutionInfo } from './hooks/useVideoResolution'
 
 export interface SourceInfo {
   id: string | number
@@ -16,12 +25,15 @@ export interface SourceInfo {
   sourceName?: string
   latency?: number
   pic?: string
+  remarks?: string
 }
 
 interface SourceSelectorProps {
   sources: SourceInfo[]
   currentSource: string
   onSourceChange: (source: SourceInfo) => void
+  currentResolution?: VideoResolutionInfo | null
+  sourceResolutions?: Record<string, ResolutionInfo | null>
   className?: string
 }
 
@@ -29,10 +41,22 @@ export function SourceSelector({
   sources,
   currentSource,
   onSourceChange,
+  currentResolution,
+  sourceResolutions,
   className,
 }: SourceSelectorProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [latencies, setLatencies] = useState<Record<string, number>>({})
+
+  const getResBadge = (source: SourceInfo, isCurrent: boolean) => {
+    if (isCurrent && currentResolution) {
+      return { label: currentResolution.label, color: currentResolution.color }
+    }
+    const probeKey = `${source.source}:${source.id}`
+    const probed = sourceResolutions?.[probeKey]
+    if (probed) return { label: probed.label, color: probed.color }
+    return extractQualityLabel(source.remarks) || null
+  }
 
   const sortedSources = useMemo(() => {
     return [...sources].sort((a, b) => {
@@ -70,7 +94,9 @@ export function SourceSelector({
 
   useEffect(() => {
     const initial: Record<string, number> = {}
-    sources.forEach((s) => { if (s.latency !== undefined) initial[s.source] = s.latency })
+    sources.forEach((s) => {
+      if (s.latency !== undefined) initial[s.source] = s.latency
+    })
     setLatencies(initial)
   }, [sources])
 
@@ -78,25 +104,28 @@ export function SourceSelector({
 
   return (
     <Card className={className}>
-      <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
+      <CardHeader>
+        <div className="flex items-center gap-2">
           <LayersIcon className="size-4" />
-          来源
-          <Badge variant="secondary">{sources.length}</Badge>
-        </CardTitle>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={refreshLatencies}
-          disabled={isLoading}
-        >
-          <RefreshCwIcon className={cn('size-3.5', isLoading && 'animate-spin')} />
-          刷新延迟
-        </Button>
+          <CardTitle>来源</CardTitle>
+          {sources && <Badge variant="secondary">{sources.length}</Badge>}
+        </div>
+        <CardAction>
+          <Button
+            variant="outline"
+            size="icon-xs"
+            onClick={refreshLatencies}
+            disabled={isLoading}
+          >
+            <RefreshCwIcon
+              className={cn('size-3.5', isLoading && 'animate-spin')}
+            />
+          </Button>
+        </CardAction>
       </CardHeader>
 
       <CardContent className="pt-0">
-        <ScrollArea className="max-h-[300px]">
+        <ScrollArea className="h-[300px]">
           <div className="space-y-1.5 pr-3">
             {sortedSources.map((source, index) => {
               const isCurrent = source.source === currentSource
@@ -104,7 +133,7 @@ export function SourceSelector({
 
               return (
                 <button
-                  key={`${source.source}-${index}`}
+                  key={source.source}
                   onClick={() => !isCurrent && onSourceChange(source)}
                   disabled={isCurrent}
                   aria-current={isCurrent ? 'true' : undefined}
@@ -125,14 +154,27 @@ export function SourceSelector({
                         className="w-full h-full object-cover"
                         unoptimized
                         referrerPolicy="no-referrer"
-                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                        onError={(e) => {
+                          ;(e.currentTarget as HTMLImageElement).style.display =
+                            'none'
+                        }}
                       />
                     </div>
                   )}
 
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm truncate">
+                    <div className="font-medium text-sm truncate flex items-center gap-1.5">
                       {source.sourceName || source.source}
+                      {(() => {
+                        const badge = getResBadge(source, isCurrent)
+                        return badge ? (
+                          <span
+                            className={`inline-flex items-center px-1 py-0 rounded text-[9px] font-bold text-white ${badge.color}`}
+                          >
+                            {badge.label}
+                          </span>
+                        ) : null
+                      })()}
                     </div>
                     {latency !== undefined && (
                       <div className="mt-0.5">

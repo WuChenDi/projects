@@ -2,17 +2,20 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 import { useHlsPlayer } from './hooks/useHlsPlayer'
+import type { VideoResolutionInfo } from './hooks/useVideoResolution'
+import { useVideoResolution } from './hooks/useVideoResolution'
 
 interface NativePlayerProps {
   src: string
   autoPlay?: boolean
   initialTime?: number
   playbackRate?: number
-  skipIntroSeconds?: number  // auto-seek past intro on start
-  skipOutroSeconds?: number  // trigger onEnded N seconds before actual end
+  skipIntroSeconds?: number // auto-seek past intro on start
+  skipOutroSeconds?: number // trigger onEnded N seconds before actual end
   onError?: (message: string) => void
   onTimeUpdate?: (currentTime: number, duration: number) => void
   onEnded?: () => void
+  onResolutionDetected?: (info: VideoResolutionInfo) => void
   className?: string
 }
 
@@ -26,6 +29,7 @@ export function NativePlayer({
   onError,
   onTimeUpdate,
   onEnded,
+  onResolutionDetected,
   className,
 }: NativePlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -34,6 +38,11 @@ export function NativePlayer({
   const outroTriggered = useRef(false)
 
   useHlsPlayer({ videoRef, src, autoPlay, onError })
+  const resolution = useVideoResolution(videoRef)
+
+  useEffect(() => {
+    if (resolution) onResolutionDetected?.(resolution)
+  }, [resolution, onResolutionDetected])
 
   // Apply initial seek
   useEffect(() => {
@@ -55,12 +64,15 @@ export function NativePlayer({
     if (!video) return
     video.playbackRate = playbackRate
     // Also apply when media loads (rate resets on src change)
-    const handle = () => { video.playbackRate = playbackRate }
+    const handle = () => {
+      video.playbackRate = playbackRate
+    }
     video.addEventListener('loadedmetadata', handle)
     return () => video.removeEventListener('loadedmetadata', handle)
   }, [playbackRate])
 
   // Reset per-src flags
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only mutating refs, src is the correct trigger
   useEffect(() => {
     initialTimeApplied.current = false
     introSkipped.current = false
@@ -75,13 +87,23 @@ export function NativePlayer({
     const duration = video.duration || 0
 
     // Auto skip intro: jump past intro once on start
-    if (skipIntroSeconds > 0 && !introSkipped.current && currentTime > 0 && currentTime < skipIntroSeconds) {
+    if (
+      skipIntroSeconds > 0 &&
+      !introSkipped.current &&
+      currentTime > 0 &&
+      currentTime < skipIntroSeconds
+    ) {
       introSkipped.current = true
       video.currentTime = skipIntroSeconds
     }
 
     // Auto skip outro: fire onEnded early
-    if (skipOutroSeconds > 0 && duration > 0 && !outroTriggered.current && currentTime >= duration - skipOutroSeconds) {
+    if (
+      skipOutroSeconds > 0 &&
+      duration > 0 &&
+      !outroTriggered.current &&
+      currentTime >= duration - skipOutroSeconds
+    ) {
       outroTriggered.current = true
       onEnded?.()
     }

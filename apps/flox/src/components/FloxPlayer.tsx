@@ -19,6 +19,8 @@ interface VideoPlayerProps {
   autoplay?: boolean
   /** 是否开启水印 */
   watermark?: boolean
+  /** 起始播放时间（秒） */
+  initialTime?: number
   className?: string
 }
 
@@ -27,6 +29,7 @@ export function FloxPlayer({
   poster,
   autoplay = false,
   watermark = false,
+  initialTime,
   className,
 }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -81,6 +84,7 @@ export function FloxPlayer({
       codec: 'h264',
       poster,
       autoplay,
+      startTime: initialTime && initialTime > 0 ? initialTime : undefined,
       rotate: {
         clockwise: false,
         innerRotate: true,
