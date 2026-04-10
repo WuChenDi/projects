@@ -4,10 +4,10 @@ import { Button } from '@cdlab996/ui/components/button'
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import { Separator } from '@cdlab996/ui/components/separator'
 
 import { Download, Trash2, Upload } from 'lucide-react'
 
@@ -52,24 +52,17 @@ export function DataSettings({
             </div>
           </Button>
         </div>
-
-        <Separator />
-
-        <div className="space-y-2">
-          <div className="text-sm font-medium text-destructive">危险操作</div>
-
-          <Button
-            variant="destructive"
-            className="w-full justify-between"
-            onClick={onReset}
-          >
-            <div className="flex items-center gap-2">
-              <Trash2 className="size-4" />
-              清除所有数据
-            </div>
-          </Button>
-        </div>
       </CardContent>
+      <CardFooter className="flex-col gap-2">
+        <Button
+          variant="destructive"
+          className="w-full"
+          onClick={onReset}
+        >
+          <Trash2 className="size-4" />
+          清除所有数据
+        </Button>
+      </CardFooter>
     </Card>
   )
 }

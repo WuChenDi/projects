@@ -59,10 +59,25 @@ export function Header({
             </Link>
 
             {isBack && (
-              <Button variant="outline" size="sm" onClick={() => router.back()}>
-                <ChevronLeftIcon className="size-4" />
-                <span className="hidden sm:inline">返回</span>
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={() => router.back()}
+                  className="sm:hidden"
+                >
+                  <ChevronLeftIcon className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.back()}
+                  className="hidden sm:flex"
+                >
+                  <ChevronLeftIcon className="size-4" />
+                  返回
+                </Button>
+              </>
             )}
           </div>
 

@@ -130,20 +130,20 @@ export function SearchForm({
 
   return (
     <div className="max-w-3xl mx-auto mt-1">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center">
         {contentType && onContentTypeChange && (
           <Tabs
             value={contentType}
             onValueChange={(v) => onContentTypeChange(v as 'movie' | 'tv')}
           >
-            <TabsList>
+            <TabsList className="shrink-0">
               <TabsTrigger value="movie">电影</TabsTrigger>
               <TabsTrigger value="tv">电视剧</TabsTrigger>
             </TabsList>
           </Tabs>
         )}
 
-        <div className="flex-1">
+        <div className="w-full min-w-0 sm:flex-1">
           <Combobox
             items={historyItems}
             value={query}
