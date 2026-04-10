@@ -15,11 +15,9 @@ export function PremiumContent({ onSearch }: PremiumContentProps) {
     selectedTag,
     newTagInput,
     showTagManager,
-    justAddedTag,
     setSelectedTag,
     setNewTagInput,
     setShowTagManager,
-    setJustAddedTag,
     handleAddTag,
     handleDeleteTag,
     handleRestoreDefaults,
@@ -45,7 +43,6 @@ export function PremiumContent({ onSearch }: PremiumContentProps) {
         selectedTag={selectedTag}
         showTagManager={showTagManager}
         newTagInput={newTagInput}
-        justAddedTag={justAddedTag}
         onTagSelect={(tagId) => {
           setSelectedTag(tagId)
         }}
@@ -55,7 +52,6 @@ export function PremiumContent({ onSearch }: PremiumContentProps) {
         onNewTagInputChange={setNewTagInput}
         onAddTag={handleAddTag}
         onDragEnd={handleDragEnd}
-        onJustAddedTagHandled={() => setJustAddedTag(false)}
       />
 
       <PremiumContentGrid
