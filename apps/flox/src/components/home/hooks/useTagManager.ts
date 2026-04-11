@@ -12,7 +12,6 @@ export function useTagManager(contentType: 'movie' | 'tv') {
   const [isLoadingTags, setIsLoadingTags] = useState(false)
   const [newTagInput, setNewTagInput] = useState('')
   const [showTagManager, setShowTagManager] = useState(false)
-  const [justAddedTag, setJustAddedTag] = useState(false)
 
   const storageKey = `${STORAGE_KEY_PREFIX}${contentType}`
 
@@ -78,7 +77,6 @@ export function useTagManager(contentType: 'movie' | 'tv') {
     }
     saveTags([...tags, newTag])
     setNewTagInput('')
-    setJustAddedTag(true)
   }
 
   const handleDeleteTag = (tagId: string) => {
@@ -132,12 +130,10 @@ export function useTagManager(contentType: 'movie' | 'tv') {
     selectedTag,
     newTagInput,
     showTagManager,
-    justAddedTag,
     isLoadingTags,
     setSelectedTag,
     setNewTagInput,
     setShowTagManager,
-    setJustAddedTag,
     handleAddTag,
     handleDeleteTag,
     handleRestoreDefaults,

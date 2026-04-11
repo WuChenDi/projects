@@ -40,12 +40,18 @@ async function syncSubscriptions() {
         anyChanged = true
       }
       if (premiumSources.length > 0) {
-        currentPremiumSources = mergeSources(currentPremiumSources, premiumSources)
+        currentPremiumSources = mergeSources(
+          currentPremiumSources,
+          premiumSources,
+        )
         anyChanged = true
       }
       const subIdx = updatedSubscriptions.findIndex((s) => s.id === sub.id)
       if (subIdx !== -1) {
-        updatedSubscriptions[subIdx] = { ...updatedSubscriptions[subIdx], lastUpdated: now }
+        updatedSubscriptions[subIdx] = {
+          ...updatedSubscriptions[subIdx],
+          lastUpdated: now,
+        }
         anyChanged = true
       }
     } else {
@@ -74,5 +80,5 @@ export function useSubscriptionSync() {
   useEffect(() => {
     const timer = setTimeout(() => mutate(), INITIAL_SYNC_DELAY_MS)
     return () => clearTimeout(timer)
-  }, []) // run once on mount
+  }, [mutate]) // run once on mount
 }

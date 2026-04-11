@@ -43,7 +43,7 @@ function HomePage() {
 
       <IKPageContainer>
         <div className="max-w-7xl mx-auto w-full pb-20">
-          <div className="mb-8 relative">
+          <div className="my-8 relative">
             <SearchForm
               onSearch={handleSearch}
               onClear={handleReset}
@@ -90,7 +90,6 @@ function HomePage() {
           )}
         </div>
       </IKPageContainer>
-
     </div>
   )
 }

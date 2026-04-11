@@ -56,7 +56,7 @@ export function usePopularMovies(
     setPage(0)
     setMovies([])
     setHasMore(true)
-    loadMovies(selectedTag, 0, false)
+    void loadMovies(selectedTag, 0, false)
   }, [selectedTag, loadMovies])
 
   const { prefetchRef, loadMoreRef } = useInfiniteScroll({
@@ -65,7 +65,7 @@ export function usePopularMovies(
     page,
     onLoadMore: (nextPage) => {
       setPage(nextPage)
-      loadMovies(selectedTag, nextPage * PAGE_LIMIT, true)
+      void loadMovies(selectedTag, nextPage * PAGE_LIMIT, true)
     },
   })
 

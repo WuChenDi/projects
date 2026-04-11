@@ -45,7 +45,6 @@ export function usePremiumTagManager() {
   const [selectedTag, setSelectedTag] = useState('recommend')
   const [showTagManager, setShowTagManager] = useState(false)
   const [newTagInput, setNewTagInput] = useState('')
-  const [justAddedTag, setJustAddedTag] = useState(false)
   const [tags, setTags] = useState<Tag[]>([])
 
   const queryClient = useQueryClient()
@@ -110,12 +109,10 @@ export function usePremiumTagManager() {
     selectedTag,
     newTagInput,
     showTagManager,
-    justAddedTag,
     loading: isLoading || isRestoring,
     setSelectedTag,
     setNewTagInput,
     setShowTagManager,
-    setJustAddedTag,
     handleAddTag: () => {},
     handleDeleteTag,
     handleRestoreDefaults: restoreDefaults,

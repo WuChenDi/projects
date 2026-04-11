@@ -20,7 +20,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { RefreshCw, Tag as TagIcon, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import type { Tag } from '@/lib/types'
 
 interface TagManagerProps {
@@ -28,7 +28,6 @@ interface TagManagerProps {
   selectedTag: string
   showTagManager: boolean
   newTagInput: string
-  justAddedTag: boolean
   isLoadingTags?: boolean
 
   onTagSelect: (tagId: string) => void
@@ -38,7 +37,6 @@ interface TagManagerProps {
   onNewTagInputChange: (value: string) => void
   onAddTag: () => void
   onDragEnd: (event: DragEndEvent) => void
-  onJustAddedTagHandled: () => void
 }
 
 function SortableTag({
@@ -81,6 +79,7 @@ function SortableTag({
       <Button
         variant={selectedTag === tag.id ? 'default' : 'outline'}
         onClick={() => !showTagManager && onTagSelect(tag.id)}
+        size="sm"
         disabled={isDragging}
       >
         {tag.label}
@@ -111,7 +110,6 @@ export function TagManager({
   selectedTag,
   showTagManager,
   newTagInput,
-  justAddedTag,
   isLoadingTags = false,
   onTagSelect,
   onTagDelete,
@@ -120,7 +118,6 @@ export function TagManager({
   onNewTagInputChange,
   onAddTag,
   onDragEnd,
-  onJustAddedTagHandled,
 }: TagManagerProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -131,33 +128,6 @@ export function TagManager({
       coordinateGetter: sortableKeyboardCoordinates,
     }),
   )
-
-  // 新标签添加后自动滚动到最右侧
-  useEffect(() => {
-    if (justAddedTag && scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({
-        left: scrollContainerRef.current.scrollWidth,
-        behavior: 'smooth',
-      })
-      onJustAddedTagHandled()
-    }
-  }, [justAddedTag, onJustAddedTagHandled])
-
-  // 鼠标滚轮横向滚动支持
-  useEffect(() => {
-    const container = scrollContainerRef.current
-    if (!container) return
-
-    const handleWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        e.preventDefault()
-        container.scrollLeft += e.deltaY
-      }
-    }
-
-    container.addEventListener('wheel', handleWheel, { passive: false })
-    return () => container.removeEventListener('wheel', handleWheel)
-  }, [])
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string)
@@ -195,7 +165,7 @@ export function TagManager({
       </div>
 
       {showTagManager && (
-        <div className="mb-4 flex gap-3">
+        <div className="mb-4 flex gap-2">
           <Input
             type="text"
             value={newTagInput}
@@ -204,14 +174,12 @@ export function TagManager({
             placeholder="输入自定义标签..."
             className="flex-1"
           />
-          <Button onClick={onAddTag} className="px-8 whitespace-nowrap">
-            添加
-          </Button>
+          <Button onClick={onAddTag}>添加</Button>
         </div>
       )}
 
       {isLoadingTags ? (
-        <div className="flex items-center justify-center py-12 text-muted-foreground gap-3">
+        <div className="flex items-center justify-center py-12 text-muted-foreground gap-2">
           <RefreshCw size={20} className="animate-spin" />
           <span>正在加载标签...</span>
         </div>
@@ -224,7 +192,7 @@ export function TagManager({
         >
           <div
             ref={scrollContainerRef}
-            className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+            className="flex flex-wrap gap-2 w-full min-w-0 pt-3 pb-1 -mt-3"
           >
             <SortableContext
               items={tags.map((t) => t.id)}
@@ -245,9 +213,9 @@ export function TagManager({
 
           <DragOverlay>
             {activeId && activeTag && (
-              <div className="px-6 py-2.5 text-sm font-semibold bg-primary text-primary-foreground rounded-full shadow-xl scale-110">
+              <Button variant="outline" size="sm">
                 {activeTag.label}
-              </div>
+              </Button>
             )}
           </DragOverlay>
         </DndContext>
