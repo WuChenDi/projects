@@ -9,7 +9,6 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 
 import '@cdlab996/ui/globals.css'
-import './globals.css'
 import { ClientProviders } from '@/components/layout'
 import { routing } from '@/i18n/routing'
 
