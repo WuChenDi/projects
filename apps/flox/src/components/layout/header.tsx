@@ -11,6 +11,7 @@ import {
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import Script from 'next/script'
 import { siteConfig } from '@/lib/config/site-config'
 import { useSidebarStore } from '@/lib/store/sidebar-store'
 import { ThemeToggle } from './theme-toggle'
@@ -82,6 +83,21 @@ export function Header({
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <div
+              className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground"
+              title="在线人数"
+            >
+              <span className="relative flex size-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex rounded-full size-2 bg-green-500" />
+              </span>
+              <span id="liveuser">0</span>
+            </div>
+            <Script
+              src="https://live-user.cdlab.workers.dev/liveuser.js?siteId=flox"
+              strategy="afterInteractive"
+            />
+
             <Button
               variant="outline"
               size="icon"
