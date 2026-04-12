@@ -1,12 +1,14 @@
 'use client'
 
-import { IKPageContainer } from '@cdlab996/ui/IK'
-import { Suspense } from 'react'
+import { Button } from '@cdlab996/ui/components/button'
+import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
+import { Search } from 'lucide-react'
+import { Suspense, useMemo } from 'react'
 import { SearchResults } from '@/components/home/SearchResults'
 import { Header } from '@/components/layout'
 import { PremiumContent } from '@/components/premium/PremiumContent'
-import { NoResults } from '@/components/search/NoResults'
 import { SearchForm } from '@/components/search/SearchForm'
+import { useLatencyPing } from '@/lib/hooks/useLatencyPing'
 import { usePremiumHomePage } from '@/lib/hooks/usePremiumHomePage'
 
 function PremiumHomePage() {
@@ -22,8 +24,18 @@ function PremiumHomePage() {
     handleReset,
   } = usePremiumHomePage()
 
+  const sourceUrls = useMemo(
+    () => availableSources.map((s) => ({ id: s.id, baseUrl: s.id })),
+    [availableSources],
+  )
+
+  const { latencies } = useLatencyPing({
+    sourceUrls,
+    enabled: hasSearched && results.length > 0,
+  })
+
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen">
       <Header onReset={handleReset} isPremiumMode={true} />
 
       <IKPageContainer>
@@ -47,15 +59,23 @@ function PremiumHomePage() {
               availableSources={availableSources}
               loading={loading}
               isPremium={true}
+              latencies={latencies}
             />
           )}
 
-          {!loading && hasSearched && results.length === 0 && (
-            <NoResults onReset={handleReset} />
-          )}
+          {!loading && !hasSearched && <PremiumContent />}
 
-          {!loading && !hasSearched && (
-            <PremiumContent onSearch={handleSearch} />
+          {!loading && hasSearched && results.length === 0 && (
+            <IKEmpty
+              title="未找到相关内容"
+              description="试试其他关键词或检查拼写"
+              icon={Search}
+              iconClassName="size-4 text-muted-foreground"
+            >
+              <Button variant="default" onClick={handleReset} size="lg">
+                返回首页
+              </Button>
+            </IKEmpty>
           )}
         </div>
       </IKPageContainer>
@@ -67,7 +87,7 @@ export default function PremiumPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent"></div>
         </div>
       }

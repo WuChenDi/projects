@@ -7,7 +7,9 @@ import {
 } from '@cdlab996/ui/components/toggle-group'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { X } from 'lucide-react'
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useState } from 'react'
+
+const DEFAULT_VISIBLE = 10
 
 interface FilterItem {
   id: string
@@ -32,7 +34,10 @@ export const FilterBadges = memo(function FilterBadges({
   onToggle,
   className,
 }: FilterBadgesProps) {
+  const [expanded, setExpanded] = useState(false)
   const selectedValues = Array.from(selected)
+  const hasMore = items.length > DEFAULT_VISIBLE
+  const visibleItems = expanded ? items : items.slice(0, DEFAULT_VISIBLE)
 
   const handleValueChange = useCallback(
     (values: string[]) => {
@@ -54,7 +59,7 @@ export const FilterBadges = memo(function FilterBadges({
         {label}
       </span>
 
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 flex flex-wrap items-center gap-1.5">
         <ToggleGroup
           type="multiple"
           variant="outline"
@@ -64,7 +69,7 @@ export const FilterBadges = memo(function FilterBadges({
           onValueChange={handleValueChange}
           className="flex items-center flex-wrap gap-1.5"
         >
-          {items.map((item) => (
+          {visibleItems.map((item) => (
             <ToggleGroupItem
               key={item.id}
               value={item.id}
@@ -78,6 +83,16 @@ export const FilterBadges = memo(function FilterBadges({
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
+
+        {hasMore && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setExpanded((v) => !v)}
+          >
+            {expanded ? '收起' : `+${items.length - DEFAULT_VISIBLE} 更多`}
+          </Button>
+        )}
       </div>
 
       <div className="flex items-center gap-1 shrink-0">

@@ -22,10 +22,10 @@ export default function PremiumSettingsPage() {
   } = usePremiumSettingsPage()
 
   return (
-    <div className="min-h-screen bg-black">
-      <Header isPremiumMode={true} />
+    <div className="min-h-screen">
+      <Header isPremiumMode={true} isBack />
       <IKPageContainer>
-        <div className="max-w-4xl mx-auto w-full space-y-8 pb-8">
+        <div className="max-w-4xl mx-auto w-full space-y-4 pb-8">
           <PremiumSourceSettings
             sources={premiumSources}
             onSourcesChange={handleSourcesChange}

@@ -5,16 +5,13 @@ import { usePremiumContent } from '@/lib/hooks/usePremiumContent'
 import { usePremiumTagManager } from '@/lib/hooks/usePremiumTagManager'
 import { PremiumContentGrid } from './PremiumContentGrid'
 
-interface PremiumContentProps {
-  onSearch?: (query: string) => void
-}
-
-export function PremiumContent({ onSearch }: PremiumContentProps) {
+export function PremiumContent() {
   const {
     tags,
     selectedTag,
     newTagInput,
     showTagManager,
+    loading: isLoadingTags,
     setSelectedTag,
     setNewTagInput,
     setShowTagManager,
@@ -30,12 +27,6 @@ export function PremiumContent({ onSearch }: PremiumContentProps) {
   const { videos, loading, hasMore, prefetchRef, loadMoreRef } =
     usePremiumContent(categoryValue)
 
-  const handleVideoClick = (video: any) => {
-    if (onSearch) {
-      onSearch(video.vod_name)
-    }
-  }
-
   return (
     <div className="animate-fade-in">
       <TagManager
@@ -43,6 +34,7 @@ export function PremiumContent({ onSearch }: PremiumContentProps) {
         selectedTag={selectedTag}
         showTagManager={showTagManager}
         newTagInput={newTagInput}
+        isLoadingTags={isLoadingTags}
         onTagSelect={(tagId) => {
           setSelectedTag(tagId)
         }}
@@ -58,7 +50,6 @@ export function PremiumContent({ onSearch }: PremiumContentProps) {
         videos={videos}
         loading={loading}
         hasMore={hasMore}
-        onVideoClick={handleVideoClick}
         prefetchRef={prefetchRef}
         loadMoreRef={loadMoreRef}
       />

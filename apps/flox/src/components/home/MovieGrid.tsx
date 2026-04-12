@@ -1,8 +1,4 @@
-/**
- * MovieGrid - Grid layout for movie cards with infinite scroll
- * Handles movie display and loading states
- */
-
+import { IKEmpty } from '@cdlab996/ui/IK'
 import { FilmIcon } from 'lucide-react'
 import { MovieCard } from './MovieCard'
 
@@ -32,7 +28,13 @@ export function MovieGrid({
   loadMoreRef,
 }: MovieGridProps) {
   if (movies.length === 0 && !loading) {
-    return <MovieGridEmpty />
+    return (
+      <IKEmpty
+        title="暂无内容"
+        icon={FilmIcon}
+        iconClassName="size-4 text-muted-foreground"
+      />
+    )
   }
 
   return (
@@ -43,48 +45,22 @@ export function MovieGrid({
         ))}
       </div>
 
-      {/* Prefetch Trigger - Earlier */}
       {hasMore && !loading && <div ref={prefetchRef} className="h-1" />}
 
-      {/* Loading Indicator */}
-      {loading && <MovieGridLoading />}
+      {loading && (
+        <div className="flex justify-center py-12">
+          <div className="flex flex-col items-center gap-3">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+            <p className="text-sm text-muted-foreground">加载中...</p>
+          </div>
+        </div>
+      )}
 
-      {/* Intersection Observer Target */}
       {hasMore && !loading && <div ref={loadMoreRef} className="h-20" />}
 
-      {/* No More Content */}
-      {!hasMore && movies.length > 0 && <MovieGridNoMore />}
+      {!hasMore && movies.length > 0 && (
+        <IKEmpty title="没有更多内容了" showIcon={false} className="py-12" />
+      )}
     </>
-  )
-}
-
-function MovieGridLoading() {
-  return (
-    <div className="flex justify-center py-12">
-      <div className="flex flex-col items-center gap-3">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
-        <p className="text-sm text-muted-foreground">加载中...</p>
-      </div>
-    </div>
-  )
-}
-
-function MovieGridNoMore() {
-  return (
-    <div className="text-center py-12">
-      <p className="text-muted-foreground">没有更多内容了</p>
-    </div>
-  )
-}
-
-function MovieGridEmpty() {
-  return (
-    <div className="text-center py-20">
-      <FilmIcon
-        size={64}
-        className="text-muted-foreground mx-auto mb-4"
-      />
-      <p className="text-muted-foreground">暂无内容</p>
-    </div>
   )
 }

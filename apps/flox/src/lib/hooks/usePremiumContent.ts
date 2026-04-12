@@ -1,4 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll'
 import { useSettingsStore } from '@/lib/store/settings-store'
 
@@ -14,11 +15,16 @@ interface PremiumVideo {
 const PAGE_LIMIT = 20
 
 export function usePremiumContent(categoryValue: string) {
-  const premiumSources = useSettingsStore((s) =>
-    [
-      ...s.premiumSources,
-      ...s.subscriptions.filter((sub) => (sub as any).group === 'premium'),
-    ].filter((src) => (src as any).enabled !== false),
+  const rawPremiumSources = useSettingsStore((s) => s.premiumSources)
+  const subscriptions = useSettingsStore((s) => s.subscriptions)
+
+  const premiumSources = useMemo(
+    () =>
+      [
+        ...rawPremiumSources,
+        ...subscriptions.filter((sub) => (sub as any).group === 'premium'),
+      ].filter((src) => (src as any).enabled !== false),
+    [rawPremiumSources, subscriptions],
   )
 
   // Stable key for query invalidation when sources change
@@ -44,7 +50,9 @@ export function usePremiumContent(categoryValue: string) {
       },
       initialPageParam: 1,
       getNextPageParam: (lastPage, _allPages, lastPageParam) =>
-        lastPage.length === PAGE_LIMIT ? (lastPageParam as number) + 1 : undefined,
+        lastPage.length === PAGE_LIMIT
+          ? (lastPageParam as number) + 1
+          : undefined,
       enabled: premiumSources.length > 0,
       staleTime: 2 * 60 * 1000,
     })

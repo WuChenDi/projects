@@ -119,8 +119,10 @@ export function TagManager({
   onAddTag,
   onDragEnd,
 }: TagManagerProps) {
+  const DEFAULT_VISIBLE = 10
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [expanded, setExpanded] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -139,6 +141,10 @@ export function TagManager({
   }
 
   const activeTag = tags.find((t) => t.id === activeId)
+  // In management mode show all; otherwise respect expanded state
+  const visibleTags =
+    showTagManager || expanded ? tags : tags.slice(0, DEFAULT_VISIBLE)
+  const hasMore = !showTagManager && tags.length > DEFAULT_VISIBLE
 
   return (
     <div className="mb-4">
@@ -198,7 +204,7 @@ export function TagManager({
               items={tags.map((t) => t.id)}
               strategy={horizontalListSortingStrategy}
             >
-              {tags.map((tag) => (
+              {visibleTags.map((tag) => (
                 <SortableTag
                   key={tag.id}
                   tag={tag}
@@ -209,6 +215,15 @@ export function TagManager({
                 />
               ))}
             </SortableContext>
+            {hasMore && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setExpanded((v) => !v)}
+              >
+                {expanded ? '收起' : `+${tags.length - DEFAULT_VISIBLE} 更多`}
+              </Button>
+            )}
           </div>
 
           <DragOverlay>
