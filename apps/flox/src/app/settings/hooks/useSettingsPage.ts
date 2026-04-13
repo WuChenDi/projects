@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type {
+  AdFilterMode,
   PlayerEngine,
   ProxyMode,
   SearchDisplayMode,
@@ -40,6 +41,8 @@ export function useSettingsPage() {
   const [proxyMode, setProxyMode] = useState<ProxyMode>('retry')
   const [playerEngine, setPlayerEngine] = useState<PlayerEngine>('veplayer')
   const [rememberScrollPosition, setRememberScrollPosition] = useState(true)
+  const [adFilterMode, setAdFilterMode] = useState<AdFilterMode>('heuristic')
+  const [adKeywords, setAdKeywords] = useState<string[]>([])
 
   useEffect(() => {
     const settings = settingsStore.getSettings()
@@ -54,6 +57,8 @@ export function useSettingsPage() {
     setProxyMode(settings.proxyMode)
     setPlayerEngine(settings.playerEngine)
     setRememberScrollPosition(settings.rememberScrollPosition)
+    setAdFilterMode(settings.adFilterMode)
+    setAdKeywords(settings.adKeywords)
 
     // Fetch env password status
     fetch('/api/config')
@@ -346,6 +351,25 @@ export function useSettingsPage() {
     })
   }
 
+  const handleAdFilterModeChange = (mode: AdFilterMode) => {
+    setAdFilterMode(mode)
+    const currentSettings = settingsStore.getSettings()
+    settingsStore.saveSettings({
+      ...currentSettings,
+      adFilterMode: mode,
+      adFilter: mode !== 'off',
+    })
+  }
+
+  const handleAdKeywordsChange = (keywords: string[]) => {
+    setAdKeywords(keywords)
+    const currentSettings = settingsStore.getSettings()
+    settingsStore.saveSettings({
+      ...currentSettings,
+      adKeywords: keywords,
+    })
+  }
+
   const handleRestoreDefaults = () => {
     const defaults = getDefaultSources()
     handleSourcesChange(defaults)
@@ -404,5 +428,9 @@ export function useSettingsPage() {
     handlePlayerEngineChange,
     rememberScrollPosition,
     handleRememberScrollPositionChange,
+    adFilterMode,
+    adKeywords,
+    handleAdFilterModeChange,
+    handleAdKeywordsChange,
   }
 }

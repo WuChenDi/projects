@@ -3,8 +3,9 @@
 import { Button } from '@cdlab996/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@cdlab996/ui/components/card'
 import { Separator } from '@cdlab996/ui/components/separator'
-import { GlobeIcon, MaximizeIcon, MonitorPlayIcon } from 'lucide-react'
-import type { PlayerEngine, ProxyMode } from '@/lib/store/settings-store'
+import { Textarea } from '@cdlab996/ui/components/textarea'
+import { GlobeIcon, MaximizeIcon, MonitorPlayIcon, ShieldIcon } from 'lucide-react'
+import type { AdFilterMode, PlayerEngine, ProxyMode } from '@/lib/store/settings-store'
 
 interface PlayerSettingsProps {
   fullscreenType: 'native' | 'window'
@@ -13,7 +14,18 @@ interface PlayerSettingsProps {
   onProxyModeChange: (mode: ProxyMode) => void
   playerEngine: PlayerEngine
   onPlayerEngineChange: (engine: PlayerEngine) => void
+  adFilterMode: AdFilterMode
+  adKeywords: string[]
+  onAdFilterModeChange: (mode: AdFilterMode) => void
+  onAdKeywordsChange: (keywords: string[]) => void
 }
+
+const AD_FILTER_MODES: { value: AdFilterMode; label: string; desc: string }[] = [
+  { value: 'off', label: '关闭', desc: '不过滤广告' },
+  { value: 'keyword', label: '关键词', desc: '仅根据自定义关键词过滤' },
+  { value: 'heuristic', label: '启发式', desc: '自动分析播放列表结构识别广告（推荐）' },
+  { value: 'aggressive', label: '激进', desc: '更严格的启发式检测，可能误删正常片段' },
+]
 
 export function PlayerSettings({
   fullscreenType,
@@ -22,6 +34,10 @@ export function PlayerSettings({
   onProxyModeChange,
   playerEngine,
   onPlayerEngineChange,
+  adFilterMode,
+  adKeywords,
+  onAdFilterModeChange,
+  onAdKeywordsChange,
 }: PlayerSettingsProps) {
   return (
     <Card>
@@ -120,6 +136,49 @@ export function PlayerSettings({
               总是代理
             </Button>
           </div>
+        </div>
+
+        <Separator />
+
+        {/* Ad Filter */}
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <ShieldIcon className="size-4 text-muted-foreground" />
+            <span className="font-medium text-sm">广告过滤</span>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            过滤 M3U8 播放流中的广告片段，仅对原生播放器有效
+          </p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {AD_FILTER_MODES.map(({ value, label, desc }) => (
+              <Button
+                key={value}
+                variant={adFilterMode === value ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => onAdFilterModeChange(value)}
+                title={desc}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+          {adFilterMode !== 'off' && (
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted-foreground">
+                自定义关键词（每行一个，URL 中包含关键词的片段将被过滤）
+              </p>
+              <Textarea
+                className="font-mono text-xs min-h-24 resize-none"
+                placeholder={'ad\ncommercial\npreroll'}
+                value={adKeywords.join('\n')}
+                onChange={(e) =>
+                  onAdKeywordsChange(
+                    e.target.value.split('\n').filter((k) => k.trim()),
+                  )
+                }
+              />
+            </div>
+          )}
         </div>
 
       </CardContent>

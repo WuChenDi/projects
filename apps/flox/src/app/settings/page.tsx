@@ -60,6 +60,10 @@ export default function SettingsPage() {
     handlePlayerEngineChange,
     rememberScrollPosition,
     handleRememberScrollPositionChange,
+    adFilterMode,
+    adKeywords,
+    handleAdFilterModeChange,
+    handleAdKeywordsChange,
   } = useSettingsPage()
 
   return (
@@ -75,6 +79,10 @@ export default function SettingsPage() {
             onProxyModeChange={handleProxyModeChange}
             playerEngine={playerEngine}
             onPlayerEngineChange={handlePlayerEngineChange}
+            adFilterMode={adFilterMode}
+            adKeywords={adKeywords}
+            onAdFilterModeChange={handleAdFilterModeChange}
+            onAdKeywordsChange={handleAdKeywordsChange}
           />
 
           {/* Password Settings */}

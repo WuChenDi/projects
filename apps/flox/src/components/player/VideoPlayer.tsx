@@ -450,7 +450,7 @@ export function VideoPlayer({
               )}
             </div>
 
-            <label className="flex items-center gap-1.5 cursor-pointer select-none">
+            <div className="flex items-center gap-1.5">
               <Switch
                 checked={adFilterEnabled}
                 onCheckedChange={(v) =>
@@ -458,7 +458,20 @@ export function VideoPlayer({
                 }
               />
               <span className="text-xs text-muted-foreground">广告过滤</span>
-            </label>
+              {adFilterEnabled && (
+                <button
+                  className="text-xs text-primary underline underline-offset-2 tabular-nums"
+                  onClick={() =>
+                    setAdFilterMode(
+                      adFilterMode === 'heuristic' ? 'aggressive' : 'heuristic',
+                    )
+                  }
+                  title="点击切换过滤强度"
+                >
+                  {adFilterMode === 'aggressive' ? '激进' : '启发式'}
+                </button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
