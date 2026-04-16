@@ -11,7 +11,7 @@ Preview: https://flox.pages.dev/
 ## Features
 
 - **Multi-source parallel search** - SSE streaming results from 38+ built-in video sources simultaneously
-- **HLS/M3U8 playback** - Volcengine VePlayer with ad filtering (keyword, heuristic, SCTE-35)
+- **HLS/M3U8 playback** - Volcengine VePlayer with multi-layered ad filtering (keyword, heuristic, aggressive, SCTE-35)
 - **Liquid Glass design** - Glassmorphic UI with backdrop-filter, glow effects, and depth layering
 - **Service Worker caching** - M3U8 manifest and video segment caching (7-day TTL, 1 GB max)
 - **Watch history & favorites** - 50-item history with playback position resume, persistent favorites
@@ -44,6 +44,53 @@ pnpm dev:flox
 
 ```bash
 pnpm --filter @cdlab996/flox run build:cf
+```
+
+## Ad Filtering
+
+Flox includes a multi-layered M3U8 ad filtering system. Configure it in **Settings > Player Settings > Ad Filter**.
+
+### Modes
+
+| Mode | Behavior |
+|---|---|
+| **Off** | No filtering |
+| **Keyword** | Removes segments whose URL contains ad keywords (built-in + custom). Supports `#EXT-X-CUE-OUT/IN` (SCTE-35) tag detection. |
+| **Heuristic** | Keyword + block-based scoring analysis. Splits the playlist into blocks by `#EXT-X-DISCONTINUITY`, learns the main content pattern from the largest block, then scores each block across multiple dimensions. Blocks scoring >= 5.0 are removed. |
+| **Aggressive** | Same scoring as Heuristic (threshold lowered to >= 3.0), **plus strips all `#EXT-X-DISCONTINUITY` tags**. Designed for sources where ad segments share the same CDN, path, filename pattern, and duration as main content — the only remaining signal is the discontinuity marker itself. |
+
+### Heuristic Scoring Dimensions
+
+| Dimension | Score | Description |
+|---|---|---|
+| CUE tags | 10.0 | `#EXT-X-CUE-OUT` / `#EXT-X-CUE-IN` (SCTE-35 standard) |
+| Path prefix mismatch | +5.0 | All segments in the block come from a different CDN directory than main content |
+| Small block detection | +5.0 / +3.0 | Block segment count is <= 20% / <= 35% of the median block size |
+| TS sequence number gap | +4.0 | For sequential-numbered sources (00001.ts, 00002.ts, ...), block numbers don't connect to the main range |
+| Filename length variance | +3.0 | Average filename length differs by > 2 characters from main content |
+| URL keyword match | +2.5/seg | URL contains ad-related keywords (advert, preroll, vast, etc.) |
+| Filename pattern mismatch | +1.5 | All filenames differ from the main block's common prefix pattern |
+| EXTINF duration anomaly | +1.5 | Dominant segment duration differs > 30% from main content |
+
+### Custom Keywords
+
+When a non-off mode is selected, a text input appears for custom keywords (one per line). Keywords are matched against segment URLs.
+
+Keywords can also be injected via environment variables (see below).
+
+### Architecture
+
+```
+HLS.js AdFilterLoader (intercepts manifest/level loading)
+  → filterM3u8Ad()
+    1. Heuristic block analysis: parseBlocks() → learnMainPattern() → scoreBlock()
+    2. CUE tag state machine (SCTE-35 CUE-OUT / CUE-IN)
+    3. Keyword backtracking
+    4. DISCONTINUITY stripping (aggressive mode only)
+    5. URL normalization (relative → absolute for Blob playback)
+
+Native HLS (Safari/iOS)
+  → fetch master playlist → recursive sub-playlist processing → Blob URL replacement
 ```
 
 ## Environment Variables
