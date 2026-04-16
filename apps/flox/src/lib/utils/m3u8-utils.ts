@@ -1,5 +1,16 @@
 /**
- * Utility functions for M3U8 playlist manipulation
+ * M3U8 Ad Filtering & URL Normalization
+ *
+ * Multi-layered ad removal pipeline for HLS playlists:
+ *
+ *   1. Heuristic block analysis — score each DISCONTINUITY-delimited block
+ *      against the main-content fingerprint (see m3u8-ad-detector.ts)
+ *   2. CUE tag state machine — strip SCTE-35 CUE-OUT/CUE-IN ad sections
+ *   3. Keyword backtracking — remove segments whose URL matches ad keywords,
+ *      plus their preceding #EXTINF and #EXT-X-DISCONTINUITY lines
+ *   4. Aggressive DISCONTINUITY stripping — in aggressive mode, remove ALL
+ *      DISCONTINUITY tags to handle "perfect camouflage" ads
+ *   5. URL normalization — resolve relative URLs to absolute for Blob playback
  */
 
 import {
@@ -9,20 +20,17 @@ import {
   shouldFilterBlock,
 } from './m3u8-ad-detector'
 
-/**
- * Filters ads from specific M3U8 content using multiple detection strategies:
- * 1. Keyword matching (configurable via env)
- * 2. CUE-OUT/CUE-IN standard tags
- * 3. Heuristic block analysis (filename patterns, ad path keywords)
- *
- * Also converts relative URLs to absolute URLs for Blob playback.
- *
- * @param content The raw M3U8 content string
- * @param baseUrl The base URL of the M3U8 file (to resolve relative paths)
- * @returns The filtered M3U8 content
- */
 export type AdFilterMode = 'off' | 'keyword' | 'heuristic' | 'aggressive'
 
+/**
+ * Filter ads from M3U8 content and normalize URLs.
+ *
+ * @param content   Raw M3U8 playlist string
+ * @param baseUrl   URL of the M3U8 file (used to resolve relative paths)
+ * @param mode      Filtering strategy: off / keyword / heuristic / aggressive
+ * @param customKeywords  Additional URL keywords to match (from env or user settings)
+ * @returns Filtered M3U8 content with absolute URLs
+ */
 export function filterM3u8Ad(
   content: string,
   baseUrl: string,
@@ -31,9 +39,9 @@ export function filterM3u8Ad(
 ): string {
   if (!content) return ''
 
-  // Use keywords passed from AdKeywordsWrapper (already loaded from env/file)
   const keywords = customKeywords
 
+  // Derive base path and origin for URL resolution
   const basePath = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1)
   let origin = ''
   try {
@@ -42,56 +50,53 @@ export function filterM3u8Ad(
     /* ignore */
   }
 
-  // 2. Global Scan: Check if any ad keywords exist in the content
+  // Quick-scan: check whether keywords or CUE tags appear anywhere in the content
   const hasKeywordMatch =
     mode !== 'off' && keywords.some((k) => content.includes(k))
   const hasCueTag =
     mode !== 'off' &&
     (content.includes('#EXT-X-CUE-OUT') || content.includes('#EXT-X-CUE-IN'))
 
-  // 3. Heuristic Analysis: If no explicit ad signals, use block-based detection
+  // ── Step 1: Heuristic block analysis ──
+  // Run when there are no CUE tags (CUE tags are handled later by the state machine)
   const lines = content.split(/\r?\n/)
   let adLineIndices = new Set<number>()
 
   if (!hasCueTag && (mode === 'heuristic' || mode === 'aggressive')) {
-    // No obvious ad signals - run heuristic analysis
     const blocks = parseBlocks(lines)
     if (blocks.length > 1) {
       const mainPattern = learnMainPattern(blocks)
       for (const block of blocks) {
-        // Pass all keywords (including custom ones) to heuristic scorer
         const score = scoreBlock(block, mainPattern, keywords)
         const threshold = mode === 'aggressive' ? 3.0 : 5.0
         if (shouldFilterBlock(score, threshold)) {
-          // Mark all lines in this block for removal
           for (const segment of block.segments) {
             adLineIndices.add(segment.lineIndex)
-            adLineIndices.add(segment.lineIndex - 1) // EXTINF line
+            adLineIndices.add(segment.lineIndex - 1) // corresponding #EXTINF line
           }
         }
       }
     }
   }
 
+  // ── Step 2–5: Line-by-line processing ──
   const processedLines: string[] = []
-
-  // State machine for CUE-OUT/CUE-IN tracking
   let insideCueAdBlock = false
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
     const trimmedLine = line.trim()
 
-    // Skip lines marked by heuristic analysis
+    // Skip lines already flagged by heuristic analysis (Step 1)
     if (adLineIndices.has(i)) {
       continue
     }
 
-    // 3. CUE Tag Detection (SCTE-35 Standard)
-    // EXT-X-CUE-OUT marks start of ad, EXT-X-CUE-IN marks end
+    // ── Step 2: CUE tag state machine (SCTE-35) ──
+    // CUE-OUT opens an ad section; CUE-IN closes it
     if (mode !== 'off' && trimmedLine.startsWith('#EXT-X-CUE-OUT')) {
       insideCueAdBlock = true
-      // Remove preceding DISCONTINUITY if present
+      // Remove the preceding DISCONTINUITY if present
       if (
         processedLines.length > 0 &&
         processedLines[processedLines.length - 1].trim() ===
@@ -99,36 +104,35 @@ export function filterM3u8Ad(
       ) {
         processedLines.pop()
       }
-      continue // Skip the CUE-OUT tag itself
+      continue
     }
 
     if (trimmedLine.startsWith('#EXT-X-CUE-IN')) {
       insideCueAdBlock = false
-      // Also skip the next line if it's a DISCONTINUITY (ad block ending marker)
+      // Skip the trailing DISCONTINUITY that closes the ad section
       if (
         i + 1 < lines.length &&
         lines[i + 1].trim() === '#EXT-X-DISCONTINUITY'
       ) {
-        i++ // Skip the following DISCONTINUITY
+        i++
       }
-      continue // Skip the CUE-IN tag itself
+      continue
     }
 
-    // Skip all content inside CUE ad block
     if (insideCueAdBlock) {
       continue
     }
 
-    // 4. Keyword-based Ad Detection & Backtrack (skip if no keywords configured)
+    // ── Step 3: Keyword backtracking ──
+    // When a segment URL matches a keyword, remove it and backtrack to strip
+    // associated #EXTINF and #EXT-X-DISCONTINUITY lines
     if (
       keywords.length > 0 &&
       hasKeywordMatch &&
       keywords.some((keyword) => trimmedLine.includes(keyword))
     ) {
-      // Found Ad: Remove it and backtrack to remove associated metadata
       while (processedLines.length > 0) {
-        const lastIndex = processedLines.length - 1
-        const lastLine = processedLines[lastIndex].trim()
+        const lastLine = processedLines[processedLines.length - 1].trim()
 
         if (
           lastLine.startsWith('#EXTINF:') ||
@@ -139,19 +143,27 @@ export function filterM3u8Ad(
           break
         }
       }
-      continue // Skip the ad line itself
-    }
-
-    // 5. Discontinuity Handling (Conservative Mode)
-    // Keep all Discontinuity tags by default.
-    // They will ONLY be removed via backtracking when a confirmed ad segment is found.
-    // This prevents false positives on legitimate concatenated streams.
-    if (trimmedLine === '#EXT-X-DISCONTINUITY') {
-      processedLines.push(line)
       continue
     }
 
-    // 6. General Cleanup & URL Normalization
+    // ── Step 4: DISCONTINUITY handling ──
+    // Aggressive mode strips ALL DISCONTINUITY tags — this handles sources where
+    // ad segments share the same CDN, path, filename pattern, and duration as
+    // main content, making the DISCONTINUITY marker the only remaining signal.
+    // Removing them prevents the player from reinitializing the decoder at splice
+    // points, which eliminates the visible "jump" at ad boundaries.
+    // Other modes keep DISCONTINUITY by default (only removed via backtracking above).
+    if (trimmedLine === '#EXT-X-DISCONTINUITY') {
+      if (mode !== 'aggressive') {
+        processedLines.push(line)
+      }
+      continue
+    }
+
+    // ── Step 5: URL normalization ──
+    // Convert relative URLs to absolute so Blob-based playback works correctly
+
+    // Pass through empty lines and already-absolute URLs
     if (
       !trimmedLine ||
       trimmedLine.startsWith('http') ||
@@ -161,16 +173,16 @@ export function filterM3u8Ad(
       continue
     }
 
+    // HLS tags: resolve URI="..." attributes (e.g. #EXT-X-KEY)
     if (trimmedLine.startsWith('#')) {
-      // Handle URI="..." in attributes (e.g. #EXT-X-KEY)
       if (trimmedLine.includes('URI="')) {
         processedLines.push(
           line.replace(/URI="([^"]+)"/g, (match, uri) => {
-            if (uri.startsWith('http')) return match // Already absolute
+            if (uri.startsWith('http')) return match
             if (uri.startsWith('/')) {
-              return `URI="${origin}${uri}"` // Root-relative
+              return `URI="${origin}${uri}"`
             }
-            return `URI="${basePath}${uri}"` // Path-relative
+            return `URI="${basePath}${uri}"`
           }),
         )
       } else {
@@ -179,7 +191,7 @@ export function filterM3u8Ad(
       continue
     }
 
-    // 7. Resolve Relative URLs (for Blob support)
+    // Segment URLs: resolve root-relative and path-relative
     if (trimmedLine.startsWith('/')) {
       processedLines.push(origin ? `${origin}${trimmedLine}` : trimmedLine)
     } else {

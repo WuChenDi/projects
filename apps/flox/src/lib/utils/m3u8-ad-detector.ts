@@ -1,11 +1,17 @@
 /**
- * Heuristic Ad Detection Module
+ * M3U8 Heuristic Ad Detection Module
  *
- * Provides block-based analysis for detecting ads in M3U8 playlists
- * using filename pattern matching and other heuristics.
+ * Splits an M3U8 playlist into blocks by #EXT-X-DISCONTINUITY markers,
+ * learns the main-content fingerprint (MainPattern) from the largest block,
+ * then scores every other block across multiple dimensions.
+ * Blocks exceeding the threshold are flagged as ads.
+ *
+ * Scoring dimensions (see scoreBlock):
+ *   CUE tags / path prefix / small block / sequence gap /
+ *   filename length / URL keywords / filename pattern / duration anomaly
  */
 
-// Ad-related path keywords for scoring
+/** Common ad-related URL path keywords used for scoring */
 export const AD_PATH_KEYWORDS = [
   'advert',
   'preroll',
@@ -19,37 +25,61 @@ export const AD_PATH_KEYWORDS = [
   'sponsor',
 ]
 
-/**
- * Represents a segment in the playlist
- */
+// ─── Type Definitions ──────────────────────────────────────
+
+/** A single ts segment */
 interface Segment {
   url: string
   duration: number
+  /** Line index of this URL in the original lines array */
   lineIndex: number
 }
 
-/**
- * Represents a block of segments between DISCONTINUITY markers
- */
+/** A group of segments between two #EXT-X-DISCONTINUITY markers */
 interface Block {
   segments: Segment[]
   startLineIndex: number
   endLineIndex: number
+  /** Whether this block contains SCTE-35 CUE-OUT / CUE-IN tags */
   hasCueTag: boolean
 }
 
 /**
- * Pattern extracted from main content for comparison
+ * Fingerprint extracted from the largest block (main content).
+ *
+ * Two categories:
+ * 1. Per-block features — filenameRegex, avgDuration, commonPrefix, pathPrefix,
+ *    avgFilenameBaseLength, isSequentialTs, tsNumberRange, dominantDuration
+ * 2. Playlist-wide stats — medianBlockSize, totalBlocks
  */
 interface MainPattern {
+  /** Regex built from the common filename prefix (generated when prefix >= 2 chars) */
   filenameRegex: RegExp | null
+  /** Average segment duration in seconds */
   avgDuration: number
+  /** Common filename prefix string */
   commonPrefix: string
-  pathPrefix: string // Directory path prefix (e.g., "/20230907/73PWifvT/1392kb/hls/")
+  /** CDN directory path, e.g. "/20230907/73PWifvT/1392kb/hls/" */
+  pathPrefix: string
+  /** Average filename length excluding extension */
+  avgFilenameBaseLength: number
+  /** Whether the main block uses sequential numbering (00001.ts, 00002.ts, ...) */
+  isSequentialTs: boolean
+  /** Sequence number range; only set when isSequentialTs is true */
+  tsNumberRange: { min: number; max: number } | null
+  /** Most frequent segment duration (bucketed at 0.5s precision) */
+  dominantDuration: number
+  /** Median segment count across all blocks, used for small-block detection */
+  medianBlockSize: number
+  /** Total number of blocks in the playlist */
+  totalBlocks: number
 }
 
+// ─── Parsing ───────────────────────────────────────────────
+
 /**
- * Parse M3U8 content into blocks separated by DISCONTINUITY markers
+ * Split M3U8 lines into Block list by #EXT-X-DISCONTINUITY.
+ * Also detects CUE-OUT / CUE-IN tags and marks the containing block.
  */
 export function parseBlocks(lines: string[]): Block[] {
   const blocks: Block[] = []
@@ -63,12 +93,10 @@ export function parseBlocks(lines: string[]): Block[] {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim()
 
-    // Check for CUE tags
     if (line.startsWith('#EXT-X-CUE-OUT') || line.startsWith('#EXT-X-CUE-IN')) {
       currentBlock.hasCueTag = true
     }
 
-    // DISCONTINUITY marks block boundary
     if (line === '#EXT-X-DISCONTINUITY') {
       if (currentBlock.segments.length > 0) {
         currentBlock.endLineIndex = i - 1
@@ -83,12 +111,10 @@ export function parseBlocks(lines: string[]): Block[] {
       continue
     }
 
-    // Parse EXTINF and the following URL
     if (line.startsWith('#EXTINF:')) {
       const durationMatch = line.match(/#EXTINF:([\d.]+)/)
       const duration = durationMatch ? parseFloat(durationMatch[1]) : 0
 
-      // Next line should be the URL
       if (i + 1 < lines.length) {
         const url = lines[i + 1].trim()
         if (url && !url.startsWith('#')) {
@@ -102,7 +128,6 @@ export function parseBlocks(lines: string[]): Block[] {
     }
   }
 
-  // Don't forget the last block
   if (currentBlock.segments.length > 0) {
     currentBlock.endLineIndex = lines.length - 1
     blocks.push(currentBlock)
@@ -111,9 +136,9 @@ export function parseBlocks(lines: string[]): Block[] {
   return blocks
 }
 
-/**
- * Extract filename from URL (handles both relative and absolute URLs)
- */
+// ─── URL / Filename Helpers ────────────────────────────────
+
+/** Extract filename from a URL (handles both absolute and relative paths) */
 function extractFilename(url: string): string {
   try {
     const path = url.includes('://') ? new URL(url).pathname : url
@@ -124,9 +149,7 @@ function extractFilename(url: string): string {
   }
 }
 
-/**
- * Find common prefix among an array of strings
- */
+/** Find the longest common prefix of an array of strings */
 function findCommonPrefix(strings: string[]): string {
   if (!strings || strings.length < 2) return ''
 
@@ -146,8 +169,8 @@ function findCommonPrefix(strings: string[]): string {
 }
 
 /**
- * Extract path prefix (directory) from URL
- * e.g., "/20230907/73PWifvT/1392kb/hls/" from "/20230907/73PWifvT/1392kb/hls/gFE6lwIk.ts"
+ * Extract the directory path prefix from a URL (without the filename).
+ * "/20230907/73PWifvT/1392kb/hls/gFE6lwIk.ts" → "/20230907/73PWifvT/1392kb/hls/"
  */
 function extractPathPrefix(url: string): string {
   try {
@@ -161,10 +184,55 @@ function extractPathPrefix(url: string): string {
 }
 
 /**
- * Learn pattern from the largest block (assumed to be main content)
+ * Extract the numeric index from a ts filename.
+ * "00001.ts" → 1 / "segment003.ts" → 3 / "aBcDeFgH.ts" → null
+ */
+function extractTsNumber(url: string): number | null {
+  const filename = extractFilename(url)
+  const match = filename.match(/(\d+)\.ts/)
+  return match ? parseInt(match[1], 10) : null
+}
+
+/**
+ * Get filename length excluding the extension.
+ * "00001.ts" → 5 / "abcdefghij.ts" → 10
+ */
+function getFilenameBaseLength(url: string): number {
+  const filename = extractFilename(url)
+  const dotIndex = filename.lastIndexOf('.')
+  return dotIndex > 0 ? dotIndex : filename.length
+}
+
+/**
+ * Find the most frequent segment duration using 0.5s-precision bucketing
+ * to tolerate floating-point variance.
+ */
+function findDominantDuration(segments: Segment[]): number {
+  if (segments.length === 0) return 0
+  const buckets = new Map<number, number>()
+  for (const s of segments) {
+    const key = Math.round(s.duration * 2) / 2
+    buckets.set(key, (buckets.get(key) || 0) + 1)
+  }
+  let maxCount = 0
+  let dominant = 0
+  for (const [duration, count] of buckets) {
+    if (count > maxCount) {
+      maxCount = count
+      dominant = duration
+    }
+  }
+  return dominant
+}
+
+// ─── Pattern Learning ──────────────────────────────────────
+
+/**
+ * Learn the main-content fingerprint from all blocks.
+ * Strategy: treat the block with the most segments as the main-content
+ * representative and extract per-dimension features from it.
  */
 export function learnMainPattern(blocks: Block[]): MainPattern {
-  // Find the largest block by segment count (likely main content)
   const mainBlock =
     blocks.length > 0
       ? blocks.reduce((largest, block) =>
@@ -178,42 +246,110 @@ export function learnMainPattern(blocks: Block[]): MainPattern {
       avgDuration: 0,
       commonPrefix: '',
       pathPrefix: '',
+      avgFilenameBaseLength: 0,
+      isSequentialTs: false,
+      tsNumberRange: null,
+      dominantDuration: 0,
+      medianBlockSize: 0,
+      totalBlocks: 0,
     }
   }
 
-  // Extract filenames
+  // --- Filename prefix & regex ---
   const filenames = mainBlock.segments.map((s) => extractFilename(s.url))
-
-  // Find common prefix
   const commonPrefix = findCommonPrefix(filenames)
 
-  // Calculate average duration
+  let filenameRegex: RegExp | null = null
+  if (commonPrefix.length >= 2) {
+    const escapedPrefix = commonPrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    filenameRegex = new RegExp(`^${escapedPrefix}`)
+  }
+
+  // --- Average duration ---
   const totalDuration = mainBlock.segments.reduce(
     (sum, s) => sum + s.duration,
     0,
   )
   const avgDuration = totalDuration / mainBlock.segments.length
 
-  // Try to build a regex pattern from the filenames
-  // Common patterns: "0000001.ts", "seg-1.ts", "segment_001.ts"
-  let filenameRegex: RegExp | null = null
-  if (commonPrefix.length >= 2) {
-    // Escape special regex characters in prefix
-    const escapedPrefix = commonPrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    filenameRegex = new RegExp(`^${escapedPrefix}`)
+  // --- CDN directory path ---
+  const pathPrefix = extractPathPrefix(mainBlock.segments[0].url)
+
+  // --- Average filename base length ---
+  const filenameLengths = mainBlock.segments.map((s) =>
+    getFilenameBaseLength(s.url),
+  )
+  const avgFilenameBaseLength =
+    filenameLengths.reduce((a, b) => a + b, 0) / filenameLengths.length
+
+  // --- Sequential numbering detection ---
+  const tsNumbers = mainBlock.segments
+    .map((s) => extractTsNumber(s.url))
+    .filter((n): n is number => n !== null)
+
+  let isSequentialTs = false
+  let tsNumberRange: { min: number; max: number } | null = null
+
+  if (tsNumbers.length >= 2 && tsNumbers.length === mainBlock.segments.length) {
+    let sequential = true
+    for (let i = 1; i < tsNumbers.length; i++) {
+      if (tsNumbers[i] !== tsNumbers[i - 1] + 1) {
+        sequential = false
+        break
+      }
+    }
+    isSequentialTs = sequential
+    if (sequential) {
+      tsNumberRange = {
+        min: tsNumbers[0],
+        max: tsNumbers[tsNumbers.length - 1],
+      }
+    }
   }
 
-  // Extract path prefix (directory path without filename)
-  // e.g., "/20230907/73PWifvT/1392kb/hls/" from "/20230907/73PWifvT/1392kb/hls/gFE6lwIk.ts"
-  const firstUrl = mainBlock.segments[0].url
-  const pathPrefix = extractPathPrefix(firstUrl)
+  // --- Dominant segment duration ---
+  const dominantDuration = findDominantDuration(mainBlock.segments)
 
-  return { filenameRegex, avgDuration, commonPrefix, pathPrefix }
+  // --- Playlist-wide median block size ---
+  const blockSizes = blocks
+    .map((b) => b.segments.length)
+    .filter((n) => n > 0)
+    .sort((a, b) => a - b)
+  const medianBlockSize =
+    blockSizes.length > 0
+      ? blockSizes[Math.floor(blockSizes.length / 2)]
+      : 0
+
+  return {
+    filenameRegex,
+    avgDuration,
+    commonPrefix,
+    pathPrefix,
+    avgFilenameBaseLength,
+    isSequentialTs,
+    tsNumberRange,
+    dominantDuration,
+    medianBlockSize,
+    totalBlocks: blocks.length,
+  }
 }
 
+// ─── Scoring ───────────────────────────────────────────────
+
 /**
- * Score a block for ad likelihood based on heuristics
- * Returns a score where higher = more likely to be an ad
+ * Score a single block for ad likelihood. Higher score = more likely an ad.
+ *
+ * Dimensions and their contributions:
+ *   10.0  — CUE tag (SCTE-35) — immediate verdict
+ *   +5.0  — CDN path prefix differs from main content
+ *   +5.0  — Small block (segment count <= 20% of median)
+ *   +4.0  — ts sequence numbers outside the main-content range
+ *   +3.0  — Filename base length differs by > 2 chars from main content
+ *   +3.0  — Small block (segment count <= 35% of median)
+ *   +2.5  — URL contains an ad keyword (per matching segment)
+ *   +2.0  — Main content uses numeric ts names but this block does not
+ *   +1.5  — Filename prefix pattern mismatch
+ *   +1.5  — Dominant segment duration differs > 30% from main content
  */
 export function scoreBlock(
   block: Block,
@@ -222,13 +358,12 @@ export function scoreBlock(
 ): number {
   let score = 0
 
-  // If block has CUE tag, it's definitely an ad
+  // CUE tag → definite ad
   if (block.hasCueTag) {
-    return 10 // Max score
+    return 10
   }
 
-  // Check path keywords (Built-in + Custom)
-  // We filter out very short custom keywords to avoid false positives in scoring
+  // URL keyword match (filter out very short custom keywords to avoid false positives)
   const safeExtraKeywords = extraKeywords.filter((k) => k.length > 2)
   const allKeywords = [...AD_PATH_KEYWORDS, ...safeExtraKeywords]
 
@@ -237,26 +372,25 @@ export function scoreBlock(
     for (const keyword of allKeywords) {
       if (urlLower.includes(keyword.toLowerCase())) {
         score += 2.5
-        break // Only count once per segment
+        break
       }
     }
   }
 
-  // Check filename pattern mismatch
+  // Filename prefix pattern mismatch
   if (mainPattern.filenameRegex) {
     const mismatchCount = block.segments.filter((s) => {
-      if (!mainPattern.filenameRegex) return false // No pattern to compare against
+      if (!mainPattern.filenameRegex) return false
       const filename = extractFilename(s.url)
       return !mainPattern.filenameRegex.test(filename)
     }).length
 
     if (mismatchCount === block.segments.length && block.segments.length > 0) {
-      score += 1.5 // All filenames differ from main pattern
+      score += 1.5
     }
   }
 
-  // **KEY FEATURE**: Check path prefix mismatch (e.g., different date/folder/bitrate)
-  // This is the most reliable indicator for ads that come from different CDN paths
+  // CDN path prefix mismatch
   if (mainPattern.pathPrefix && block.segments.length > 0) {
     const pathMismatchCount = block.segments.filter((s) => {
       const segmentPathPrefix = extractPathPrefix(s.url)
@@ -264,25 +398,97 @@ export function scoreBlock(
     }).length
 
     if (pathMismatchCount === block.segments.length) {
-      // ALL segments have different path prefix - strong ad indicator
       score += 5.0
+    }
+  }
+
+  // Filename base length variance
+  // e.g. main content "00001.ts" (len=5) vs ad "abcdefghij.ts" (len=10)
+  if (mainPattern.avgFilenameBaseLength > 0 && block.segments.length > 0) {
+    const blockLengths = block.segments.map((s) =>
+      getFilenameBaseLength(s.url),
+    )
+    const blockAvgLen =
+      blockLengths.reduce((a, b) => a + b, 0) / blockLengths.length
+    const lengthDiff = Math.abs(
+      blockAvgLen - mainPattern.avgFilenameBaseLength,
+    )
+    if (lengthDiff > 2) {
+      score += 3.0
+    }
+  }
+
+  // ts sequence number gap
+  // Main content numbers 1→2→…→N; ad numbers fall outside that range
+  if (
+    mainPattern.isSequentialTs &&
+    mainPattern.tsNumberRange &&
+    block.segments.length > 0
+  ) {
+    const blockTsNumbers = block.segments
+      .map((s) => extractTsNumber(s.url))
+      .filter((n): n is number => n !== null)
+
+    if (blockTsNumbers.length > 0) {
+      const blockMin = Math.min(...blockTsNumbers)
+      const blockMax = Math.max(...blockTsNumbers)
+      const { min: mainMin, max: mainMax } = mainPattern.tsNumberRange
+
+      const isConnected =
+        (blockMin >= mainMin && blockMax <= mainMax) ||
+        Math.abs(blockMin - mainMax) <= 2 ||
+        Math.abs(mainMin - blockMax) <= 2
+
+      if (!isConnected) {
+        score += 4.0
+      }
+    } else if (
+      block.segments.some((s) => extractFilename(s.url).endsWith('.ts'))
+    ) {
+      // Has .ts files but no numeric pattern while main content uses sequential numbering
+      score += 2.0
+    }
+  }
+
+  // Segment duration anomaly (e.g. main=10s, ad=15s)
+  if (mainPattern.dominantDuration > 0 && block.segments.length > 0) {
+    const blockDominant = findDominantDuration(block.segments)
+    if (blockDominant > 0) {
+      const durationDiff = Math.abs(blockDominant - mainPattern.dominantDuration)
+      if (durationDiff / mainPattern.dominantDuration > 0.3) {
+        score += 1.5
+      }
+    }
+  }
+
+  // Small block detection (DISCONTINUITY sandwich)
+  // When all other signals are identical (same CDN, path, filename length, duration),
+  // block size is the only remaining differentiator
+  if (
+    mainPattern.totalBlocks >= 3 &&
+    mainPattern.medianBlockSize >= 5 &&
+    block.segments.length > 0
+  ) {
+    const sizeRatio = block.segments.length / mainPattern.medianBlockSize
+    if (sizeRatio <= 0.2) {
+      score += 5.0
+    } else if (sizeRatio <= 0.35) {
+      score += 3.0
     }
   }
 
   return score
 }
 
-/**
- * Threshold configuration
- */
+// ─── Thresholds & Verdict ──────────────────────────────────
+
+/** Score thresholds: heuristic mode uses HIGH (5.0), aggressive mode uses LOW (3.0) */
 export const THRESHOLDS = {
-  HIGH: 5.0, // Definitely an ad
-  LOW: 3.0, // Possibly an ad (for future "fuzzy" mode)
+  HIGH: 5.0,
+  LOW: 3.0,
 }
 
-/**
- * Determine if a block should be filtered based on its score
- */
+/** Determine whether a block should be filtered based on its score */
 export function shouldFilterBlock(
   score: number,
   threshold: number = THRESHOLDS.HIGH,
