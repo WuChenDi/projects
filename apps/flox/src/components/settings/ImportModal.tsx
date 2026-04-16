@@ -1,30 +1,35 @@
 'use client'
 
+import { Alert, AlertDescription } from '@cdlab996/ui/components/alert'
+import { Button } from '@cdlab996/ui/components/button'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@cdlab996/ui/components/dialog'
+import { Input } from '@cdlab996/ui/components/input'
 import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
+import { Spinner } from '@cdlab996/ui/components/spinner'
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from '@cdlab996/ui/components/tabs'
-import { Button } from '@cdlab996/ui/components/button'
-import { Input } from '@cdlab996/ui/components/input'
-import { Alert, AlertDescription } from '@cdlab996/ui/components/alert'
-import { Spinner } from '@cdlab996/ui/components/spinner'
-import { CheckCircle2Icon, UploadIcon, RefreshCwIcon, Trash2Icon } from 'lucide-react'
+import {
+  CheckCircle2Icon,
+  RefreshCwIcon,
+  Trash2Icon,
+  UploadIcon,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 import type { SourceSubscription } from '@/lib/types'
 import type { ImportResult } from '@/lib/utils/source-import-utils'
 import {
-  fetchSourcesFromUrl,
   createSubscription,
+  fetchSourcesFromUrl,
 } from '@/lib/utils/source-import-utils'
 
 interface ImportModalProps {
@@ -212,12 +217,20 @@ function LinkImportTab({
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-muted rounded-lg p-3">
-              <span className="text-xs text-muted-foreground block">普通源</span>
-              <span className="text-xl font-bold">{preview.normalSources.length}</span>
+              <span className="text-xs text-muted-foreground block">
+                普通源
+              </span>
+              <span className="text-xl font-bold">
+                {preview.normalSources.length}
+              </span>
             </div>
             <div className="bg-muted rounded-lg p-3">
-              <span className="text-xs text-muted-foreground block">成人源</span>
-              <span className="text-xl font-bold">{preview.premiumSources.length}</span>
+              <span className="text-xs text-muted-foreground block">
+                成人源
+              </span>
+              <span className="text-xl font-bold">
+                {preview.premiumSources.length}
+              </span>
             </div>
           </div>
           <Button onClick={handleConfirmImport} className="w-full">
@@ -332,7 +345,9 @@ function SubscriptionImportTab({
 
       {/* Subscription List */}
       {subscriptions.length === 0 ? (
-        <p className="text-center py-8 text-muted-foreground text-sm">暂无订阅</p>
+        <p className="text-center py-8 text-muted-foreground text-sm">
+          暂无订阅
+        </p>
       ) : (
         <div className="space-y-2">
           {subscriptions.map((sub) => (
@@ -342,7 +357,10 @@ function SubscriptionImportTab({
             >
               <div className="overflow-hidden mr-3">
                 <p className="font-medium text-sm truncate">{sub.name}</p>
-                <p className="text-xs text-muted-foreground truncate" title={sub.url}>
+                <p
+                  className="text-xs text-muted-foreground truncate"
+                  title={sub.url}
+                >
                   {sub.url}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
