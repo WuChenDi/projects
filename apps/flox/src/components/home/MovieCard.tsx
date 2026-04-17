@@ -77,8 +77,8 @@ export const MovieCard = memo(function MovieCard({
             ) : null}
 
             {movie.rate && parseFloat(movie.rate) > 0 && (
-              <Badge className="absolute top-3 right-3 z-20 bg-black/80 text-white gap-1 shadow-sm">
-                <StarIcon size={11} className="text-yellow-400 fill-yellow-400" />
+              <Badge className="absolute top-3 right-3" variant="secondary">
+                <StarIcon className="text-yellow-400 fill-yellow-400" />
                 {movie.rate}
               </Badge>
             )}

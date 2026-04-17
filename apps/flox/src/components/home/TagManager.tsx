@@ -1,7 +1,13 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
-import { Input } from '@cdlab996/ui/components/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@cdlab996/ui/components/input-group'
+import { cn } from '@cdlab996/ui/lib/utils'
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
 import {
   closestCenter,
@@ -86,20 +92,18 @@ function SortableTag({
       </Button>
 
       {showTagManager && (
-        <button
+        <Button
+          variant="destructive"
+          size="icon-xs"
           onClick={(e) => {
             e.stopPropagation()
             onTagDelete(tag.id)
           }}
-          className="absolute -top-2 -right-2 w-6 h-6 
-                     bg-destructive text-destructive-foreground 
-                     rounded-full flex items-center justify-center 
-                     shadow-md opacity-0 group-hover:opacity-100 
-                     hover:bg-destructive/90 transition-all z-20"
+          className="absolute -top-2 -right-2 rounded-full"
           aria-label={`删除 ${tag.label}`}
         >
-          <X size={14} strokeWidth={3} />
-        </button>
+          <X className="size-3.5" />
+        </Button>
       )}
     </div>
   )
@@ -151,36 +155,44 @@ export function TagManager({
       <div className="mb-2 flex items-center justify-between">
         <Button
           variant="ghost"
-          onClick={onToggleManager}
-          className="flex items-center gap-2"
+          onClick={showTagManager ? undefined : onToggleManager}
+          className={cn(
+            'flex items-center gap-2',
+            showTagManager && 'pointer-events-none',
+          )}
         >
           <TagIcon className="size-4" />
-          {showTagManager ? '完成编辑' : '管理标签'}
+          管理标签
         </Button>
 
         {showTagManager && (
-          <Button
-            variant="ghost"
-            onClick={onRestoreDefaults}
-            className="flex items-center gap-2 text-destructive hover:text-destructive"
-          >
-            <RefreshCw className="size-4" />
-            恢复默认
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="destructive" onClick={onRestoreDefaults}>
+              <RefreshCw className="size-4" />
+              恢复默认
+            </Button>
+            <Button variant="outline" onClick={onToggleManager}>
+              完成编辑
+            </Button>
+          </div>
         )}
       </div>
 
       {showTagManager && (
-        <div className="mb-4 flex gap-2">
-          <Input
-            type="text"
-            value={newTagInput}
-            onChange={(e) => onNewTagInputChange(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onAddTag()}
-            placeholder="输入自定义标签..."
-            className="flex-1"
-          />
-          <Button onClick={onAddTag}>添加</Button>
+        <div className="mb-4">
+          <InputGroup>
+            <InputGroupInput
+              value={newTagInput}
+              onChange={(e) => onNewTagInputChange(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && onAddTag()}
+              placeholder="输入自定义标签..."
+            />
+            <InputGroupAddon align="inline-end">
+              <InputGroupButton variant="default" onClick={onAddTag}>
+                添加
+              </InputGroupButton>
+            </InputGroupAddon>
+          </InputGroup>
         </div>
       )}
 
