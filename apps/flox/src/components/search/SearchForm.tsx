@@ -17,8 +17,9 @@ import {
 import { Progress } from '@cdlab996/ui/components/progress'
 import { Spinner } from '@cdlab996/ui/components/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
-import { HistoryIcon, SearchIcon, XIcon } from 'lucide-react'
+import { FilmIcon, HistoryIcon, SearchIcon, XIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { useSearchSuggestions } from '@/lib/hooks/useSearchSuggestions'
 import { useSearchHistoryStore } from '@/lib/store/search-history-store'
 
 function SearchLoadingAnimation({
@@ -108,8 +109,17 @@ export function SearchForm({
     clearSearchHistory,
   } = useSearchHistoryStore()
 
+  const { suggestions, fetchSuggestions, clearSuggestions } =
+    useSearchSuggestions()
+
   const searchHistory = getRecentSearches(10)
   const historyItems = searchHistory.map((item) => item.query)
+
+  // Merge: if we have suggestions use suggestion titles, otherwise use history
+  const hasSuggestions = query.trim().length > 0 && suggestions.length > 0
+  const comboboxItems = hasSuggestions
+    ? suggestions.map((s) => s.title)
+    : historyItems
 
   // 同步外部传入的 initialQuery
   useEffect(() => {
@@ -145,11 +155,12 @@ export function SearchForm({
 
         <div className="w-full min-w-0 sm:flex-1">
           <Combobox
-            items={historyItems}
+            items={comboboxItems}
             value={query}
             onValueChange={(value) => {
               if (value) {
                 setQuery(value)
+                clearSuggestions()
                 handleSearch(value)
               }
             }}
@@ -167,7 +178,10 @@ export function SearchForm({
                 placeholder={placeholder}
                 aria-label="搜索视频内容"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                  fetchSuggestions(e.target.value)
+                }}
               >
                 <InputGroupAddon align="inline-end">
                   {query && (
@@ -194,41 +208,87 @@ export function SearchForm({
               </ComboboxInput>
             </div>
 
-            {searchHistory.length > 0 && (
+            {(searchHistory.length > 0 || hasSuggestions) && (
               <ComboboxContent>
-                <div className="flex items-center justify-between px-2 py-1.5">
-                  <span className="text-muted-foreground text-xs">
-                    搜索历史
-                  </span>
-                  <button
-                    type="button"
-                    onClick={clearSearchHistory}
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    清空全部
-                  </button>
-                </div>
-                <ComboboxSeparator className="my-0" />
-                <ComboboxList>
-                  <ComboboxEmpty>暂无搜索历史</ComboboxEmpty>
-                  {historyItems.map((q) => (
-                    <ComboboxItem key={q} value={q} className="group/item">
-                      <HistoryIcon className="size-3.5 text-muted-foreground shrink-0" />
-                      <span className="flex-1 truncate">{q}</span>
+                {hasSuggestions ? (
+                  <>
+                    <div className="px-2 py-1.5">
+                      <span className="text-muted-foreground text-xs">
+                        豆瓣建议
+                      </span>
+                    </div>
+                    <ComboboxSeparator className="my-0" />
+                    <ComboboxList>
+                      <ComboboxEmpty>无匹配结果</ComboboxEmpty>
+                      {suggestions.map((s) => (
+                        <ComboboxItem
+                          key={s.id}
+                          value={s.title}
+                          className="group/item"
+                        >
+                          {s.img ? (
+                            <img
+                              src={s.img}
+                              alt=""
+                              className="size-8 rounded object-cover shrink-0"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <FilmIcon className="size-4 text-muted-foreground shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="truncate text-sm">{s.title}</div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {[s.year, s.sub_title, s.episode]
+                                .filter(Boolean)
+                                .join(' · ')}
+                            </div>
+                          </div>
+                        </ComboboxItem>
+                      ))}
+                    </ComboboxList>
+                  </>
+                ) : searchHistory.length > 0 ? (
+                  <>
+                    <div className="flex items-center justify-between px-2 py-1.5">
+                      <span className="text-muted-foreground text-xs">
+                        搜索历史
+                      </span>
                       <button
                         type="button"
-                        className="shrink-0 size-4 flex items-center justify-center rounded opacity-0 group-hover/item:opacity-50 hover:!opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          removeFromSearchHistory(q)
-                        }}
+                        onClick={clearSearchHistory}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                       >
-                        <XIcon className="size-3" />
+                        清空全部
                       </button>
-                    </ComboboxItem>
-                  ))}
-                </ComboboxList>
+                    </div>
+                    <ComboboxSeparator className="my-0" />
+                    <ComboboxList>
+                      <ComboboxEmpty>暂无搜索历史</ComboboxEmpty>
+                      {historyItems.map((q) => (
+                        <ComboboxItem
+                          key={q}
+                          value={q}
+                          className="group/item"
+                        >
+                          <HistoryIcon className="size-3.5 text-muted-foreground shrink-0" />
+                          <span className="flex-1 truncate">{q}</span>
+                          <button
+                            type="button"
+                            className="shrink-0 size-4 flex items-center justify-center rounded opacity-0 group-hover/item:opacity-50 hover:!opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              removeFromSearchHistory(q)
+                            }}
+                          >
+                            <XIcon className="size-3" />
+                          </button>
+                        </ComboboxItem>
+                      ))}
+                    </ComboboxList>
+                  </>
+                ) : null}
               </ComboboxContent>
             )}
           </Combobox>
