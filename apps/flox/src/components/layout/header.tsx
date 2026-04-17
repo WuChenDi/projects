@@ -7,6 +7,7 @@ import {
   HeartIcon,
   HistoryIcon,
   SettingsIcon,
+  // TrophyIcon,
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -98,6 +99,11 @@ export function Header({
               strategy="afterInteractive"
             />
 
+            {/* <Button asChild variant="outline" size="icon" aria-label="排行榜">
+              <Link href="/ranking">
+                <TrophyIcon className="size-4 sm:size-5" />
+              </Link>
+            </Button> */}
             <Button
               variant="outline"
               size="icon"
