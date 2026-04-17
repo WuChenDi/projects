@@ -1,13 +1,12 @@
 /**
  * PopularFeatures - Main component for popular movies section
- * Displays Douban movie recommendations with tag filtering and infinite scroll
- * Supports advanced filtering mode via Douban new_search_subjects API
+ * Two browsing modes:
+ *   - Tag mode: uses /api/douban/recommend (search_subjects)
+ *   - Advanced filter mode: uses /api/douban/filter (new_search_subjects)
  */
 
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { SlidersHorizontalIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useAdvancedFilter } from '@/lib/hooks/useAdvancedFilter'
 import { AdvancedFilter } from './AdvancedFilter'
@@ -25,9 +24,9 @@ export function PopularFeatures({
   onSearch,
   contentType,
 }: PopularFeaturesProps) {
-  const [advancedMode, setAdvancedMode] = useState(false)
+  const [mode, setMode] = useState<'tag' | 'filter'>('tag')
 
-  // Standard tag-based browsing
+  // Tag mode: /api/douban/recommend
   const {
     tags,
     selectedTag,
@@ -51,10 +50,12 @@ export function PopularFeatures({
     loadMoreRef: tagLoadMoreRef,
   } = usePopularMovies(selectedTag, tags, contentType)
 
-  // Advanced filter browsing
+  // Filter mode: /api/douban/filter
   const {
     filter,
     updateFilter,
+    presets,
+    presetsLoading,
     movies: filterMovies,
     loading: filterLoading,
     hasMore: filterHasMore,
@@ -70,43 +71,32 @@ export function PopularFeatures({
 
   return (
     <div className="animate-fade-in">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex-1" />
+      {/* <div className="flex items-center justify-end mb-2">
         <Button
-          variant={advancedMode ? 'default' : 'outline'}
+          variant={mode === 'filter' ? 'default' : 'outline'}
           size="sm"
-          onClick={() => setAdvancedMode(!advancedMode)}
+          onClick={() => setMode(mode === 'tag' ? 'filter' : 'tag')}
         >
           <SlidersHorizontalIcon className="size-4" />
-          高级筛选
+          {mode === 'tag' ? '高级筛选' : '标签浏览'}
         </Button>
-      </div>
+      </div> */}
 
-      {advancedMode ? (
-        <>
-          <AdvancedFilter filter={filter} onFilterChange={updateFilter} />
-          <MovieGrid
-            movies={filterMovies}
-            loading={filterLoading}
-            hasMore={filterHasMore}
-            onMovieClick={handleMovieClick}
-            prefetchRef={filterPrefetchRef}
-            loadMoreRef={filterLoadMoreRef}
-          />
-        </>
-      ) : (
+      {mode === 'tag' ? (
         <>
           <TagManager
             tags={tags}
             selectedTag={selectedTag}
             showTagManager={showTagManager}
             newTagInput={newTagInput}
+            isLoadingTags={isLoadingTags}
+            // onTagSelect={setSelectedTag}
             onTagSelect={(tagId) => {
               if (
                 tagId === 'custom_高级' ||
                 tags.find((t) => t.id === tagId)?.label === '高级'
               ) {
-                setAdvancedMode(true)
+                window.location.href = '/premium'
                 return
               }
               setSelectedTag(tagId)
@@ -117,7 +107,6 @@ export function PopularFeatures({
             onNewTagInputChange={setNewTagInput}
             onAddTag={handleAddTag}
             onDragEnd={handleDragEnd}
-            isLoadingTags={isLoadingTags}
           />
 
           <MovieGrid
@@ -127,6 +116,24 @@ export function PopularFeatures({
             onMovieClick={handleMovieClick}
             prefetchRef={tagPrefetchRef}
             loadMoreRef={tagLoadMoreRef}
+          />
+        </>
+      ) : (
+        <>
+          <AdvancedFilter
+            filter={filter}
+            presets={presets}
+            presetsLoading={presetsLoading}
+            onFilterChange={updateFilter}
+          />
+
+          <MovieGrid
+            movies={filterMovies}
+            loading={filterLoading}
+            hasMore={filterHasMore}
+            onMovieClick={handleMovieClick}
+            prefetchRef={filterPrefetchRef}
+            loadMoreRef={filterLoadMoreRef}
           />
         </>
       )}

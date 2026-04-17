@@ -11,9 +11,16 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from '@cdlab996/ui/components/toggle-group'
-import { ArrowUpDownIcon, FilmIcon, GlobeIcon, StarIcon } from 'lucide-react'
+import {
+  ArrowUpDownIcon,
+  ChevronDownIcon,
+  FilmIcon,
+  GlobeIcon,
+  SparklesIcon,
+  StarIcon,
+} from 'lucide-react'
 import { useState } from 'react'
-import type { FilterState } from '@/lib/hooks/useAdvancedFilter'
+import type { FilterPreset, FilterState } from '@/lib/hooks/useAdvancedFilter'
 import {
   COUNTRY_OPTIONS,
   GENRE_OPTIONS,
@@ -22,6 +29,8 @@ import {
 
 interface AdvancedFilterProps {
   filter: FilterState
+  presets: FilterPreset[]
+  presetsLoading?: boolean
   onFilterChange: (partial: Partial<FilterState>) => void
 }
 
@@ -153,15 +162,50 @@ function ScoreFilter({
 
 export function AdvancedFilter({
   filter,
+  presets,
+  presetsLoading = false,
   onFilterChange,
 }: AdvancedFilterProps) {
   return (
     <Card className="mb-4">
-      <CardHeader>
-        <CardTitle>高级筛选</CardTitle>
-      </CardHeader>
+      <CardContent className="flex flex-col gap-2 pt-4">
+        {/* Presets */}
+        <div className="flex items-start gap-2 min-w-0">
+          <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0 h-6">
+            <SparklesIcon className="size-3.5 text-muted-foreground shrink-0" />
+            快捷
+          </span>
 
-      <CardContent className="flex flex-col gap-2">
+          <div className="flex-1 min-w-0 flex flex-wrap items-center gap-1.5">
+            {presetsLoading && (
+              <span className="text-xs text-muted-foreground">加载中...</span>
+            )}
+            {presets.map((preset) => {
+              const isActive =
+                filter.sort === (preset.filter.sort ?? filter.sort) &&
+                filter.genres === (preset.filter.genres ?? filter.genres) &&
+                filter.countries ===
+                  (preset.filter.countries ?? filter.countries) &&
+                filter.scoreRange[0] ===
+                  (preset.filter.scoreRange?.[0] ?? filter.scoreRange[0]) &&
+                filter.scoreRange[1] ===
+                  (preset.filter.scoreRange?.[1] ?? filter.scoreRange[1])
+
+              return (
+                <Button
+                  key={preset.label}
+                  variant={isActive ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-6 text-xs px-2"
+                  onClick={() => onFilterChange(preset.filter)}
+                >
+                  {preset.label}
+                </Button>
+              )
+            })}
+          </div>
+        </div>
+
         {/* Sort */}
         <div className="flex items-start gap-2 min-w-0">
           <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0 h-6">
