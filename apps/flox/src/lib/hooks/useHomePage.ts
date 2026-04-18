@@ -6,24 +6,38 @@ import { useSubscriptionSync } from '@/lib/hooks/useSubscriptionSync'
 import type { SortOption } from '@/lib/store/settings-store'
 import { settingsStore } from '@/lib/store/settings-store'
 
-export function useHomePage() {
+interface UseHomePageOptions {
+  isPremium?: boolean
+}
+
+export function useHomePage({ isPremium = false }: UseHomePageOptions = {}) {
   useSubscriptionSync()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { loadFromCache, saveToCache } = useSearchCache()
-  const hasLoadedCache = useRef(false)
   const hasSearchedWithSourcesRef = useRef(false)
   const isInitialCacheLoad = useRef(false)
+
+  const basePath = isPremium ? '/premium' : '/'
 
   const [query, setQuery] = useState('')
   const [hasSearched, setHasSearched] = useState(false)
   const [currentSortBy, setCurrentSortBy] = useState<SortOption>('default')
 
+  const getEnabledSources = useCallback(() => {
+    const settings = settingsStore.getSettings()
+    return isPremium
+      ? settings.premiumSources.filter((s) => s.enabled)
+      : settings.sources.filter((s) => s.enabled)
+  }, [isPremium])
+
   const onUrlUpdate = useCallback(
     (q: string) => {
-      router.replace(`/?q=${encodeURIComponent(q)}`, { scroll: false })
+      router.replace(`${basePath}?q=${encodeURIComponent(q)}`, {
+        scroll: false,
+      })
     },
-    [router],
+    [router, basePath],
   )
 
   // Search stream hook
@@ -39,55 +53,48 @@ export function useHomePage() {
     applySorting,
   } = useParallelSearch(saveToCache, onUrlUpdate)
 
-  // Core search execution function - extracted to eliminate duplication
+  // Core search execution function
   const executeSearch = useCallback(
     (searchQuery: string) => {
       if (!searchQuery.trim()) return false
 
+      const enabledSources = getEnabledSources()
+      if (enabledSources.length === 0) return false
+
       const settings = settingsStore.getSettings()
-      const enabledSources = settings.sources.filter((s) => s.enabled)
-
-      if (enabledSources.length === 0) {
-        return false
-      }
-
-      void performSearch(searchQuery, enabledSources, settings.sortBy)
+      void performSearch(
+        searchQuery,
+        enabledSources,
+        isPremium ? currentSortBy : settings.sortBy,
+      )
       hasSearchedWithSourcesRef.current = true
       return true
     },
-    [performSearch],
+    [performSearch, getEnabledSources, isPremium, currentSortBy],
   )
 
   // Re-sort results when sort preference changes
   useEffect(() => {
-    // Skip re-sorting if this is a load from cache, to preserve the "remembered" position
-    // Only re-sort if the user explicitly changes the sortBy option later
     if (hasSearched && results.length > 0 && !isInitialCacheLoad.current) {
       applySorting(currentSortBy)
     }
   }, [currentSortBy, applySorting, hasSearched, results.length])
 
-  // Load sort preference on mount and subscribe to changes
+  // Subscribe to settings changes (source loading, sort preference)
   useEffect(() => {
     const updateSettings = () => {
       const settings = settingsStore.getSettings()
 
-      // Update sort preference
-      if (settings.sortBy !== currentSortBy) {
+      // Sync sort preference (normal mode uses store value)
+      if (!isPremium && settings.sortBy !== currentSortBy) {
         setCurrentSortBy(settings.sortBy)
       }
 
-      // Check if we need to re-trigger search due to new sources being loaded
-      // This fixes the issue where initial visit has 0 sources, then sources are loaded async
-      // but the search (or lack thereof) is already stuck with empty sources.
-      const enabledSources = settings.sources.filter((s) => s.enabled)
-      const hasSources = enabledSources.length > 0
-
-      // If we have a query, and we haven't searched with sources yet,
-      // and we suddenly have sources, trigger the search.
+      // Re-trigger search when sources become available after initial load
+      const enabledSources = getEnabledSources()
       if (
         query &&
-        hasSources &&
+        enabledSources.length > 0 &&
         !hasSearchedWithSourcesRef.current &&
         !loading
       ) {
@@ -97,60 +104,66 @@ export function useHomePage() {
       }
     }
 
-    // Initial load
     updateSettings()
 
-    // Subscribe to changes
     const unsubscribe = settingsStore.subscribe(updateSettings)
     return () => unsubscribe()
-  }, [query, loading, executeSearch, currentSortBy])
+  }, [query, loading, executeSearch, currentSortBy, isPremium, getEnabledSources])
 
   const handleSearch = useCallback(
     (searchQuery: string) => {
       if (!searchQuery.trim()) return
 
-      // Clear scroll position for this search query to ensure we start at the top on a fresh search
-      const scrollKey = `scroll-pos:/?q=${encodeURIComponent(searchQuery)}`
+      // Clear scroll position for fresh search
+      const scrollKey = `scroll-pos:${basePath}?q=${encodeURIComponent(searchQuery)}`
       sessionStorage.removeItem(scrollKey)
 
-      // Reset cache load flag for new search
       isInitialCacheLoad.current = false
 
       setQuery(searchQuery)
       setHasSearched(true)
       executeSearch(searchQuery)
     },
-    [executeSearch],
+    [executeSearch, basePath],
   )
 
-  // Load cached results on mount
+  // Sync search state with URL query parameter
+  const urlQuery = searchParams.get('q') || ''
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: handleSearch/loadFromCache/loadCachedResults cause loops
   useEffect(() => {
-    if (hasLoadedCache.current) return
-    hasLoadedCache.current = true
+    if (!urlQuery) return
+    if (urlQuery === query && hasSearched) return
 
-    const urlQuery = searchParams.get('q')
-    const cached = loadFromCache()
+    setQuery(urlQuery)
 
-    if (urlQuery) {
-      setQuery(urlQuery)
+    // Try loading from cache (normal mode only)
+    if (!isPremium) {
+      const cached = loadFromCache()
       if (cached && cached.query === urlQuery && cached.results.length > 0) {
         isInitialCacheLoad.current = true
         setHasSearched(true)
         loadCachedResults(cached.results, cached.availableSources)
         hasSearchedWithSourcesRef.current = true
-      } else {
-        handleSearch(urlQuery)
+        return
       }
     }
-  }, [searchParams, loadFromCache, loadCachedResults, handleSearch])
+
+    // Execute search if sources are ready
+    const enabledSources = getEnabledSources()
+    if (enabledSources.length > 0) {
+      handleSearch(urlQuery)
+    }
+    // If no sources yet, the subscription effect will catch it
+  }, [urlQuery])
 
   const handleReset = useCallback(() => {
     setHasSearched(false)
     setQuery('')
     hasSearchedWithSourcesRef.current = false
     resetSearch()
-    router.replace('/', { scroll: false })
-  }, [resetSearch, router])
+    router.replace(basePath, { scroll: false })
+  }, [resetSearch, router, basePath])
 
   return {
     query,

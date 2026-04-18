@@ -8,8 +8,8 @@ import { SearchResults } from '@/components/home/SearchResults'
 import { Header } from '@/components/layout'
 import { PremiumContent } from '@/components/premium/PremiumContent'
 import { SearchForm } from '@/components/search/SearchForm'
+import { useHomePage } from '@/lib/hooks/useHomePage'
 import { useLatencyPing } from '@/lib/hooks/useLatencyPing'
-import { usePremiumHomePage } from '@/lib/hooks/usePremiumHomePage'
 
 function PremiumHomePage() {
   const {
@@ -22,7 +22,7 @@ function PremiumHomePage() {
     totalSources,
     handleSearch,
     handleReset,
-  } = usePremiumHomePage()
+  } = useHomePage({ isPremium: true })
 
   const sourceUrls = useMemo(
     () => availableSources.map((s) => ({ id: s.id, baseUrl: s.id })),
