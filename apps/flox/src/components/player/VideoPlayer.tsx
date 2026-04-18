@@ -234,7 +234,7 @@ export function VideoPlayer({
   return (
     <div className="space-y-4">
       <Card className="p-0 overflow-hidden">
-        <div className="relative aspect-video bg-black">
+        <div className="relative aspect-video bg-black overflow-hidden">
           {playerEngine === 'veplayer' ? (
             <FloxPlayer
               url={finalPlayUrl}
@@ -276,7 +276,7 @@ export function VideoPlayer({
                 setResolution(info)
                 onResolutionDetected?.(info)
               }}
-              className="w-full h-full"
+              className="w-full h-full object-contain"
             />
           )}
         </div>

@@ -108,7 +108,14 @@ export function useHomePage({ isPremium = false }: UseHomePageOptions = {}) {
 
     const unsubscribe = settingsStore.subscribe(updateSettings)
     return () => unsubscribe()
-  }, [query, loading, executeSearch, currentSortBy, isPremium, getEnabledSources])
+  }, [
+    query,
+    loading,
+    executeSearch,
+    currentSortBy,
+    isPremium,
+    getEnabledSources,
+  ])
 
   const handleSearch = useCallback(
     (searchQuery: string) => {
