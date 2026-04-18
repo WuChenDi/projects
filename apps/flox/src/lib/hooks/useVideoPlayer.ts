@@ -4,6 +4,34 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { settingsStore } from '@/lib/store/settings-store'
 
+const VIDEO_EXTENSIONS = [
+  '.m3u8',
+  '.m3u',
+  '.mp4',
+  '.webm',
+  '.ogg',
+  '.ts',
+  '.mpd',
+]
+
+function isVideoUrl(url: string): boolean {
+  try {
+    const { pathname } = new URL(url)
+    return VIDEO_EXTENSIONS.some((ext) => pathname.toLowerCase().endsWith(ext))
+  } catch {
+    return false
+  }
+}
+
+function resolveEpisodeUrl(episode: {
+  name?: string
+  url: string
+}): string {
+  if (episode.url) return episode.url
+  if (episode.name && isVideoUrl(episode.name)) return episode.name
+  return ''
+}
+
 interface VideoData {
   vod_id: string
   vod_name: string
@@ -29,9 +57,16 @@ interface UseVideoPlayerReturn {
   fetchVideoDetails: () => void
 }
 
-async function fetchVideoDetail(videoId: string, source: string): Promise<VideoData> {
+async function fetchVideoDetail(
+  videoId: string,
+  source: string,
+): Promise<VideoData> {
   const settings = settingsStore.getSettings()
-  const allSources = [...settings.sources, ...settings.premiumSources, ...settings.subscriptions]
+  const allSources = [
+    ...settings.sources,
+    ...settings.premiumSources,
+    ...settings.subscriptions,
+  ]
   const sourceConfig = allSources.find((s) => s.id === source)
 
   const response = sourceConfig
@@ -45,7 +80,9 @@ async function fetchVideoDetail(videoId: string, source: string): Promise<VideoD
   const data = await response.json()
 
   if (!response.ok) {
-    throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`)
+    throw new Error(
+      data.error || `HTTP ${response.status}: ${response.statusText}`,
+    )
   }
   if (!data.success || !data.data) {
     throw new Error(data.error || '来自 API 的响应无效')
@@ -82,7 +119,7 @@ export function useVideoPlayer(
   useEffect(() => {
     setCurrentEpisode(0)
     setPlayUrl('')
-  }, [videoId, source])
+  }, [])
 
   // Set initial episode when data first arrives
   useEffect(() => {
@@ -90,10 +127,12 @@ export function useVideoPlayer(
     const defaultIndex = isReversed ? videoData.episodes.length - 1 : 0
     const ep = episodeParam !== null ? parseInt(episodeParam, 10) : NaN
     const validIndex =
-      !isNaN(ep) && ep >= 0 && ep < videoData.episodes.length ? ep : defaultIndex
+      !isNaN(ep) && ep >= 0 && ep < videoData.episodes.length
+        ? ep
+        : defaultIndex
     setCurrentEpisode(validIndex)
-    setPlayUrl(videoData.episodes[validIndex].url)
-  }, [videoData]) // intentionally omit isReversed/episodeParam — only fires on initial load
+    setPlayUrl(resolveEpisodeUrl(videoData.episodes[validIndex]))
+  }, [videoData, episodeParam, isReversed])
 
   // Sync episode index when URL param changes (back/forward navigation)
   useEffect(() => {
@@ -106,9 +145,9 @@ export function useVideoPlayer(
       index !== currentEpisode
     ) {
       setCurrentEpisode(index)
-      setPlayUrl(videoData.episodes[index].url)
+      setPlayUrl(resolveEpisodeUrl(videoData.episodes[index]))
     }
-  }, [episodeParam, videoData]) // intentionally omit currentEpisode
+  }, [episodeParam, videoData, currentEpisode])
 
   return {
     videoData: videoData ?? null,
