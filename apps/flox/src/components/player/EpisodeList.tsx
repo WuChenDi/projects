@@ -130,16 +130,16 @@ export function EpisodeList({
                       buttonRefs.current[displayIndex] = el
                     }}
                     variant={isCurrentEpisode ? 'default' : 'outline'}
-                    className="h-8 w-full justify-between text-sm font-normal"
+                    className="w-full justify-start whitespace-normal"
                     onClick={() => onEpisodeClick(episode, originalIndex)}
                     role="radio"
                     aria-checked={isCurrentEpisode}
                   >
-                    <span className="truncate">
+                    <span className="min-w-0 flex-1 line-clamp-1 text-left break-all">
                       {episode.name || `第 ${originalIndex + 1} 集`}
                     </span>
                     {isCurrentEpisode && (
-                      <PlayIcon className="size-3.5 shrink-0" />
+                      <PlayIcon className="size-3.5 shrink-0 ml-2" />
                     )}
                   </Button>
                 )
