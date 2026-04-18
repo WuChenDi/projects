@@ -316,9 +316,7 @@ export function learnMainPattern(blocks: Block[]): MainPattern {
     .filter((n) => n > 0)
     .sort((a, b) => a - b)
   const medianBlockSize =
-    blockSizes.length > 0
-      ? blockSizes[Math.floor(blockSizes.length / 2)]
-      : 0
+    blockSizes.length > 0 ? blockSizes[Math.floor(blockSizes.length / 2)] : 0
 
   return {
     filenameRegex,
@@ -377,6 +375,21 @@ export function scoreBlock(
     }
   }
 
+  // Short ad keyword match — detect "ad" as a path segment or filename prefix
+  // e.g. "/and/ad1.ts", "../ad/clip.ts", "ad01.ts"
+  // Uses word-boundary-aware patterns to avoid false positives like "loading.ts"
+  if (block.segments.length > 0) {
+    const adSegmentPattern = /(?:^|\/)(ad\d*|and)\//i
+    const adFilenamePattern = /(?:^|\/)ad\d*\.ts/i
+    const adMatchCount = block.segments.filter((s) => {
+      const url = s.url.toLowerCase()
+      return adSegmentPattern.test(url) || adFilenamePattern.test(url)
+    }).length
+    if (adMatchCount === block.segments.length) {
+      score += 3.0
+    }
+  }
+
   // Filename prefix pattern mismatch
   if (mainPattern.filenameRegex) {
     const mismatchCount = block.segments.filter((s) => {
@@ -405,14 +418,10 @@ export function scoreBlock(
   // Filename base length variance
   // e.g. main content "00001.ts" (len=5) vs ad "abcdefghij.ts" (len=10)
   if (mainPattern.avgFilenameBaseLength > 0 && block.segments.length > 0) {
-    const blockLengths = block.segments.map((s) =>
-      getFilenameBaseLength(s.url),
-    )
+    const blockLengths = block.segments.map((s) => getFilenameBaseLength(s.url))
     const blockAvgLen =
       blockLengths.reduce((a, b) => a + b, 0) / blockLengths.length
-    const lengthDiff = Math.abs(
-      blockAvgLen - mainPattern.avgFilenameBaseLength,
-    )
+    const lengthDiff = Math.abs(blockAvgLen - mainPattern.avgFilenameBaseLength)
     if (lengthDiff > 2) {
       score += 3.0
     }
@@ -454,7 +463,9 @@ export function scoreBlock(
   if (mainPattern.dominantDuration > 0 && block.segments.length > 0) {
     const blockDominant = findDominantDuration(block.segments)
     if (blockDominant > 0) {
-      const durationDiff = Math.abs(blockDominant - mainPattern.dominantDuration)
+      const durationDiff = Math.abs(
+        blockDominant - mainPattern.dominantDuration,
+      )
       if (durationDiff / mainPattern.dominantDuration > 0.3) {
         score += 1.5
       }
