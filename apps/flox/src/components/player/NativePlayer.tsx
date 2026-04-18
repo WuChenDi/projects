@@ -7,6 +7,7 @@ import { useVideoResolution } from './hooks/useVideoResolution'
 
 interface NativePlayerProps {
   src: string
+  poster?: string
   autoPlay?: boolean
   initialTime?: number
   playbackRate?: number
@@ -21,6 +22,7 @@ interface NativePlayerProps {
 
 export function NativePlayer({
   src,
+  poster,
   autoPlay = true,
   initialTime = 0,
   playbackRate = 1,
@@ -115,6 +117,7 @@ export function NativePlayer({
     <video
       ref={videoRef}
       className={className}
+      poster={poster}
       controls
       playsInline
       onTimeUpdate={handleTimeUpdate}

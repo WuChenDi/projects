@@ -239,6 +239,7 @@ function PlayerContent() {
               <div className="lg:col-span-2 space-y-4">
                 <VideoPlayer
                   playUrl={playUrl}
+                  poster={videoData?.vod_pic}
                   videoId={videoId || undefined}
                   currentEpisode={currentEpisode}
                   onBack={() => router.back()}

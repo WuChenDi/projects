@@ -259,6 +259,7 @@ export function VideoPlayer({
             <NativePlayer
               key={`${finalPlayUrl}-${retryCount}`}
               src={finalPlayUrl}
+              poster={poster}
               autoPlay={shouldAutoPlay}
               initialTime={
                 switchTimeRef.current > 0
