@@ -7,7 +7,7 @@ const DEFAULT_TAG = { id: 'popular', label: '热门', value: '热门' }
 const STORAGE_KEY_PREFIX = 'flox_custom_tags_'
 
 export function useTagManager(contentType: 'movie' | 'tv') {
-  const [selectedTag, setSelectedTag] = useState(DEFAULT_TAG.value)
+  const [selectedTag, setSelectedTag] = useState(DEFAULT_TAG.id)
   const [tags, setTags] = useState<any[]>([])
   const [isLoadingTags, setIsLoadingTags] = useState(false)
   const [newTagInput, setNewTagInput] = useState('')
@@ -60,7 +60,7 @@ export function useTagManager(contentType: 'movie' | 'tv') {
     }
 
     void loadTags()
-    setSelectedTag(DEFAULT_TAG.value)
+    setSelectedTag(DEFAULT_TAG.id)
   }, [contentType, storageKey])
 
   const saveTags = (newTags: any[]) => {
@@ -111,7 +111,7 @@ export function useTagManager(contentType: 'movie' | 'tv') {
     } finally {
       setIsLoadingTags(false)
     }
-    setSelectedTag(DEFAULT_TAG.value)
+    setSelectedTag(DEFAULT_TAG.id)
     setShowTagManager(false)
   }
 
