@@ -9,6 +9,8 @@ import {
   CardTitle,
 } from '@cdlab996/ui/components/card'
 import { Input } from '@cdlab996/ui/components/input'
+import type { DragEndEvent } from '@dnd-kit/core'
+import { arrayMove } from '@dnd-kit/sortable'
 import { useState } from 'react'
 import { SourceManager } from '@/components/settings/SourceManager'
 import { PREMIUM_SOURCES } from '@/lib/api/premium-sources'
@@ -54,25 +56,28 @@ export function PremiumSourceSettings({
     onSourcesChange(sources.filter((s) => s.id !== id))
   }
 
-  const handleReorder = (id: string, direction: 'up' | 'down') => {
-    const index = sources.findIndex((s) => s.id === id)
-    if (index === -1) return
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
 
-    const newIndex = direction === 'up' ? index - 1 : index + 1
-    if (newIndex < 0 || newIndex >= sources.length) return
+    const oldIndex = sources.findIndex((s) => s.id === active.id)
+    const newIndex = sources.findIndex((s) => s.id === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
 
-    const updated = [...sources]
-    ;[updated[index], updated[newIndex]] = [updated[newIndex], updated[index]]
-
-    const normalized = updated.map((s, i) => ({ ...s, priority: i + 1 }))
-    onSourcesChange(normalized)
+    const updated = arrayMove(sources, oldIndex, newIndex).map((s, i) => ({
+      ...s,
+      priority: i + 1,
+    }))
+    onSourcesChange(updated)
   }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>高级源管理</CardTitle>
-        <CardDescription>管理高级内容来源，调整优先级和启用状态</CardDescription>
+        <CardDescription>
+          管理高级内容来源，调整优先级和启用状态
+        </CardDescription>
         <CardAction className="space-x-2">
           <Button variant="outline" size="sm" onClick={onRestoreDefaults}>
             恢复默认
@@ -95,7 +100,7 @@ export function PremiumSourceSettings({
           sources={displayedSources}
           onToggle={handleToggle}
           onDelete={handleDelete}
-          onReorder={handleReorder}
+          onDragEnd={handleDragEnd}
           onEdit={onEditSource}
           defaultIds={PREMIUM_SOURCES.map((s) => s.id)}
         />

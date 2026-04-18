@@ -11,6 +11,8 @@ import {
   CardTitle,
 } from '@cdlab996/ui/components/card'
 import { Input } from '@cdlab996/ui/components/input'
+import type { DragEndEvent } from '@dnd-kit/core'
+import { arrayMove } from '@dnd-kit/sortable'
 import { useState } from 'react'
 import { SourceManager } from '@/components/settings/SourceManager'
 import { DEFAULT_SOURCES } from '@/lib/api/default-sources'
@@ -56,22 +58,19 @@ export function SourceSettings({
     onSourcesChange(sources.filter((s) => s.id !== id))
   }
 
-  const handleReorder = (id: string, direction: 'up' | 'down') => {
-    const index = sources.findIndex((s) => s.id === id)
-    if (index === -1) return
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
 
-    const newIndex = direction === 'up' ? index - 1 : index + 1
-    if (newIndex < 0 || newIndex >= sources.length) return
+    const oldIndex = sources.findIndex((s) => s.id === active.id)
+    const newIndex = sources.findIndex((s) => s.id === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
 
-    const updated = [...sources]
-    ;[updated[index], updated[newIndex]] = [updated[newIndex], updated[index]]
-
-    const normalized = updated.map((s, i) => ({
+    const updated = arrayMove(sources, oldIndex, newIndex).map((s, i) => ({
       ...s,
       priority: i + 1,
     }))
-
-    onSourcesChange(normalized)
+    onSourcesChange(updated)
   }
 
   return (
@@ -101,7 +100,7 @@ export function SourceSettings({
           sources={displayedSources}
           onToggle={handleToggle}
           onDelete={handleDelete}
-          onReorder={handleReorder}
+          onDragEnd={handleDragEnd}
           onEdit={onEditSource}
           defaultIds={DEFAULT_SOURCES.map((s) => s.id)}
         />
