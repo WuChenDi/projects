@@ -7,7 +7,6 @@ import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { CalendarIcon, FilmIcon, StarIcon, TrophyIcon } from 'lucide-react'
 import Image from 'next/image'
 import { Suspense, useState } from 'react'
-import { Header } from '@/components/layout'
 import type { RankingMovie } from '@/lib/hooks/useRanking'
 import { RANKING_CATEGORIES, useRanking } from '@/lib/hooks/useRanking'
 
@@ -114,75 +113,67 @@ function RankingPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <Header isBack />
-
-      <IKPageContainer>
-        <div className="max-w-4xl mx-auto w-full pb-20">
-          {/* Title */}
-          <div className="my-6 flex items-center gap-2">
-            <TrophyIcon className="size-5 text-primary" />
-            <h1 className="text-xl font-bold">豆瓣排行榜</h1>
-          </div>
-
-          {/* Category selector */}
-          <div className="flex flex-wrap gap-1.5 mb-6">
-            {RANKING_CATEGORIES.map((cat) => (
-              <Button
-                key={cat.id}
-                variant={selectedCategory.id === cat.id ? 'default' : 'outline'}
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => setSelectedCategory(cat)}
-              >
-                {cat.label}
-              </Button>
-            ))}
-          </div>
-
-          {/* Ranking list */}
-          <div className="space-y-3">
-            {movies.map((movie, index) => (
-              <RankingCard
-                key={movie.id || index}
-                movie={movie}
-                index={index}
-                onMovieClick={handleMovieClick}
-              />
-            ))}
-          </div>
-
-          {hasMore && !loading && <div ref={prefetchRef} className="h-1" />}
-
-          {loading && (
-            <div className="flex justify-center py-12">
-              <div className="flex flex-col items-center gap-3">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
-                <p className="text-sm text-muted-foreground">加载中...</p>
-              </div>
-            </div>
-          )}
-
-          {hasMore && !loading && <div ref={loadMoreRef} className="h-20" />}
-
-          {!hasMore && movies.length > 0 && (
-            <IKEmpty
-              title="没有更多内容了"
-              showIcon={false}
-              className="py-12"
-            />
-          )}
-
-          {!loading && movies.length === 0 && (
-            <IKEmpty
-              title="暂无排行数据"
-              icon={TrophyIcon}
-              iconClassName="size-4 text-muted-foreground"
-            />
-          )}
+    <IKPageContainer>
+      <div className="max-w-4xl mx-auto w-full pb-20">
+        {/* Title */}
+        <div className="my-6 flex items-center gap-2">
+          <TrophyIcon className="size-5 text-primary" />
+          <h1 className="text-xl font-bold">豆瓣排行榜</h1>
         </div>
-      </IKPageContainer>
-    </div>
+
+        {/* Category selector */}
+        <div className="flex flex-wrap gap-1.5 mb-6">
+          {RANKING_CATEGORIES.map((cat) => (
+            <Button
+              key={cat.id}
+              variant={selectedCategory.id === cat.id ? 'default' : 'outline'}
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => setSelectedCategory(cat)}
+            >
+              {cat.label}
+            </Button>
+          ))}
+        </div>
+
+        {/* Ranking list */}
+        <div className="space-y-3">
+          {movies.map((movie, index) => (
+            <RankingCard
+              key={movie.id || index}
+              movie={movie}
+              index={index}
+              onMovieClick={handleMovieClick}
+            />
+          ))}
+        </div>
+
+        {hasMore && !loading && <div ref={prefetchRef} className="h-1" />}
+
+        {loading && (
+          <div className="flex justify-center py-12">
+            <div className="flex flex-col items-center gap-3">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+              <p className="text-sm text-muted-foreground">加载中...</p>
+            </div>
+          </div>
+        )}
+
+        {hasMore && !loading && <div ref={loadMoreRef} className="h-20" />}
+
+        {!hasMore && movies.length > 0 && (
+          <IKEmpty title="没有更多内容了" showIcon={false} className="py-12" />
+        )}
+
+        {!loading && movies.length === 0 && (
+          <IKEmpty
+            title="暂无排行数据"
+            icon={TrophyIcon}
+            iconClassName="size-4 text-muted-foreground"
+          />
+        )}
+      </div>
+    </IKPageContainer>
   )
 }
 

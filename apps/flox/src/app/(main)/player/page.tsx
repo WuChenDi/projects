@@ -11,7 +11,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { Header } from '@/components/layout'
 import { EpisodeList } from '@/components/player/EpisodeList'
 import type { VideoResolutionInfo } from '@/components/player/hooks/useVideoResolution'
 import { PlayerError } from '@/components/player/PlayerError'
@@ -215,83 +214,63 @@ function PlayerContent() {
   if (!videoId || !source) return null
 
   return (
-    <div className="min-h-screen">
-      <Header isPremiumMode={isPremium} isBack />
+    <IKPageContainer>
+      <div className="max-w-7xl mx-auto w-full pb-20">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+            <p className="text-sm text-muted-foreground">正在加载视频详情...</p>
+          </div>
+        ) : videoError && !videoData ? (
+          <PlayerError
+            error={videoError}
+            onBack={() => router.back()}
+            onRetry={fetchVideoDetails}
+          />
+        ) : (
+          <div className={`grid gap-4 items-start ${playerGridClass}`}>
+            {/* Left column */}
+            <div className="lg:col-span-2 space-y-4">
+              <VideoPlayer
+                playUrl={playUrl}
+                poster={videoData?.vod_pic}
+                videoId={videoId || undefined}
+                currentEpisode={currentEpisode}
+                onBack={() => router.back()}
+                totalEpisodes={videoData?.episodes?.length || 0}
+                onNextEpisode={handleNextEpisode}
+                isReversed={isReversed}
+                isPremium={isPremium}
+                externalTimeRef={playerTimeRef}
+                onResolutionDetected={setDetectedResolution}
+                viewportMode={viewportMode}
+                onViewportModeChange={setViewportMode}
+              />
 
-      <IKPageContainer>
-        <div className="max-w-7xl mx-auto w-full pb-20">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
-              <p className="text-sm text-muted-foreground">
-                正在加载视频详情...
-              </p>
-            </div>
-          ) : videoError && !videoData ? (
-            <PlayerError
-              error={videoError}
-              onBack={() => router.back()}
-              onRetry={fetchVideoDetails}
-            />
-          ) : (
-            <div className={`grid gap-4 items-start ${playerGridClass}`}>
-              {/* Left column */}
-              <div className="lg:col-span-2 space-y-4">
-                <VideoPlayer
-                  playUrl={playUrl}
-                  poster={videoData?.vod_pic}
-                  videoId={videoId || undefined}
-                  currentEpisode={currentEpisode}
-                  onBack={() => router.back()}
-                  totalEpisodes={videoData?.episodes?.length || 0}
-                  onNextEpisode={handleNextEpisode}
-                  isReversed={isReversed}
-                  isPremium={isPremium}
-                  externalTimeRef={playerTimeRef}
-                  onResolutionDetected={setDetectedResolution}
-                  viewportMode={viewportMode}
-                  onViewportModeChange={setViewportMode}
-                />
-
-                {/* Mobile tabs */}
-                <div className="lg:hidden space-y-4">
-                  <Tabs
-                    value={activeTab}
-                    onValueChange={(v) => setActiveTab(v as typeof activeTab)}
-                  >
-                    <TabsList>
-                      <TabsTrigger value="episodes">选集</TabsTrigger>
-                      <TabsTrigger value="info">简介</TabsTrigger>
-                      {hasMultipleSources && (
-                        <TabsTrigger value="sources">来源</TabsTrigger>
-                      )}
-                    </TabsList>
-                  </Tabs>
-                  {activeTab === 'episodes' && (
-                    <EpisodeList
-                      episodes={videoData?.episodes || null}
-                      currentEpisode={currentEpisode}
-                      isReversed={isReversed}
-                      onEpisodeClick={handleEpisodeClick}
-                      onToggleReverse={handleToggleReverse}
-                    />
-                  )}
-                  {activeTab === 'info' && (
-                    <VideoMetadata
-                      videoData={videoData}
-                      source={source}
-                      title={title}
-                      videoId={videoId}
-                      isPremium={isPremium}
-                    />
-                  )}
-                  {activeTab === 'sources' && hasMultipleSources && (
-                    <SourceSelector {...sourceSelectorProps} />
-                  )}
-                </div>
-
-                {/* Desktop metadata */}
-                <div className="hidden lg:block">
+              {/* Mobile tabs */}
+              <div className="lg:hidden space-y-4">
+                <Tabs
+                  value={activeTab}
+                  onValueChange={(v) => setActiveTab(v as typeof activeTab)}
+                >
+                  <TabsList>
+                    <TabsTrigger value="episodes">选集</TabsTrigger>
+                    <TabsTrigger value="info">简介</TabsTrigger>
+                    {hasMultipleSources && (
+                      <TabsTrigger value="sources">来源</TabsTrigger>
+                    )}
+                  </TabsList>
+                </Tabs>
+                {activeTab === 'episodes' && (
+                  <EpisodeList
+                    episodes={videoData?.episodes || null}
+                    currentEpisode={currentEpisode}
+                    isReversed={isReversed}
+                    onEpisodeClick={handleEpisodeClick}
+                    onToggleReverse={handleToggleReverse}
+                  />
+                )}
+                {activeTab === 'info' && (
                   <VideoMetadata
                     videoData={videoData}
                     source={source}
@@ -299,20 +278,34 @@ function PlayerContent() {
                     videoId={videoId}
                     isPremium={isPremium}
                   />
-                </div>
+                )}
+                {activeTab === 'sources' && hasMultipleSources && (
+                  <SourceSelector {...sourceSelectorProps} />
+                )}
               </div>
 
-              {/* Right column — sticky, top-aligned */}
-              <div className="hidden lg:block lg:col-span-1">
-                <div className="sticky top-[88px] space-y-4">
-                  {sidebarContent}
-                </div>
+              {/* Desktop metadata */}
+              <div className="hidden lg:block">
+                <VideoMetadata
+                  videoData={videoData}
+                  source={source}
+                  title={title}
+                  videoId={videoId}
+                  isPremium={isPremium}
+                />
               </div>
             </div>
-          )}
-        </div>
-      </IKPageContainer>
-    </div>
+
+            {/* Right column — sticky, top-aligned */}
+            <div className="hidden lg:block lg:col-span-1">
+              <div className="sticky top-[88px] space-y-4">
+                {sidebarContent}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </IKPageContainer>
   )
 }
 

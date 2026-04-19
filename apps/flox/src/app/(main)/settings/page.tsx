@@ -1,7 +1,6 @@
 'use client'
 
 import { IKConfirmDialog, IKPageContainer } from '@cdlab996/ui/IK'
-import { Header } from '@/components/layout'
 import { AddSourceModal } from '@/components/settings/AddSourceModal'
 import { DataSettings } from '@/components/settings/DataSettings'
 import { DisplaySettings } from '@/components/settings/DisplaySettings'
@@ -67,8 +66,7 @@ export default function SettingsPage() {
   } = useSettingsPage()
 
   return (
-    <div className="min-h-screen">
-      <Header isBack />
+    <>
       <IKPageContainer>
         <div className="max-w-4xl mx-auto w-full space-y-4 pb-8">
           {/* Player Settings */}
@@ -177,6 +175,6 @@ export default function SettingsPage() {
         onConfirm={handleResetAll}
         onOpenChange={(open) => !open && setIsResetDialogOpen(false)}
       />
-    </div>
+    </>
   )
 }

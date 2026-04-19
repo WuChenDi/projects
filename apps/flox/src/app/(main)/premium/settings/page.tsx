@@ -1,7 +1,6 @@
 'use client'
 
 import { IKConfirmDialog, IKPageContainer } from '@cdlab996/ui/IK'
-import { Header } from '@/components/layout'
 import { AddSourceModal } from '@/components/settings/AddSourceModal'
 import { PremiumSourceSettings } from '@/components/settings/PremiumSourceSettings'
 import { usePremiumSettingsPage } from './hooks/usePremiumSettingsPage'
@@ -22,8 +21,7 @@ export default function PremiumSettingsPage() {
   } = usePremiumSettingsPage()
 
   return (
-    <div className="min-h-screen">
-      <Header isPremiumMode={true} isBack />
+    <>
       <IKPageContainer>
         <div className="max-w-4xl mx-auto w-full space-y-4 pb-8">
           <PremiumSourceSettings
@@ -60,6 +58,6 @@ export default function PremiumSettingsPage() {
         onConfirm={handleRestoreDefaults}
         onOpenChange={(open) => !open && setIsRestoreDefaultsDialogOpen(false)}
       />
-    </div>
+    </>
   )
 }

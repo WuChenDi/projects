@@ -11,26 +11,26 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import Script from 'next/script'
+import { Suspense } from 'react'
 import { siteConfig } from '@/lib/config/site-config'
+import { useHeaderResetStore } from '@/lib/store/header-reset-store'
 import { useSidebarStore } from '@/lib/store/sidebar-store'
 import { ThemeToggle } from './theme-toggle'
 
-interface HeaderProps {
-  onReset?: () => void
-  isPremiumMode?: boolean
-  isBack?: boolean
-}
-
-export function Header({
-  onReset,
-  isPremiumMode = false,
-  isBack = false,
-}: HeaderProps) {
+function HeaderInner() {
   const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  const isPremiumMode =
+    pathname.startsWith('/premium') || searchParams.get('premium') === '1'
+  const isBack = pathname !== '/' && pathname !== '/premium'
+
   const homeHref = isPremiumMode ? '/premium' : '/'
   const settingsHref = isPremiumMode ? '/premium/settings' : '/settings'
+  const onReset = useHeaderResetStore((s) => s.onReset)
   const { setFavoritesOpen, setHistoryOpen } = useSidebarStore()
 
   return (
@@ -40,7 +40,7 @@ export function Header({
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <Link
               href={homeHref}
-              onClick={onReset}
+              onClick={() => onReset?.()}
               className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity min-w-0"
             >
               <Image
@@ -139,5 +139,13 @@ export function Header({
         </div>
       </div>
     </header>
+  )
+}
+
+export function Header() {
+  return (
+    <Suspense fallback={<div className="h-20" />}>
+      <HeaderInner />
+    </Suspense>
   )
 }
