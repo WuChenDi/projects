@@ -45,7 +45,7 @@ function HomePage() {
 
   return (
     <IKPageContainer>
-      <div className="max-w-7xl mx-auto w-full pb-20">
+      <div className="max-w-7xl mx-auto w-full">
         <div className="my-8 relative">
           <SearchForm
             onSearch={handleSearch}

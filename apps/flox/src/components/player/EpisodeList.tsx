@@ -111,14 +111,22 @@ export function EpisodeList({
       </CardHeader>
 
       <CardContent>
-        <ScrollArea style={{ height: scrollHeight }}>
+        <style>{`
+          .episode-list-scroll [data-slot="scroll-area-viewport"] {
+            max-height: ${scrollHeight};
+          }
+          .episode-list-scroll [data-slot="scroll-area-viewport"] > div {
+            display: block !important;
+          }
+        `}</style>
+        <ScrollArea className="episode-list-scroll">
           <div
             ref={listRef}
-            className="space-y-1"
+            className="space-y-1 pr-1"
             role="radiogroup"
             aria-label="剧集选择"
           >
-            {displayEpisodes && displayEpisodes.length > 0 ? (
+          {displayEpisodes && displayEpisodes.length > 0 ? (
               displayEpisodes.map((episode, displayIndex) => {
                 const originalIndex = getOriginalIndex(displayIndex)
                 const isCurrentEpisode = currentEpisode === originalIndex
