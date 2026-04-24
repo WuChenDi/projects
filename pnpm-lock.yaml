@@ -465,6 +465,61 @@ importers:
         specifier: catalog:dev
         version: 4.81.1(@cloudflare/workers-types@4.20260411.1)
 
+  apps/bytts:
+    dependencies:
+      '@cdlab996/genid':
+        specifier: catalog:prod
+        version: 1.4.0
+      '@cdlab996/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@cdlab996/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@tanstack/react-query':
+        specifier: catalog:prod
+        version: 5.97.0(react@19.2.4)
+      lucide-react:
+        specifier: catalog:prod
+        version: 1.8.0(react@19.2.4)
+      next:
+        specifier: catalog:prod
+        version: 16.2.3(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next-themes:
+        specifier: catalog:prod
+        version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react:
+        specifier: catalog:prod
+        version: 19.2.4
+      react-dom:
+        specifier: catalog:prod
+        version: 19.2.4(react@19.2.4)
+      sonner:
+        specifier: catalog:prod
+        version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      zustand:
+        specifier: catalog:prod
+        version: 5.0.12(@types/react@19.2.14)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
+    devDependencies:
+      '@cdlab996/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@cloudflare/next-on-pages':
+        specifier: catalog:dev
+        version: 1.13.16(@cloudflare/workers-types@4.20260411.1)(next@16.2.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.81.1(@cloudflare/workers-types@4.20260411.1))
+      '@types/node':
+        specifier: catalog:dev
+        version: 25.3.3
+      '@types/react':
+        specifier: catalog:dev
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: catalog:dev
+        version: 19.2.3(@types/react@19.2.14)
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.2
+
   apps/clearify:
     dependencies:
       '@cdlab996/genid':

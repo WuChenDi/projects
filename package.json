@@ -32,6 +32,7 @@
     "dev:live-user": "turbo dev --filter=./apps/live-user",
     "dev:baccarat": "turbo dev --filter=./apps/baccarat",
     "dev:flox": "turbo dev --filter=./apps/flox",
+    "dev:bytts": "turbo dev --filter=./apps/bytts",
     "preview:text2img": "turbo preview --filter=./apps/text2img",
     "deploy:dropply-api": "turbo deploy --filter=./apps/dropply-api",
     "deploy:text2img": "turbo deploy --filter=./apps/text2img",
