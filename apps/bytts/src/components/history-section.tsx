@@ -28,6 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@cdlab996/ui/components/dialog'
+import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
 import { IKAudioAssetPlayer, IKAudioPlayer, IKEmpty } from '@cdlab996/ui/IK'
 import { Download, Eye, History, Loader2, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -136,37 +137,39 @@ function HistoryCard({ item }: { item: HistoryItem }) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col gap-4">
-            <div className="w-full p-2 border rounded">
-              {item.audioBlob ? (
-                <IKAudioPlayer blob={item.audioBlob} />
-              ) : (
-                <div className="flex items-center justify-center h-20">
-                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
-                </div>
-              )}
-            </div>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="flex flex-col gap-4 pr-3">
+              <div className="w-full p-2 border rounded">
+                {item.audioBlob ? (
+                  <IKAudioPlayer blob={item.audioBlob} />
+                ) : (
+                  <div className="flex items-center justify-center h-20">
+                    <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+              </div>
 
-            <div className="flex flex-col flex-1 min-w-0">
-              <div className="space-y-2">
-                <div className="text-sm text-muted-foreground">
-                  <span>讲述者:</span>
-                  <span className="ml-2">{item.speaker}</span>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  <span>时间:</span>
-                  <span className="ml-2">{item.timestamp}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-muted-foreground">文本:</div>
-                  <CopyButton size="sm" value={item.text} />
-                </div>
-                <div className="text-sm leading-relaxed whitespace-pre-line">
-                  {item.text}
+              <div className="flex flex-col flex-1 min-w-0">
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">
+                    <span>讲述者:</span>
+                    <span className="ml-2">{item.speaker}</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    <span>时间:</span>
+                    <span className="ml-2">{item.timestamp}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-muted-foreground">文本:</div>
+                    <CopyButton size="sm" value={item.text} />
+                  </div>
+                  <div className="text-sm leading-relaxed whitespace-pre-line">
+                    {item.text}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollArea>
 
           <DialogFooter>
             <Button
