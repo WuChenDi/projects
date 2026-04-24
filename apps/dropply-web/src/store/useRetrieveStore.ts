@@ -1,12 +1,7 @@
 import { logger } from '@cdlab996/utils'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import {
-  clearTextContents,
-  getTextContent,
-  removeTextContents,
-  storeTextContent,
-} from '@/lib/storage'
+import { dbStore } from '@/lib/storage'
 
 export interface RetrievedFile {
   fileId: string
@@ -52,7 +47,7 @@ export const useRetrieveStore = create<RetrieveStore>()(
       addResult: (result) => {
         for (const file of result.files) {
           if (file.isText && file.content) {
-            storeTextContent(
+            dbStore.set(
               textContentKey(result.id, file.fileId),
               file.content,
             ).catch(console.error)
@@ -69,7 +64,7 @@ export const useRetrieveStore = create<RetrieveStore>()(
           const keys = result.files
             .filter((f) => f.isText)
             .map((f) => textContentKey(id, f.fileId))
-          removeTextContents(keys).catch(console.error)
+          dbStore.removeBatch(keys).catch(console.error)
         }
         set((state) => ({
           results: state.results.filter((r) => r.id !== id),
@@ -77,7 +72,7 @@ export const useRetrieveStore = create<RetrieveStore>()(
       },
 
       clearResults: () => {
-        clearTextContents().catch(console.error)
+        dbStore.clear().catch(console.error)
         set({ results: [] })
       },
 
@@ -100,7 +95,7 @@ export const useRetrieveStore = create<RetrieveStore>()(
               .filter((f) => f.isText && !f.content)
               .map(async (file) => {
                 const key = textContentKey(result.id, file.fileId)
-                const content = await getTextContent(key)
+                const content = await dbStore.get(key)
                 if (content) {
                   contentMap.set(key, content)
                 }
