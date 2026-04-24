@@ -1,3 +1,6 @@
+export * from './IKAudioAssetPlayer'
+export * from './IKAudioPlayer'
+export * from './IKAudioVisualizer'
 export * from './IKConfirmDialog'
 export * from './IKEmpty'
 export * from './IKPageContainer'
