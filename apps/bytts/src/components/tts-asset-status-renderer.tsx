@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
-import type { HistoryItem } from '@/lib/history-store'
+import type { HistoryItem } from '@/store/useHistoryStore'
 
 interface TTSAssetStatusRendererProps {
   status: HistoryItem['status']
