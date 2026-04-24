@@ -17,7 +17,7 @@
 - **持久化历史** - 生成历史跨 session 保留，音频 Blob 存储于 IndexedDB，元数据存储于 localStorage
 - **音频下载** - MP3 格式下载，支持自定义文件名
 - **密码保护** - 通过 `ACCESS_PASSWORD` 环境变量开启可选访问控制，支持配置 session 持久化
-- **CORS API** - GET/POST 接口跨域可用，运行于 Edge Runtime
+- **TTS API** - POST 接口，运行于 Edge Runtime
 
 ## 技术栈
 
@@ -44,7 +44,7 @@ pnpm --filter @cdlab996/bytts run build:cf
 
 ## API
 
-所有接口均支持 CORS，运行于 Edge Runtime。
+所有接口运行于 Edge Runtime。
 
 ### `POST /api/tts`
 
@@ -60,32 +60,6 @@ pnpm --filter @cdlab996/bytts run build:cf
 | `preview` | boolean | `true`                             | `false` 时响应头携带下载信息  |
 
 **响应：** `audio/mpeg` 音频流
-
-### `GET /api/tts`
-
-与 POST 相同，通过查询参数传入：
-
-```
-/api/tts?t=你好&v=zh-CN-XiaoxiaoNeural&r=0&p=0&o=audio-24khz-48kbitrate-mono-mp3&d=false
-```
-
-| 参数 | 说明                        |
-| ---- | --------------------------- |
-| `t`  | 文本（必填）                |
-| `v`  | 语音 short name             |
-| `r`  | 语速（−100 到 100）         |
-| `p`  | 语调（−100 到 100）         |
-| `o`  | 输出格式                    |
-| `d`  | `true` 时触发文件下载       |
-
-### `GET /api/voices`
-
-获取可用语音列表。
-
-| 参数 | 说明                                                        |
-| ---- | ----------------------------------------------------------- |
-| `l`  | 语言过滤，如 `zh`、`en-US`                                 |
-| `f`  | 格式：不传返回完整 JSON 数组，`0` 返回 YAML 列表，`1` 返回 map |
 
 ## 环境变量
 

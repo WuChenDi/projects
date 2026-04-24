@@ -17,7 +17,7 @@ Preview: https://bytts.pages.dev/
 - **Persistent history** - Generation history with audio blobs stored in IndexedDB and metadata in localStorage
 - **Audio download** - MP3 download with optional custom filename
 - **Password protection** - Optional access control via `ACCESS_PASSWORD` env var with configurable session persistence
-- **CORS API** - GET/POST endpoints usable from any origin, runs on Edge Runtime
+- **TTS API** - POST endpoint runs on Edge Runtime
 
 ## Tech Stack
 
@@ -44,7 +44,7 @@ pnpm --filter @cdlab996/bytts run build:cf
 
 ## API
 
-All endpoints are CORS-enabled and run on the Edge Runtime.
+All endpoints run on the Edge Runtime.
 
 ### `POST /api/tts`
 
@@ -60,32 +60,6 @@ All endpoints are CORS-enabled and run on the Edge Runtime.
 | `preview` | boolean | `true`                             | `false` adds a download header       |
 
 **Response:** `audio/mpeg` stream
-
-### `GET /api/tts`
-
-Same as POST via query parameters:
-
-```
-/api/tts?t=Hello&v=zh-CN-XiaoxiaoNeural&r=0&p=0&o=audio-24khz-48kbitrate-mono-mp3&d=false
-```
-
-| Param | Description                     |
-| ----- | ------------------------------- |
-| `t`   | Text (required)                 |
-| `v`   | Voice short name                |
-| `r`   | Rate (−100 to 100)              |
-| `p`   | Pitch (−100 to 100)             |
-| `o`   | Output format                   |
-| `d`   | `true` to trigger file download |
-
-### `GET /api/voices`
-
-List available voices.
-
-| Param | Description                                                         |
-| ----- | ------------------------------------------------------------------- |
-| `l`   | Locale filter, e.g. `zh`, `en-US`                                  |
-| `f`   | Format: omit for full JSON array, `0` for YAML list, `1` for map   |
 
 ## Environment Variables
 
