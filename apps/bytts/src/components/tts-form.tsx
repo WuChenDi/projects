@@ -209,8 +209,12 @@ export default function TTSForm() {
           rate,
           pitch,
         })
-        const url = URL.createObjectURL(blob)
-        if (!isPreview) {
+        if (isPreview) {
+          const url = URL.createObjectURL(blob)
+          const audio = new Audio(url)
+          audio.onended = () => URL.revokeObjectURL(url)
+          audio.play()
+        } else {
           updateHistory(requestId, { status: 'completed', audioBlob: blob })
         }
       }
