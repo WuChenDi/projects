@@ -4,7 +4,7 @@
 
 Free online text-to-speech tool. Supports 300+ voices, adjustable speed and pitch, long-text auto-splitting, and persistent generation history.
 
-Preview: https://cctts.pages.dev/
+Preview: https://bytts.pages.dev/
 
 ## Features
 
