@@ -1,13 +1,7 @@
 import { logger } from '@cdlab996/utils'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import {
-  clearBlobs,
-  getBlob,
-  removeBlob,
-  removeBlobs,
-  storeBlob,
-} from '@/lib/storage'
+import { dbStore } from '@/lib/storage'
 import type { ProcessResult } from '@/types'
 import { StatusEnum } from '@/types'
 
@@ -33,7 +27,7 @@ export const useProcessStore = create<ProcessStore>()(
           processResults: [result, ...state.processResults],
         }))
         if (result.data.byteLength > 0) {
-          storeBlob(result.id, result.data).catch(console.error)
+          dbStore.set(result.id, result.data).catch(console.error)
         }
       },
 
@@ -44,7 +38,7 @@ export const useProcessStore = create<ProcessStore>()(
           ),
         }))
         if (updates.data && updates.data.byteLength > 0) {
-          storeBlob(id, updates.data).catch(console.error)
+          dbStore.set(id, updates.data).catch(console.error)
         }
       },
 
@@ -54,7 +48,7 @@ export const useProcessStore = create<ProcessStore>()(
           if (result?.downloadUrl) {
             URL.revokeObjectURL(result.downloadUrl)
           }
-          removeBlob(id).catch(console.error)
+          dbStore.remove(id).catch(console.error)
           return {
             processResults: state.processResults.filter((r) => r.id !== id),
           }
@@ -68,7 +62,7 @@ export const useProcessStore = create<ProcessStore>()(
               URL.revokeObjectURL(result.downloadUrl)
             }
           })
-          removeBlobs(ids).catch(console.error)
+          dbStore.removeBatch(ids).catch(console.error)
           return {
             processResults: state.processResults.filter(
               (r) => !idsSet.has(r.id),
@@ -83,7 +77,7 @@ export const useProcessStore = create<ProcessStore>()(
               URL.revokeObjectURL(result.downloadUrl)
             }
           })
-          clearBlobs().catch(console.error)
+          dbStore.clear().catch(console.error)
           return { processResults: [] }
         }),
 
@@ -98,7 +92,7 @@ export const useProcessStore = create<ProcessStore>()(
               return
             }
             try {
-              const data = await getBlob(result.id)
+              const data = await dbStore.get(result.id)
               if (!data) {
                 restoredMap.set(result.id, {
                   ...result,

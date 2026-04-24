@@ -1,7 +1,7 @@
 import { logger } from '@cdlab996/utils'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { clearBlobs, getBlob, removeBlob, storeBlob } from '@/lib/storage'
+import { dbStore } from '@/lib/storage'
 
 export interface HistoryItem {
   id: string
@@ -42,20 +42,20 @@ export const useHistoryStore = create<HistoryStore>()(
         }))
         if (updates.audioBlob) {
           updates.audioBlob.arrayBuffer().then((buf) => {
-            storeBlob(id, buf).catch(console.error)
+            dbStore.set(id, buf).catch(console.error)
           })
         }
       },
 
       removeHistory: (id) => {
-        removeBlob(id).catch(console.error)
+        dbStore.remove(id).catch(console.error)
         set((state) => ({
           history: state.history.filter((item) => item.id !== id),
         }))
       },
 
       clearHistory: () => {
-        clearBlobs().catch(console.error)
+        dbStore.clear().catch(console.error)
         set({ history: [] })
       },
 
@@ -67,7 +67,7 @@ export const useHistoryStore = create<HistoryStore>()(
           history.map(async (item) => {
             if (item.status !== 'completed') return
             try {
-              const buf = await getBlob(item.id)
+              const buf = await dbStore.get(item.id)
               if (!buf) {
                 restored.set(item.id, {
                   status: 'failed',
