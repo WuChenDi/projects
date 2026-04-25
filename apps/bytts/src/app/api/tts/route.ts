@@ -1,5 +1,6 @@
 // https://learn.microsoft.com/en-us/azure/ai-services/speech-service/rest-text-to-speech?tabs=streaming
 
+import { randomUUID, subtle } from '@cdlab996/uncrypto'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
@@ -46,7 +47,7 @@ async function refreshEndpoint() {
     expiredAt = Date.now() / 1000 + 3600
   }
 
-  clientId = crypto.randomUUID().replace(/-/g, '')
+  clientId = randomUUID().replace(/-/g, '')
 }
 
 async function getEndpoint() {
@@ -77,7 +78,7 @@ async function getEndpoint() {
 async function generateSignature(urlStr: string): Promise<string> {
   const url = urlStr.split('://')[1]
   const encodedUrl = encodeURIComponent(url)
-  const uuidStr = crypto.randomUUID().replace(/-/g, '')
+  const uuidStr = randomUUID().replace(/-/g, '')
   const formattedDate = new Date()
     .toUTCString()
     .replace(/GMT/, '')
@@ -94,7 +95,7 @@ async function generateSignature(urlStr: string): Promise<string> {
     (c) => c.charCodeAt(0),
   )
 
-  const key = await crypto.subtle.importKey(
+  const key = await subtle.importKey(
     'raw',
     keyData,
     { name: 'HMAC', hash: { name: 'SHA-256' } },
@@ -102,7 +103,7 @@ async function generateSignature(urlStr: string): Promise<string> {
     ['sign'],
   )
 
-  const signature = await crypto.subtle.sign(
+  const signature = await subtle.sign(
     'HMAC',
     key,
     new TextEncoder().encode(bytesToSign),
@@ -180,16 +181,18 @@ function parseParams(params: {
   const rate = Number(params.rate) || 0
   const pitch = Number(params.pitch) || 0
   const format =
-    params.format ||
-    params.outputFormat ||
-    'audio-24khz-48kbitrate-mono-mp3'
+    params.format || params.outputFormat || 'audio-24khz-48kbitrate-mono-mp3'
   const download = params.preview === false || params.preview === 'false'
 
   if (!text) {
-    return { error: 'Text is required' }
+    return {
+      error: 'Text is required',
+    }
   }
   if (!VOICE_NAME_RE.test(voice)) {
-    return { error: 'Invalid voice name' }
+    return {
+      error: 'Invalid voice name',
+    }
   }
 
   return { text, voice, rate, pitch, format, download }
@@ -221,4 +224,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
