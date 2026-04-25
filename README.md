@@ -4,10 +4,11 @@
 [![Node](https://img.shields.io/badge/node-%E2%89%A5%2020-brightgreen.svg)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-%E2%89%A5%2010-f69220.svg)](https://pnpm.io/)
 [![Turborepo](https://img.shields.io/badge/built%20with-Turborepo-cc00ff.svg)](https://turbo.build/)
+[![NSL](https://img.shields.io/badge/dev%20proxy-%40nsio%2Fnsl-4a9eff.svg)](https://github.com/nsiod/nsl)
 
 [中文文档](./README.zh-CN.md)
 
-A modern web tools monorepo built with **Turborepo + pnpm**, spanning Next.js, Nuxt, Hono, and more.
+A modern web tools monorepo built with **Turborepo + pnpm**, spanning Next.js, Nuxt, Hono, and more. Local dev is proxied by [@nsio/nsl](https://github.com/nsiod/nsl) — every app gets a stable URL at `http://<name>.localhost:3355`, no port hunting needed.
 
 > [!IMPORTANT]
 > Most apps run **entirely in the browser** with **zero server uploads** — your data never leaves your device.
@@ -120,6 +121,16 @@ https://byplay.pages.dev/
 - Playback data collection, log reporting, and behavior analytics for ByPlay
 - Suitable as a player log backend or data infrastructure for A/B testing / quality monitoring
 
+### byTTS
+
+**Browser-based Text-to-Speech Tool**
+
+https://bytts.pages.dev/
+
+- Convert text to speech via Microsoft Azure Cognitive Services with cascaded voice selection, rate, and pitch controls
+- SSML synthesis, streaming audio output, configurable client trace ID
+- Tech: Next.js (App Router) · Radix UI · Edge Runtime · Microsoft Azure Speech Service
+
 ### vidl
 
 **Online Video Downloader**
@@ -222,21 +233,24 @@ pnpm install
 
 ### Common Commands
 
+Dev servers are proxied by [@nsio/nsl](https://github.com/nsiod/nsl) — each app is accessible at `http://<name>.localhost:3355` (name = package name with scope stripped).
+
 ```bash
 pnpm dev                                     # Start all apps (parallel dev)
-pnpm --filter @cdlab996/clearify dev         # Start Clearify only
-pnpm --filter @cdlab996/baccarat dev         # Start Baccarat only (port 3020)
-pnpm --filter @cdlab996/bycut dev            # Start ByCut only (port 3020)
-pnpm --filter @cdlab996/vidl dev             # Start vidl only (port 3010)
-pnpm --filter @cdlab996/securec dev          # Start SecureC only (port 3009)
-pnpm --filter @cdlab996/text2img dev         # Start Text2Img only (port 3012)
-pnpm --filter @cdlab996/values dev           # Start Value Vision only (port 3011)
-pnpm --filter @cdlab996/byplay dev           # Start ByPlay only (port 3016)
-pnpm --filter @cdlab996/byplay-log dev       # Start ByPlay Log only (port 3017)
-pnpm --filter @cdlab996/dropply-web dev      # Start Dropply Web only (port 3013)
-pnpm --filter @cdlab996/flox dev             # Start Flox only (port 3023)
-pnpm --filter @cdlab996/live-user dev        # Start LiveUser only (port 3021)
-pnpm --filter @cdlab996/repo-changelog dev   # Start Repo Changelog only (port 3019)
+pnpm --filter @cdlab996/clearify dev         # → http://clearify.localhost:3355
+pnpm --filter @cdlab996/baccarat dev         # → http://baccarat.localhost:3355
+pnpm --filter @cdlab996/bycut dev            # → http://bycut.localhost:3355
+pnpm --filter @cdlab996/vidl dev             # → http://vidl.localhost:3355
+pnpm --filter @cdlab996/securec dev          # → http://securec.localhost:3355
+pnpm --filter @cdlab996/text2img dev         # → http://text2img.localhost:3355
+pnpm --filter @cdlab996/values dev           # → http://values.localhost:3355
+pnpm --filter @cdlab996/byplay dev           # → http://byplay.localhost:3355
+pnpm --filter @cdlab996/byplay-log dev       # → http://byplay-log.localhost:3355
+pnpm --filter @cdlab996/bytts dev            # → http://bytts.localhost:3355
+pnpm --filter @cdlab996/dropply-web dev      # → http://dropply-web.localhost:3355
+pnpm --filter @cdlab996/flox dev             # → http://flox.localhost:3355
+pnpm --filter @cdlab996/live-user dev        # → http://live-user.localhost:3355
+pnpm --filter @cdlab996/repo-changelog dev   # → http://repo-changelog.localhost:3355
 pnpm build                                   # Build all apps
 pnpm --filter @cdlab996/clearify run build
 pnpm --filter @cdlab996/bycut run build
@@ -246,6 +260,7 @@ pnpm --filter @cdlab996/text2img run build
 pnpm --filter @cdlab996/values run build
 pnpm --filter @cdlab996/byplay run build
 pnpm --filter @cdlab996/byplay-log run build
+pnpm --filter @cdlab996/bytts run build
 pnpm --filter @cdlab996/dropply-web run build
 pnpm --filter @cdlab996/flox run build
 pnpm --filter @cdlab996/live-user run build
@@ -264,20 +279,22 @@ pnpm clean                         # Clean node_modules / cache / build artifact
 │   ├── bycut/             # Browser-based Video Editor
 │   ├── byplay/            # Online Video Player
 │   ├── byplay-log/        # ByPlay Monitoring & Analytics Service
+│   ├── bytts/             # Text-to-Speech Tool
 │   ├── clearify/          # Image & Video Toolbox
 │   ├── dropply-api/       # Dropply File Sharing Cloudflare API
 │   ├── dropply-web/       # Dropply File Sharing Web Frontend
 │   ├── flox/              # Flox - Video Aggregation & Playback Platform
 │   ├── live-user/         # Real-time Online User Counter
-│   ├── vidl/              # Video Downloader (M3U8/HLS, MP4, etc.)
 │   ├── repo-changelog/    # GitHub Release / Changelog Aggregation
 │   ├── SecureC/           # Encryption Tool
 │   ├── text2img/          # Text-to-Image Frontend
-│   └── value-vision/      # Value Comparison / Visualization
+│   ├── value-vision/      # Value Comparison / Visualization
+│   └── vidl/              # Video Downloader (M3U8/HLS, MP4, etc.)
 ├── packages/
+│   ├── cipher/            # Stream Cipher Library (@cdlab996/cipher)
 │   ├── tsconfig/          # Shared TypeScript Config (@cdlab996/tsconfig)
 │   ├── ui/                # Shared UI Component Library (@cdlab996/ui)
-│   ├── uncrypto/          # Lightweight Crypto Library (@cdlab996/uncrypto)
+│   ├── uncrypto/          # Lightweight Crypto Utilities (@cdlab996/uncrypto)
 │   └── utils/             # Common Utilities (@cdlab996/utils)
 ├── scripts/
 │   └── clean.sh
@@ -288,15 +305,15 @@ pnpm clean                         # Clean node_modules / cache / build artifact
 
 ## Tech Stack
 
-| Layer             | Technology                                                     |
-| ----------------- | -------------------------------------------------------------- |
-| **Frontend**      | React + Next.js 16+ (App Router) / Vue 3 + Nuxt 4              |
-| **Type System**   | TypeScript 5                                                   |
-| **UI**            | shadcn/ui · Tailwind CSS v4 · Nuxt UI                          |
-| **Browser APIs**  | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API |
-| **Backend / API** | Cloudflare Workers · Hono + Zod Validator                      |
-| **Database**      | Drizzle ORM + LibSQL / Cloudflare D1                           |
-| **Engineering**   | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format)     |
+| Layer             | Technology                                                                         |
+| ----------------- | ---------------------------------------------------------------------------------- |
+| **Frontend**      | React + Next.js 16+ (App Router) / Vue 3 + Nuxt 4                                  |
+| **Type System**   | TypeScript 5                                                                       |
+| **UI**            | shadcn/ui · Tailwind CSS v4 · Nuxt UI                                              |
+| **Browser APIs**  | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API                     |
+| **Backend / API** | Cloudflare Workers · Hono + Zod Validator                                          |
+| **Database**      | Drizzle ORM + LibSQL / Cloudflare D1                                               |
+| **Engineering**   | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format) · @nsio/nsl (dev proxy) |
 
 ## License
 

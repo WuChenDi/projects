@@ -13,7 +13,7 @@
     "directory": "apps/dropply-api"
   },
   "scripts": {
-    "dev": "wrangler dev --ip 0.0.0.0 --port 3014 src/index.ts",
+    "dev": "nsl run wrangler dev src/index.ts",
     "deploy": "wrangler deploy --minify",
     "build": "bun build src/index.ts --outdir dist --target browser",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",

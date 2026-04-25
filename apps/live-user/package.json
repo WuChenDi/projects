@@ -14,7 +14,7 @@
   },
   "module": "src/index.ts",
   "scripts": {
-    "dev": "wrangler dev --ip 0.0.0.0 --port 3021",
+    "dev": "nsl run wrangler dev src/index.ts",
     "deploy": "wrangler deploy --minify",
     "build": "bun build src/index.ts --outdir dist --target browser",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"

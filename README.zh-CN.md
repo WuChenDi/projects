@@ -4,10 +4,11 @@
 [![Node](https://img.shields.io/badge/node-%E2%89%A5%2020-brightgreen.svg)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-%E2%89%A5%2010-f69220.svg)](https://pnpm.io/)
 [![Turborepo](https://img.shields.io/badge/built%20with-Turborepo-cc00ff.svg)](https://turbo.build/)
+[![NSL](https://img.shields.io/badge/dev%20proxy-%40nsio%2Fnsl-4a9eff.svg)](https://github.com/nsiod/nsl)
 
 [English](./README.md)
 
-现代 Web 工具集合 monorepo —— 基于 **Turborepo + pnpm**，涵盖 Next.js、Nuxt、Hono 等多技术栈
+现代 Web 工具集合 monorepo —— 基于 **Turborepo + pnpm**，涵盖 Next.js、Nuxt、Hono 等多技术栈。本地开发通过 [@nsio/nsl](https://github.com/nsiod/nsl) 反向代理，每个应用都有固定的访问地址 `http://<name>.localhost:3355`，无需记忆端口号。
 
 > [!IMPORTANT]
 > 大多数应用**完全在浏览器端运行**，**零服务器上传**，数据永不离开你的设备。
@@ -120,6 +121,16 @@ https://byplay.pages.dev/
 - 为 ByPlay 提供播放数据采集、日志上报与行为分析能力
 - 适合作为播放器日志后端或 A/B 实验/质量监控的数据基础设施
 
+### byTTS
+
+**浏览器端文字转语音工具**
+
+https://bytts.pages.dev/
+
+- 调用 Microsoft Azure 认知服务将文字合成语音，支持语音级联选择、语速与音调调节
+- 基于 SSML 合成、流式音频输出，可配置客户端 Trace ID
+- 核心技术：Next.js（App Router）· Radix UI · Edge Runtime · Microsoft Azure Speech Service
+
 ### vidl
 
 **在线视频下载工具**
@@ -222,21 +233,24 @@ pnpm install
 
 ### 常用命令
 
+开发服务器通过 [@nsio/nsl](https://github.com/nsiod/nsl) 代理，每个应用均可通过 `http://<name>.localhost:3355` 访问（name 为去掉 scope 后的包名）。
+
 ```bash
 pnpm dev                                     # 启动所有应用（并行开发）
-pnpm --filter @cdlab996/clearify dev         # 只启动 Clearify
-pnpm --filter @cdlab996/baccarat dev         # 只启动 Baccarat (port 3020)
-pnpm --filter @cdlab996/bycut dev            # 只启动 ByCut (port 3020)
-pnpm --filter @cdlab996/vidl dev             # 只启动 vidl (port 3010)
-pnpm --filter @cdlab996/securec dev          # 只启动 SecureC (port 3009)
-pnpm --filter @cdlab996/text2img dev         # 只启动 Text2Img (port 3012)
-pnpm --filter @cdlab996/values dev           # 只启动 Value Vision (port 3011)
-pnpm --filter @cdlab996/byplay dev           # 只启动 ByPlay (port 3016)
-pnpm --filter @cdlab996/byplay-log dev       # 只启动 ByPlay Log (port 3017)
-pnpm --filter @cdlab996/dropply-web dev      # 只启动 Dropply Web (port 3013)
-pnpm --filter @cdlab996/flox dev             # 只启动 Flox (port 3023)
-pnpm --filter @cdlab996/live-user dev        # 只启动 LiveUser (port 3021)
-pnpm --filter @cdlab996/repo-changelog dev   # 只启动 Repo Changelog (port 3019)
+pnpm --filter @cdlab996/clearify dev         # → http://clearify.localhost:3355
+pnpm --filter @cdlab996/baccarat dev         # → http://baccarat.localhost:3355
+pnpm --filter @cdlab996/bycut dev            # → http://bycut.localhost:3355
+pnpm --filter @cdlab996/vidl dev             # → http://vidl.localhost:3355
+pnpm --filter @cdlab996/securec dev          # → http://securec.localhost:3355
+pnpm --filter @cdlab996/text2img dev         # → http://text2img.localhost:3355
+pnpm --filter @cdlab996/values dev           # → http://values.localhost:3355
+pnpm --filter @cdlab996/byplay dev           # → http://byplay.localhost:3355
+pnpm --filter @cdlab996/byplay-log dev       # → http://byplay-log.localhost:3355
+pnpm --filter @cdlab996/bytts dev            # → http://bytts.localhost:3355
+pnpm --filter @cdlab996/dropply-web dev      # → http://dropply-web.localhost:3355
+pnpm --filter @cdlab996/flox dev             # → http://flox.localhost:3355
+pnpm --filter @cdlab996/live-user dev        # → http://live-user.localhost:3355
+pnpm --filter @cdlab996/repo-changelog dev   # → http://repo-changelog.localhost:3355
 pnpm build                                   # 构建所有应用
 pnpm --filter @cdlab996/clearify run build
 pnpm --filter @cdlab996/bycut run build
@@ -246,6 +260,7 @@ pnpm --filter @cdlab996/text2img run build
 pnpm --filter @cdlab996/values run build
 pnpm --filter @cdlab996/byplay run build
 pnpm --filter @cdlab996/byplay-log run build
+pnpm --filter @cdlab996/bytts run build
 pnpm --filter @cdlab996/dropply-web run build
 pnpm --filter @cdlab996/flox run build
 pnpm --filter @cdlab996/repo-changelog run build
@@ -263,20 +278,22 @@ pnpm clean                         # 清理 node_modules / 缓存 / 构建产物
 │   ├── bycut/             # 浏览器端视频编辑器
 │   ├── byplay/            # 在线视频播放器
 │   ├── byplay-log/        # ByPlay 播放器监控与分析服务
+│   ├── bytts/             # 文字转语音工具
 │   ├── clearify/          # 图像 & 视频工具箱
 │   ├── dropply-api/       # Dropply 文件分享 Cloudflare API
 │   ├── dropply-web/       # Dropply 文件分享 Web 前端
 │   ├── flox/              # Flox - 视频聚合与播放平台
 │   ├── live-user/         # 实时在线用户计数器
-│   ├── vidl/              # 视频下载工具（M3U8/HLS、MP4 等）
 │   ├── repo-changelog/    # GitHub Release / Changelog 聚合工具
 │   ├── SecureC/           # 加解密工具
 │   ├── text2img/          # 文生图前端
-│   └── value-vision/      # 价值对比 / 可视化工具
+│   ├── value-vision/      # 价值对比 / 可视化工具
+│   └── vidl/              # 视频下载工具（M3U8/HLS、MP4 等）
 ├── packages/
+│   ├── cipher/            # 流式加解密库 (@cdlab996/cipher)
 │   ├── tsconfig/          # 共享 TypeScript 配置 (@cdlab996/tsconfig)
 │   ├── ui/                # 共享 UI 组件库 (@cdlab996/ui)
-│   ├── uncrypto/          # 轻量加密库 (@cdlab996/uncrypto)
+│   ├── uncrypto/          # 轻量加密工具 (@cdlab996/uncrypto)
 │   └── utils/             # 通用工具函数 (@cdlab996/utils)
 ├── scripts/
 │   └── clean.sh
@@ -287,15 +304,15 @@ pnpm clean                         # 清理 node_modules / 缓存 / 构建产物
 
 ## 技术栈
 
-| 层级           | 技术                                                           |
-| -------------- | -------------------------------------------------------------- |
-| **前端框架**   | React + Next.js 16+（App Router） / Vue 3 + Nuxt 4             |
-| **类型系统**   | TypeScript 5                                                   |
-| **UI**         | shadcn/ui · Tailwind CSS v4 · Nuxt UI                          |
-| **浏览器能力** | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API |
-| **后端 / API** | Cloudflare Workers · Hono + Zod Validator                      |
-| **数据库**     | Drizzle ORM + LibSQL / Cloudflare D1                           |
-| **工程**       | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format)     |
+| 层级           | 技术                                                                                   |
+| -------------- | -------------------------------------------------------------------------------------- |
+| **前端框架**   | React + Next.js 16+（App Router） / Vue 3 + Nuxt 4                                     |
+| **类型系统**   | TypeScript 5                                                                           |
+| **UI**         | shadcn/ui · Tailwind CSS v4 · Nuxt UI                                                  |
+| **浏览器能力** | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API                         |
+| **后端 / API** | Cloudflare Workers · Hono + Zod Validator                                              |
+| **数据库**     | Drizzle ORM + LibSQL / Cloudflare D1                                                   |
+| **工程**       | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format) · @nsio/nsl（本地开发代理） |
 
 ## 许可证
 

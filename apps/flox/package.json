@@ -12,7 +12,7 @@
     "directory": "apps/flox"
   },
   "scripts": {
-    "dev": "next dev --hostname 0.0.0.0 --port 3023",
+    "dev": "nsl run next dev",
     "build": "next build --webpack",
     "build:cf": "next-on-pages",
     "start": "next start",

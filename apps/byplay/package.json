@@ -13,7 +13,7 @@
     "directory": "apps/byplay"
   },
   "scripts": {
-    "dev": "next dev --hostname 0.0.0.0 --port 3016",
+    "dev": "nsl run next dev",
     "build": "next build",
     "build:cf": "npx @cloudflare/next-on-pages@latest",
     "start": "next start",

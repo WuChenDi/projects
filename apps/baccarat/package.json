@@ -13,7 +13,7 @@
     "directory": "apps/baccarat"
   },
   "scripts": {
-    "dev": "wrangler dev --ip 0.0.0.0 --port 3022 src/index.ts",
+    "dev": "nsl run wrangler dev src/index.ts",
     "deploy": "wrangler deploy --minify",
     "deploy:dev": "wrangler deploy --env development --minify",
     "deploy:prod": "wrangler deploy --env production --minify",
