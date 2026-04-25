@@ -49,7 +49,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
   const [open, setOpen] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
 
-  const isCompleted = item.status === StatusEnum.PROCESSING
+  const isCompleted = item.status === StatusEnum.COMPLETED
   const displayName = item.name ?? `${item.id}_audio.mp3`
 
   useEffect(() => {
