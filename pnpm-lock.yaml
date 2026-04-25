@@ -473,6 +473,9 @@ importers:
       '@cdlab996/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@cdlab996/uncrypto':
+        specifier: workspace:*
+        version: link:../../packages/uncrypto
       '@cdlab996/utils':
         specifier: workspace:*
         version: link:../../packages/utils
