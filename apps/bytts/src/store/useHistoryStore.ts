@@ -1,3 +1,4 @@
+import { StatusEnum } from '@cdlab996/ui/IK/IKAssetRenderer'
 import { logger } from '@cdlab996/utils'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
@@ -11,7 +12,7 @@ export interface HistoryItem {
   text: string
   audioBlob?: Blob
   requestInfo: string
-  status: 'pending' | 'completed' | 'failed'
+  status: StatusEnum
   error?: string
 }
 
@@ -65,12 +66,12 @@ export const useHistoryStore = create<HistoryStore>()(
 
         await Promise.all(
           history.map(async (item) => {
-            if (item.status !== 'completed') return
+            if (item.status !== StatusEnum.COMPLETED) return
             try {
               const buf = await dbStore.get(item.id)
               if (!buf) {
                 restored.set(item.id, {
-                  status: 'failed',
+                  status: StatusEnum.FAILED,
                   error: 'Audio data lost',
                 })
                 return
@@ -80,7 +81,7 @@ export const useHistoryStore = create<HistoryStore>()(
               })
             } catch {
               restored.set(item.id, {
-                status: 'failed',
+                status: StatusEnum.FAILED,
                 error: 'Audio data lost',
               })
             }
@@ -100,7 +101,7 @@ export const useHistoryStore = create<HistoryStore>()(
       name: 'bytts-results',
       partialize: (state) => ({
         history: state.history
-          .filter((item) => item.status !== 'pending')
+          .filter((item) => item.status !== StatusEnum.PROCESSING)
           .map(({ audioBlob, ...rest }) => rest),
       }),
       onRehydrateStorage: () => (state, error) => {

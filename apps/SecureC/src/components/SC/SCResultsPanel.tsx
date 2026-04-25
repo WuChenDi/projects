@@ -6,11 +6,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import { IKEmpty } from '@cdlab996/ui/IK'
+import { IKEmpty, StatusEnum } from '@cdlab996/ui/IK'
 import { Archive, Download, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { ProcessResult } from '@/types'
-import { StatusEnum } from '@/types'
 import { SCResultCard } from './SCResultCard'
 
 interface SCResultsPanelProps {

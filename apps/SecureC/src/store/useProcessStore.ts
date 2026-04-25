@@ -1,9 +1,9 @@
+import { StatusEnum } from '@cdlab996/ui/IK'
 import { logger } from '@cdlab996/utils'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { dbStore } from '@/lib/storage'
 import type { ProcessResult } from '@/types'
-import { StatusEnum } from '@/types'
 
 interface ProcessStore {
   processResults: ProcessResult[]

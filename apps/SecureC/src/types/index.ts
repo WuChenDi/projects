@@ -1,3 +1,5 @@
+import type { StatusEnum } from '@cdlab996/ui/IK'
+
 export interface FileInfo {
   name: string
   size: number
@@ -18,12 +20,6 @@ export enum ModeEnum {
 export enum InputModeEnum {
   FILE = 'FILE',
   MESSAGE = 'MESSAGE',
-}
-
-export enum StatusEnum {
-  PROCESSING = 'PROCESSING',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
 }
 
 export interface ProcessResult {

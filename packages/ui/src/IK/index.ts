@@ -1,3 +1,6 @@
+export * from './IKAssetFailed'
+export * from './IKAssetLoading'
+export * from './IKAssetRenderer'
 export * from './IKAudioAssetPlayer'
 export * from './IKAudioPlayer'
 export * from './IKAudioVisualizer'

@@ -21,16 +21,19 @@ import {
 } from '@cdlab996/ui/components/input-group'
 import { Label } from '@cdlab996/ui/components/label'
 import { Slider } from '@cdlab996/ui/components/slider'
+import { StatusEnum } from '@cdlab996/ui/IK'
 import { copyToClipboard } from '@cdlab996/utils'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { ClipboardPaste, Copy, Loader2, Timer, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { genid } from '@/lib/genid'
-import type { SpeakerConfig } from '@/lib/types'
 import { escapeXml, splitText } from '@/lib/utils'
 import { useHistoryStore } from '@/store/useHistoryStore'
 
+interface SpeakerConfig {
+  [key: string]: { speakers: Record<string, string> }
+}
 export default function TTSForm() {
   const [speaker, setSpeaker] = useState('')
   const [name, setName] = useState('')
@@ -167,7 +170,7 @@ export default function TTSForm() {
         speaker: speakers['edge-api']?.speakers?.[speaker] || speaker,
         text,
         requestInfo: 'edge-api',
-        status: 'pending',
+        status: StatusEnum.PROCESSING,
       })
     }
 
@@ -190,7 +193,10 @@ export default function TTSForm() {
         }
         const merged = new Blob(blobs, { type: 'audio/mpeg' })
         if (!isPreview) {
-          updateHistory(requestId, { status: 'completed', audioBlob: merged })
+          updateHistory(requestId, {
+            status: StatusEnum.COMPLETED,
+            audioBlob: merged,
+          })
         }
       } else {
         toast.info(`正在生成#${requestId}请求的语音...`)
@@ -207,14 +213,17 @@ export default function TTSForm() {
           audio.onended = () => URL.revokeObjectURL(url)
           audio.play()
         } else {
-          updateHistory(requestId, { status: 'completed', audioBlob: blob })
+          updateHistory(requestId, {
+            status: StatusEnum.COMPLETED,
+            audioBlob: blob,
+          })
         }
       }
     } catch (error) {
       const message = (error as Error).message
       toast.error(`生成失败：${message}`)
       if (!isPreview) {
-        updateHistory(requestId, { status: 'failed', error: message })
+        updateHistory(requestId, { status: StatusEnum.FAILED, error: message })
       }
     } finally {
       setIsGenerating(false)

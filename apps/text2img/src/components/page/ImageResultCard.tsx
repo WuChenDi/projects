@@ -1,11 +1,3 @@
-import { format } from 'date-fns'
-import { Copy, Download, Eye, Trash2 } from 'lucide-react'
-import Image from 'next/image'
-import { useTranslations } from 'next-intl'
-import { useState } from 'react'
-import { toast } from 'sonner'
-import { SCAssetFailed } from '@/components/SC/SCAssetFailed'
-import { SCAssetLoading } from '@/components/SC/SCAssetLoading'
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
 import {
@@ -17,6 +9,13 @@ import {
   DialogTitle,
 } from '@cdlab996/ui/components/dialog'
 import { Separator } from '@cdlab996/ui/components/separator'
+import { IKAssetFailed, IKAssetLoading } from '@cdlab996/ui/IK'
+import { format } from 'date-fns'
+import { Copy, Download, Eye, Trash2 } from 'lucide-react'
+import Image from 'next/image'
+import { useTranslations } from 'next-intl'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import type { GenerateParams, GenerationResult, Model } from '@/types'
 import { GenerationStatus } from '@/types'
 
@@ -50,7 +49,13 @@ export function ImageResultCard({
 
     let paramsText = `${t('params.copyHeader')}\n`
     Object.entries(params).forEach(([key, value]) => {
-      if (key === 'password' || key === 'image_b64' || key === 'mask_b64' || !value) return
+      if (
+        key === 'password' ||
+        key === 'image_b64' ||
+        key === 'mask_b64' ||
+        !value
+      )
+        return
       const name = paramNames[key] || key
       paramsText += `${name}: ${value}\n`
     })
@@ -89,10 +94,10 @@ export function ImageResultCard({
     <>
       <div className="group relative rounded-lg overflow-hidden bg-muted">
         <div className="aspect-square relative flex items-center justify-center">
-          {result.status === GenerationStatus.PENDING && <SCAssetLoading />}
+          {result.status === GenerationStatus.PENDING && <IKAssetLoading />}
 
           {result.status === GenerationStatus.FAILED && (
-            <SCAssetFailed error={result.error} />
+            <IKAssetFailed error={result.error} />
           )}
 
           {isCompleted && result.imageUrl && (
@@ -173,7 +178,7 @@ export function ImageResultCard({
           )}
 
           {result.status === GenerationStatus.FAILED && (
-            <SCAssetFailed error={result.error} />
+            <IKAssetFailed error={result.error} />
           )}
 
           {isCompleted && (
@@ -181,7 +186,9 @@ export function ImageResultCard({
               <div className="grid grid-cols-2 gap-2 text-sm">
                 {result.generationTime && (
                   <div>
-                    <span className="font-medium">{t('card.generationTime')}</span>
+                    <span className="font-medium">
+                      {t('card.generationTime')}
+                    </span>
                     {result.generationTime.toFixed(2)}s
                   </div>
                 )}
@@ -199,7 +206,9 @@ export function ImageResultCard({
                 )}
                 {result.params.guidance && (
                   <div>
-                    <span className="font-medium">{t('card.guidanceLabel')}</span>
+                    <span className="font-medium">
+                      {t('card.guidanceLabel')}
+                    </span>
                     {result.params.guidance}
                   </div>
                 )}
@@ -217,7 +226,13 @@ export function ImageResultCard({
                 <h4 className="text-sm font-medium">{t('card.allParams')}</h4>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(result.params).map(([key, value]) => {
-                    if (key === 'password' || key === 'image_b64' || key === 'mask_b64' || !value) return null
+                    if (
+                      key === 'password' ||
+                      key === 'image_b64' ||
+                      key === 'mask_b64' ||
+                      !value
+                    )
+                      return null
                     return (
                       <Badge key={key} variant="secondary">
                         <span className="font-medium">
@@ -244,11 +259,7 @@ export function ImageResultCard({
                   <Copy className="size-4" />
                   {t('card.copyParamsButton')}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={downloadImage}
-                >
+                <Button variant="outline" size="sm" onClick={downloadImage}>
                   <Download className="size-4" />
                   {t('card.downloadImageButton')}
                 </Button>

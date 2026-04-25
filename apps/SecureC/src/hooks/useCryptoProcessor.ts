@@ -1,14 +1,15 @@
 'use client'
 
+import { detect } from '@cdlab996/cipher'
+import { StatusEnum } from '@cdlab996/ui/IK'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useShallow } from 'zustand/react/shallow'
 import { downloadFile, genid } from '@/lib'
-import { detect } from '@cdlab996/cipher'
 import { useProcessStore } from '@/store/useProcessStore'
 import type { FileInfo, ProcessResult } from '@/types'
-import { InputModeEnum, ModeEnum, StatusEnum } from '@/types'
+import { InputModeEnum, ModeEnum } from '@/types'
 
 export function useCryptoProcessor() {
   const t = useTranslations('toast')

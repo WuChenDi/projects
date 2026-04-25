@@ -29,13 +29,18 @@ import {
   DialogTitle,
 } from '@cdlab996/ui/components/dialog'
 import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
-import { IKAudioAssetPlayer, IKAudioPlayer, IKEmpty } from '@cdlab996/ui/IK'
+import {
+  IKAssetFailed,
+  IKAssetLoading,
+  IKAssetRenderer,
+  IKAudioAssetPlayer,
+  IKAudioPlayer,
+  IKEmpty,
+  StatusEnum,
+} from '@cdlab996/ui/IK'
 import { Download, Eye, History, Loader2, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { TTSAssetFailed } from '@/components/tts-asset-failed'
-import { TTSAssetLoading } from '@/components/tts-asset-loading'
-import { TTSAssetStatusRenderer } from '@/components/tts-asset-status-renderer'
 import type { HistoryItem } from '@/store/useHistoryStore'
 import { useHistoryStore } from '@/store/useHistoryStore'
 
@@ -44,7 +49,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
   const [open, setOpen] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
 
-  const isCompleted = item.status === 'completed'
+  const isCompleted = item.status === StatusEnum.PROCESSING
   const displayName = item.name ?? `${item.id}_audio.mp3`
 
   useEffect(() => {
@@ -71,10 +76,10 @@ function HistoryCard({ item }: { item: HistoryItem }) {
     <>
       <div className="group relative rounded-lg overflow-hidden bg-muted transition-shadow duration-200 hover:ring-2 hover:ring-primary border">
         <div className="aspect-square relative flex items-center justify-center">
-          <TTSAssetStatusRenderer
+          <IKAssetRenderer
             status={item.status}
-            renderLoading={() => <TTSAssetLoading />}
-            renderFailure={() => <TTSAssetFailed error={item.error} />}
+            renderLoading={() => <IKAssetLoading />}
+            renderFailure={() => <IKAssetFailed error={item.error} />}
             renderSuccess={() =>
               audioUrl ? (
                 <IKAudioAssetPlayer
@@ -110,7 +115,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
               </Button>
             </>
           )}
-          {item.status !== 'pending' && (
+          {item.status !== StatusEnum.PROCESSING && (
             <Button
               variant="secondary"
               size="icon-xs"

@@ -1,21 +1,25 @@
-import { logger } from '@cdlab996/utils'
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
-import { StatusEnum } from '@/types'
 
-export interface SCAssetStatusRendererProps {
+export enum StatusEnum {
+  PROCESSING = 'PROCESSING',
+  FAILED = 'FAILED',
+  COMPLETED = 'COMPLETED',
+}
+
+export interface IKAssetRendererProps {
   status: StatusEnum
   renderLoading: () => ReactNode
   renderFailure: () => ReactNode
   renderSuccess: () => ReactNode
 }
 
-export function SCAssetStatusRenderer({
+export function IKAssetRenderer({
   status,
   renderLoading,
   renderFailure,
   renderSuccess,
-}: SCAssetStatusRendererProps) {
+}: IKAssetRendererProps) {
   const content = useMemo(() => {
     switch (status) {
       case StatusEnum.PROCESSING:
@@ -25,7 +29,7 @@ export function SCAssetStatusRenderer({
       case StatusEnum.COMPLETED:
         return renderSuccess()
       default:
-        logger.warn(`Unknown asset status: ${status}`)
+        console.warn(`Unknown asset status: ${status}`)
         return null
     }
   }, [status, renderLoading, renderFailure, renderSuccess])

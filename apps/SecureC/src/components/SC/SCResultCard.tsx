@@ -1,6 +1,7 @@
 import { Button } from '@cdlab996/ui/components/button'
+import { IKAssetFailed, IKAssetLoading, IKAssetRenderer } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
-import { formatFileSize } from '@cdlab996/utils'
+import { copyToClipboard, formatFileSize } from '@cdlab996/utils'
 import {
   Clipboard,
   Download,
@@ -13,13 +14,9 @@ import {
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { copyToClipboard } from '@cdlab996/utils'
 import { getFileIcon } from '@/lib'
 import type { ProcessResult } from '@/types'
 import { InputModeEnum, ModeEnum } from '@/types'
-import { SCAssetFailed } from './SCAssetFailed'
-import { SCAssetLoading } from './SCAssetLoading'
-import { SCAssetStatusRenderer } from './SCAssetStatusRenderer'
 import { SCResultDialog } from './SCResultDialog'
 
 interface SCResultCardProps {
@@ -60,10 +57,10 @@ export function SCResultCard({
         'transition-shadow duration-200 hover:ring-2 hover:ring-primary',
       )}
     >
-      <SCAssetStatusRenderer
+      <IKAssetRenderer
         status={result.status}
-        renderLoading={() => <SCAssetLoading />}
-        renderFailure={() => <SCAssetFailed error={result.error} />}
+        renderLoading={() => <IKAssetLoading />}
+        renderFailure={() => <IKAssetFailed error={result.error} />}
         renderSuccess={() => (
           <>
             <div className="relative flex items-center justify-center rounded-sm shadow-none shrink-0 aspect-square overflow-hidden group border border-border/60">
