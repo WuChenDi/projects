@@ -13,7 +13,7 @@
   },
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0 --port 3024",
-    "build": "next build",
+    "build": "next build --webpack",
     "build:cf": "next-on-pages",
     "start": "next start",
     "lint": "next lint",
