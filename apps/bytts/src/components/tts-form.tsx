@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
+import { Cascader } from '@cdlab996/ui/components/cascader'
 import { Field, FieldGroup, FieldTitle } from '@cdlab996/ui/components/field'
 import {
   InputGroup,
@@ -19,15 +20,6 @@ import {
   InputGroupTextarea,
 } from '@cdlab996/ui/components/input-group'
 import { Label } from '@cdlab996/ui/components/label'
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@cdlab996/ui/components/select'
 import { Slider } from '@cdlab996/ui/components/slider'
 import { copyToClipboard } from '@cdlab996/utils'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -239,26 +231,36 @@ export default function TTSForm() {
         <FieldGroup>
           <Field>
             <Label>选择语音</Label>
-            <Select value={speaker} onValueChange={setSpeaker}>
-              <SelectTrigger>
-                <SelectValue placeholder="加载中..." />
-              </SelectTrigger>
-              <SelectContent>
-                {speakers['edge-api']?.speakers &&
-                  Object.entries(
-                    groupSpeakers(speakers['edge-api'].speakers),
-                  ).map(([group, items]) => (
-                    <SelectGroup key={group}>
-                      <SelectLabel>{group}</SelectLabel>
-                      {items.map(([key, value]) => (
-                        <SelectItem key={key} value={key}>
-                          {value}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ))}
-              </SelectContent>
-            </Select>
+            <Cascader
+              placeholder="选择语音"
+              className="w-full"
+              allowClear={false}
+              value={
+                speaker
+                  ? [
+                      speaker.match(/^([a-z]{2,3}-[A-Z]{2,3})/)?.[1] ?? '其他',
+                      speaker,
+                    ]
+                  : []
+              }
+              options={
+                speakers['edge-api']?.speakers
+                  ? Object.entries(
+                      groupSpeakers(speakers['edge-api'].speakers),
+                    ).map(([group, items]) => ({
+                      value: group,
+                      label: group,
+                      children: items.map(([key, value]) => ({
+                        value: key,
+                        label: value,
+                      })),
+                    }))
+                  : []
+              }
+              onChange={([, speakerKey]) => {
+                if (speakerKey) setSpeaker(speakerKey)
+              }}
+            />
           </Field>
           <Field>
             <Label>自定义名称</Label>
