@@ -3,6 +3,7 @@
 import { Button } from '@cdlab996/ui/components/button'
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -20,6 +21,16 @@ import {
   InputGroupTextarea,
 } from '@cdlab996/ui/components/input-group'
 import { Label } from '@cdlab996/ui/components/label'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from '@cdlab996/ui/components/select'
 import { Slider } from '@cdlab996/ui/components/slider'
 import { StatusEnum } from '@cdlab996/ui/IK'
 import { copyToClipboard } from '@cdlab996/utils'
@@ -27,22 +38,67 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { ClipboardPaste, Copy, Loader2, Timer, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { ApiManagerDialog } from '@/components/api-manager'
 import { genid } from '@/lib/genid'
 import { escapeXml, splitText } from '@/lib/utils'
+import { useApiStore } from '@/store/useApiStore'
 import { useHistoryStore } from '@/store/useHistoryStore'
 
 interface SpeakerConfig {
   [key: string]: { speakers: Record<string, string> }
 }
+
+// Built-in API definitions
+const BUILTIN_APIS = {
+  'edge-api': {
+    label: 'Edge API',
+    enabled: true,
+    format: 'edge' as const,
+    endpoint: '/api/tts',
+    speakers: {} as Record<string, string>, // populated from speakers.json
+    maxLength: 50000,
+    splitLength: 5000,
+  },
+  'oai-tts': {
+    label: 'OAI-TTS',
+    enabled: true,
+    format: 'openai' as const,
+    endpoint: 'https://oai-tts.zwei.de.eu.org/v1/audio/speech',
+    speakers: {
+      alloy: 'Alloy',
+      ash: 'Ash',
+      coral: 'Coral',
+      echo: 'Echo',
+      fable: 'Fable',
+      onyx: 'Onyx',
+      nova: 'Nova',
+      sage: 'Sage',
+      shimmer: 'Shimmer',
+    },
+    maxLength: 4096,
+    splitLength: 4096,
+  },
+} as const
+
+type BuiltinApiId = keyof typeof BUILTIN_APIS
+
+function isBuiltinId(id: string): id is BuiltinApiId {
+  return id in BUILTIN_APIS
+}
+
 export default function TTSForm() {
+  const [selectedApiId, setSelectedApiId] = useState<string>('edge-api')
   const [speaker, setSpeaker] = useState('')
   const [name, setName] = useState('')
   const [text, setText] = useState('')
   const [rate, setRate] = useState(0)
   const [pitch, setPitch] = useState(0)
   const [pauseSeconds, setPauseSeconds] = useState(1)
+  const [instructions, setInstructions] = useState('')
+  const [audioFormat, setAudioFormat] = useState('mp3')
   const [isGenerating, setIsGenerating] = useState(false)
 
+  const { customApis } = useApiStore()
   const { addHistory, updateHistory } = useHistoryStore()
 
   const { data: speakersData, isError: isSpeakersError } =
@@ -55,19 +111,57 @@ export default function TTSForm() {
       },
     })
 
-  const speakers = speakersData ?? {}
+  const edgeSpeakers = speakersData?.['edge-api']?.speakers ?? {}
+
+  // Resolve current API config
+  const isBuiltin = isBuiltinId(selectedApiId)
+  const currentCustomApi = !isBuiltin
+    ? (customApis[selectedApiId] ?? null)
+    : null
+  const currentFormat: 'openai' | 'edge' = isBuiltin
+    ? BUILTIN_APIS[selectedApiId].format
+    : (currentCustomApi?.format ?? 'edge')
+  const isEdgeFormat = currentFormat === 'edge'
+
+  // Speakers for the active API
+  const activeSpeakers: Record<string, string> = (() => {
+    if (selectedApiId === 'edge-api') return edgeSpeakers
+    if (selectedApiId === 'oai-tts') return BUILTIN_APIS['oai-tts'].speakers
+    return Object.fromEntries(
+      (currentCustomApi?.manual ?? []).map((s) => [s, s]),
+    )
+  })()
+
+  const maxLength = (() => {
+    if (isBuiltin) return BUILTIN_APIS[selectedApiId].maxLength
+    if (currentCustomApi?.format === 'openai')
+      return currentCustomApi.maxLength ?? 4096
+    return 50000
+  })()
+
+  const splitLength = (() => {
+    if (isBuiltin) return BUILTIN_APIS[selectedApiId].splitLength
+    if (currentCustomApi?.format === 'openai')
+      return currentCustomApi.maxLength ?? 4096
+    return 5000
+  })()
 
   useEffect(() => {
-    if (isSpeakersError) {
-      toast.error('加载讲述者失败，请刷新页面重试。')
-    }
+    if (isSpeakersError) toast.error('加载讲述者失败，请刷新页面重试。')
   }, [isSpeakersError])
 
+  // Reset speaker when API changes
   useEffect(() => {
-    if (speakersData?.['edge-api']?.speakers && !speaker) {
-      setSpeaker(Object.keys(speakersData['edge-api'].speakers)[0] || '')
+    setSpeaker(Object.keys(activeSpeakers)[0] || '')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedApiId])
+
+  // Set initial edge speaker once speakersData loads
+  useEffect(() => {
+    if (edgeSpeakers && !speaker && selectedApiId === 'edge-api') {
+      setSpeaker(Object.keys(edgeSpeakers)[0] || '')
     }
-  }, [speakersData, speaker])
+  }, [edgeSpeakers, speaker, selectedApiId])
 
   const { mutateAsync: ttsRequest } = useMutation({
     mutationFn: async ({
@@ -83,16 +177,72 @@ export default function TTSForm() {
       rate: number
       pitch: number
     }) => {
-      const response = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { Accept: 'audio/mpeg', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const headers: Record<string, string> = {
+        Accept: 'audio/mpeg',
+        'Content-Type': 'application/json',
+      }
+
+      let url: string
+      let body: Record<string, unknown>
+
+      if (selectedApiId === 'edge-api') {
+        url = '/api/tts'
+        body = {
           text: escapeXml(text),
           voice: speakerId,
           rate,
           pitch,
           preview: isPreview,
-        }),
+        }
+      } else if (selectedApiId === 'oai-tts') {
+        url = BUILTIN_APIS['oai-tts'].endpoint
+        const cleanText = text.replace(
+          /<break\s+time=["'](\d+(?:\.\d+)?[ms]s?)["']\s*\/>/g,
+          '',
+        )
+        body = {
+          model: 'tts-1',
+          input: cleanText,
+          voice: speakerId,
+          response_format: audioFormat,
+          ...(instructions.trim() ? { instructions: instructions.trim() } : {}),
+        }
+      } else if (currentCustomApi) {
+        url = currentCustomApi.endpoint
+        if (currentCustomApi.apiKey) {
+          headers['Authorization'] = `Bearer ${currentCustomApi.apiKey}`
+        }
+        if (currentCustomApi.format === 'openai') {
+          const cleanText = text.replace(
+            /<break\s+time=["'](\d+(?:\.\d+)?[ms]s?)["']\s*\/>/g,
+            '',
+          )
+          body = {
+            model: speakerId,
+            input: cleanText,
+            voice: 'alloy',
+            response_format: audioFormat,
+            ...(instructions.trim()
+              ? { instructions: instructions.trim() }
+              : {}),
+          }
+        } else {
+          body = {
+            text: escapeXml(text),
+            voice: speakerId,
+            rate,
+            pitch,
+            preview: isPreview,
+          }
+        }
+      } else {
+        throw new Error('未知的 API 配置')
+      }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
       })
       if (!response.ok) throw new Error(`服务器响应错误: ${response.status}`)
       const blob = await response.blob()
@@ -148,6 +298,13 @@ export default function TTSForm() {
     )
   }
 
+  const getApiLabel = () => {
+    if (isBuiltin) {
+      return BUILTIN_APIS[selectedApiId as BuiltinApiId].label
+    }
+    return currentCustomApi?.name ?? selectedApiId
+  }
+
   const generateVoice = async (isPreview: boolean) => {
     if (isGenerating) {
       toast.error('请等待当前语音生成完成')
@@ -159,7 +316,14 @@ export default function TTSForm() {
     }
 
     setIsGenerating(true)
-    const segments = isPreview ? [text.substring(0, 20)] : splitText(text)
+    const enableSeg = currentCustomApi
+      ? (currentCustomApi.enableSegmentation ?? true)
+      : true
+    const segments = isPreview
+      ? [text.substring(0, 20)]
+      : enableSeg
+        ? splitText(text, splitLength)
+        : [text.substring(0, splitLength)]
     const requestId = String(genid.nextId())
 
     if (!isPreview) {
@@ -167,9 +331,9 @@ export default function TTSForm() {
         id: requestId,
         name: name.trim() || undefined,
         timestamp: new Date().toLocaleString(),
-        speaker: speakers['edge-api']?.speakers?.[speaker] || speaker,
+        speaker: activeSpeakers[speaker] || speaker,
         text,
-        requestInfo: 'edge-api',
+        requestInfo: getApiLabel(),
         status: StatusEnum.PROCESSING,
       })
     }
@@ -235,49 +399,121 @@ export default function TTSForm() {
       <CardHeader>
         <CardTitle>文本转语音</CardTitle>
         <CardDescription>输入文本，选择讲述者，生成语音</CardDescription>
+        <CardAction>
+          <ApiManagerDialog
+            onApiChange={(id) => {
+              if (id) setSelectedApiId(id)
+            }}
+          />
+        </CardAction>
       </CardHeader>
       <CardContent>
         <FieldGroup>
+          {/* API selector */}
+          <Field>
+            <Label>选择 API</Label>
+            <div className="flex gap-2">
+              <Select value={selectedApiId} onValueChange={setSelectedApiId}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>内置</SelectLabel>
+                    {(
+                      Object.entries(BUILTIN_APIS) as [
+                        BuiltinApiId,
+                        (typeof BUILTIN_APIS)[BuiltinApiId],
+                      ][]
+                    )
+                      .filter(([, api]) => api.enabled)
+                      .map(([id, api]) => (
+                        <SelectItem key={id} value={id}>
+                          {api.label}
+                        </SelectItem>
+                      ))}
+                  </SelectGroup>
+                  {Object.keys(customApis).length > 0 && (
+                    <>
+                      <SelectSeparator />
+                      <SelectGroup>
+                        <SelectLabel>自定义</SelectLabel>
+                        {Object.values(customApis).map((api) => (
+                          <SelectItem key={api.id} value={api.id}>
+                            {api.name}
+                            <span className="ml-1 text-xs text-muted-foreground">
+                              ({api.format === 'openai' ? 'OpenAI' : 'Edge'})
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </Field>
+
+          {/* Speaker selector */}
           <Field>
             <Label>选择语音</Label>
-            <Cascader
-              placeholder="选择语音"
-              className="w-full"
-              allowClear={false}
-              value={
-                speaker
-                  ? [
-                      speaker.match(/^([a-z]{2,3}-[A-Z]{2,3})/)?.[1] ?? '其他',
-                      speaker,
-                    ]
-                  : []
-              }
-              options={
-                speakers['edge-api']?.speakers
-                  ? Object.entries(
-                      groupSpeakers(speakers['edge-api'].speakers),
-                    ).map(([group, items]) => ({
-                      value: group,
-                      label: group,
-                      children: items.map(([key, value]) => ({
-                        value: key,
-                        label: value,
-                      })),
-                    }))
-                  : []
-              }
-              onChange={([, speakerKey]) => {
-                if (speakerKey) setSpeaker(speakerKey)
-              }}
-            />
+            {selectedApiId === 'edge-api' ? (
+              <Cascader
+                placeholder="选择语音"
+                className="w-full"
+                allowClear={false}
+                value={
+                  speaker
+                    ? [
+                        speaker.match(/^([a-z]{2,3}-[A-Z]{2,3})/)?.[1] ??
+                          '其他',
+                        speaker,
+                      ]
+                    : []
+                }
+                options={Object.entries(groupSpeakers(edgeSpeakers)).map(
+                  ([group, items]) => ({
+                    value: group,
+                    label: group,
+                    children: items.map(([key, value]) => ({
+                      value: key,
+                      label: value,
+                    })),
+                  }),
+                )}
+                onChange={([, speakerKey]) => {
+                  if (speakerKey) setSpeaker(speakerKey)
+                }}
+              />
+            ) : (
+              <Select value={speaker} onValueChange={setSpeaker}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="选择语音" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(activeSpeakers).length === 0 ? (
+                    <SelectItem value="" disabled>
+                      请先在 API 管理中配置讲述人
+                    </SelectItem>
+                  ) : (
+                    Object.entries(activeSpeakers).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            )}
           </Field>
+
           <Field>
             <Label>自定义名称</Label>
             <InputGroup>
               <InputGroupInput
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={`留空则默认使用文件名`}
+                placeholder="留空则默认使用文件名"
                 maxLength={100}
               />
             </InputGroup>
@@ -323,71 +559,119 @@ export default function TTSForm() {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 rows={6}
-                maxLength={50000}
+                maxLength={maxLength}
                 placeholder="请输入要转换的文本"
                 className="min-h-[120px] bg-card/50"
               />
               <InputGroupAddon align="block-end" className="border-t">
                 <InputGroupText className="text-xs text-muted-foreground">
-                  {text.length} / 50000 字符，长文本将自动分段
+                  {text.length} / {maxLength} 字符
+                  {isEdgeFormat && '，长文本将自动分段'}
                 </InputGroupText>
               </InputGroupAddon>
             </InputGroup>
           </Field>
 
-          <Field>
-            <div className="flex justify-between items-center">
-              <FieldTitle>停顿</FieldTitle>
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-sm tabular-nums">
-                  {pauseSeconds ? `${pauseSeconds}秒` : '0秒'}
-                </span>
-                <Button variant="outline" size="sm" onClick={handleInsertPause}>
-                  <Timer className="size-3.5" />
-                  插入
-                </Button>
-              </div>
-            </div>
-            <Slider
-              value={[pauseSeconds]}
-              onValueChange={([value]) => setPauseSeconds(value)}
-              min={0}
-              max={10}
-              step={1}
-            />
-          </Field>
+          {/* OpenAI-specific: instructions & audio format */}
+          {!isEdgeFormat && (
+            <>
+              <Field>
+                <Label>语音指令（可选）</Label>
+                <InputGroup className="h-auto">
+                  <InputGroupTextarea
+                    value={instructions}
+                    onChange={(e) => setInstructions(e.target.value)}
+                    rows={2}
+                    placeholder="描述语音风格，例如：请用温柔缓慢的语气朗读"
+                    className="bg-card/50"
+                  />
+                </InputGroup>
+              </Field>
 
-          <Field>
-            <div className="flex justify-between">
-              <FieldTitle>语速</FieldTitle>
-              <span className="text-muted-foreground text-sm tabular-nums">
-                {rate}
-              </span>
-            </div>
-            <Slider
-              value={[rate]}
-              onValueChange={([value]) => setRate(value)}
-              min={-100}
-              max={100}
-              step={1}
-            />
-          </Field>
+              <Field>
+                <Label>音频格式</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {(['mp3', 'opus', 'aac', 'flac', 'wav', 'pcm'] as const).map(
+                    (fmt) => (
+                      <Button
+                        key={fmt}
+                        type="button"
+                        variant={audioFormat === fmt ? 'default' : 'outline'}
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => setAudioFormat(fmt)}
+                      >
+                        {fmt.toUpperCase()}
+                      </Button>
+                    ),
+                  )}
+                </div>
+              </Field>
+            </>
+          )}
 
-          <Field>
-            <div className="flex justify-between">
-              <FieldTitle>语调</FieldTitle>
-              <span className="text-muted-foreground text-sm tabular-nums">
-                {pitch}
-              </span>
-            </div>
-            <Slider
-              value={[pitch]}
-              onValueChange={([value]) => setPitch(value)}
-              min={-100}
-              max={100}
-              step={1}
-            />
-          </Field>
+          {/* Edge-only controls */}
+          {isEdgeFormat && (
+            <>
+              <Field>
+                <div className="flex justify-between items-center">
+                  <FieldTitle>停顿</FieldTitle>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground text-sm tabular-nums">
+                      {pauseSeconds ? `${pauseSeconds}秒` : '0秒'}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleInsertPause}
+                    >
+                      <Timer className="size-3.5" />
+                      插入
+                    </Button>
+                  </div>
+                </div>
+                <Slider
+                  value={[pauseSeconds]}
+                  onValueChange={([value]) => setPauseSeconds(value)}
+                  min={0}
+                  max={10}
+                  step={1}
+                />
+              </Field>
+
+              <Field>
+                <div className="flex justify-between">
+                  <FieldTitle>语速</FieldTitle>
+                  <span className="text-muted-foreground text-sm tabular-nums">
+                    {rate}
+                  </span>
+                </div>
+                <Slider
+                  value={[rate]}
+                  onValueChange={([value]) => setRate(value)}
+                  min={-100}
+                  max={100}
+                  step={1}
+                />
+              </Field>
+
+              <Field>
+                <div className="flex justify-between">
+                  <FieldTitle>语调</FieldTitle>
+                  <span className="text-muted-foreground text-sm tabular-nums">
+                    {pitch}
+                  </span>
+                </div>
+                <Slider
+                  value={[pitch]}
+                  onValueChange={([value]) => setPitch(value)}
+                  min={-100}
+                  max={100}
+                  step={1}
+                />
+              </Field>
+            </>
+          )}
         </FieldGroup>
       </CardContent>
       <CardFooter>
