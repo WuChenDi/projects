@@ -6,6 +6,8 @@
 
 预览：https://bytts.pages.dev/
 
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/bytts/og-image.png)
+
 ## 功能特性
 
 - **300+ 种语音** - 多语言多口音，按语言区域分组，方便快速筛选
@@ -50,24 +52,24 @@ pnpm --filter @cdlab996/bytts run build:cf
 
 **请求体（JSON）：**
 
-| 字段      | 类型    | 默认值                             | 说明                          |
-| --------- | ------- | ---------------------------------- | ----------------------------- |
-| `text`    | string  | —                                  | 要转换的文本（必填）          |
-| `voice`   | string  | `zh-CN-XiaoxiaoMultilingualNeural` | 语音 short name               |
-| `rate`    | number  | `0`                                | 语速调节（−100 到 100）       |
-| `pitch`   | number  | `0`                                | 语调调节（−100 到 100）       |
-| `format`  | string  | `audio-24khz-48kbitrate-mono-mp3`  | TTS 输出格式                  |
-| `preview` | boolean | `true`                             | `false` 时响应头携带下载信息  |
+| 字段      | 类型    | 默认值                             | 说明                         |
+| --------- | ------- | ---------------------------------- | ---------------------------- |
+| `text`    | string  | —                                  | 要转换的文本（必填）         |
+| `voice`   | string  | `zh-CN-XiaoxiaoMultilingualNeural` | 语音 short name              |
+| `rate`    | number  | `0`                                | 语速调节（−100 到 100）      |
+| `pitch`   | number  | `0`                                | 语调调节（−100 到 100）      |
+| `format`  | string  | `audio-24khz-48kbitrate-mono-mp3`  | TTS 输出格式                 |
+| `preview` | boolean | `true`                             | `false` 时响应头携带下载信息 |
 
 **响应：** `audio/mpeg` 音频流
 
 ## 环境变量
 
-| 变量                      | 说明                                      | 默认值 |
-| ------------------------- | ----------------------------------------- | ------ |
-| `ACCESS_PASSWORD`         | 站点访问密码，留空则关闭密码保护          | —      |
-| `PERSIST_PASSWORD`        | `false` 时每次 session 需重新输入密码     | `true` |
-| `MICROSOFT_CLIENTTRACEID` | 传递给 TTS 后端的客户端追踪 ID            | —      |
+| 变量                      | 说明                                  | 默认值 |
+| ------------------------- | ------------------------------------- | ------ |
+| `ACCESS_PASSWORD`         | 站点访问密码，留空则关闭密码保护      | —      |
+| `PERSIST_PASSWORD`        | `false` 时每次 session 需重新输入密码 | `true` |
+| `MICROSOFT_CLIENTTRACEID` | 传递给 TTS 后端的客户端追踪 ID        | —      |
 
 ## 许可证
 

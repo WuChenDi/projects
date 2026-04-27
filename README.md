@@ -131,6 +131,12 @@ https://bytts.pages.dev/
 - SSML synthesis, streaming audio output, configurable client trace ID
 - Tech: Next.js (App Router) · Radix UI · Edge Runtime · Microsoft Azure Speech Service
 
+<details>
+  <summary>Preview</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/bytts/og-image.png" alt="bytts" />
+</details>
+
 ### vidl
 
 **Online Video Downloader**

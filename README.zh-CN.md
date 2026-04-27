@@ -131,6 +131,12 @@ https://bytts.pages.dev/
 - 基于 SSML 合成、流式音频输出，可配置客户端 Trace ID
 - 核心技术：Next.js（App Router）· Radix UI · Edge Runtime · Microsoft Azure Speech Service
 
+<details>
+  <summary>预览</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/bytts/og-image.png" alt="bytts" />
+</details>
+
 ### vidl
 
 **在线视频下载工具**

@@ -6,6 +6,8 @@ Free online text-to-speech tool. Supports 300+ voices, adjustable speed and pitc
 
 Preview: https://bytts.pages.dev/
 
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/bytts/og-image.png)
+
 ## Features
 
 - **300+ voices** - Multiple languages and accents, grouped by locale for easy browsing
@@ -50,24 +52,24 @@ All endpoints run on the Edge Runtime.
 
 **Request body (JSON):**
 
-| Field     | Type    | Default                            | Description                          |
-| --------- | ------- | ---------------------------------- | ------------------------------------ |
-| `text`    | string  | —                                  | Text to convert (required)           |
-| `voice`   | string  | `zh-CN-XiaoxiaoMultilingualNeural` | Voice short name                     |
-| `rate`    | number  | `0`                                | Speech rate (−100 to 100)            |
-| `pitch`   | number  | `0`                                | Pitch adjustment (−100 to 100)       |
-| `format`  | string  | `audio-24khz-48kbitrate-mono-mp3`  | TTS output format                    |
-| `preview` | boolean | `true`                             | `false` adds a download header       |
+| Field     | Type    | Default                            | Description                    |
+| --------- | ------- | ---------------------------------- | ------------------------------ |
+| `text`    | string  | —                                  | Text to convert (required)     |
+| `voice`   | string  | `zh-CN-XiaoxiaoMultilingualNeural` | Voice short name               |
+| `rate`    | number  | `0`                                | Speech rate (−100 to 100)      |
+| `pitch`   | number  | `0`                                | Pitch adjustment (−100 to 100) |
+| `format`  | string  | `audio-24khz-48kbitrate-mono-mp3`  | TTS output format              |
+| `preview` | boolean | `true`                             | `false` adds a download header |
 
 **Response:** `audio/mpeg` stream
 
 ## Environment Variables
 
-| Variable                  | Description                                          | Default |
-| ------------------------- | ---------------------------------------------------- | ------- |
-| `ACCESS_PASSWORD`         | Site access password; leave empty to disable auth    | —       |
-| `PERSIST_PASSWORD`        | `false` to require password re-entry each session    | `true`  |
-| `MICROSOFT_CLIENTTRACEID` | Client trace ID passed to the TTS backend            | —       |
+| Variable                  | Description                                       | Default |
+| ------------------------- | ------------------------------------------------- | ------- |
+| `ACCESS_PASSWORD`         | Site access password; leave empty to disable auth | —       |
+| `PERSIST_PASSWORD`        | `false` to require password re-entry each session | `true`  |
+| `MICROSOFT_CLIENTTRACEID` | Client trace ID passed to the TTS backend         | —       |
 
 ## License
 
