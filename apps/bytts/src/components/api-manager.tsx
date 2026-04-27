@@ -2,6 +2,7 @@
 
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
+import { Checkbox } from '@cdlab996/ui/components/checkbox'
 import {
   Dialog,
   DialogClose,
@@ -23,26 +24,27 @@ import {
 import { Input } from '@cdlab996/ui/components/input'
 import { RadioGroup, RadioGroupItem } from '@cdlab996/ui/components/radio-group'
 import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
-import { Separator } from '@cdlab996/ui/components/separator'
 import { Switch } from '@cdlab996/ui/components/switch'
 import { Textarea } from '@cdlab996/ui/components/textarea'
-import { IKEmpty } from '@cdlab996/ui/IK'
+import { IKConfirmDialog, IKEmpty } from '@cdlab996/ui/IK'
 import { useForm } from '@tanstack/react-form'
 import {
   Copy,
   Download,
   Pencil,
-  Plus,
+  RotateCcw,
   Settings,
   Trash2,
   Upload,
   X,
 } from 'lucide-react'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
 import * as z from 'zod'
-import type { ApiFormat, CustomApi } from '@/store/useApiStore'
+import type { BuiltinApiId } from '@/lib/builtin-apis'
+import { BUILTIN_APIS } from '@/lib/builtin-apis'
+import type { ApiFormat, BuiltinOverride, CustomApi } from '@/store/useApiStore'
 import { useApiStore } from '@/store/useApiStore'
 
 const apiFormSchema = z.object({
@@ -450,6 +452,10 @@ function SavedApisList({
   const { customApis, removeApi, addApi } = useApiStore()
   const [batchMode, setBatchMode] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [pendingDelete, setPendingDelete] = useState<
+    { type: 'single'; id: string } | { type: 'batch' } | null
+  >(null)
 
   const apiList = Object.values(customApis)
 
@@ -475,17 +481,29 @@ function SavedApisList({
       toast.warning('请先选择要删除的 API')
       return
     }
-    selected.forEach((id) => removeApi(id))
-    onSelectApi(null)
-    toast.success(`已删除 ${selected.size} 个 API`)
-    exitBatch()
+    setPendingDelete({ type: 'batch' })
+    setConfirmOpen(true)
   }
 
   const handleDelete = (id: string) => {
-    const name = customApis[id]?.name ?? id
-    removeApi(id)
-    onSelectApi(null)
-    toast.success(`已删除 API: ${name}`)
+    setPendingDelete({ type: 'single', id })
+    setConfirmOpen(true)
+  }
+
+  const executeDelete = () => {
+    if (!pendingDelete) return
+    if (pendingDelete.type === 'single') {
+      const name = customApis[pendingDelete.id]?.name ?? pendingDelete.id
+      removeApi(pendingDelete.id)
+      onSelectApi(null)
+      toast.success(`已删除 API: ${name}`)
+    } else {
+      selected.forEach((id) => removeApi(id))
+      onSelectApi(null)
+      toast.success(`已删除 ${selected.size} 个 API`)
+      exitBatch()
+    }
+    setPendingDelete(null)
   }
 
   const handleCopy = (id: string) => {
@@ -646,11 +664,15 @@ function SavedApisList({
       {/* Batch select-all */}
       {batchMode && apiList.length > 0 && (
         <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
-          <input
-            type="checkbox"
-            className="rounded"
-            checked={selected.size === apiList.length}
-            onChange={(e) => toggleAll(e.target.checked)}
+          <Checkbox
+            checked={
+              selected.size === apiList.length
+                ? true
+                : selected.size > 0
+                  ? 'indeterminate'
+                  : false
+            }
+            onCheckedChange={(checked) => toggleAll(checked === true)}
           />
           全选
         </label>
@@ -664,14 +686,13 @@ function SavedApisList({
           {apiList.map((api) => (
             <div
               key={api.id}
-              className="flex items-start gap-3 rounded-lg border p-3"
+              className="flex items-start gap-4 rounded-lg border p-4"
             >
               {batchMode && (
-                <input
-                  type="checkbox"
-                  className="mt-0.5 rounded shrink-0"
+                <Checkbox
+                  className="mt-0.5 shrink-0"
                   checked={selected.has(api.id)}
-                  onChange={() => toggleSelect(api.id)}
+                  onCheckedChange={() => toggleSelect(api.id)}
                 />
               )}
               <div className="flex-1 min-w-0">
@@ -737,7 +758,137 @@ function SavedApisList({
           ))}
         </div>
       )}
+      <IKConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="确认删除"
+        description={
+          pendingDelete?.type === 'single'
+            ? `确定要删除「${customApis[pendingDelete.id]?.name ?? pendingDelete.id}」吗？此操作不可撤销。`
+            : `确定要删除选中的 ${selected.size} 个 API 吗？此操作不可撤销。`
+        }
+        confirmText="删除"
+        onConfirm={executeDelete}
+      />
     </div>
+  )
+}
+
+function BuiltinOverrideDialog({
+  id,
+  open,
+  onOpenChange,
+}: {
+  id: BuiltinApiId | null
+  open: boolean
+  onOpenChange: (v: boolean) => void
+}) {
+  const { builtinOverrides, setBuiltinOverride, removeBuiltinOverride } =
+    useApiStore()
+
+  const base = id ? BUILTIN_APIS[id] : null
+  const current = id ? (builtinOverrides[id] ?? {}) : {}
+
+  const [endpoint, setEndpoint] = useState('')
+  const [apiKey, setApiKey] = useState('')
+  const [maxLength, setMaxLength] = useState('')
+  const [splitLength, setSplitLength] = useState('')
+
+  useEffect(() => {
+    if (open && base) {
+      setEndpoint(current.endpoint ?? base.endpoint)
+      setApiKey(current.apiKey ?? '')
+      setMaxLength(String(current.maxLength ?? base.maxLength))
+      setSplitLength(String(current.splitLength ?? base.splitLength))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, id])
+
+  if (!id || !base) return null
+
+  const handleSave = () => {
+    const override: BuiltinOverride = {}
+    const trimmedEndpoint = endpoint.trim()
+    if (trimmedEndpoint !== base.endpoint) override.endpoint = trimmedEndpoint
+    const trimmedKey = apiKey.trim()
+    if (trimmedKey) override.apiKey = trimmedKey
+    const ml = Number(maxLength)
+    if (!isNaN(ml) && ml > 0 && ml !== base.maxLength) override.maxLength = ml
+    const sl = Number(splitLength)
+    if (!isNaN(sl) && sl > 0 && sl !== base.splitLength)
+      override.splitLength = sl
+
+    if (Object.keys(override).length > 0) {
+      setBuiltinOverride(id, override)
+    } else {
+      removeBuiltinOverride(id)
+    }
+    toast.success(`已更新 ${base.label} 配置`)
+    onOpenChange(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>编辑 {base.label}</DialogTitle>
+          <DialogDescription>
+            修改内置 API 配置，点击还原可恢复默认值。
+          </DialogDescription>
+        </DialogHeader>
+
+        <FieldGroup>
+          <Field>
+            <FieldLabel>端点 URL</FieldLabel>
+            <Input
+              value={endpoint}
+              onChange={(e) => setEndpoint(e.target.value)}
+              placeholder={base.endpoint}
+            />
+            <FieldDescription>默认：{base.endpoint}</FieldDescription>
+          </Field>
+
+          <Field>
+            <FieldLabel>API 密钥（可选）</FieldLabel>
+            <Input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="Bearer Token"
+            />
+          </Field>
+
+          <Field>
+            <FieldLabel>最大字符数</FieldLabel>
+            <Input
+              type="number"
+              value={maxLength}
+              onChange={(e) => setMaxLength(e.target.value)}
+              min={1}
+            />
+            <FieldDescription>默认：{base.maxLength}</FieldDescription>
+          </Field>
+
+          <Field>
+            <FieldLabel>分段长度</FieldLabel>
+            <Input
+              type="number"
+              value={splitLength}
+              onChange={(e) => setSplitLength(e.target.value)}
+              min={1}
+            />
+            <FieldDescription>默认：{base.splitLength}</FieldDescription>
+          </Field>
+        </FieldGroup>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            取消
+          </Button>
+          <Button onClick={handleSave}>保存</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -746,11 +897,29 @@ export function ApiManagerDialog({
 }: {
   onApiChange?: (id: string | null) => void
 }) {
-  const { customApis, addApi, updateApi } = useApiStore()
+  const {
+    customApis,
+    builtinOverrides,
+    addApi,
+    updateApi,
+    removeBuiltinOverride,
+  } = useApiStore()
   const [listOpen, setListOpen] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formDefaults, setFormDefaults] = useState<ApiFormValues>(EMPTY_FORM)
+  const [builtinEditId, setBuiltinEditId] = useState<BuiltinApiId | null>(null)
+  const [builtinEditOpen, setBuiltinEditOpen] = useState(false)
+
+  const openBuiltinEdit = (id: BuiltinApiId) => {
+    setBuiltinEditId(id)
+    setBuiltinEditOpen(true)
+  }
+
+  const handleRestoreBuiltin = (id: BuiltinApiId) => {
+    removeBuiltinOverride(id)
+    toast.success(`已还原 ${BUILTIN_APIS[id].label} 默认配置`)
+  }
 
   const openNewForm = () => {
     setEditingId(null)
@@ -771,8 +940,7 @@ export function ApiManagerDialog({
       updateApi(editingId, fromFormValues(values))
       toast.success(`已更新 API: ${values.name}`)
     } else {
-      const id = addApi(fromFormValues(values))
-      onApiChange?.(id)
+      addApi(fromFormValues(values))
       toast.success(`已添加 API: ${values.name}`)
     }
     setFormOpen(false)
@@ -791,19 +959,74 @@ export function ApiManagerDialog({
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>管理自定义 API</DialogTitle>
+            <DialogDescription className="sr-only">
+              在这里你可以添加、编辑和删除自定义 API 配置，以及修改内置 API
+              的端点和密钥等设置。
+            </DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col gap-4 pr-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={openNewForm}
-              className="w-full"
-            >
-              <Plus /> 添加自定义 API
-            </Button>
-
-            <Separator />
+            {/* Built-in APIs */}
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium">内置 API</span>
+              {(
+                Object.entries(BUILTIN_APIS) as [
+                  BuiltinApiId,
+                  (typeof BUILTIN_APIS)[BuiltinApiId],
+                ][]
+              ).map(([id, api]) => {
+                const override = builtinOverrides[id]
+                const hasOverride = override && Object.keys(override).length > 0
+                return (
+                  <div
+                    key={id}
+                    className="flex items-start gap-4 rounded-lg border p-4"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium">{api.label}</span>
+                        <Badge
+                          variant={
+                            api.format === 'openai' ? 'default' : 'secondary'
+                          }
+                          className="shrink-0"
+                        >
+                          {api.format === 'openai' ? 'OpenAI' : 'Edge'}
+                        </Badge>
+                        {hasOverride && (
+                          <Badge variant="outline" className="shrink-0 text-xs">
+                            已修改
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">
+                        {override?.endpoint ?? api.endpoint}
+                      </p>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => openBuiltinEdit(id)}
+                        title="编辑"
+                      >
+                        <Pencil />
+                      </Button>
+                      {hasOverride && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleRestoreBuiltin(id)}
+                          title="还原默认"
+                        >
+                          <RotateCcw />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
 
             <SavedApisList
               onEdit={openEditForm}
@@ -815,6 +1038,7 @@ export function ApiManagerDialog({
             <DialogClose asChild>
               <Button variant="outline">关闭</Button>
             </DialogClose>
+            <Button onClick={openNewForm}>添加自定义 API</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -829,6 +1053,15 @@ export function ApiManagerDialog({
         defaultValues={formDefaults}
         editingId={editingId}
         onSubmit={handleFormSubmit}
+      />
+
+      <BuiltinOverrideDialog
+        id={builtinEditId}
+        open={builtinEditOpen}
+        onOpenChange={(v) => {
+          setBuiltinEditOpen(v)
+          if (!v) setBuiltinEditId(null)
+        }}
       />
     </>
   )

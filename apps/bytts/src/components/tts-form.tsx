@@ -39,6 +39,8 @@ import { ClipboardPaste, Copy, Loader2, Timer, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { ApiManagerDialog } from '@/components/api-manager'
+import type { BuiltinApiId } from '@/lib/builtin-apis'
+import { BUILTIN_APIS, isBuiltinId } from '@/lib/builtin-apis'
 import { genid } from '@/lib/genid'
 import { escapeXml, splitText } from '@/lib/utils'
 import { useApiStore } from '@/store/useApiStore'
@@ -46,44 +48,6 @@ import { useHistoryStore } from '@/store/useHistoryStore'
 
 interface SpeakerConfig {
   [key: string]: { speakers: Record<string, string> }
-}
-
-// Built-in API definitions
-const BUILTIN_APIS = {
-  'edge-api': {
-    label: 'Edge API',
-    enabled: true,
-    format: 'edge' as const,
-    endpoint: '/api/tts',
-    speakers: {} as Record<string, string>, // populated from speakers.json
-    maxLength: 50000,
-    splitLength: 5000,
-  },
-  'oai-tts': {
-    label: 'OAI-TTS',
-    enabled: true,
-    format: 'openai' as const,
-    endpoint: 'https://oai-tts.zwei.de.eu.org/v1/audio/speech',
-    speakers: {
-      alloy: 'Alloy',
-      ash: 'Ash',
-      coral: 'Coral',
-      echo: 'Echo',
-      fable: 'Fable',
-      onyx: 'Onyx',
-      nova: 'Nova',
-      sage: 'Sage',
-      shimmer: 'Shimmer',
-    },
-    maxLength: 4096,
-    splitLength: 4096,
-  },
-} as const
-
-type BuiltinApiId = keyof typeof BUILTIN_APIS
-
-function isBuiltinId(id: string): id is BuiltinApiId {
-  return id in BUILTIN_APIS
 }
 
 export default function TTSForm() {
@@ -98,8 +62,13 @@ export default function TTSForm() {
   const [audioFormat, setAudioFormat] = useState('mp3')
   const [isGenerating, setIsGenerating] = useState(false)
 
-  const { customApis } = useApiStore()
+  const { customApis, builtinOverrides } = useApiStore()
   const { addHistory, updateHistory } = useHistoryStore()
+
+  const getEffectiveBuiltin = (id: BuiltinApiId) => ({
+    ...BUILTIN_APIS[id],
+    ...builtinOverrides[id],
+  })
 
   const { data: speakersData, isError: isSpeakersError } =
     useQuery<SpeakerConfig>({
@@ -133,18 +102,26 @@ export default function TTSForm() {
   })()
 
   const maxLength = (() => {
-    if (isBuiltin) return BUILTIN_APIS[selectedApiId].maxLength
+    if (isBuiltin)
+      return getEffectiveBuiltin(selectedApiId as BuiltinApiId).maxLength
     if (currentCustomApi?.format === 'openai')
       return currentCustomApi.maxLength ?? 4096
     return 50000
   })()
 
   const splitLength = (() => {
-    if (isBuiltin) return BUILTIN_APIS[selectedApiId].splitLength
+    if (isBuiltin)
+      return getEffectiveBuiltin(selectedApiId as BuiltinApiId).splitLength
     if (currentCustomApi?.format === 'openai')
       return currentCustomApi.maxLength ?? 4096
     return 5000
   })()
+
+  useEffect(() => {
+    if (!isBuiltinId(selectedApiId) && !customApis[selectedApiId]) {
+      setSelectedApiId('edge-api')
+    }
+  }, [customApis, selectedApiId])
 
   useEffect(() => {
     if (isSpeakersError) toast.error('加载讲述者失败，请刷新页面重试。')
@@ -186,7 +163,10 @@ export default function TTSForm() {
       let body: Record<string, unknown>
 
       if (selectedApiId === 'edge-api') {
-        url = '/api/tts'
+        const effective = getEffectiveBuiltin('edge-api')
+        url = effective.endpoint
+        if (effective.apiKey)
+          headers['Authorization'] = `Bearer ${effective.apiKey}`
         body = {
           text: escapeXml(text),
           voice: speakerId,
@@ -195,7 +175,10 @@ export default function TTSForm() {
           preview: isPreview,
         }
       } else if (selectedApiId === 'oai-tts') {
-        url = BUILTIN_APIS['oai-tts'].endpoint
+        const effective = getEffectiveBuiltin('oai-tts')
+        url = effective.endpoint
+        if (effective.apiKey)
+          headers['Authorization'] = `Bearer ${effective.apiKey}`
         const cleanText = text.replace(
           /<break\s+time=["'](\d+(?:\.\d+)?[ms]s?)["']\s*\/>/g,
           '',
@@ -492,7 +475,7 @@ export default function TTSForm() {
                 </SelectTrigger>
                 <SelectContent>
                   {Object.keys(activeSpeakers).length === 0 ? (
-                    <SelectItem value="" disabled>
+                    <SelectItem value="__empty__" disabled>
                       请先在 API 管理中配置讲述人
                     </SelectItem>
                   ) : (

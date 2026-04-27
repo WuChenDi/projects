@@ -15,17 +15,28 @@ export interface CustomApi {
   enableSegmentation: boolean
 }
 
+export interface BuiltinOverride {
+  endpoint?: string
+  apiKey?: string
+  maxLength?: number
+  splitLength?: number
+}
+
 interface ApiStore {
   customApis: Record<string, CustomApi>
+  builtinOverrides: Record<string, BuiltinOverride>
   addApi: (api: Omit<CustomApi, 'id'>) => string
   updateApi: (id: string, updates: Partial<Omit<CustomApi, 'id'>>) => void
   removeApi: (id: string) => void
+  setBuiltinOverride: (id: string, override: BuiltinOverride) => void
+  removeBuiltinOverride: (id: string) => void
 }
 
 export const useApiStore = create<ApiStore>()(
   persist(
     (set) => ({
       customApis: {},
+      builtinOverrides: {},
 
       addApi: (api) => {
         const id = `custom-${Date.now()}`
@@ -49,6 +60,20 @@ export const useApiStore = create<ApiStore>()(
           const next = { ...state.customApis }
           delete next[id]
           return { customApis: next }
+        })
+      },
+
+      setBuiltinOverride: (id, override) => {
+        set((state) => ({
+          builtinOverrides: { ...state.builtinOverrides, [id]: override },
+        }))
+      },
+
+      removeBuiltinOverride: (id) => {
+        set((state) => {
+          const next = { ...state.builtinOverrides }
+          delete next[id]
+          return { builtinOverrides: next }
         })
       },
     }),
