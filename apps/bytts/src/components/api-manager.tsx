@@ -22,6 +22,7 @@ import {
   FieldLabel,
 } from '@cdlab996/ui/components/field'
 import { Input } from '@cdlab996/ui/components/input'
+import { PasswordInput } from '@cdlab996/ui/components/password-input'
 import { RadioGroup, RadioGroupItem } from '@cdlab996/ui/components/radio-group'
 import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
 import { Switch } from '@cdlab996/ui/components/switch'
@@ -50,8 +51,9 @@ import { useApiStore } from '@/store/useApiStore'
 const apiFormSchema = z.object({
   name: z.string().min(1, 'API 名称不能为空'),
   format: z.enum(['openai', 'edge']),
-  endpoint: z.string().url('请输入有效的 URL').min(1, 'API 端点不能为空'),
+  endpoint: z.url('请输入有效的 URL').min(1, 'API 端点不能为空'),
   apiKey: z.string(),
+  authHeaderName: z.string(),
   modelEndpoint: z.string(),
   manual: z.string(),
   maxLength: z.string(),
@@ -65,6 +67,7 @@ const EMPTY_FORM: ApiFormValues = {
   format: 'openai',
   endpoint: '',
   apiKey: '',
+  authHeaderName: 'Authorization',
   modelEndpoint: '',
   manual: '',
   maxLength: '',
@@ -73,18 +76,16 @@ const EMPTY_FORM: ApiFormValues = {
 
 const FORMAT_HINTS: Record<
   ApiFormat,
-  { endpoint: string; model: string; key: string; manual: string }
+  { endpoint: string; model: string; manual: string }
 > = {
   openai: {
     endpoint: 'https://api.openai.com/v1/audio/speech',
     model: 'https://api.openai.com/v1/models',
-    key: 'sk-...',
     manual: 'tts-1, tts-1-hd, gpt-4o-mini-tts',
   },
   edge: {
     endpoint: 'https://api.example.com/api/tts',
     model: 'https://api.example.com/api/voices',
-    key: 'x-api-key: ... 或 Bearer Token',
     manual: 'zh-CN-XiaoxiaoNeural, en-US-AriaNeural',
   },
 }
@@ -95,6 +96,7 @@ function toFormValues(api: CustomApi): ApiFormValues {
     format: api.format,
     endpoint: api.endpoint,
     apiKey: api.apiKey,
+    authHeaderName: api.authHeaderName ?? 'Authorization',
     modelEndpoint: api.modelEndpoint,
     manual: api.manual.join(', '),
     maxLength: api.maxLength ? String(api.maxLength) : '',
@@ -108,6 +110,7 @@ function fromFormValues(values: ApiFormValues): Omit<CustomApi, 'id'> {
     format: values.format,
     endpoint: values.endpoint.trim(),
     apiKey: values.apiKey.trim(),
+    authHeaderName: values.authHeaderName.trim() || 'Authorization',
     modelEndpoint: values.modelEndpoint.trim(),
     manual: values.manual
       .split(',')
@@ -145,7 +148,7 @@ function ApiFormDialog({
   })
 
   const handleFetchModels = async () => {
-    const { modelEndpoint, apiKey, format } = form.state.values
+    const { modelEndpoint, apiKey, authHeaderName, format } = form.state.values
     if (!modelEndpoint.trim()) {
       toast.error('请先填写模型列表端点')
       return
@@ -155,13 +158,20 @@ function ApiFormDialog({
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       }
-      if (apiKey.trim()) headers['Authorization'] = `Bearer ${apiKey.trim()}`
+      const trimmedHeaderName = authHeaderName.trim()
+      if (apiKey.trim() && trimmedHeaderName) {
+        headers[trimmedHeaderName] =
+          trimmedHeaderName === 'Authorization'
+            ? `Bearer ${apiKey.trim()}`
+            : apiKey.trim()
+      }
       const res = await fetch(modelEndpoint.trim(), {
         method: 'GET',
         headers,
       })
       if (!res.ok) throw new Error(res.statusText)
       const data = await res.json()
+      console.log('🚀 ~ handleFetchModels ~ data:', data)
 
       let models: string[] = []
       if (format === 'openai' && Array.isArray(data.data)) {
@@ -228,7 +238,6 @@ function ApiFormDialog({
                         aria-invalid={isInvalid}
                         placeholder="例如: 我的自定义 TTS"
                       />
-                      <FieldDescription>显示在下拉菜单中</FieldDescription>
                       {isInvalid && (
                         <FieldError errors={field.state.meta.errors} />
                       )}
@@ -271,10 +280,6 @@ function ApiFormDialog({
                         </FieldLabel>
                       </div>
                     </RadioGroup>
-                    <FieldDescription>
-                      选择 API
-                      格式，这将影响请求参数结构以及语速/语调控制的可用性
-                    </FieldDescription>
                   </Field>
                 )}
               />
@@ -307,37 +312,10 @@ function ApiFormDialog({
               />
 
               <form.Field
-                name="apiKey"
-                children={(field) => (
-                  <Field>
-                    <FieldLabel htmlFor={field.name}>
-                      API 密钥（可选）
-                    </FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      type="password"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder={FORMAT_HINTS[form.state.values.format].key}
-                    />
-                    <FieldDescription>
-                      OpenAI 格式使用 Bearer Token；Edge 格式可用{' '}
-                      <code className="bg-muted px-1 rounded text-xs">
-                        x-api-key: 值
-                      </code>{' '}
-                      或 Bearer Token
-                    </FieldDescription>
-                  </Field>
-                )}
-              />
-
-              <form.Field
                 name="modelEndpoint"
                 children={(field) => (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>模型列表端点</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>模型列表</FieldLabel>
                     <div className="flex gap-2">
                       <Input
                         id={field.name}
@@ -359,10 +337,49 @@ function ApiFormDialog({
                         {fetching ? '获取中...' : '获取模型'}
                       </Button>
                     </div>
-                    <FieldDescription>用于自动获取讲述人</FieldDescription>
                   </Field>
                 )}
               />
+
+              <div className="grid grid-cols-2 gap-4">
+                <form.Field
+                  name="authHeaderName"
+                  children={(field) => (
+                    <Field>
+                      <FieldLabel htmlFor={field.name}>
+                        认证 Header 名称（可选）
+                      </FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        placeholder="Authorization,部分API使用x-api-key等自定义Header"
+                      />
+                    </Field>
+                  )}
+                />
+
+                <form.Field
+                  name="apiKey"
+                  children={(field) => (
+                    <Field>
+                      <FieldLabel htmlFor={field.name}>
+                        API 密钥（可选）
+                      </FieldLabel>
+                      <PasswordInput
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        placeholder="Header为Authorization时自动添加Bearer前缀"
+                      />
+                    </Field>
+                  )}
+                />
+              </div>
 
               <form.Field
                 name="manual"
@@ -791,6 +808,7 @@ function BuiltinOverrideDialog({
 
   const [endpoint, setEndpoint] = useState('')
   const [apiKey, setApiKey] = useState('')
+  const [authHeaderName, setAuthHeaderName] = useState('')
   const [maxLength, setMaxLength] = useState('')
   const [splitLength, setSplitLength] = useState('')
 
@@ -798,6 +816,7 @@ function BuiltinOverrideDialog({
     if (open && base) {
       setEndpoint(current.endpoint ?? base.endpoint)
       setApiKey(current.apiKey ?? '')
+      setAuthHeaderName(current.authHeaderName ?? 'Authorization')
       setMaxLength(String(current.maxLength ?? base.maxLength))
       setSplitLength(String(current.splitLength ?? base.splitLength))
     }
@@ -812,6 +831,8 @@ function BuiltinOverrideDialog({
     if (trimmedEndpoint !== base.endpoint) override.endpoint = trimmedEndpoint
     const trimmedKey = apiKey.trim()
     if (trimmedKey) override.apiKey = trimmedKey
+    const trimmedHeaderName = authHeaderName.trim()
+    if (trimmedHeaderName) override.authHeaderName = trimmedHeaderName
     const ml = Number(maxLength)
     if (!isNaN(ml) && ml > 0 && ml !== base.maxLength) override.maxLength = ml
     const sl = Number(splitLength)
@@ -850,11 +871,20 @@ function BuiltinOverrideDialog({
 
           <Field>
             <FieldLabel>API 密钥（可选）</FieldLabel>
-            <Input
-              type="password"
+            <PasswordInput
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="Bearer Token"
+            />
+          </Field>
+
+          <Field>
+            <FieldLabel>认证 Header 名称</FieldLabel>
+            <Input
+              value={authHeaderName}
+              onChange={(e) => setAuthHeaderName(e.target.value)}
+              onBlur={() => setAuthHeaderName((prev) => prev)}
+              placeholder="默认 Authorization，部分 API 使用 x-api-key 等自定义 Header"
             />
           </Field>
 

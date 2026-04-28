@@ -165,8 +165,9 @@ export default function TTSForm() {
       if (selectedApiId === 'edge-api') {
         const effective = getEffectiveBuiltin('edge-api')
         url = effective.endpoint
-        if (effective.apiKey)
-          headers['Authorization'] = `Bearer ${effective.apiKey}`
+        if (effective.apiKey && effective.authHeaderName) {
+          headers[effective.authHeaderName] = effective.apiKey
+        }
         body = {
           text: escapeXml(text),
           voice: speakerId,
@@ -177,8 +178,9 @@ export default function TTSForm() {
       } else if (selectedApiId === 'oai-tts') {
         const effective = getEffectiveBuiltin('oai-tts')
         url = effective.endpoint
-        if (effective.apiKey)
-          headers['Authorization'] = `Bearer ${effective.apiKey}`
+        if (effective.apiKey && effective.authHeaderName) {
+          headers[effective.authHeaderName] = effective.apiKey
+        }
         const cleanText = text.replace(
           /<break\s+time=["'](\d+(?:\.\d+)?[ms]s?)["']\s*\/>/g,
           '',
@@ -192,8 +194,8 @@ export default function TTSForm() {
         }
       } else if (currentCustomApi) {
         url = currentCustomApi.endpoint
-        if (currentCustomApi.apiKey) {
-          headers['Authorization'] = `Bearer ${currentCustomApi.apiKey}`
+        if (currentCustomApi.apiKey && currentCustomApi.authHeaderName) {
+          headers[currentCustomApi.authHeaderName] = currentCustomApi.apiKey
         }
         if (currentCustomApi.format === 'openai') {
           const cleanText = text.replace(
@@ -424,7 +426,7 @@ export default function TTSForm() {
                         {Object.values(customApis).map((api) => (
                           <SelectItem key={api.id} value={api.id}>
                             {api.name}
-                            <span className="ml-1 text-xs text-muted-foreground">
+                            <span className="text-xs text-muted-foreground">
                               ({api.format === 'openai' ? 'OpenAI' : 'Edge'})
                             </span>
                           </SelectItem>

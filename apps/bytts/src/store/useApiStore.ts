@@ -8,6 +8,7 @@ export interface CustomApi {
   name: string
   endpoint: string
   apiKey: string
+  authHeaderName?: string
   modelEndpoint: string
   format: ApiFormat
   manual: string[]
@@ -18,6 +19,7 @@ export interface CustomApi {
 export interface BuiltinOverride {
   endpoint?: string
   apiKey?: string
+  authHeaderName?: string
   maxLength?: number
   splitLength?: number
 }
