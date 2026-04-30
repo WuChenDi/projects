@@ -2,34 +2,16 @@
 
 import * as React from "react";
 import { CheckIcon, CopyIcon } from "lucide-react";
-import { cn } from "@cdlab996/ui/lib/utils"
+import { Button } from "@cdlab996/ui/components/button";
+import { cn } from "@cdlab996/ui/lib/utils";
 
-type SizeVariant = "sm" | "default" | "lg";
-
-interface CopyButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface CopyButtonProps extends React.ComponentProps<typeof Button> {
   value?: string;
-  size?: SizeVariant;
 }
 
-const sizeMap: Record<SizeVariant, { button: string; icon: number }> = {
-  sm: { button: "h-8 w-8", icon: 14 },
-  default: { button: "h-9 w-9", icon: 16 },
-  lg: { button: "h-12 w-12", icon: 20 },
-};
-
 const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
-  (
-    {
-      value,
-      size = "default",
-      className,
-      onClick,
-      ...props
-    },
-    ref,
-  ) => {
-    const [copied, setCopied] = React.useState<boolean>(false);
+  ({ value, size = "icon", className, onClick, ...props }, ref) => {
+    const [copied, setCopied] = React.useState(false);
 
     const handleCopy = (event: React.MouseEvent<HTMLButtonElement>) => {
       if (value) {
@@ -40,20 +22,15 @@ const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
       onClick?.(event);
     };
 
-    const { button: buttonSize, icon: iconSize } = sizeMap[size];
-
     return (
-      <button
+      <Button
         ref={ref}
-        type="button"
-        onClick={handleCopy}
+        variant="ghost"
+        size={size}
         aria-label={copied ? "Copied" : "Copy to clipboard"}
         disabled={copied}
-        className={cn(
-          "relative cursor-pointer active:scale-[0.97] transition-all ease-out duration-200 inline-flex items-center justify-center rounded-md text-neutral-900 disabled:pointer-events-none disabled:opacity-100 dark:text-neutral-50",
-          buttonSize,
-          className,
-        )}
+        className={cn("relative active:scale-[0.97]", className)}
+        onClick={handleCopy}
         {...props}
       >
         <div
@@ -64,11 +41,7 @@ const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
               : "scale-70 opacity-0 blur-[2px]",
           )}
         >
-          <CheckIcon
-            size={iconSize}
-            strokeWidth={2}
-            aria-hidden="true"
-          />
+          <CheckIcon strokeWidth={2} aria-hidden="true" />
         </div>
         <div
           className={cn(
@@ -78,9 +51,9 @@ const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
               : "scale-100 opacity-100 blur-none",
           )}
         >
-          <CopyIcon size={iconSize} strokeWidth={2} aria-hidden="true" />
+          <CopyIcon strokeWidth={2} aria-hidden="true" />
         </div>
-      </button>
+      </Button>
     );
   },
 );
