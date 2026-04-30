@@ -512,7 +512,6 @@ export default function TTSForm() {
                 className="border-b justify-end"
               >
                 <InputGroupButton
-                  size="icon-xs"
                   variant="ghost"
                   onClick={handlePaste}
                   title="粘贴"
@@ -520,7 +519,6 @@ export default function TTSForm() {
                   <ClipboardPaste />
                 </InputGroupButton>
                 <InputGroupButton
-                  size="icon-xs"
                   variant="ghost"
                   onClick={handleCopy}
                   disabled={!text}
@@ -529,7 +527,6 @@ export default function TTSForm() {
                   <Copy />
                 </InputGroupButton>
                 <InputGroupButton
-                  size="icon-xs"
                   variant="ghost"
                   onClick={() => setText('')}
                   disabled={!text}
@@ -580,10 +577,8 @@ export default function TTSForm() {
                     (fmt) => (
                       <Button
                         key={fmt}
-                        type="button"
                         variant={audioFormat === fmt ? 'default' : 'outline'}
                         size="sm"
-                        className="h-7 px-2 text-xs"
                         onClick={() => setAudioFormat(fmt)}
                       >
                         {fmt.toUpperCase()}
