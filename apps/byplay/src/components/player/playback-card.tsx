@@ -23,7 +23,7 @@ import {
 } from '@cdlab996/ui/components/select'
 import { useTranslations } from 'next-intl'
 import type { HlsConfig, HlsPlayerState } from '@/hooks/use-hls-player'
-import { SwitchField, formatBitrate } from './shared-fields'
+import { formatBitrate, SwitchField } from './shared-fields'
 
 const PLAYBACK_RATES = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4]
 
@@ -78,7 +78,6 @@ export function PlaybackCard({
                   key={rate}
                   variant={playbackRate === rate ? 'default' : 'outline'}
                   size="sm"
-                  className="h-7 px-2 text-xs"
                   onClick={() => onRateChange(rate)}
                 >
                   {rate}x
