@@ -166,7 +166,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-muted-foreground">文本:</div>
-                    <CopyButton size="sm" value={item.text} />
+                    <CopyButton size="icon" value={item.text} />
                   </div>
                   <div className="text-sm leading-relaxed whitespace-pre-line">
                     {item.text}
