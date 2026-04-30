@@ -4,7 +4,7 @@
 
 A modern video aggregation and playback platform built with Next.js 16, React 19, and Tailwind CSS 4.
 
-Preview: https://flox.pages.dev/
+Preview: https://floxx.pages.dev/
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/flox/og-image.png)
 
@@ -52,25 +52,25 @@ Flox includes a multi-layered M3U8 ad filtering system. Configure it in **Settin
 
 ### Modes
 
-| Mode | Behavior |
-|---|---|
-| **Off** | No filtering |
-| **Keyword** | Removes segments whose URL contains ad keywords (built-in + custom). Supports `#EXT-X-CUE-OUT/IN` (SCTE-35) tag detection. |
-| **Heuristic** | Keyword + block-based scoring analysis. Splits the playlist into blocks by `#EXT-X-DISCONTINUITY`, learns the main content pattern from the largest block, then scores each block across multiple dimensions. Blocks scoring >= 5.0 are removed. |
+| Mode           | Behavior                                                                                                                                                                                                                                                                                  |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Off**        | No filtering                                                                                                                                                                                                                                                                              |
+| **Keyword**    | Removes segments whose URL contains ad keywords (built-in + custom). Supports `#EXT-X-CUE-OUT/IN` (SCTE-35) tag detection.                                                                                                                                                                |
+| **Heuristic**  | Keyword + block-based scoring analysis. Splits the playlist into blocks by `#EXT-X-DISCONTINUITY`, learns the main content pattern from the largest block, then scores each block across multiple dimensions. Blocks scoring >= 5.0 are removed.                                          |
 | **Aggressive** | Same scoring as Heuristic (threshold lowered to >= 3.0), **plus strips all `#EXT-X-DISCONTINUITY` tags**. Designed for sources where ad segments share the same CDN, path, filename pattern, and duration as main content — the only remaining signal is the discontinuity marker itself. |
 
 ### Heuristic Scoring Dimensions
 
-| Dimension | Score | Description |
-|---|---|---|
-| CUE tags | 10.0 | `#EXT-X-CUE-OUT` / `#EXT-X-CUE-IN` (SCTE-35 standard) |
-| Path prefix mismatch | +5.0 | All segments in the block come from a different CDN directory than main content |
-| Small block detection | +5.0 / +3.0 | Block segment count is <= 20% / <= 35% of the median block size |
-| TS sequence number gap | +4.0 | For sequential-numbered sources (00001.ts, 00002.ts, ...), block numbers don't connect to the main range |
-| Filename length variance | +3.0 | Average filename length differs by > 2 characters from main content |
-| URL keyword match | +2.5/seg | URL contains ad-related keywords (advert, preroll, vast, etc.) |
-| Filename pattern mismatch | +1.5 | All filenames differ from the main block's common prefix pattern |
-| EXTINF duration anomaly | +1.5 | Dominant segment duration differs > 30% from main content |
+| Dimension                 | Score       | Description                                                                                              |
+| ------------------------- | ----------- | -------------------------------------------------------------------------------------------------------- |
+| CUE tags                  | 10.0        | `#EXT-X-CUE-OUT` / `#EXT-X-CUE-IN` (SCTE-35 standard)                                                    |
+| Path prefix mismatch      | +5.0        | All segments in the block come from a different CDN directory than main content                          |
+| Small block detection     | +5.0 / +3.0 | Block segment count is <= 20% / <= 35% of the median block size                                          |
+| TS sequence number gap    | +4.0        | For sequential-numbered sources (00001.ts, 00002.ts, ...), block numbers don't connect to the main range |
+| Filename length variance  | +3.0        | Average filename length differs by > 2 characters from main content                                      |
+| URL keyword match         | +2.5/seg    | URL contains ad-related keywords (advert, preroll, vast, etc.)                                           |
+| Filename pattern mismatch | +1.5        | All filenames differ from the main block's common prefix pattern                                         |
+| EXTINF duration anomaly   | +1.5        | Dominant segment duration differs > 30% from main content                                                |
 
 ### Custom Keywords
 
@@ -95,16 +95,16 @@ Native HLS (Safari/iOS)
 
 ## Environment Variables
 
-| Variable | Description |
-|---|---|
-| `NEXT_PUBLIC_SITE_NAME` | Header display name |
-| `NEXT_PUBLIC_SITE_TITLE` | Browser tab title |
-| `NEXT_PUBLIC_SITE_DESCRIPTION` | Meta description |
-| `ACCESS_PASSWORD` | Global password protection |
-| `PERSIST_PASSWORD` | Password persistence (default: true) |
+| Variable                           | Description                                        |
+| ---------------------------------- | -------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_NAME`            | Header display name                                |
+| `NEXT_PUBLIC_SITE_TITLE`           | Browser tab title                                  |
+| `NEXT_PUBLIC_SITE_DESCRIPTION`     | Meta description                                   |
+| `ACCESS_PASSWORD`                  | Global password protection                         |
+| `PERSIST_PASSWORD`                 | Password persistence (default: true)               |
 | `NEXT_PUBLIC_SUBSCRIPTION_SOURCES` | Auto-load sources from JSON URLs (comma-separated) |
-| `AD_KEYWORDS` | Custom ad filter keywords (comma-separated) |
-| `AD_KEYWORDS_FILE` | Path to ad keywords file |
+| `AD_KEYWORDS`                      | Custom ad filter keywords (comma-separated)        |
+| `AD_KEYWORDS_FILE`                 | Path to ad keywords file                           |
 
 ## License
 
