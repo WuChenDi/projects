@@ -183,7 +183,7 @@ https://values.pages.dev/
 
 **视频聚合与播放平台**
 
-https://flox.pages.dev/
+https://floxx.pages.dev/
 
 - 多源并行视频搜索，实时流式返回结果（SSE），内置 38+ 视频源
 - HLS/M3U8 播放，支持广告过滤（关键词、启发式、SCTE-35）、代理模式、自动下一集

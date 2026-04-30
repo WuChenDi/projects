@@ -183,7 +183,7 @@ https://values.pages.dev/
 
 **Video Aggregation & Playback Platform**
 
-https://flox.pages.dev/
+https://floxx.pages.dev/
 
 - Multi-source parallel video search with real-time streaming results (SSE), 38+ built-in sources
 - HLS/M3U8 playback with ad filtering (keyword, heuristic, SCTE-35), proxy mode, auto-next episode
