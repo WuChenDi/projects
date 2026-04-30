@@ -93,6 +93,19 @@
     "fragRetryDelay": "Fragment Retry Delay",
     "fragRetryDelayDesc": "Delay between fragment retries"
   },
+  "adFilter": {
+    "title": "Ad Filter",
+    "description": "M3U8 ad removal — runs on the manifest/level loader (apply on next load)",
+    "mode": "Mode",
+    "modeDesc": "Off skips filtering. Keyword strips segments matching the URL keywords. Heuristic adds DISCONTINUITY block analysis. Aggressive lowers the threshold and strips all DISCONTINUITY tags.",
+    "modeOff": "Off",
+    "modeKeyword": "Keyword",
+    "modeHeuristic": "Heuristic",
+    "modeAggressive": "Aggressive",
+    "keywords": "Keywords",
+    "keywordsDesc": "One per line — segment URLs containing any keyword are dropped",
+    "keywordsPlaceholder": "advert\npreroll\nsponsor"
+  },
   "stats": {
     "title": "Stats",
     "status": "Status",
@@ -111,6 +124,9 @@
   "logs": {
     "title": "Event Logs",
     "clear": "Clear",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "count": "{count} events",
     "emptyTitle": "No Events",
     "emptyDesc": "Load a video to see HLS events"
   },

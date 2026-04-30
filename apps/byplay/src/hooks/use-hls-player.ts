@@ -2,6 +2,10 @@
 
 import Hls, { type HlsConfig as HlsJsConfig } from 'hls.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { AdFilterMode, FilterStats } from '@/lib/m3u8-utils'
+import { filterM3u8Ad } from '@/lib/m3u8-utils'
+
+export type { AdFilterMode } from '@/lib/m3u8-utils'
 
 export type HlsConfig = Pick<
   HlsJsConfig,
@@ -23,7 +27,11 @@ export type HlsConfig = Pick<
   | 'fragLoadingTimeOut'
   | 'manifestLoadingTimeOut'
   | 'levelLoadingTimeOut'
-> & { autoPlay: boolean }
+> & {
+  autoPlay: boolean
+  adFilterMode: AdFilterMode
+  adKeywords: string[]
+}
 
 export const DEFAULT_HLS_CONFIG: HlsConfig = {
   autoPlay: true,
@@ -45,6 +53,8 @@ export const DEFAULT_HLS_CONFIG: HlsConfig = {
   fragLoadingTimeOut: 20000,
   manifestLoadingTimeOut: 10000,
   levelLoadingTimeOut: 10000,
+  adFilterMode: 'off',
+  adKeywords: [],
 }
 
 export interface HlsLogEntry {
@@ -196,7 +206,16 @@ export function useHlsPlayer() {
       addLog('info', 'LOAD', `Loading: ${src}`)
 
       const isNativeHls = !!video.canPlayType('application/vnd.apple.mpegurl')
-      const { autoPlay, ...hlsConfig } = config
+      const { autoPlay, adFilterMode, adKeywords, ...hlsConfig } = config
+      const isAdFilterEnabled = adFilterMode !== 'off'
+
+      if (isAdFilterEnabled) {
+        addLog(
+          'info',
+          'AD_FILTER',
+          `Mode: ${adFilterMode}, Keywords: ${adKeywords.length > 0 ? adKeywords.join(', ') : '(none)'}`,
+        )
+      }
 
       if (directVideo) {
         video.src = src
@@ -232,7 +251,7 @@ export function useHlsPlayer() {
           { once: true },
         )
       } else if (Hls.isSupported()) {
-        const hls = new Hls({
+        const hlsInitConfig: Partial<HlsJsConfig> = {
           ...hlsConfig,
           abrEwmaFastLive: 3,
           abrEwmaSlowLive: 9,
@@ -243,7 +262,81 @@ export function useHlsPlayer() {
           manifestLoadingMaxRetryTimeout: 64000,
           levelLoadingRetryDelay: 1000,
           levelLoadingMaxRetryTimeout: 64000,
-        })
+        }
+
+        if (isAdFilterEnabled) {
+          // biome-ignore lint/suspicious/noExplicitAny: hls.js DefaultConfig.loader is not strictly typed in public API
+          const DefaultLoader = (Hls as any).DefaultConfig.loader
+          const onFilter = (
+            url: string,
+            type: string,
+            stats: FilterStats,
+            elapsedMs: number,
+          ) => {
+            addLog(
+              'info',
+              'AD_FILTER_RUN',
+              `${type} ${url.split('/').pop() || url} — blocks ${stats.blocksFiltered}/${stats.blocksScanned}, segs ${stats.segmentsFiltered}, cue ${stats.cueAdSections}, kw ${stats.keywordHits} (${elapsedMs}ms)`,
+            )
+          }
+
+          class AdFilterLoader extends DefaultLoader {
+            // biome-ignore lint/suspicious/noExplicitAny: matches hls.js loader signature
+            load(context: any, loaderConfig: any, callbacks: any) {
+              if (context.type === 'manifest' || context.type === 'level') {
+                const originalOnSuccess = callbacks.onSuccess
+                callbacks.onSuccess = (
+                  // biome-ignore lint/suspicious/noExplicitAny: hls.js loader callback shape
+                  response: any,
+                  // biome-ignore lint/suspicious/noExplicitAny: hls.js loader callback shape
+                  loaderStats: any,
+                  // biome-ignore lint/suspicious/noExplicitAny: hls.js loader callback shape
+                  ctx: any,
+                  // biome-ignore lint/suspicious/noExplicitAny: hls.js loader callback shape
+                  networkDetails: any,
+                ) => {
+                  if (typeof response.data === 'string') {
+                    const filterStats: FilterStats = {
+                      blocksScanned: 0,
+                      blocksFiltered: 0,
+                      segmentsFiltered: 0,
+                      cueAdSections: 0,
+                      keywordHits: 0,
+                    }
+                    const start = performance.now()
+                    try {
+                      response.data = filterM3u8Ad(
+                        response.data,
+                        ctx.url,
+                        adFilterMode,
+                        adKeywords,
+                        filterStats,
+                      )
+                      onFilter(
+                        ctx.url,
+                        ctx.type,
+                        filterStats,
+                        Math.round(performance.now() - start),
+                      )
+                    } catch (e) {
+                      addLog(
+                        'warn',
+                        'AD_FILTER_ERROR',
+                        e instanceof Error ? e.message : String(e),
+                      )
+                    }
+                  }
+                  originalOnSuccess(response, loaderStats, ctx, networkDetails)
+                }
+              }
+              super.load(context, loaderConfig, callbacks)
+            }
+          }
+          // biome-ignore lint/suspicious/noExplicitAny: loader slot expects an hls.js-internal type
+          ;(hlsInitConfig as any).loader = AdFilterLoader
+        }
+
+        const hls = new Hls(hlsInitConfig as HlsJsConfig)
 
         hlsRef.current = hls
         hls.loadSource(src)

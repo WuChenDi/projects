@@ -93,6 +93,19 @@
     "fragRetryDelay": "分片重试延迟",
     "fragRetryDelayDesc": "分片重试之间的延迟"
   },
+  "adFilter": {
+    "title": "广告过滤",
+    "description": "在 manifest/level 加载器上做 M3U8 广告剔除（下次加载时生效）",
+    "mode": "过滤模式",
+    "modeDesc": "关闭：不过滤。关键字：根据 URL 关键字剔除分片。启发式：再叠加 DISCONTINUITY 块评分。激进：降低阈值并剥离所有 DISCONTINUITY 标记。",
+    "modeOff": "关闭",
+    "modeKeyword": "关键字",
+    "modeHeuristic": "启发式",
+    "modeAggressive": "激进",
+    "keywords": "关键字",
+    "keywordsDesc": "每行一个——URL 命中其中任意关键字的分片会被剔除",
+    "keywordsPlaceholder": "advert\npreroll\nsponsor"
+  },
   "stats": {
     "title": "统计信息",
     "status": "状态",
@@ -111,6 +124,9 @@
   "logs": {
     "title": "事件日志",
     "clear": "清空",
+    "expand": "展开",
+    "collapse": "收起",
+    "count": "{count} 条事件",
     "emptyTitle": "暂无事件",
     "emptyDesc": "加载视频以查看 HLS 事件"
   },

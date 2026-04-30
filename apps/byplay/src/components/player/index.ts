@@ -1,4 +1,5 @@
 export { AbrCard } from './abr-card'
+export { AdFilterCard } from './ad-filter-card'
 export { BufferCard } from './buffer-card'
 export { EventLogsCard } from './event-logs-card'
 export { LoadingRetryCard } from './loading-retry-card'

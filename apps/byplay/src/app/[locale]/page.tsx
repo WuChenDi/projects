@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useState } from 'react'
 import {
   AbrCard,
+  AdFilterCard,
   BufferCard,
   EventLogsCard,
   LoadingRetryCard,
@@ -116,6 +117,7 @@ export default function HlsPage({ params }: Props) {
           />
           {!state.isDirectVideo && (
             <>
+              <AdFilterCard config={config} onUpdateConfig={updateConfig} />
               <PerformanceCard config={config} onUpdateConfig={updateConfig} />
               <BufferCard config={config} onUpdateConfig={updateConfig} />
               <AbrCard config={config} onUpdateConfig={updateConfig} />
