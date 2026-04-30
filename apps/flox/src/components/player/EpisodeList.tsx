@@ -2,6 +2,7 @@
 
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
+import { ButtonGroup } from '@cdlab996/ui/components/button-group'
 import {
   Card,
   CardAction,
@@ -9,9 +10,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
+import { CopyButton } from '@cdlab996/ui/components/copy-button'
 import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@cdlab996/ui/components/tooltip'
 import { IKEmpty } from '@cdlab996/ui/IK'
-import { ArrowUpDownIcon, InboxIcon, ListIcon, PlayIcon } from 'lucide-react'
+import { ArrowUpDownIcon, InboxIcon, ListIcon } from 'lucide-react'
 import { useCallback, useMemo, useRef } from 'react'
 import { useKeyboardNavigation } from '@/lib/hooks/useKeyboardNavigation'
 
@@ -98,14 +105,35 @@ export function EpisodeList({
 
         {episodes && episodes.length > 1 && (
           <CardAction>
-            <Button
-              variant={isReversed ? 'default' : 'outline'}
-              size="icon-xs"
-              onClick={() => onToggleReverse?.(!isReversed)}
-              aria-label={isReversed ? '恢复正序' : '倒序排列'}
-            >
-              <ArrowUpDownIcon className="size-3.5" />
-            </Button>
+            <ButtonGroup>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <CopyButton
+                    value={episodes.map((e) => e.url).join('\n')}
+                    variant="outline"
+                    size="icon-xs"
+                    aria-label="复制全部播放地址"
+                  />
+                </TooltipTrigger>
+                <TooltipContent>复制全部播放地址</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={isReversed ? 'default' : 'outline'}
+                    size="icon-xs"
+                    onClick={() => onToggleReverse?.(!isReversed)}
+                    aria-label={isReversed ? '恢复正序' : '倒序排列'}
+                  >
+                    <ArrowUpDownIcon className="size-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isReversed ? '恢复正序' : '倒序排列'}
+                </TooltipContent>
+              </Tooltip>
+            </ButtonGroup>
           </CardAction>
         )}
       </CardHeader>
@@ -126,30 +154,40 @@ export function EpisodeList({
             role="radiogroup"
             aria-label="剧集选择"
           >
-          {displayEpisodes && displayEpisodes.length > 0 ? (
+            {displayEpisodes && displayEpisodes.length > 0 ? (
               displayEpisodes.map((episode, displayIndex) => {
                 const originalIndex = getOriginalIndex(displayIndex)
                 const isCurrentEpisode = currentEpisode === originalIndex
 
                 return (
-                  <Button
-                    key={originalIndex}
-                    ref={(el) => {
-                      buttonRefs.current[displayIndex] = el
-                    }}
-                    variant={isCurrentEpisode ? 'default' : 'outline'}
-                    className="w-full justify-start whitespace-normal"
-                    onClick={() => onEpisodeClick(episode, originalIndex)}
-                    role="radio"
-                    aria-checked={isCurrentEpisode}
-                  >
-                    <span className="min-w-0 flex-1 line-clamp-1 text-left break-all">
-                      {episode.name || `第 ${originalIndex + 1} 集`}
-                    </span>
-                    {isCurrentEpisode && (
-                      <PlayIcon className="size-3.5 shrink-0 ml-2" />
-                    )}
-                  </Button>
+                  <ButtonGroup key={originalIndex} className="w-full">
+                    <Button
+                      ref={(el) => {
+                        buttonRefs.current[displayIndex] = el
+                      }}
+                      variant={isCurrentEpisode ? 'default' : 'outline'}
+                      className="min-w-0 flex-1 justify-start whitespace-normal"
+                      onClick={() => onEpisodeClick(episode, originalIndex)}
+                      role="radio"
+                      aria-checked={isCurrentEpisode}
+                    >
+                      <span className="min-w-0 flex-1 line-clamp-1 text-left break-all">
+                        {episode.name || `第 ${originalIndex + 1} 集`}
+                      </span>
+                    </Button>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <CopyButton
+                          value={episode.url}
+                          variant={isCurrentEpisode ? 'default' : 'outline'}
+                          size="icon"
+                          aria-label={`复制第 ${originalIndex + 1} 集链接`}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>复制播放地址</TooltipContent>
+                    </Tooltip>
+                  </ButtonGroup>
                 )
               })
             ) : (
