@@ -2,11 +2,12 @@
 
 import { detect } from '@cdlab996/cipher'
 import { StatusEnum } from '@cdlab996/ui/IK'
+import { downloadFile } from '@cdlab996/utils'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useShallow } from 'zustand/react/shallow'
-import { downloadFile, genid } from '@/lib'
+import { genid } from '@/lib'
 import { useProcessStore } from '@/store/useProcessStore'
 import type { FileInfo, ProcessResult } from '@/types'
 import { InputModeEnum, ModeEnum } from '@/types'
@@ -108,9 +109,15 @@ export function useCryptoProcessor() {
           result.mode === ModeEnum.ENCRYPT
             ? `encrypted_text_${result.timestamp}.enc`
             : `${result.timestamp}.txt`
-        downloadFile(result.data, filename)
+        downloadFile({
+          data: new Blob([result.data], { type: 'application/octet-stream' }),
+          filename,
+        })
       } else if (result.fileInfo) {
-        downloadFile(result.data, result.fileInfo.name)
+        downloadFile({
+          data: new Blob([result.data], { type: 'application/octet-stream' }),
+          filename: result.fileInfo.name,
+        })
       }
       toast.success(t('downloadSuccess'))
     },

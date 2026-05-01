@@ -1,4 +1,4 @@
-import { logger } from '@cdlab996/utils'
+import { downloadFile, logger } from '@cdlab996/utils'
 import { format } from 'date-fns'
 import type { AesConf, DownloadStore } from '@/stores/download-store'
 import type { DownloadSettings } from '@/stores/settings-store'
@@ -292,14 +292,8 @@ export class DownloadEngine {
       const blob = new Blob([file], {
         type: VIDEO_MIME_MAP[ext] || 'application/octet-stream',
       })
-      const a = document.createElement('a')
-      a.download = `${this.store.getState().customFileName || newTitle}.${ext}`
-      a.href = URL.createObjectURL(blob)
-      a.style.display = 'none'
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      setTimeout(() => URL.revokeObjectURL(a.href), 100)
+      const filename = `${this.store.getState().customFileName || newTitle}.${ext}`
+      downloadFile({ data: blob, filename })
 
       s.setFinishList([{ title: s.url, status: 'finish' }])
       s.setDownloadState({ isDownloading: false })

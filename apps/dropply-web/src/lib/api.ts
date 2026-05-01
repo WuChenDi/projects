@@ -1,3 +1,4 @@
+import { downloadFile as downloadFileUtil } from '@cdlab996/utils'
 import type {
   ApiResponse,
   CompleteMultipartUploadResponse,
@@ -609,14 +610,7 @@ export class PocketChestAPI {
   }
 
   triggerDownload(blob: Blob, filename: string) {
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
-    document.body.removeChild(a)
+    downloadFileUtil({ data: blob, filename })
   }
 
   async downloadFileDirectly(

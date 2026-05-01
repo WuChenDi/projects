@@ -30,7 +30,10 @@
     "typecheck": "tsc --project ./tsconfig.json --noEmit",
     "prepack": "pnpm build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "date-fns": "catalog:prod",
+    "jszip": "catalog:prod"
+  },
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",

@@ -10,6 +10,7 @@ import {
 } from '@cdlab996/ui/components/popover'
 import { Progress } from '@cdlab996/ui/components/progress'
 import { RadioGroup, RadioGroupItem } from '@cdlab996/ui/components/radio-group'
+import { downloadFile } from '@cdlab996/utils'
 import { Check, Copy, Download, FolderUp, RotateCcw } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useRef, useState } from 'react'
@@ -102,15 +103,10 @@ function ExportPopover({
       const mimeType = getExportMimeType({ format })
       const extension = getExportFileExtension({ format })
       const blob = new Blob([result.buffer], { type: mimeType })
-      const url = URL.createObjectURL(blob)
-
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${activeProject.metadata.name}${extension}`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      downloadFile({
+        data: blob,
+        filename: `${activeProject.metadata.name}${extension}`,
+      })
 
       onOpenChange(false)
       setExportResult(null)

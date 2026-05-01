@@ -28,7 +28,6 @@
     "@cdlab996/uncrypto": "workspace:*",
     "@cdlab996/utils": "workspace:*",
     "@next/third-parties": "catalog:prod",
-    "jszip": "catalog:prod",
     "lucide-react": "catalog:prod",
     "next": "catalog:prod",
     "next-intl": "catalog:prod",

@@ -10,6 +10,7 @@ import {
 } from '@cdlab996/ui/components/dialog'
 import { Separator } from '@cdlab996/ui/components/separator'
 import { IKAssetFailed, IKAssetLoading } from '@cdlab996/ui/IK'
+import { downloadFile } from '@cdlab996/utils'
 import { format } from 'date-fns'
 import { Copy, Download, Eye, Trash2 } from 'lucide-react'
 import Image from 'next/image'
@@ -69,13 +70,10 @@ export function ImageResultCard({
   const downloadImage = () => {
     if (!result.imageUrl) return
 
-    const link = document.createElement('a')
-    link.href = result.imageUrl
     const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
     const name =
       models?.find((m) => m.id === result.params.model)?.name || 'ai-image'
-    link.download = `${name}-${timestamp}.png`
-    link.click()
+    downloadFile({ data: result.imageUrl, filename: `${name}-${timestamp}.png` })
     toast.success(t('card.downloadSuccess'))
   }
 

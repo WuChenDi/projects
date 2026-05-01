@@ -227,7 +227,8 @@ Pure-browser stream download — `mux.js` + Streams API, near-zero memory footpr
 #### `@cdlab996/utils` — Generic utilities
 
 - Built with `tsdown`, tested with `vitest`. Consumers import from `dist/index.mjs`.
-- Modules: `clipboard`, `format`, `idb-store`, `logger`, `np` (numerical-precision math). All re-exported from `src/index.ts`.
+- Modules: `clipboard`, `download`, `format`, `idb-store`, `logger`, `np` (numerical-precision math). All re-exported from `src/index.ts`.
+- `download` exposes `downloadFile` (single file via Blob or URL) and `downloadFilesAsZip` (batch ZIP via dynamic `jszip` import; ZIP naming convention: `{prefix}_yyyyMMdd_HHmmss.zip`, caller only passes prefix).
 - After editing, run `pnpm --filter @cdlab996/utils build` (or `dev --watch`) so consumers see updates.
 
 #### `@cdlab996/cipher` — Stream cipher library

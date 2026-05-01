@@ -1,3 +1,5 @@
+import { downloadFile } from '@cdlab996/utils'
+
 // ============================================================
 // Shared Types
 // ============================================================
@@ -158,12 +160,5 @@ export const triggerBrowserDownload = (
     : new Blob(fileDataList, { type: 'video/MP2T' })
 
   const extension = isMp4 ? '.mp4' : '.ts'
-  const a = document.createElement('a')
-  a.download = fileName + extension
-  a.href = URL.createObjectURL(fileBlob)
-  a.style.display = 'none'
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  setTimeout(() => URL.revokeObjectURL(a.href), 100)
+  downloadFile({ data: fileBlob, filename: fileName + extension })
 }

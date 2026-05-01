@@ -40,29 +40,3 @@ export const generateDownloadFilename = (
 
   return `file_${timestamp}`
 }
-
-/**
- * Triggers a file download in the browser from raw binary data.
- *
- * Converts the given `ArrayBuffer` into a Blob, creates a temporary download link,
- * and programmatically triggers a click to start the download.
- * Automatically cleans up the DOM element and revokes the object URL.
- *
- * @param {ArrayBuffer} data - The binary data to download.
- * @param {string} filename - The name of the downloaded file (e.g., "report.pdf").
- */
-export function downloadFile(data: ArrayBuffer, filename: string): void {
-  const blob = new Blob([data], { type: 'application/octet-stream' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.style.display = 'none'
-  document.body.appendChild(a)
-  try {
-    a.click()
-  } finally {
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
-}

@@ -17,8 +17,12 @@ import {
   InputGroupTextarea,
 } from '@cdlab996/ui/components/input-group'
 import { cn } from '@cdlab996/ui/lib/utils'
-import { copyToClipboard, formatBytes } from '@cdlab996/utils'
-import JSZip from 'jszip'
+import type { ZipFileEntry } from '@cdlab996/utils'
+import {
+  copyToClipboard,
+  downloadFilesAsZip,
+  formatBytes,
+} from '@cdlab996/utils'
 import {
   CheckCircle,
   Clock,
@@ -34,7 +38,7 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useCallback, useState } from 'react'
-import { PocketChestAPI, getFileIcon } from '@/lib'
+import { getFileIcon, PocketChestAPI } from '@/lib'
 import { decryptFile } from '@/lib/crypto'
 import type { RetrievedFile, RetrieveResult } from '@/store/useRetrieveStore'
 import { FilePreviewModal, isPreviewable } from './FilePreviewModal'
@@ -67,26 +71,23 @@ export function RetrieveResultCard({
     setDownloadError(null)
     try {
       const api = new PocketChestAPI()
-      const zip = new JSZip()
 
-      await Promise.all(
+      const files: ZipFileEntry[] = await Promise.all(
         result.files.map(async (file) => {
           if (file.isText && file.content) {
-            zip.file(file.filename, file.content)
-          } else {
-            const blob = await api.downloadFile(file.fileId, result.chestToken)
-            const decrypted = await decryptFile(
-              blob,
-              result.encryptionKey,
-              file.filename,
-            )
-            zip.file(file.filename, decrypted)
+            return { path: file.filename, data: file.content }
           }
+          const blob = await api.downloadFile(file.fileId, result.chestToken)
+          const decrypted = await decryptFile(
+            blob,
+            result.encryptionKey,
+            file.filename,
+          )
+          return { path: file.filename, data: decrypted }
         }),
       )
 
-      const zipBlob = await zip.generateAsync({ type: 'blob' })
-      api.triggerDownload(zipBlob, `${result.retrievalCode}.zip`)
+      await downloadFilesAsZip(files, result.retrievalCode)
     } catch {
       setDownloadError(t('downloadAllFailed'))
     } finally {

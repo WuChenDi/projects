@@ -38,8 +38,10 @@ import {
   IKEmpty,
   StatusEnum,
 } from '@cdlab996/ui/IK'
+import type { ZipFileEntry } from '@cdlab996/utils'
+import { downloadFile, downloadFilesAsZip } from '@cdlab996/utils'
 import { Download, Eye, History, Loader2, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import type { HistoryItem } from '@/store/useHistoryStore'
 import { useHistoryStore } from '@/store/useHistoryStore'
@@ -60,15 +62,11 @@ function HistoryCard({ item }: { item: HistoryItem }) {
   }, [item.audioBlob])
 
   const downloadAudio = () => {
-    if (!audioUrl) return
-    const link = document.createElement('a')
-    link.href = audioUrl
-    link.download = displayName.endsWith('.mp3')
+    if (!item.audioBlob) return
+    const filename = displayName.endsWith('.mp3')
       ? displayName
       : `${displayName}.mp3`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    downloadFile({ data: item.audioBlob, filename })
     toast.success('音频下载成功！')
   }
 
@@ -108,7 +106,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
                 size="icon-xs"
                 className=" bg-black/40 backdrop-blur-[2px]"
                 onClick={downloadAudio}
-                disabled={!audioUrl}
+                disabled={!item.audioBlob}
                 title="下载"
               >
                 <Download className="size-3.5" />
@@ -181,7 +179,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
               variant="outline"
               size="sm"
               onClick={downloadAudio}
-              disabled={!audioUrl}
+              disabled={!item.audioBlob}
             >
               <Download className="size-4" />
               下载音频
@@ -195,17 +193,69 @@ function HistoryCard({ item }: { item: HistoryItem }) {
 
 export default function HistorySection() {
   const { history, clearHistory } = useHistoryStore()
+  const [downloading, setDownloading] = useState(false)
+
+  const completedItems = useMemo(
+    () =>
+      history.filter(
+        (item) => item.status === StatusEnum.COMPLETED && item.audioBlob,
+      ),
+    [history],
+  )
 
   const handleClearHistory = () => {
     clearHistory()
     toast.success('历史记录已清除！')
   }
 
+  const handleDownloadAll = useCallback(async () => {
+    if (completedItems.length === 0) return
+
+    if (completedItems.length === 1) {
+      const item = completedItems[0]
+      const name = item.name ?? `${item.id}_audio`
+      const filename = name.endsWith('.mp3') ? name : `${name}.mp3`
+      downloadFile({ data: item.audioBlob!, filename })
+      toast.success('音频下载成功！')
+      return
+    }
+
+    setDownloading(true)
+    try {
+      const files: ZipFileEntry[] = completedItems.map((item) => {
+        const name = item.name ?? `${item.id}_audio`
+        const path = name.endsWith('.mp3') ? name : `${name}.mp3`
+        return { path, data: item.audioBlob! }
+      })
+      await downloadFilesAsZip(files, 'bytts')
+      toast.success('全部音频下载成功！')
+    } catch {
+      toast.error('下载失败，请重试')
+    } finally {
+      setDownloading(false)
+    }
+  }, [completedItems])
+
   return (
     <Card className="flex flex-col p-4 border-none h-full">
       <CardHeader className="p-0 flex flex-row items-center justify-between">
         <CardTitle>历史记录</CardTitle>
-        <CardAction>
+        <CardAction className="space-x-2">
+          {completedItems.length > 0 && (
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={downloading}
+              onClick={handleDownloadAll}
+            >
+              {downloading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Download />
+              )}
+              下载全部
+            </Button>
+          )}
           {history.length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>

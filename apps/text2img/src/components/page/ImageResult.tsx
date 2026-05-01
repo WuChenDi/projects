@@ -7,9 +7,11 @@ import {
   CardTitle,
 } from '@cdlab996/ui/components/card'
 import { IKEmpty } from '@cdlab996/ui/IK'
-import { format } from 'date-fns'
-import { Download, ImageOff, Trash2 } from 'lucide-react'
+import type { ZipFileEntry } from '@cdlab996/utils'
+import { downloadFile, downloadFilesAsZip } from '@cdlab996/utils'
+import { Download, ImageOff, Loader2, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import type { GenerationResult, Model } from '@/types'
 import { GenerationStatus } from '@/types'
@@ -29,23 +31,45 @@ export function ImageResult({
   onClearAll,
 }: ImageResultProps) {
   const t = useTranslations('result')
+  const [downloading, setDownloading] = useState(false)
 
   const completedResults = results.filter(
     (r) => r.status === GenerationStatus.COMPLETED,
   )
 
-  const handleDownloadAll = () => {
-    for (const result of completedResults) {
-      if (!result.imageUrl) continue
-      const link = document.createElement('a')
-      link.href = result.imageUrl
-      const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+  const handleDownloadAll = async () => {
+    const items = completedResults.filter((r) => r.imageUrl)
+    if (items.length === 0) return
+
+    if (items.length === 1) {
+      const r = items[0]
       const modelName =
-        models?.find((m) => m.id === result.params.model)?.name || 'ai-image'
-      link.download = `${modelName}-${timestamp}.png`
-      link.click()
+        models?.find((m) => m.id === r.params.model)?.name || 'ai-image'
+      downloadFile({ data: r.imageUrl!, filename: `${modelName}.png` })
+      toast.success(t('downloadAllStarted'))
+      return
     }
-    toast.success(t('downloadAllStarted'))
+
+    setDownloading(true)
+    try {
+      const blobs = await Promise.all(
+        items.map(async (r) => {
+          const res = await fetch(r.imageUrl!)
+          return res.blob()
+        }),
+      )
+      const files: ZipFileEntry[] = items.map((r, i) => {
+        const modelName =
+          models?.find((m) => m.id === r.params.model)?.name || 'ai-image'
+        return { path: `${modelName}-${i + 1}.png`, data: blobs[i] }
+      })
+      await downloadFilesAsZip(files, 'text2img')
+      toast.success(t('downloadAllStarted'))
+    } catch {
+      toast.error('Download failed')
+    } finally {
+      setDownloading(false)
+    }
   }
 
   return (
@@ -59,9 +83,13 @@ export function ImageResult({
                 onClick={handleDownloadAll}
                 size="sm"
                 variant="secondary"
-                disabled={completedResults.length === 0}
+                disabled={completedResults.length === 0 || downloading}
               >
-                <Download className="size-4" />
+                {downloading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Download className="size-4" />
+                )}
                 {t('downloadAll')}
               </Button>
               <Button onClick={onClearAll} size="sm" variant="secondary">

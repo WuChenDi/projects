@@ -9,8 +9,8 @@ import {
   CardTitle,
 } from '@cdlab996/ui/components/card'
 import { IKPageContainer } from '@cdlab996/ui/IK'
-import { logger } from '@cdlab996/utils'
-import JSZip from 'jszip'
+import type { ZipFileEntry } from '@cdlab996/utils'
+import { downloadFile, downloadFilesAsZip, logger } from '@cdlab996/utils'
 import type React from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
@@ -22,7 +22,7 @@ import {
   RightPanel,
 } from '@/components/pages/squish'
 import { useImageQueue } from '@/hooks/useImageQueue'
-import { DEFAULT_QUALITY_SETTINGS, downloadImage, genid } from '@/lib'
+import { DEFAULT_QUALITY_SETTINGS, genid } from '@/lib'
 import type {
   CompressionOptions as CompressionOptionsType,
   ImageFile,
@@ -162,15 +162,25 @@ export default function Squish() {
 
   // Handle downloading all completed images
   const handleDownloadAll = useCallback(async () => {
+    const completedImages = images.filter(
+      (img) => img.status === 'complete' && img.blob && img.outputType,
+    )
+    if (completedImages.length === 0) return
+
+    if (completedImages.length === 1) {
+      const img = completedImages[0]
+      downloadFile({ data: img.blob!, filename: `${img.file.name.split('.')[0]}.${img.outputType}` })
+      toast.success('Downloaded 1 image')
+      return
+    }
+
     setIsDownloading(true)
     try {
-      const completedImages = images.filter((img) => img.status === 'complete')
-      for (const image of completedImages) {
-        if (image.blob && image.outputType) {
-          await downloadImage(image)
-          await new Promise((resolve) => setTimeout(resolve, 100))
-        }
-      }
+      const files: ZipFileEntry[] = completedImages.map((img) => ({
+        path: `${img.file.name.split('.')[0]}.${img.outputType}`,
+        data: img.blob!,
+      }))
+      await downloadFilesAsZip(files, 'clearify')
       toast.success(`Downloaded ${completedImages.length} image(s)`)
     } catch (error) {
       logger.error(
@@ -187,26 +197,14 @@ export default function Squish() {
   const handleDownloadZip = useCallback(async () => {
     setIsZipping(true)
     try {
-      const zip = new JSZip()
-      const completedImages = images.filter((img) => img.status === 'complete')
-
-      for (const image of completedImages) {
-        if (image.blob && image.outputType) {
-          const fileName = `${image.file.name.split('.')[0]}.${image.outputType}`
-          zip.file(fileName, image.blob)
-        }
-      }
-
-      const content = await zip.generateAsync({ type: 'blob' })
-      const url = URL.createObjectURL(content)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'squish-images.zip'
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-
+      const completedImages = images.filter(
+        (img) => img.status === 'complete' && img.blob && img.outputType,
+      )
+      const files: ZipFileEntry[] = completedImages.map((img) => ({
+        path: `${img.file.name.split('.')[0]}.${img.outputType}`,
+        data: img.blob!,
+      }))
+      await downloadFilesAsZip(files, 'clearify')
       toast.success(`Downloaded ${completedImages.length} image(s) as ZIP`)
     } catch (error) {
       logger.error(

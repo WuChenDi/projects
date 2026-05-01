@@ -36,7 +36,6 @@
     "@next/third-parties": "catalog:prod",
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",
-    "jszip": "catalog:prod",
     "lucide-react": "catalog:prod",
     "next": "catalog:prod",
     "next-themes": "catalog:prod",

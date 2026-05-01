@@ -1,8 +1,8 @@
 'use client'
 
 import { IKEmpty } from '@cdlab996/ui/IK'
+import { downloadFile } from '@cdlab996/utils'
 import { CloudUpload } from 'lucide-react'
-import { downloadImage } from '@/lib'
 import type { ImageFile } from '@/types'
 import { ImageItem } from './ImageItem'
 
@@ -37,7 +37,13 @@ export const RightPanel = ({
           key={image.id}
           image={image}
           onRemove={handleRemoveImage}
-          onDownload={downloadImage}
+          onDownload={(image) => {
+            if (!image.blob || !image.outputType) return
+            downloadFile({
+              data: image.blob,
+              filename: `${image.file.name.split('.')[0]}.${image.outputType}`,
+            })
+          }}
           onRetry={handleRetryImage}
           onCompare={handleCompareImage}
         />

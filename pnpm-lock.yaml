@@ -157,8 +157,8 @@ importers:
         specifier: workspace:*
         version: link:packages/tsconfig
       '@nsio/nsl':
-        specifier: ^0.1.4
-        version: 0.1.4
+        specifier: ^0.1.5
+        version: 0.1.5
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -585,9 +585,6 @@ importers:
       clsx:
         specifier: catalog:prod
         version: 2.1.1
-      jszip:
-        specifier: catalog:prod
-        version: 3.10.1
       lucide-react:
         specifier: catalog:prod
         version: 1.11.0(react@19.2.4)
@@ -707,9 +704,6 @@ importers:
       '@next/third-parties':
         specifier: catalog:prod
         version: 16.2.4(next@16.2.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
-      jszip:
-        specifier: catalog:prod
-        version: 3.10.1
       lucide-react:
         specifier: catalog:prod
         version: 1.11.0(react@19.2.4)
@@ -1221,6 +1215,13 @@ importers:
         version: 4.1.5(@types/node@25.3.3)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@25.3.3)(typescript@6.0.2))(vite@7.3.1(@types/node@25.3.3)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/utils:
+    dependencies:
+      date-fns:
+        specifier: catalog:prod
+        version: 4.1.0
+      jszip:
+        specifier: catalog:prod
+        version: 3.10.1
     devDependencies:
       '@cdlab996/tsconfig':
         specifier: workspace:*
@@ -3179,33 +3180,33 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@nsio/nsl-darwin-arm64@0.1.4':
-    resolution: {integrity: sha512-TG+ffApLBVIDGSJyB0CHdHOWdXu4zYZ+Lp0DrzaesqDnL2qfvEfS/jENnBW+x1khaA9jTpNsehy79/NefX0hFQ==}
+  '@nsio/nsl-darwin-arm64@0.1.5':
+    resolution: {integrity: sha512-MasH15h3vsVPTgufuiMXqgAwu6YkwBRDErJDQM6mseYKX7kjylLOHhj5kXx2i5Ksifv0/AyZsAH9qYBTs8qTUw==}
     cpu: [arm64]
     os: [darwin]
 
-  '@nsio/nsl-darwin-x64@0.1.4':
-    resolution: {integrity: sha512-EflTPbpJd/SO88sGEJXfhG476f/X8HaHmk5wyliOoJP3YUYvnPn1aPoT+yXQ8ew+j7ackycgQKAptmeEABEK3g==}
+  '@nsio/nsl-darwin-x64@0.1.5':
+    resolution: {integrity: sha512-qTZQ5CkKGbuMoXM9cTwE20MUOXahGsv39C2CFjkdjatZ9ml20SnQnbTmmSqdOJc/88p69YhodgLaVdoHiT7ZKg==}
     cpu: [x64]
     os: [darwin]
 
-  '@nsio/nsl-linux-arm64@0.1.4':
-    resolution: {integrity: sha512-kr6RnmwVgHJtRTQ2nvmy6z7fnWkuBbVD/eSnCrsLb1GNGh3aNrlbQufSgbAmVzgXB/rjxQmkGES/IH72PlSw1Q==}
+  '@nsio/nsl-linux-arm64@0.1.5':
+    resolution: {integrity: sha512-9eIEVXoF5IihKcqVWhIw+u6Yp9H0jXdWc6Ws9p17oizswvGidMhGykuexqdaXjTw/c6jD3iO2vc97Phzp1ckJg==}
     cpu: [arm64]
     os: [linux]
 
-  '@nsio/nsl-linux-x64@0.1.4':
-    resolution: {integrity: sha512-PJpE00+0++Vmur0wNFmI7Qt2CZD/How8EtHm6i93kazWQNTm5mEhcTTCRCUaDFH1tnvhIvCthZD+jUr26FG3gA==}
+  '@nsio/nsl-linux-x64@0.1.5':
+    resolution: {integrity: sha512-gpW9f2zxHyrPNjp4F6JOOmd+ck9QOXWErl4+xP0bnTdsseMdVs7ER7KiZfWnpf0j19CuMSiuTcwcFiLZbFBlmg==}
     cpu: [x64]
     os: [linux]
 
-  '@nsio/nsl-win32-x64@0.1.4':
-    resolution: {integrity: sha512-aQIJi4Y5Z/paaOnaIxXnUlllVphjyxrGeyDb4eVxOcNuYqqIT09Hd74/0zK4Nq9YOzR2IOEQg0tT3GuQRvlHng==}
+  '@nsio/nsl-win32-x64@0.1.5':
+    resolution: {integrity: sha512-iDmXFuHa/Q62nYs0Ig206r4NqcPHEG9pQznOo+WDFfRcNJAXrvJmxsCEwOxu3oriJb0gn7fq5WkZmWh920leew==}
     cpu: [x64]
     os: [win32]
 
-  '@nsio/nsl@0.1.4':
-    resolution: {integrity: sha512-Xt3Ah//Y75dp6CGmAA/vY+XQEyKiaPoSDc/6zXWZg/HoePA2DB9bJkgt4MYzxOITW0W1a0M4SCgctx7nD7W/+Q==}
+  '@nsio/nsl@0.1.5':
+    resolution: {integrity: sha512-y6FfjjzPAwmmKjHHJ+OjkqzSGQPc84nl7y9kYLbvDHk7bo8QjzUvWFXnsz9Pln16YD7aR4rYXwS7UopcNlkoag==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -13349,28 +13350,28 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.1
 
-  '@nsio/nsl-darwin-arm64@0.1.4':
+  '@nsio/nsl-darwin-arm64@0.1.5':
     optional: true
 
-  '@nsio/nsl-darwin-x64@0.1.4':
+  '@nsio/nsl-darwin-x64@0.1.5':
     optional: true
 
-  '@nsio/nsl-linux-arm64@0.1.4':
+  '@nsio/nsl-linux-arm64@0.1.5':
     optional: true
 
-  '@nsio/nsl-linux-x64@0.1.4':
+  '@nsio/nsl-linux-x64@0.1.5':
     optional: true
 
-  '@nsio/nsl-win32-x64@0.1.4':
+  '@nsio/nsl-win32-x64@0.1.5':
     optional: true
 
-  '@nsio/nsl@0.1.4':
+  '@nsio/nsl@0.1.5':
     optionalDependencies:
-      '@nsio/nsl-darwin-arm64': 0.1.4
-      '@nsio/nsl-darwin-x64': 0.1.4
-      '@nsio/nsl-linux-arm64': 0.1.4
-      '@nsio/nsl-linux-x64': 0.1.4
-      '@nsio/nsl-win32-x64': 0.1.4
+      '@nsio/nsl-darwin-arm64': 0.1.5
+      '@nsio/nsl-darwin-x64': 0.1.5
+      '@nsio/nsl-linux-arm64': 0.1.5
+      '@nsio/nsl-linux-x64': 0.1.5
+      '@nsio/nsl-win32-x64': 0.1.5
 
   '@nuxt/cli@3.34.0(@nuxt/schema@4.4.2)(cac@6.7.14)(magicast@0.5.2)':
     dependencies:
