@@ -9,8 +9,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import { Input } from '@cdlab996/ui/components/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@cdlab996/ui/components/input-group'
+import { ClipboardPaste } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
+import { useCallback } from 'react'
+import { toast } from 'sonner'
 
 const VIDL_URL = 'https://vidl.pages.dev'
 
@@ -30,6 +38,16 @@ export function SourceCard({
   const t = useTranslations('source')
   const locale = useLocale()
 
+  const handlePaste = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText()
+      if (!text.trim()) return
+      onUrlChange(text.trim())
+    } catch {
+      toast.error(t('batch.clipboardError'))
+    }
+  }, [onUrlChange, t])
+
   return (
     <Card>
       <CardHeader>
@@ -37,13 +55,19 @@ export function SourceCard({
         <CardDescription>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Input
-          value={url}
-          onChange={(e) => onUrlChange(e.target.value)}
-          placeholder={t('placeholder')}
-          onKeyDown={(e) => e.key === 'Enter' && onLoad()}
-          className="flex-1"
-        />
+        <InputGroup>
+          <InputGroupInput
+            value={url}
+            onChange={(e) => onUrlChange(e.target.value)}
+            placeholder={t('placeholder')}
+            onKeyDown={(e) => e.key === 'Enter' && onLoad()}
+          />
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton size="icon-xs" onClick={handlePaste}>
+              <ClipboardPaste />
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
       </CardContent>
       <CardFooter>
         <div className="flex flex-row gap-2 w-full">
