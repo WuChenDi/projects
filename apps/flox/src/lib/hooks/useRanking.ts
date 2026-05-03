@@ -5,13 +5,17 @@ export interface RankingMovie {
   id: string
   title: string
   cover_url: string
-  score: [string, string] // e.g. ["9.7", ""]
+  score: string // e.g. "9.7"
+  rating?: [string, string] // e.g. ["9.7", "50"] (score, weight)
   vote_count: number
   types: string[]
   regions: string[]
   release_date: string
   actor_count: number
   rank: number
+  actors?: string[]
+  url?: string
+  is_playable?: boolean
 }
 
 export interface RankingCategory {

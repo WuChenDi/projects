@@ -7,7 +7,7 @@ import {
   HeartIcon,
   HistoryIcon,
   SettingsIcon,
-  // TrophyIcon,
+  TrophyIcon,
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -37,11 +37,11 @@ function HeaderInner() {
     <header className="relative w-full z-10">
       <div className="flex h-20 px-4 md:px-6 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear">
         <div className="flex items-center justify-between w-full gap-2 sm:gap-4">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             <Link
               href={homeHref}
               onClick={() => onReset?.()}
-              className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity min-w-0"
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0"
             >
               <Image
                 src="https://notes-wudi.pages.dev/images/logo.png"
@@ -64,7 +64,7 @@ function HeaderInner() {
               <>
                 <Button
                   variant="outline"
-                  size="icon-sm"
+                  size="icon"
                   onClick={() => router.back()}
                   className="sm:hidden"
                 >
@@ -83,7 +83,7 @@ function HeaderInner() {
             )}
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <div
               className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground"
               title="在线人数"
@@ -99,18 +99,20 @@ function HeaderInner() {
               strategy="afterInteractive"
             />
 
-            {/* <Button asChild variant="outline" size="icon" aria-label="排行榜">
-              <Link href="/ranking">
-                <TrophyIcon className="size-4 sm:size-5" />
-              </Link>
-            </Button> */}
+            {!isPremiumMode && (
+              <Button asChild variant="outline" size="icon" aria-label="排行榜">
+                <Link href="/ranking">
+                  <TrophyIcon className="size-4" />
+                </Link>
+              </Button>
+            )}
             <Button
               variant="outline"
               size="icon"
               aria-label="我的收藏"
               onClick={() => setFavoritesOpen(true)}
             >
-              <HeartIcon className="size-4 sm:size-5" />
+              <HeartIcon className="size-4" />
             </Button>
             <Button
               variant="outline"
@@ -118,11 +120,11 @@ function HeaderInner() {
               aria-label="观看历史"
               onClick={() => setHistoryOpen(true)}
             >
-              <HistoryIcon className="size-4 sm:size-5" />
+              <HistoryIcon className="size-4" />
             </Button>
             <Button asChild variant="outline" size="icon" aria-label="设置">
               <Link href={settingsHref}>
-                <SettingsIcon className="size-4 sm:size-5" />
+                <SettingsIcon className="size-4" />
               </Link>
             </Button>
             <Button asChild variant="outline" size="icon" aria-label="GitHub">
