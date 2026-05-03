@@ -5,59 +5,55 @@ import type { LibSQLDatabase } from 'drizzle-orm/libsql'
 import { drizzle as drizzleSqlite } from 'drizzle-orm/libsql'
 import type { Context } from 'hono'
 import * as schema from '@/database/schema'
+import type { CloudflareEnv } from '@/types'
 
-class DatabaseManager {
-  static instance: DatabaseManager
-  public db:
-    | LibSQLDatabase<typeof schema>
-    | DrizzleD1Database<typeof schema>
-    | undefined
+export type DrizzleDb =
+  | LibSQLDatabase<typeof schema>
+  | DrizzleD1Database<typeof schema>
 
-  constructor(c?: Context) {
-    if (DatabaseManager.instance) {
-      return DatabaseManager.instance
+let cached: { key: string; db: DrizzleDb } | null = null
+
+export function getDrizzle(env: CloudflareEnv): DrizzleDb {
+  const dbType = env.DB_TYPE || 'libsql'
+
+  // Cache key: D1 binding is stable per isolate; libsql is keyed on its URL
+  const key =
+    dbType === 'd1'
+      ? 'd1'
+      : `libsql:${env.LIBSQL_URL || 'file:./src/database/data.db'}`
+
+  if (cached && cached.key === key) {
+    return cached.db
+  }
+
+  let db: DrizzleDb
+  switch (dbType) {
+    case 'd1': {
+      if (!env.DB) {
+        throw new Error('D1 database binding (DB) not found in env')
+      }
+      db = drizzleD1(env.DB, { schema })
+      break
     }
-    DatabaseManager.instance = this
-
-    logger.info('Creating DatabaseManager instance')
-
-    const {
-      DB_TYPE = 'libsql',
-      LIBSQL_URL = 'file:./web/database/data.db',
-      LIBSQL_AUTH_TOKEN,
-    } = process.env
-
-    logger.info(`DB_TYPE: ${DB_TYPE}`)
-
-    switch (DB_TYPE) {
-      case 'libsql': {
-        const client = createClient({
-          url: LIBSQL_URL,
-          authToken: LIBSQL_AUTH_TOKEN,
-        })
-        this.db = drizzleSqlite(client, { schema })
-        return this
-      }
-      case 'd1': {
-        logger.info(
-          c
-            ? 'Using context for D1 database'
-            : 'No context provided for D1 database',
-        )
-        if (!c?.env?.DB) {
-          throw new Error('D1 database not found in context')
-        }
-        this.db = drizzleD1(c.env.DB, { schema })
-        return this
-      }
-      default: {
-        throw new Error(`Unsupported DB type: ${DB_TYPE}`)
-      }
+    case 'libsql': {
+      const client = createClient({
+        url: env.LIBSQL_URL || 'file:./src/database/data.db',
+        authToken: env.LIBSQL_AUTH_TOKEN,
+      })
+      db = drizzleSqlite(client, { schema })
+      break
+    }
+    default: {
+      throw new Error(`Unsupported DB_TYPE: ${dbType}`)
     }
   }
+
+  cached = { key, db }
+  return db
 }
 
-// Function to get DB instance in Hono routes
-export function useDrizzle(c: Context) {
-  return new DatabaseManager(c).db
+export function useDrizzle<E extends { Bindings: CloudflareEnv }>(
+  c: Context<E>,
+): DrizzleDb {
+  return getDrizzle(c.env)
 }

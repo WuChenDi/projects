@@ -1,20 +1,17 @@
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js'
 import type { Context } from 'hono'
-import type { AIConfiguration, AISlugResponse, CloudflareEnv } from '@/types'
+import type {
+  AIConfiguration,
+  AIMessage,
+  AISlugResponse,
+  CloudflareEnv,
+} from '@/types'
 
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i
+const CACHE_TTL_SECONDS = 60 * 60 * 24 * 7 // 7 days
 
-/**
- * Get AI configuration from environment variables with fallback defaults
- * @param env CloudflareEnv environment variables
- * @returns AI configuration object
- */
-export function getAIConfig(env: CloudflareEnv): AIConfiguration {
-  // Check if AI is enabled: both flag must be true AND model must be configured
-  const aiEnabled =
-    env.ENABLE_AI_SLUG === 'true' && Boolean(env.AI_MODEL?.trim())
-
-  return {
-    systemPrompt: `You are a URL-to-slug converter specialist. Generate short, meaningful slugs for URLs.
+const SYSTEM_PROMPT = `You are a URL-to-slug converter specialist. Generate short, meaningful slugs for URLs.
 
   RULES:
   1. Use only lowercase letters, numbers, and hyphens
@@ -27,43 +24,40 @@ export function getAIConfig(env: CloudflareEnv): AIConfiguration {
 
   EXAMPLES:
   - GitHub repos: use repo name
-  - Documentation: use service name + "docs"  
+  - Documentation: use service name + "docs"
   - Blog posts: use key topic words
   - Company sites: use company name
   - API docs: use service + "api"
 
-  SLUG PATTERN: ${SLUG_REGEX.toString()}`,
+  SLUG PATTERN: ${SLUG_REGEX.toString()}`
 
-    examples: [
-      { role: 'user', content: 'https://www.cloudflare.com/' },
-      { role: 'assistant', content: '{"slug": "cloudflare"}' },
+const FEW_SHOT_EXAMPLES: AIMessage[] = [
+  { role: 'user', content: 'https://www.cloudflare.com/' },
+  { role: 'assistant', content: '{"slug": "cloudflare"}' },
+  { role: 'user', content: 'https://github.com/vercel/next.js' },
+  { role: 'assistant', content: '{"slug": "nextjs"}' },
+  { role: 'user', content: 'https://github.com/WuChenDi' },
+  { role: 'assistant', content: '{"slug": "WuChenDi"}' },
+  { role: 'user', content: 'https://github.com/cdLab996' },
+  { role: 'assistant', content: '{"slug": "cdlab996"}' },
+  { role: 'user', content: 'https://notes-wudi.pages.dev' },
+  { role: 'assistant', content: '{"slug": "notes-wudi"}' },
+  { role: 'user', content: 'https://clearify.pages.dev' },
+  { role: 'assistant', content: '{"slug": "clearify"}' },
+  { role: 'user', content: 'https://t.me/cdlab996' },
+  { role: 'assistant', content: '{"slug": "tg-cdlab996"}' },
+  { role: 'user', content: 'https://shortener.cdlab.workers.dev' },
+  { role: 'assistant', content: '{"slug": "shortener"}' },
+]
 
-      { role: 'user', content: 'https://github.com/vercel/next.js' },
-      { role: 'assistant', content: '{"slug": "nextjs"}' },
+/** Read AI configuration from env vars with sensible fallbacks. */
+export function getAIConfig(env: CloudflareEnv): AIConfiguration {
+  const aiEnabled =
+    env.ENABLE_AI_SLUG === 'true' && Boolean(env.AI_MODEL?.trim())
 
-      { role: 'user', content: 'https://github.com/WuChenDi' },
-      { role: 'assistant', content: '{"slug": "WuChenDi"}' },
-
-      { role: 'user', content: 'https://github.com/cdLab996' },
-      { role: 'assistant', content: '{"slug": "cdlab996"}' },
-
-      {
-        role: 'user',
-        content: 'https://notes-wudi.pages.dev',
-      },
-      { role: 'assistant', content: '{"slug": "notes-wudi"}' },
-
-      { role: 'user', content: 'https://clearify.pages.dev' },
-      { role: 'assistant', content: '{"slug": "clearify"}' },
-
-      { role: 'user', content: 'https://t.me/cdlab996' },
-      { role: 'assistant', content: '{"slug": "tg-cdlab996"}' },
-
-      { role: 'user', content: 'https://shortener.cdlab.workers.dev' },
-      { role: 'assistant', content: '{"slug": "shortener"}' },
-    ],
-
-    // AI configuration with inline enable check
+  return {
+    systemPrompt: SYSTEM_PROMPT,
+    examples: FEW_SHOT_EXAMPLES,
     ENABLE_AI_SLUG: aiEnabled,
     AI_MODEL:
       env.AI_MODEL || ('@cf/meta/llama-3.1-8b-instruct' as keyof AiModels),
@@ -73,24 +67,18 @@ export function getAIConfig(env: CloudflareEnv): AIConfiguration {
   }
 }
 
-/**
- * Call AI service to generate slug
- */
+/** Call Workers AI to generate a slug for the given URL. */
 async function callAI(
   env: CloudflareEnv,
   url: string,
 ): Promise<AISlugResponse> {
   const aiConfig = getAIConfig(env)
-
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), aiConfig.AI_TIMEOUT)
 
   try {
     logger.debug(
-      `[AI] Calling AI service, ${JSON.stringify({
-        model: aiConfig.AI_MODEL,
-        url,
-      })}`,
+      `[AI] Calling AI service, model: ${aiConfig.AI_MODEL}, url: ${url}`,
     )
 
     const response = await env.AI.run(aiConfig.AI_MODEL, {
@@ -103,24 +91,22 @@ async function callAI(
       max_tokens: 100,
     })
 
-    clearTimeout(timeoutId)
-
     let responseText: string
-
     if (typeof response === 'string') {
       responseText = response
     } else if (response && typeof response === 'object') {
+      const r = response as Record<string, unknown>
       responseText =
-        (response as any).response ||
-        (response as any).result ||
-        (response as any).content ||
-        (response as any).text ||
+        (r.response as string) ||
+        (r.result as string) ||
+        (r.content as string) ||
+        (r.text as string) ||
         JSON.stringify(response)
     } else {
       throw new Error('Invalid AI response format')
     }
 
-    if (!responseText || responseText.trim() === '') {
+    if (!responseText.trim()) {
       throw new Error('Empty AI response')
     }
 
@@ -133,23 +119,17 @@ async function callAI(
       })}`,
     )
 
-    // Parse the response
     const parsed = parseAIResponse(responseText)
-    const cleanedSlug = cleanSlug(parsed.slug)
-
     return {
       success: true,
-      slug: cleanedSlug,
-      confidence: parsed.confidence || 0.8,
+      slug: cleanSlug(parsed.slug),
+      confidence: parsed.confidence,
       method: 'ai',
     }
   } catch (error) {
-    clearTimeout(timeoutId)
-
     if (error instanceof Error && error.name === 'AbortError') {
       throw new Error(`AI request timeout after ${aiConfig.AI_TIMEOUT}ms`)
     }
-
     logger.error(
       `[AI] AI service call failed, ${JSON.stringify({
         model: aiConfig.AI_MODEL,
@@ -157,109 +137,84 @@ async function callAI(
         error: error instanceof Error ? error.message : 'Unknown error',
       })}`,
     )
-
     throw error
+  } finally {
+    clearTimeout(timeoutId)
   }
 }
 
+/** Generate a slug for `url`, with KV caching when enabled. */
 export async function generateAISlug(
   c: Context,
   url: string,
   options: { cache?: boolean } = {},
 ): Promise<AISlugResponse> {
   const aiConfig = getAIConfig(c.env)
-  const { cache = aiConfig.AI_ENABLE_CACHE } = options
+  const useCache = options.cache ?? aiConfig.AI_ENABLE_CACHE
+  const kv = c.env.SHORTENER_KV as KVNamespace | undefined
 
-  // Check cache first
-  if (cache && c.env.SHORTENER_KV) {
-    const cached = await getCachedSlug(c.env.SHORTENER_KV, url)
+  if (useCache && kv) {
+    const cached = await getCachedSlug(kv, url)
     if (cached) {
-      logger.debug(
-        `[AI] Cache hit, ${JSON.stringify({
-          url,
-          slug: cached.slug,
-        })}`,
-      )
+      logger.debug(`[AI] Cache hit, url: ${url}, slug: ${cached.slug}`)
       return cached
     }
   }
 
-  // Try AI generation
-  try {
-    const result = await callAI(c.env, url)
-
-    // Cache the result
-    if (cache && result.success && c.env.SHORTENER_KV) {
-      await setCachedSlug(c.env.SHORTENER_KV, url, result)
-    }
-
-    return result
-  } catch (error) {
-    logger.error(
-      `[AI] AI generation failed, ${JSON.stringify({
-        url,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      })}`,
-    )
-
-    throw error
+  const result = await callAI(c.env, url)
+  if (useCache && result.success && kv) {
+    await setCachedSlug(kv, url, result)
   }
+  return result
 }
 
-export function parseAIResponse(response: string) {
+/** Parse the model's JSON response, with progressive fallbacks. */
+export function parseAIResponse(response: string): {
+  slug: string
+  confidence: number
+} {
+  // 1) Strict JSON
   try {
     const parsed = JSON.parse(response)
-    if (!parsed.slug || typeof parsed.slug !== 'string') {
-      throw new Error('Invalid slug in AI response')
-    }
-    return {
-      slug: parsed.slug.toLowerCase().trim(),
-      confidence: parsed.confidence || 0.8,
-    }
-  } catch (jsonError) {
-    logger.info(
-      `[AI] Failed to parse JSON, attempting advanced extraction, ${JSON.stringify(
-        {
-          response: response.substring(0, 200),
-        },
-      )}`,
-    )
-
-    // Try to extract JSON from text
-    const jsonMatch = response.match(/\{[^}]*"slug"[^}]*\}/)
-    if (jsonMatch) {
-      try {
-        const parsed = JSON.parse(jsonMatch[0])
-        if (parsed.slug && typeof parsed.slug === 'string') {
-          return {
-            slug: parsed.slug.toLowerCase().trim(),
-            confidence: parsed.confidence || 0.6,
-          }
-        }
-      } catch {
-        // Continue processing
-      }
-    }
-
-    // Improved regex to match more specific slug patterns
-    const slugMatch = response.match(/[a-z0-9][a-z0-9-]{1,18}[a-z0-9]/)
-    if (slugMatch) {
-      logger.warn(
-        `[AI] Extracted slug from non-JSON response, originalResponse: ${response.substring(0, 100)}, extractedSlug: ${slugMatch[0]}`,
-      )
+    if (parsed.slug && typeof parsed.slug === 'string') {
       return {
-        slug: slugMatch[0],
-        confidence: 0.4,
+        slug: parsed.slug.toLowerCase().trim(),
+        confidence: parsed.confidence || 0.8,
       }
     }
-
-    throw new Error('Failed to parse AI response: no valid slug found')
+  } catch {
+    // fall through
   }
+
+  // 2) Embedded JSON object
+  const jsonMatch = response.match(/\{[^}]*"slug"[^}]*\}/)
+  if (jsonMatch) {
+    try {
+      const parsed = JSON.parse(jsonMatch[0])
+      if (parsed.slug && typeof parsed.slug === 'string') {
+        return {
+          slug: parsed.slug.toLowerCase().trim(),
+          confidence: parsed.confidence || 0.6,
+        }
+      }
+    } catch {
+      // fall through
+    }
+  }
+
+  // 3) Bare slug-shaped substring
+  const slugMatch = response.match(/[a-z0-9][a-z0-9-]{1,18}[a-z0-9]/)
+  if (slugMatch) {
+    logger.warn(
+      `[AI] Extracted slug from non-JSON response, originalResponse: ${response.substring(0, 100)}, extractedSlug: ${slugMatch[0]}`,
+    )
+    return { slug: slugMatch[0], confidence: 0.4 }
+  }
+
+  throw new Error('Failed to parse AI response: no valid slug found')
 }
 
-/**
- * Clean and validate slug
- */
+/** Normalize and validate a slug; throws if it can't be made acceptable. */
 export function cleanSlug(slug: string): string {
   if (!slug) throw new Error('Empty slug')
 
@@ -270,40 +225,34 @@ export function cleanSlug(slug: string): string {
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
 
-  // Length limit
   if (cleaned.length > 20) {
     cleaned = cleaned.substring(0, 20).replace(/-$/, '')
   }
-
   if (cleaned.length < 3) {
     throw new Error('Slug too short')
   }
-
   if (!/^[a-z0-9-]+$/.test(cleaned)) {
     throw new Error('Invalid slug format')
   }
-
   return cleaned
 }
 
-/**
- * Cache related functions
- */
+function cacheKey(url: string): string {
+  // First 16 hex chars (64 bits) of sha256 — collision-safe for URL bucketing.
+  return `ai-slug:${bytesToHex(sha256(utf8ToBytes(url))).slice(0, 16)}`
+}
+
 export async function getCachedSlug(
   kv: KVNamespace,
   url: string,
 ): Promise<AISlugResponse | null> {
   try {
-    const cacheKey = `ai-slug:${hashUrl(url)}`
-    const cached = await kv.get(cacheKey, 'json')
-
-    if (cached && isCacheValid(cached)) {
-      return cached as AISlugResponse
-    }
-
-    return null
+    const cached = await kv.get<AISlugResponse>(cacheKey(url), 'json')
+    return cached && isCacheValid(cached) ? cached : null
   } catch (error) {
-    logger.error(`[AI] Cache read error, ${JSON.stringify({ url, error })}`)
+    logger.error(
+      `[AI] Cache read error, url: ${url}, error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    )
     return null
   }
 }
@@ -314,38 +263,20 @@ export async function setCachedSlug(
   result: AISlugResponse,
 ): Promise<void> {
   try {
-    const cacheKey = `ai-slug:${hashUrl(url)}`
     await kv.put(
-      cacheKey,
-      JSON.stringify({
-        ...result,
-        cachedAt: Date.now(),
-      }),
-      {
-        expirationTtl: 86400 * 7, // 7 days
-      },
+      cacheKey(url),
+      JSON.stringify({ ...result, cachedAt: Date.now() }),
+      { expirationTtl: CACHE_TTL_SECONDS },
     )
   } catch (error) {
     logger.error(
-      `[AI] Cache write error, ${JSON.stringify({
-        url,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      })}`,
+      `[AI] Cache write error, url: ${url}, error: ${error instanceof Error ? error.message : 'Unknown error'}`,
     )
   }
 }
 
-export function hashUrl(url: string): string {
-  let hash = 0
-  for (let i = 0; i < url.length; i++) {
-    const char = url.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-    hash = hash & hash
-  }
-  return Math.abs(hash).toString(36).substring(0, 8)
-}
-
-export function isCacheValid(cached: any): boolean {
-  const maxAge = 86400 * 7 * 1000 // 7 days (ms)
-  return cached.cachedAt && Date.now() - cached.cachedAt < maxAge
+export function isCacheValid(cached: AISlugResponse): boolean {
+  return (
+    !!cached.cachedAt && Date.now() - cached.cachedAt < CACHE_TTL_SECONDS * 1000
+  )
 }

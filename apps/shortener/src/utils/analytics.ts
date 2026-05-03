@@ -179,18 +179,12 @@ export function getIntervalFormat(interval: string): string {
 }
 
 /**
- * Sanitize SQL input to prevent SQL injection
- * Removes potentially dangerous characters from user input
- *
- * @param input - Raw user input string
- * @returns Sanitized string safe for SQL queries
- *
- * @example
- * sanitizeSqlInput("'; DROP TABLE users; --")
- * // Returns: " DROP TABLE users "
+ * Escape a string for embedding inside single-quoted Analytics Engine SQL
+ * literals. Doubles single quotes and strips control characters / nul bytes.
+ * The resulting value is safe to splice into `'...'` contexts only.
  */
 export function sanitizeSqlInput(input: string): string {
-  return input.replace(/['"]/g, '').replace(/[;\-]/g, '')
+  return input.replace(/[\x00-\x1f\x7f]/g, '').replace(/'/g, "''")
 }
 
 /**
