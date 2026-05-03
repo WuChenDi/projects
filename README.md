@@ -207,6 +207,16 @@ https://live-user.cdlab.workers.dev/
 - Visit counter stored in DO-embedded SQLite with atomic updates (no data loss under concurrency)
 - Tech: Hono + Cloudflare Workers + Durable Objects + SQLite
 
+### shortener
+
+**URL Shortener Service**
+
+- Edge URL shortener with D1 / LibSQL storage (switchable via `DB_TYPE`), KV caching, and JWT-protected admin API
+- AI-powered semantic slug generation via Cloudflare Workers AI (with KV cache + Base62 fallback)
+- Analytics Engine ingestion + query endpoints (overview / time series / countries / referrers / devices / browsers / OS)
+- OG-tag rendering for crawlers, daily cron cleanup of expired links, soft-delete on every table
+- Tech: Hono + Cloudflare Workers + Drizzle + D1/LibSQL + KV + Workers AI + Analytics Engine
+
 ### repo-changelog
 
 **Open Source Release / Changelog Aggregation Dashboard**
@@ -256,6 +266,7 @@ pnpm --filter @cdlab996/bytts dev            # → http://bytts.localhost:3355
 pnpm --filter @cdlab996/dropply-web dev      # → http://dropply-web.localhost:3355
 pnpm --filter @cdlab996/flox dev             # → http://flox.localhost:3355
 pnpm --filter @cdlab996/live-user dev        # → http://live-user.localhost:3355
+pnpm --filter @cdlab996/shortener dev        # → http://shortener.localhost:3355
 pnpm --filter @cdlab996/repo-changelog dev   # → http://repo-changelog.localhost:3355
 pnpm build                                   # Build all apps
 pnpm --filter @cdlab996/clearify run build
@@ -270,6 +281,7 @@ pnpm --filter @cdlab996/bytts run build
 pnpm --filter @cdlab996/dropply-web run build
 pnpm --filter @cdlab996/flox run build
 pnpm --filter @cdlab996/live-user run build
+pnpm --filter @cdlab996/shortener run build
 pnpm --filter @cdlab996/repo-changelog run build
 pnpm lint                          # Biome lint
 pnpm format                        # Biome format all code
@@ -293,6 +305,7 @@ pnpm clean                         # Clean node_modules / cache / build artifact
 │   ├── live-user/         # Real-time Online User Counter
 │   ├── repo-changelog/    # GitHub Release / Changelog Aggregation
 │   ├── SecureC/           # Encryption Tool
+│   ├── shortener/         # URL Shortener Service (Cloudflare Workers)
 │   ├── text2img/          # Text-to-Image Frontend
 │   ├── value-vision/      # Value Comparison / Visualization
 │   └── vidl/              # Video Downloader (M3U8/HLS, MP4, etc.)

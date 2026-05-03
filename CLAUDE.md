@@ -8,16 +8,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Workspace layout:
 
-- `apps/*` — 15 deployable products (Next.js, Nuxt, Cloudflare Workers)
+- `apps/*` — 16 deployable products (Next.js, Nuxt, Cloudflare Workers)
 - `packages/*` — 5 shared libraries (`ui`, `utils`, `cipher`, `uncrypto`, `tsconfig`)
 
 Apps fall into three runtime families with different toolchains:
 
-| Family | Apps | Build tool | Deploy target |
-| --- | --- | --- | --- |
-| **Next.js (App Router)** | `bycut`, `byplay`, `bytts`, `clearify`, `dropply-web`, `flox`, `SecureC`, `text2img`, `value-vision`, `vidl` | `next build` (some `--webpack`) | Cloudflare Pages (`@cloudflare/next-on-pages`), `text2img` uses `@opennextjs/cloudflare` |
-| **Cloudflare Workers (Hono)** | `baccarat`, `byplay-log`, `dropply-api`, `live-user` | `wrangler deploy --minify` | Cloudflare Workers + Durable Objects / D1 |
-| **Nuxt 4 (Vue 3)** | `repo-changelog` | `nuxt build`/`generate` | Vercel |
+| Family                        | Apps                                                                                                         | Build tool                      | Deploy target                                                                            |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------- | ---------------------------------------------------------------------------------------- |
+| **Next.js (App Router)**      | `bycut`, `byplay`, `bytts`, `clearify`, `dropply-web`, `flox`, `SecureC`, `text2img`, `value-vision`, `vidl` | `next build` (some `--webpack`) | Cloudflare Pages (`@cloudflare/next-on-pages`), `text2img` uses `@opennextjs/cloudflare` |
+| **Cloudflare Workers (Hono)** | `baccarat`, `byplay-log`, `dropply-api`, `live-user`, `shortener`                                            | `wrangler deploy --minify`      | Cloudflare Workers + Durable Objects / D1                                                |
+| **Nuxt 4 (Vue 3)**            | `repo-changelog`                                                                                             | `nuxt build`/`generate`         | Vercel                                                                                   |
 
 ## Commands
 
@@ -40,17 +40,17 @@ pnpm dev:dropply                             # filters apps/dropply-* (web + api
 pnpm --filter @cdlab996/<name> dev|build|typecheck|lint
 pnpm --filter ./apps/<dir> dev|build         # path-based filter
 
-# Cloudflare Workers (baccarat, byplay-log, dropply-api, live-user)
+# Cloudflare Workers (baccarat, byplay-log, dropply-api, live-user, shortener)
 pnpm --filter @cdlab996/<worker> dev         # nsl run wrangler dev
 pnpm --filter @cdlab996/<worker> deploy      # wrangler deploy --minify
 pnpm --filter @cdlab996/<worker> cf-typegen  # regenerate CloudflareBindings type
 
-# Drizzle (dropply-api, byplay-log)
+# Drizzle (dropply-api, byplay-log, shortener)
 pnpm --filter @cdlab996/<worker> db:gen      # generate migration from schema
 pnpm --filter @cdlab996/<worker> db:migrate  # apply (LibSQL)
 pnpm --filter @cdlab996/<worker> cf:localdb  # apply to local D1
 pnpm --filter @cdlab996/<worker> cf:remotedb # apply to remote D1
-pnpm --filter @cdlab996/<worker> db:studio   # drizzle-kit studio
+pnpm --filter @cdlab996/<worker> db:studio   # drizzle-kit studio (port 3015 / 3018 / 3019)
 
 # Workspace package tests (vitest)
 pnpm --filter @cdlab996/utils  test          # one-shot
@@ -58,7 +58,7 @@ pnpm --filter @cdlab996/cipher test:watch
 pnpm --filter @cdlab996/utils  exec vitest run path/to.test.ts -t "name"
 
 # Explicit deploys (CI does NOT auto-deploy)
-pnpm deploy:baccarat | deploy:dropply-api | deploy:live-user | deploy:text2img
+pnpm deploy:baccarat | deploy:dropply-api | deploy:live-user | deploy:shortener | deploy:text2img
 ```
 
 Drizzle's `DB_TYPE` env var (`libsql` default, or `d1`) selects the dialect at config time — see `apps/dropply-api/drizzle.config.ts`. `LIBSQL_URL` defaults to `file:./src/database/data.db`.
@@ -106,6 +106,19 @@ Entry: `src/index.ts`. Mounts `homeRoutes`, `sdkRoutes`, `wsRoutes`. The fronten
 - Per-site visit counts are atomic via `ctx.storage.sql.exec` updates.
 - **Bug-fixed quirk** (see comment in `webSocketClose`): hibernation calls `webSocketClose` *after* the socket is already closed — never call `ws.close()` from there or it throws.
 - `routes/sdk.ts` — Serves the embeddable JS snippet; `routes/ws.ts` proxies WebSocket upgrades into the DO.
+
+#### `shortener` — URL shortener with AI slugs + analytics
+
+Entry: `src/index.ts`. Hono + Drizzle (D1 / LibSQL) + Cloudflare KV + Workers AI + Analytics Engine. Same `global.ts` / winston logger pattern as `dropply-api` / `byplay-log`.
+
+- `src/database/schema.ts` — `links` (unique on `hash`, unique on `shortCode + domain`) and `pages` (unique on `hash`). Both share `trackingFields` (soft-delete via `isDeleted`).
+- `src/middleware/jwt.ts` — ES256 JWT verification via `jose`. Public key configured as a hex-encoded uncompressed EC point in `JWT_PUBKEY`. Mounted on `/api/*` only — public `/`, `/:shortCode`, `/:shortCode/og` are unauthenticated.
+- `src/middleware/analytics.ts` — Per-redirect analytics event ingestion into Analytics Engine (parsed via `ua-parser-js`), gated by `ANALYTICS_SAMPLE_RATE` and `DISABLE_BOT_ANALYTICS`.
+- `src/routes/` — `shortcode` (redirect / OG), `api` (CRUD on links + page record), `ai` (slug, batch-slug, suggestions), `analytics` (overview / timeseries / top-countries / top-referrers / devices / browsers / operating-systems / link/:hash / real-time).
+- `src/utils/slug.ts` — Calls Workers AI (`AI_MODEL`, default `@cf/meta/llama-3.1-8b-instruct`) with KV cache key `ai:slug:{url}`. Falls back to Base62 + sha256 if AI is disabled or fails. **Note**: `keyof AiModels` cast on the fallback literal is required because the catalog `@cloudflare/workers-types` no longer declares the 3.1 model name.
+- `src/utils/hash.ts` — Uses `@noble/hashes` 2.x with explicit `.js` subpaths (`@noble/hashes/sha2.js`, `@noble/hashes/utils.js`); v2 hash functions only accept `Uint8Array`, so strings must be wrapped in `utf8ToBytes()`.
+- `src/cron/cleanup.ts` — Runs from the worker's `scheduled()` handler (cron `0 0 * * *`); soft-deletes expired links and clears their `url:{hash}` / `og:{hash}` / `ai:slug:{url}` cache entries.
+- KV cache convention: `url:{hash}` and `og:{hash}` 1-hour TTL with auto-invalidation on update/delete. Three-key invalidation must always be done together to keep cache coherent.
 
 ### Next.js apps
 
@@ -266,7 +279,7 @@ Pure-browser stream download — `mux.js` + Streams API, near-zero memory footpr
   - `useDateNow` — `Date.now()` not `new Date().getTime()`
   - `noRestrictedImports` for zod — **`import * as z from 'zod'`** is mandatory; `import { z } from 'zod'` will fail lint
 - Per-app linter "domains" are scoped via `biome.json` `overrides`: `next` + `react` for the Next apps listed in `overrides[1].includes`, `vue` for `repo-changelog`. Other apps get the recommended-off baseline.
-- `repo-changelog`, `byplay-log/src/database/**/*.{json,sql}`, `dropply-api/src/database/**/*.{json,sql}`, and parts of `packages/ui/src/{components,reactbits}/**/*.tsx` are **excluded from Biome** entirely.
+- `repo-changelog`, `byplay-log/src/database/**/*.{json,sql}`, `dropply-api/src/database/**/*.{json,sql}`, `shortener/src/database/**/*.{json,sql}`, and parts of `packages/ui/src/{components,reactbits}/**/*.tsx` are **excluded from Biome** entirely.
 
 ### Dependency versions live in pnpm catalogs
 
@@ -285,7 +298,7 @@ Pure-browser stream download — `mux.js` + Streams API, near-zero memory footpr
 ### IDs
 
 - `@cdlab996/genid` (catalog dep) is the standard ID generator across apps.
-- Database tables in `dropply-api` and `byplay-log` use UUID v4 (or auto-increment for `playerLogs`).
+- Database tables in `dropply-api` and `byplay-log` use UUID v4 (or auto-increment for `playerLogs`). `shortener.links` uses an internal sha256 `hash` (unique) plus a user-facing `shortCode`; `shortener.pages` uses a unique `hash`.
 
 ### Soft delete
 
@@ -293,7 +306,7 @@ Drizzle tables share a `trackingFields` block: `createdAt`, `updatedAt` (auto-up
 
 ### API response envelope (Workers)
 
-Hono workers return `{ statusCode, message, stack? }` for errors (with `stack` only when `isDebug` is true) and route-specific shapes for success. The pattern is consistent across `dropply-api`, `byplay-log`, `live-user`. Global error/404 handlers are wired in each `index.ts`.
+Hono workers return `{ statusCode, message, stack? }` for errors (with `stack` only when `isDebug` is true) and route-specific shapes for success. The pattern is consistent across `dropply-api`, `byplay-log`, `live-user`, `shortener`. Global error/404 handlers are wired in each `index.ts`.
 
 ### Misc
 

@@ -1,0 +1,51 @@
+{
+  "name": "@cdlab996/shortener",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A URL shortener service built with Cloudflare Workers and Hono.",
+  "author": "wudi <wuchendi96@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/WuChenDi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WuChenDi/projects.git",
+    "directory": "apps/shortener"
+  },
+  "scripts": {
+    "dev": "nsl run wrangler dev src/index.ts",
+    "deploy": "wrangler deploy --minify",
+    "deploy:dev": "wrangler deploy --env development --minify",
+    "deploy:prod": "wrangler deploy --env production --minify",
+    "build": "bun build src/index.ts --outdir dist --target browser",
+    "generate-jwt": "node scripts/generate-jwt.js",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "cf:localdb": "wrangler d1 migrations apply shortener-db",
+    "cf:remotedb": "wrangler d1 migrations apply shortener-db --remote",
+    "db:studio": "drizzle-kit studio --port 3019 --host 0.0.0.0",
+    "db:pull": "drizzle-kit pull",
+    "db:push": "drizzle-kit push",
+    "db:gen": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:up": "drizzle-kit up"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "catalog:prod",
+    "@libsql/client": "catalog:prod",
+    "@noble/hashes": "^2.2.0",
+    "drizzle-orm": "catalog:prod",
+    "hono": "catalog:prod",
+    "jose": "^6.2.3",
+    "ua-parser-js": "^2.0.9",
+    "winston": "catalog:prod",
+    "winston-daily-rotate-file": "catalog:prod",
+    "zod": "catalog:prod"
+  },
+  "devDependencies": {
+    "@cdlab996/tsconfig": "workspace:*",
+    "@cloudflare/workers-types": "catalog:dev",
+    "@types/node": "catalog:dev",
+    "drizzle-kit": "catalog:dev",
+    "wrangler": "catalog:dev"
+  }
+}

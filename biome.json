@@ -129,6 +129,8 @@
       "!apps/byplay-log/src/database/**/*.sql",
       "!apps/dropply-api/src/database/**/*.json",
       "!apps/dropply-api/src/database/**/*.sql",
+      "!apps/shortener/src/database/**/*.json",
+      "!apps/shortener/src/database/**/*.sql",
       "!packages/ui/src/reactbits/**/*.tsx",
       "!packages/ui/src/components/**/*.tsx"
     ]
