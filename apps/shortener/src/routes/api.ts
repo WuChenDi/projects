@@ -29,7 +29,20 @@ export const apiRoutes = new Hono<{
   Variables: Variables
 }>()
 
-async function deleteUrlCache(env: CloudflareEnv, hash: string) {
+async function clearUrlCache(env: CloudflareEnv, hash: string) {
+  if (!env.SHORTENER_KV) return
+  try {
+    await env.SHORTENER_KV.delete(`url:${hash}`)
+  } catch (error) {
+    logger.warn(
+      `KV cache delete failed for url:${hash}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    )
+  }
+}
+
+// Used on hard-invalidation paths (deletion). The OG page embeds the target
+// URL, so any change to the link should invalidate it too.
+async function clearLinkCaches(env: CloudflareEnv, hash: string) {
   if (!env.SHORTENER_KV) return
   try {
     await Promise.all([
@@ -261,7 +274,7 @@ apiRoutes.put('/url', zValidator('json', updateUrlRequestSchema), async (c) => {
           .where(withNotDeleted(links, eq(links.hash, record.hash)))
           .execute()
 
-        await deleteUrlCache(c.env, record.hash)
+        await clearUrlCache(c.env, record.hash)
         return { success: true, hash: record.hash }
       } catch (error) {
         const message =
@@ -321,7 +334,7 @@ apiRoutes.delete(
             .where(eq(links.hash, hash))
             .execute()
 
-          await deleteUrlCache(c.env, hash)
+          await clearLinkCaches(c.env, hash)
           return { success: true, hash }
         } catch (error) {
           const message =

@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm'
 import { Hono } from 'hono'
 import pkg from '@/../package.json'
 import { links } from '@/database/schema'
-import { useDrizzle, withNotDeleted } from '@/lib'
+import { isExpired, useDrizzle, withNotDeleted } from '@/lib'
 import { analyticsMiddleware } from '@/middleware/analytics'
 import type {
   ApiResponse,
@@ -31,10 +31,6 @@ export const shortCodeRoutes = new Hono<{
 }>()
 
 shortCodeRoutes.use('/:shortCode', analyticsMiddleware)
-
-function isExpired(expiresAt: number | null | undefined): boolean {
-  return expiresAt != null && Date.now() > expiresAt
-}
 
 async function readUrlCache(
   env: CloudflareEnv,

@@ -36,31 +36,26 @@ app.onError((err, c) => {
     userAgent: c.req.header('user-agent'),
   }
 
+  const status = err instanceof HTTPException ? err.status : 500
   if (err instanceof HTTPException) {
     logger.warn(`HTTP ${err.status}: ${err.message}`, ctx)
-    return c.json(
-      {
-        statusCode: err.status,
-        message: err.message,
-        stack: isDebug ? err.stack?.split('\n') : undefined,
-      },
-      err.status,
-    )
+  } else {
+    logger.error('Unhandled error', {
+      ...ctx,
+      message: err.message,
+      stack: err.stack,
+    })
   }
 
-  logger.error('Unhandled error', {
-    ...ctx,
-    message: err.message,
-    stack: err.stack,
-  })
   return c.json(
     {
-      statusCode: 500,
-      // Surface real error messages only in debug to avoid leaking internals.
-      message: isDebug ? err.message : 'Internal Server Error',
+      // `code` mirrors `statusCode` so legacy clients that read `code` keep working.
+      code: status,
+      statusCode: status,
+      message: err.message,
       stack: isDebug ? err.stack?.split('\n') : undefined,
     },
-    500,
+    status,
   )
 })
 
@@ -69,7 +64,7 @@ app.notFound((c) => {
     userAgent: c.req.header('user-agent'),
     referer: c.req.header('referer'),
   })
-  return c.json({ statusCode: 404, message: 'Not Found' }, 404)
+  return c.json({ code: 404, statusCode: 404, message: 'Not Found' }, 404)
 })
 
 logger.info('Hono application initialization completed')
