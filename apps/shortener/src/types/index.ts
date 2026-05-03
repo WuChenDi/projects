@@ -1,7 +1,11 @@
+import type { JWTPayload } from 'jose'
+
 export interface CloudflareEnv {
   AI: Ai
   SHORTENER_KV: KVNamespace
   ANALYTICS: AnalyticsEngineDataset
+  // D1 database binding (only present when DB_TYPE === 'd1')
+  DB?: D1Database
 
   // The Service runtime preset to use for deployment.
   DEPLOY_RUNTIME: 'cf' | 'node'
@@ -43,7 +47,7 @@ export interface CloudflareEnv {
 }
 
 export interface Variables {
-  auth: any
+  auth: JWTPayload
   requestId: string
   startTime: number
   urlData: UrlData
@@ -56,8 +60,8 @@ export interface CreateUrlRequest {
 
 export interface CreateUrlRecord {
   url: string
-  expiresAt: number
-  hash: string
+  expiresAt?: number
+  hash?: string
   userId?: string
   attribute?: Blob
 }
