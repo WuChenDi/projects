@@ -76,7 +76,12 @@ export const VideoCard = memo<VideoCardProps>(
           prefetch={false}
           className="block h-full transition-transform duration-200 active:scale-[0.985] hover:-translate-y-0.5"
         >
-          <Card className="h-full overflow-hidden backdrop-blur-sm border border-border hover:border-primary/60 hover:shadow-xl transition-all p-0">
+          <Card
+            className={cn(
+              'h-full overflow-hidden border cursor-pointer transition-all p-0',
+              'hover:border-primary/60 hover:shadow-xl hover:-translate-y-0.5',
+            )}
+          >
             <div className="relative aspect-square bg-muted overflow-hidden">
               {!imageError && representativeVideo.vod_pic ? (
                 <Image
