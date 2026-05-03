@@ -6,8 +6,9 @@ import type {
   SearchDisplayMode,
   SortOption,
 } from '@/lib/store/settings-store'
-import { getDefaultSources, settingsStore } from '@/lib/store/settings-store'
-import type { SourceSubscription, VideoSource } from '@/lib/types'
+import { settingsStore } from '@/lib/store/settings-store'
+import { useSourceSettings } from '@/lib/hooks/useSourceSettings'
+import type { SourceSubscription } from '@/lib/types'
 import type { ImportResult } from '@/lib/utils/source-import-utils'
 import {
   fetchSourcesFromUrl,
@@ -15,17 +16,30 @@ import {
   parseSourcesFromJson,
 } from '@/lib/utils/source-import-utils'
 
-export function useSettingsPage() {
-  const [sources, setSources] = useState<VideoSource[]>([])
+interface UseSettingsPageOptions {
+  isPremium?: boolean
+}
+
+export function useSettingsPage({ isPremium = false }: UseSettingsPageOptions = {}) {
+  const {
+    sources,
+    isAddModalOpen,
+    isRestoreDefaultsDialogOpen,
+    editingSource,
+    setIsAddModalOpen,
+    setIsRestoreDefaultsDialogOpen,
+    setEditingSource,
+    handleSourcesChange,
+    handleAddSource,
+    handleEditSource,
+    handleRestoreDefaults,
+  } = useSourceSettings({ isPremium })
+
   const [subscriptions, setSubscriptions] = useState<SourceSubscription[]>([])
   const [sortBy, setSortBy] = useState<SortOption>('default')
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
-  const [isRestoreDefaultsDialogOpen, setIsRestoreDefaultsDialogOpen] =
-    useState(false)
-  const [editingSource, setEditingSource] = useState<VideoSource | null>(null)
 
   const [passwordAccess, setPasswordAccess] = useState(false)
   const [accessPasswords, setAccessPasswords] = useState<string[]>([])
@@ -46,7 +60,6 @@ export function useSettingsPage() {
 
   useEffect(() => {
     const settings = settingsStore.getSettings()
-    setSources(settings.sources || [])
     setSubscriptions(settings.subscriptions || [])
     setSortBy(settings.sortBy)
     setPasswordAccess(settings.passwordAccess)
@@ -66,35 +79,6 @@ export function useSettingsPage() {
       .then((data) => setEnvPasswordSet(data.hasEnvPassword))
       .catch(() => setEnvPasswordSet(false))
   }, [])
-
-  const handleSourcesChange = (newSources: VideoSource[]) => {
-    setSources(newSources)
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      sources: newSources,
-      sortBy,
-      subscriptions,
-      searchHistory: true,
-      watchHistory: true,
-      passwordAccess,
-      accessPasswords,
-    })
-  }
-
-  const handleAddSource = (source: VideoSource) => {
-    const exists = sources.some((s) => s.id === source.id)
-    const updated = exists
-      ? sources.map((s) => (s.id === source.id ? source : s))
-      : [...sources, source]
-    handleSourcesChange(updated)
-    setEditingSource(null)
-  }
-
-  const handleEditSource = (source: VideoSource) => {
-    setEditingSource(source)
-    setIsAddModalOpen(true)
-  }
 
   const handleSortChange = (newSort: SortOption) => {
     setSortBy(newSort)
@@ -175,7 +159,7 @@ export function useSettingsPage() {
     const asBackupSuccess = settingsStore.importSettings(jsonString)
     if (asBackupSuccess) {
       const settings = settingsStore.getSettings()
-      setSources(settings.sources)
+      handleSourcesChange(settings.sources)
       setSortBy(settings.sortBy)
       setSubscriptions(settings.subscriptions || [])
       setPasswordAccess(settings.passwordAccess)
@@ -222,7 +206,7 @@ export function useSettingsPage() {
         premiumSources: updatedPremiumSources,
       })
 
-      setSources(updatedSources) // Update local state
+      handleSourcesChange(updatedSources) // Update local state
 
       // If strictly creating/editing subscription, we don't reload page usually, but here we might want to refresh UI
       if (!isSync) {
@@ -368,12 +352,6 @@ export function useSettingsPage() {
       ...currentSettings,
       adKeywords: keywords,
     })
-  }
-
-  const handleRestoreDefaults = () => {
-    const defaults = getDefaultSources()
-    handleSourcesChange(defaults)
-    setIsRestoreDefaultsDialogOpen(false)
   }
 
   const handleResetAll = () => {

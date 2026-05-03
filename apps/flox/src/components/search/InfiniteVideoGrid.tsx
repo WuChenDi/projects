@@ -1,33 +1,32 @@
+'use client'
+
 import { IKEmpty } from '@cdlab996/ui/IK'
 import { FilmIcon } from 'lucide-react'
-import { MovieCard } from './MovieCard'
+import type { Video } from '@/lib/types'
+import { VideoGrid } from './VideoGrid'
 
-interface DoubanMovie {
-  id: string
-  title: string
-  cover: string
-  rate: string
-  url: string
-}
-
-interface MovieGridProps {
-  movies: DoubanMovie[]
+interface InfiniteVideoGridProps {
+  videos: Video[]
   loading: boolean
   hasMore: boolean
-  onMovieClick: (movie: DoubanMovie) => void
   prefetchRef: React.RefObject<HTMLDivElement | null>
   loadMoreRef: React.RefObject<HTMLDivElement | null>
+  isPremium?: boolean
+  latencies?: Record<string, number>
+  urlBuilder?: (video: Video) => string
 }
 
-export function MovieGrid({
-  movies,
+export function InfiniteVideoGrid({
+  videos,
   loading,
   hasMore,
-  onMovieClick,
   prefetchRef,
   loadMoreRef,
-}: MovieGridProps) {
-  if (movies.length === 0 && !loading) {
+  isPremium = false,
+  latencies,
+  urlBuilder,
+}: InfiniteVideoGridProps) {
+  if (videos.length === 0 && !loading) {
     return (
       <IKEmpty
         title="暂无内容"
@@ -39,11 +38,12 @@ export function MovieGrid({
 
   return (
     <>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {movies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} onMovieClick={onMovieClick} />
-        ))}
-      </div>
+      <VideoGrid
+        videos={videos}
+        isPremium={isPremium}
+        latencies={latencies}
+        urlBuilder={urlBuilder}
+      />
 
       {hasMore && !loading && <div ref={prefetchRef} className="h-1" />}
 
@@ -58,7 +58,7 @@ export function MovieGrid({
 
       {hasMore && !loading && <div ref={loadMoreRef} className="h-20" />}
 
-      {!hasMore && movies.length > 0 && (
+      {!hasMore && videos.length > 0 && (
         <IKEmpty title="没有更多内容了" showIcon={false} className="py-12" />
       )}
     </>

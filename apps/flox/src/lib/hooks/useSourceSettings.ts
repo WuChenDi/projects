@@ -1,14 +1,19 @@
 import { useEffect, useState } from 'react'
-import type { SortOption } from '@/lib/store/settings-store'
 import {
   getDefaultPremiumSources,
+  getDefaultSources,
   settingsStore,
 } from '@/lib/store/settings-store'
 import type { VideoSource } from '@/lib/types'
 
-export function usePremiumSettingsPage() {
-  const [premiumSources, setPremiumSources] = useState<VideoSource[]>([])
-  const [sortBy, setSortBy] = useState<SortOption>('default')
+interface UseSourceSettingsOptions {
+  isPremium?: boolean
+}
+
+export function useSourceSettings({
+  isPremium = false,
+}: UseSourceSettingsOptions = {}) {
+  const [sources, setSources] = useState<VideoSource[]>([])
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isRestoreDefaultsDialogOpen, setIsRestoreDefaultsDialogOpen] =
     useState(false)
@@ -16,24 +21,32 @@ export function usePremiumSettingsPage() {
 
   useEffect(() => {
     const settings = settingsStore.getSettings()
-    setPremiumSources(settings.premiumSources || [])
-    setSortBy(settings.sortBy)
-  }, [])
+    setSources(
+      isPremium ? settings.premiumSources || [] : settings.sources || [],
+    )
+  }, [isPremium])
 
   const handleSourcesChange = (newSources: VideoSource[]) => {
-    setPremiumSources(newSources)
+    setSources(newSources)
     const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      premiumSources: newSources,
-    })
+    if (isPremium) {
+      settingsStore.saveSettings({
+        ...currentSettings,
+        premiumSources: newSources,
+      })
+    } else {
+      settingsStore.saveSettings({
+        ...currentSettings,
+        sources: newSources,
+      })
+    }
   }
 
   const handleAddSource = (source: VideoSource) => {
-    const exists = premiumSources.some((s) => s.id === source.id)
+    const exists = sources.some((s) => s.id === source.id)
     const updated = exists
-      ? premiumSources.map((s) => (s.id === source.id ? source : s))
-      : [...premiumSources, source]
+      ? sources.map((s) => (s.id === source.id ? source : s))
+      : [...sources, source]
     handleSourcesChange(updated)
     setEditingSource(null)
   }
@@ -44,23 +57,22 @@ export function usePremiumSettingsPage() {
   }
 
   const handleRestoreDefaults = () => {
-    const defaults = getDefaultPremiumSources()
+    const defaults = isPremium ? getDefaultPremiumSources() : getDefaultSources()
     handleSourcesChange(defaults)
     setIsRestoreDefaultsDialogOpen(false)
   }
 
   return {
-    premiumSources,
-    sortBy,
+    sources,
     isAddModalOpen,
     isRestoreDefaultsDialogOpen,
+    editingSource,
     setIsAddModalOpen,
     setIsRestoreDefaultsDialogOpen,
     setEditingSource,
     handleSourcesChange,
     handleAddSource,
-    handleRestoreDefaults,
-    editingSource,
     handleEditSource,
+    handleRestoreDefaults,
   }
 }

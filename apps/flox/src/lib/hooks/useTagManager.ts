@@ -2,22 +2,29 @@ import type { DragEndEvent } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { PREMIUM_STORAGE_KEY } from '@/lib/constants/premium-tags'
-import { settingsStore } from '@/lib/store/settings-store'
 import type { Tag } from '@/lib/types'
 
-async function fetchPremiumTypes(sources: any[]): Promise<Tag[]> {
-  const response = await fetch('/api/premium/types', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sources }),
-  })
-  const data = await response.json()
-  return Array.isArray(data.tags) ? data.tags : []
+interface UseTagManagerOptions {
+  /** Unique key for react-query and localStorage */
+  storageKey: string
+  /** react-query query key */
+  queryKey: string[]
+  /** Async function to fetch tags from API */
+  fetchTags: () => Promise<Tag[]>
+  /** Default selected tag id */
+  defaultSelectedTag: string
+  /** Whether user can add custom tags */
+  supportCustomTags?: boolean
+  /** react-query staleTime in ms */
+  staleTime?: number
 }
 
-function mergeWithSavedOrder(apiTags: Tag[]): Tag[] {
-  const savedJson = localStorage.getItem(PREMIUM_STORAGE_KEY)
+/**
+ * Merge API tags with saved localStorage order.
+ * Preserves user's custom ordering while picking up new tags from API.
+ */
+function mergeWithSavedOrder(apiTags: Tag[], storageKey: string): Tag[] {
+  const savedJson = localStorage.getItem(storageKey)
   if (!savedJson) return apiTags
 
   try {
@@ -26,38 +33,47 @@ function mergeWithSavedOrder(apiTags: Tag[]): Tag[] {
     const merged: Tag[] = []
     const processed = new Set<string>()
 
-    savedTags.forEach((saved) => {
+    // First: tags in saved order (that still exist in API)
+    for (const saved of savedTags) {
       if (apiTagMap.has(saved.id)) {
         merged.push(apiTagMap.get(saved.id)!)
         processed.add(saved.id)
+      } else {
+        // Keep custom tags that aren't from API
+        merged.push(saved)
+        processed.add(saved.id)
       }
-    })
-    apiTags.forEach((tag) => {
+    }
+    // Then: new tags from API not yet in saved order
+    for (const tag of apiTags) {
       if (!processed.has(tag.id)) merged.push(tag)
-    })
+    }
     return merged
   } catch {
     return apiTags
   }
 }
 
-export function usePremiumTagManager() {
-  const [selectedTag, setSelectedTag] = useState('recommend')
+export function useTagManager({
+  storageKey,
+  queryKey,
+  fetchTags,
+  defaultSelectedTag,
+  supportCustomTags = false,
+  staleTime = 10 * 60 * 1000,
+}: UseTagManagerOptions) {
+  const [selectedTag, setSelectedTag] = useState(defaultSelectedTag)
   const [showTagManager, setShowTagManager] = useState(false)
   const [newTagInput, setNewTagInput] = useState('')
   const [tags, setTags] = useState<Tag[]>([])
 
   const queryClient = useQueryClient()
-  const enabledSources = settingsStore
-    .getSettings()
-    .premiumSources.filter((s) => s.enabled)
-  const sourcesKey = enabledSources.map((s) => s.id).join(',')
 
   const { data: fetchedTags, isLoading } = useQuery({
-    queryKey: ['premiumTypes', sourcesKey],
-    queryFn: () => fetchPremiumTypes(enabledSources),
-    staleTime: 10 * 60 * 1000,
-    select: mergeWithSavedOrder,
+    queryKey,
+    queryFn: fetchTags,
+    staleTime,
+    select: (data) => mergeWithSavedOrder(data, storageKey),
   })
 
   useEffect(() => {
@@ -67,28 +83,39 @@ export function usePremiumTagManager() {
   // Persist tag order to localStorage when it changes
   useEffect(() => {
     if (tags.length > 0 && !isLoading) {
-      localStorage.setItem(PREMIUM_STORAGE_KEY, JSON.stringify(tags))
+      localStorage.setItem(storageKey, JSON.stringify(tags))
     }
-  }, [tags, isLoading])
+  }, [tags, isLoading, storageKey])
 
   const { mutate: restoreDefaults, isPending: isRestoring } = useMutation({
     mutationFn: async () => {
-      localStorage.removeItem(PREMIUM_STORAGE_KEY)
-      const response = await fetch('/api/premium/types')
-      const data = await response.json()
-      return Array.isArray(data.tags) ? (data.tags as Tag[]) : []
+      localStorage.removeItem(storageKey)
+      return fetchTags()
     },
     onSuccess: (defaultTags) => {
       setTags(defaultTags)
-      setSelectedTag('recommend')
-      queryClient.invalidateQueries({ queryKey: ['premiumTypes'] })
+      setSelectedTag(defaultSelectedTag)
+      queryClient.invalidateQueries({ queryKey })
     },
   })
+
+  const handleAddTag = () => {
+    if (!supportCustomTags || !newTagInput.trim()) return
+    const newTag: Tag = {
+      id: `custom_${Date.now()}`,
+      label: newTagInput.trim(),
+      value: newTagInput.trim(),
+    }
+    setTags((prev) => [...prev, newTag])
+    setNewTagInput('')
+  }
 
   const handleDeleteTag = (tagId: string) => {
     setTags((prev) => {
       const updated = prev.filter((t) => t.id !== tagId)
-      if (selectedTag === tagId) setSelectedTag(updated[0]?.id || '')
+      if (selectedTag === tagId) {
+        setSelectedTag(updated[0]?.id || defaultSelectedTag)
+      }
       return updated
     })
   }
@@ -109,11 +136,11 @@ export function usePremiumTagManager() {
     selectedTag,
     newTagInput,
     showTagManager,
-    loading: isLoading || isRestoring,
+    isLoadingTags: isLoading || isRestoring,
     setSelectedTag,
     setNewTagInput,
     setShowTagManager,
-    handleAddTag: () => {},
+    handleAddTag,
     handleDeleteTag,
     handleRestoreDefaults: restoreDefaults,
     handleDragEnd,

@@ -1,15 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll'
-
-interface FilteredMovie {
-  id: string
-  title: string
-  cover: string
-  rate: string
-  url: string
-  cover_x?: number
-  cover_y?: number
-}
+import type { Video } from '@/lib/types'
 
 export interface FilterState {
   sort: 'T' | 'R' | 'S' // 热度 / 最新 / 评分
@@ -118,7 +109,7 @@ export function useAdvancedFilter(contentType: 'movie' | 'tv') {
   })
   const [presets, setPresets] = useState<FilterPreset[]>(COMBO_PRESETS)
   const [presetsLoading, setPresetsLoading] = useState(false)
-  const [movies, setMovies] = useState<FilteredMovie[]>([])
+  const [movies, setMovies] = useState<Video[]>([])
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [page, setPage] = useState(0)
@@ -170,12 +161,13 @@ export function useAdvancedFilter(contentType: 'movie' | 'tv') {
         if (!response.ok) throw new Error('Failed to fetch')
 
         const data = await response.json()
-        const newMovies: FilteredMovie[] = (data.data || []).map((item: any) => ({
-          id: item.id,
-          title: item.title,
-          cover: item.cover,
-          rate: item.rate || '',
-          url: item.url || '',
+        const newMovies: Video[] = (data.data || []).map((item: any) => ({
+          vod_id: item.id,
+          vod_name: item.title,
+          vod_pic: item.cover,
+          vod_remarks: item.rate && parseFloat(item.rate) > 0 ? `⭐ ${item.rate}` : undefined,
+          source: 'douban',
+          sourceName: '豆瓣',
         }))
 
         setMovies((prev) => (append ? [...prev, ...newMovies] : newMovies))

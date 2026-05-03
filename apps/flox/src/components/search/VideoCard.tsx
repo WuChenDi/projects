@@ -57,7 +57,11 @@ export const VideoCard = memo<VideoCardProps>(
 
     const displayName = representativeVideo.vod_name
     const { cleanTitle, quality } = parseVideoTitle(displayName)
-    const displayQuality = quality || representativeVideo.vod_remarks
+
+    // Detect rating format (e.g. "⭐ 8.5") — show as badge, not as text
+    const isRating = representativeVideo.vod_remarks?.startsWith('⭐')
+    const ratingText = isRating ? representativeVideo.vod_remarks : undefined
+    const displayQuality = quality || (isRating ? undefined : representativeVideo.vod_remarks)
 
     const [imageError, setImageError] = useState(false)
 
@@ -105,6 +109,12 @@ export const VideoCard = memo<VideoCardProps>(
                       {video.sourceName}
                     </Badge>
                   )
+                )}
+
+                {ratingText && (
+                  <Badge variant="secondary" className="flex items-center gap-0.5 shadow-sm">
+                    {ratingText}
+                  </Badge>
                 )}
 
                 {displayLatency !== undefined && (
@@ -174,6 +184,7 @@ export const VideoCard = memo<VideoCardProps>(
               )}
 
               {representativeVideo.vod_remarks &&
+                !isRating &&
                 representativeVideo.vod_remarks !== displayQuality && (
                   <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
                     {representativeVideo.vod_remarks}

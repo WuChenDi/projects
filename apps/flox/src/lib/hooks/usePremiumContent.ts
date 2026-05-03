@@ -1,16 +1,8 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll'
 import { useSettingsStore } from '@/lib/store/settings-store'
-
-interface PremiumVideo {
-  vod_id: string | number
-  vod_name: string
-  vod_pic?: string
-  vod_remarks?: string
-  type_name?: string
-  source: string
-}
+import type { Video } from '@/lib/types'
 
 const PAGE_LIMIT = 20
 
@@ -26,6 +18,15 @@ export function usePremiumContent(categoryValue: string) {
       ].filter((src) => (src as any).enabled !== false),
     [rawPremiumSources, subscriptions],
   )
+
+  // Build a lookup map: source id → source name
+  const sourceNameMap = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const src of premiumSources) {
+      map.set(src.id, src.name)
+    }
+    return map
+  }, [premiumSources])
 
   // Stable key for query invalidation when sources change
   const sourcesKey = premiumSources.map((s) => s.id).join(',')
@@ -46,7 +47,7 @@ export function usePremiumContent(categoryValue: string) {
         })
         if (!response.ok) throw new Error('Failed to fetch premium content')
         const json = await response.json()
-        return (json.videos ?? []) as PremiumVideo[]
+        return (json.videos ?? []) as Video[]
       },
       initialPageParam: 1,
       getNextPageParam: (lastPage, _allPages, lastPageParam) =>
@@ -57,14 +58,23 @@ export function usePremiumContent(categoryValue: string) {
       staleTime: 2 * 60 * 1000,
     })
 
-  const videos = data?.pages.flat() ?? []
+  // Enrich videos with sourceName from the lookup map
+  const videos: Video[] = useMemo(
+    () =>
+      (data?.pages.flat() ?? []).map((v) => ({
+        ...v,
+        sourceName: v.sourceName || sourceNameMap.get(v.source),
+      })),
+    [data?.pages, sourceNameMap],
+  )
+
   const loading = isLoading || isFetchingNextPage
 
   const { prefetchRef, loadMoreRef } = useInfiniteScroll({
     hasMore: !!hasNextPage,
     loading,
     page: data?.pages.length ?? 0,
-    onLoadMore: () => fetchNextPage(),
+    onLoadMore: useCallback(() => fetchNextPage(), [fetchNextPage]),
   })
 
   return {

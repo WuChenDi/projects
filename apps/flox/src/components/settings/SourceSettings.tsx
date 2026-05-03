@@ -16,6 +16,7 @@ import { arrayMove } from '@dnd-kit/sortable'
 import { useState } from 'react'
 import { SourceManager } from '@/components/settings/SourceManager'
 import { DEFAULT_SOURCES } from '@/lib/api/default-sources'
+import { PREMIUM_SOURCES } from '@/lib/api/premium-sources'
 import type { VideoSource } from '@/lib/types'
 
 interface SourceSettingsProps {
@@ -24,6 +25,7 @@ interface SourceSettingsProps {
   onRestoreDefaults: () => void
   onAddSource: () => void
   onEditSource?: (source: VideoSource) => void
+  isPremium?: boolean
 }
 
 export function SourceSettings({
@@ -32,6 +34,7 @@ export function SourceSettings({
   onRestoreDefaults,
   onAddSource,
   onEditSource,
+  isPremium = false,
 }: SourceSettingsProps) {
   const [showAllSources, setShowAllSources] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -76,8 +79,12 @@ export function SourceSettings({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>视频源管理</CardTitle>
-        <CardDescription>管理视频来源，调整优先级和启用状态</CardDescription>
+        <CardTitle>{isPremium ? '高级源管理' : '视频源管理'}</CardTitle>
+        <CardDescription>
+          {isPremium
+            ? '管理高级内容来源，调整优先级和启用状态'
+            : '管理视频来源，调整优先级和启用状态'}
+        </CardDescription>
         <CardAction className="space-x-2">
           <Button variant="outline" size="sm" onClick={onRestoreDefaults}>
             恢复默认
@@ -102,7 +109,9 @@ export function SourceSettings({
           onDelete={handleDelete}
           onDragEnd={handleDragEnd}
           onEdit={onEditSource}
-          defaultIds={DEFAULT_SOURCES.map((s) => s.id)}
+          defaultIds={(isPremium ? PREMIUM_SOURCES : DEFAULT_SOURCES).map(
+            (s) => s.id,
+          )}
         />
       </CardContent>
 

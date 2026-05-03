@@ -20,7 +20,7 @@ import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
 import { FilmIcon, HistoryIcon, SearchIcon, XIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useSearchSuggestions } from '@/lib/hooks/useSearchSuggestions'
-import { useSearchHistoryStore } from '@/lib/store/search-history-store'
+import { useSearchHistory } from '@/lib/store/search-history-store'
 
 function SearchLoadingAnimation({
   checkedSources = 0,
@@ -86,6 +86,7 @@ interface SearchFormProps {
   placeholder?: string
   contentType?: 'movie' | 'tv'
   onContentTypeChange?: (type: 'movie' | 'tv') => void
+  isPremium?: boolean
 }
 
 export function SearchForm({
@@ -99,6 +100,7 @@ export function SearchForm({
   placeholder = '搜索...',
   contentType,
   onContentTypeChange,
+  isPremium = false,
 }: SearchFormProps) {
   const [query, setQuery] = useState(initialQuery)
 
@@ -107,7 +109,7 @@ export function SearchForm({
     addToSearchHistory,
     removeFromSearchHistory,
     clearSearchHistory,
-  } = useSearchHistoryStore()
+  } = useSearchHistory(isPremium)
 
   const { suggestions, fetchSuggestions, clearSuggestions } =
     useSearchSuggestions()

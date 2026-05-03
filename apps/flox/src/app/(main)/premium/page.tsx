@@ -53,6 +53,7 @@ function PremiumHomePage() {
             checkedSources={completedSources}
             totalSources={totalSources}
             placeholder="输入关键词开始搜索..."
+            isPremium
           />
         </div>
 

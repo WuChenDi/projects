@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll'
+import type { Video } from '@/lib/types'
 
 interface DoubanMovie {
   id: string
@@ -9,6 +10,17 @@ interface DoubanMovie {
   url: string
 }
 
+function mapToVideo(movie: DoubanMovie): Video {
+  return {
+    vod_id: movie.id,
+    vod_name: movie.title,
+    vod_pic: movie.cover,
+    vod_remarks: movie.rate && parseFloat(movie.rate) > 0 ? `⭐ ${movie.rate}` : undefined,
+    source: 'douban',
+    sourceName: '豆瓣',
+  }
+}
+
 const PAGE_LIMIT = 20
 
 export function usePopularMovies(
@@ -16,7 +28,7 @@ export function usePopularMovies(
   tags: any[],
   contentType: 'movie' | 'tv' = 'movie',
 ) {
-  const [movies, setMovies] = useState<DoubanMovie[]>([])
+  const [movies, setMovies] = useState<Video[]>([])
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [page, setPage] = useState(0)
@@ -37,7 +49,7 @@ export function usePopularMovies(
         if (!response.ok) throw new Error('Failed to fetch')
 
         const data = await response.json()
-        const newMovies = data.subjects || []
+        const newMovies = (data.subjects || []).map(mapToVideo)
 
         setMovies((prev) => (append ? [...prev, ...newMovies] : newMovies))
         setHasMore(newMovies.length === PAGE_LIMIT)

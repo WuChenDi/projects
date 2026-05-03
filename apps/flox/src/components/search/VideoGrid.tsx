@@ -12,6 +12,8 @@ interface VideoGridProps {
   className?: string
   isPremium?: boolean
   latencies?: Record<string, number>
+  /** Custom URL builder. When provided, overrides the default /player?... URL generation. */
+  urlBuilder?: (video: Video) => string
 }
 
 export const VideoGrid = memo(function VideoGrid({
@@ -19,6 +21,7 @@ export const VideoGrid = memo(function VideoGrid({
   className = '',
   isPremium = false,
   latencies = {},
+  urlBuilder,
 }: VideoGridProps) {
   const [activeCardId, setActiveCardId] = useState<string | null>(null)
   const [visibleCount, setVisibleCount] = useState(24)
@@ -139,35 +142,42 @@ export const VideoGrid = memo(function VideoGrid({
       const isActive = activeCardId === cardId
 
       // 生成 URL
-      const params = new URLSearchParams()
       let videoData = item as Video
+      let videoUrl: string
 
-      if (isGrouped) {
-        const g = group as any
-        params.set('id', String(g.representative.vod_id))
-        params.set('source', g.representative.source)
-        params.set('title', g.representative.vod_name)
-
-        if (g.videos.length > 1) {
-          const groupData = g.videos.map((v: Video) => ({
-            id: v.vod_id,
-            source: v.source,
-            sourceName: v.sourceName,
-            latency: v.latency,
-            pic: v.vod_pic,
-          }))
-          params.set('groupedSources', JSON.stringify(groupData))
-        }
-        videoData = g.representative
+      if (urlBuilder) {
+        videoData = isGrouped ? (group as any).representative : (item as Video)
+        videoUrl = urlBuilder(videoData)
       } else {
-        const v = item as Video
-        params.set('id', String(v.vod_id))
-        params.set('source', v.source)
-        params.set('title', v.vod_name)
-        if (isPremium) params.set('premium', '1')
-      }
+        const params = new URLSearchParams()
 
-      const videoUrl = `/player?${params.toString()}`
+        if (isGrouped) {
+          const g = group as any
+          params.set('id', String(g.representative.vod_id))
+          params.set('source', g.representative.source)
+          params.set('title', g.representative.vod_name)
+
+          if (g.videos.length > 1) {
+            const groupData = g.videos.map((v: Video) => ({
+              id: v.vod_id,
+              source: v.source,
+              sourceName: v.sourceName,
+              latency: v.latency,
+              pic: v.vod_pic,
+            }))
+            params.set('groupedSources', JSON.stringify(groupData))
+          }
+          videoData = g.representative
+        } else {
+          const v = item as Video
+          params.set('id', String(v.vod_id))
+          params.set('source', v.source)
+          params.set('title', v.vod_name)
+          if (isPremium) params.set('premium', '1')
+        }
+
+        videoUrl = `/player?${params.toString()}`
+      }
 
       return (
         <VideoCard
@@ -192,6 +202,7 @@ export const VideoGrid = memo(function VideoGrid({
     activeCardId,
     isPremium,
     latencies,
+    urlBuilder,
     handleCardClick,
   ])
 
