@@ -207,6 +207,16 @@ https://live-user.cdlab.workers.dev/
 - 访问量存储在 DO 内嵌 SQLite 中，原子更新，高并发下不丢数据
 - 核心技术：Hono + Cloudflare Workers + Durable Objects + SQLite
 
+### shortener
+
+**短链服务**
+
+- 边缘短链服务，支持 D1 / LibSQL 存储（通过 `DB_TYPE` 切换），KV 缓存，JWT 鉴权的管理 API
+- 使用 Cloudflare Workers AI 生成语义化 slug，KV 缓存命中后回退到 Base62 算法
+- Analytics Engine 实时上报 + 查询接口（总览 / 时间序列 / 国家 / 来源 / 设备 / 浏览器 / 操作系统）
+- 自动识别爬虫返回 OG 元数据，过期短链每天定时清理，所有表均使用软删除
+- 核心技术：Hono + Cloudflare Workers + Drizzle + D1/LibSQL + KV + Workers AI + Analytics Engine
+
 ### repo-changelog
 
 **开源项目 Release / Changelog 聚合面板**
@@ -256,6 +266,7 @@ pnpm --filter @cdlab996/bytts dev            # → http://bytts.localhost:3355
 pnpm --filter @cdlab996/dropply-web dev      # → http://dropply-web.localhost:3355
 pnpm --filter @cdlab996/flox dev             # → http://flox.localhost:3355
 pnpm --filter @cdlab996/live-user dev        # → http://live-user.localhost:3355
+pnpm --filter @cdlab996/shortener dev        # → http://shortener.localhost:3355
 pnpm --filter @cdlab996/repo-changelog dev   # → http://repo-changelog.localhost:3355
 pnpm build                                   # 构建所有应用
 pnpm --filter @cdlab996/clearify run build
@@ -269,6 +280,7 @@ pnpm --filter @cdlab996/byplay-log run build
 pnpm --filter @cdlab996/bytts run build
 pnpm --filter @cdlab996/dropply-web run build
 pnpm --filter @cdlab996/flox run build
+pnpm --filter @cdlab996/shortener run build
 pnpm --filter @cdlab996/repo-changelog run build
 pnpm lint                          # Biome 代码检查
 pnpm format                        # Biome 格式化全部代码
@@ -292,6 +304,7 @@ pnpm clean                         # 清理 node_modules / 缓存 / 构建产物
 │   ├── live-user/         # 实时在线用户计数器
 │   ├── repo-changelog/    # GitHub Release / Changelog 聚合工具
 │   ├── SecureC/           # 加解密工具
+│   ├── shortener/         # 短链服务（Cloudflare Workers）
 │   ├── text2img/          # 文生图前端
 │   ├── value-vision/      # 价值对比 / 可视化工具
 │   └── vidl/              # 视频下载工具（M3U8/HLS、MP4 等）

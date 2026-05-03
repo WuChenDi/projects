@@ -1,0 +1,9 @@
+{
+  "extends": "@cdlab996/tsconfig/hono.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": ["@cloudflare/workers-types", "@types/node"]
+  }
+}
