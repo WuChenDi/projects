@@ -1,7 +1,7 @@
 'use client'
 
 import { IKConfirmDialog, IKPageContainer } from '@cdlab996/ui/IK'
-import { useSettingsPage } from '@/app/(main)/settings/hooks/useSettingsPage'
+import { useSettingsPage } from '@/app/settings/hooks/useSettingsPage'
 import { AddSourceModal } from '@/components/settings/AddSourceModal'
 import { DataSettings } from '@/components/settings/DataSettings'
 import { DisplaySettings } from '@/components/settings/DisplaySettings'

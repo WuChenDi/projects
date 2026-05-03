@@ -12,7 +12,7 @@ import '@cdlab996/ui/globals.css'
 import { AdKeywordsInjector } from '@/components/AdKeywordsInjector'
 import { FavoritesSidebar } from '@/components/favorites/FavoritesSidebar'
 import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar'
-import { ClientProviders } from '@/components/layout'
+import { ClientProviders, Header } from '@/components/layout'
 import { PasswordGate } from '@/components/PasswordGate'
 import { ScrollPositionManager } from '@/components/ScrollPositionManager'
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
@@ -240,7 +240,10 @@ export default function RootLayout({
         <ClientProviders>
           <PasswordGate hasEnvPassword={!!process.env.ACCESS_PASSWORD}>
             <AdKeywordsWrapper />
-            {children}
+            <div className="min-h-screen">
+              <Header />
+              {children}
+            </div>
             <BackToTop />
             <ScrollPositionManager />
             <Suspense fallback={null}>
