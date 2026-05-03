@@ -61,7 +61,8 @@ export const VideoCard = memo<VideoCardProps>(
     // Detect rating format (e.g. "⭐ 8.5") — show as badge, not as text
     const isRating = representativeVideo.vod_remarks?.startsWith('⭐')
     const ratingText = isRating ? representativeVideo.vod_remarks : undefined
-    const displayQuality = quality || (isRating ? undefined : representativeVideo.vod_remarks)
+    const displayQuality =
+      quality || (isRating ? undefined : representativeVideo.vod_remarks)
 
     const [imageError, setImageError] = useState(false)
 
@@ -98,21 +99,22 @@ export const VideoCard = memo<VideoCardProps>(
               )}
 
               <div className="absolute top-3 left-3 right-3 z-10 flex justify-between gap-2">
-                {isGrouped ? (
+                {isGrouped && video.sourceName !== '豆瓣' ? (
                   <Badge className="bg-primary text-primary-foreground flex items-center gap-1 shadow-sm">
                     <LayersIcon size={13} />
                     {sourceCount} 源
                   </Badge>
                 ) : (
-                  video.sourceName && (
-                    <Badge variant="secondary" className="truncate max-w-[52%]">
-                      {video.sourceName}
-                    </Badge>
-                  )
+                  <Badge variant="secondary" className="truncate max-w-[52%]">
+                    {video.sourceName}
+                  </Badge>
                 )}
 
                 {ratingText && (
-                  <Badge variant="secondary" className="flex items-center gap-0.5 shadow-sm">
+                  <Badge
+                    variant="secondary"
+                    className="flex items-center gap-0.5 shadow-sm"
+                  >
                     {ratingText}
                   </Badge>
                 )}
