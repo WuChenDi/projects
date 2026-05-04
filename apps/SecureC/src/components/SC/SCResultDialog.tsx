@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
+import { CopyButton } from '@cdlab996/ui/components/copy-button'
 import {
   Dialog,
   DialogContent,
@@ -10,8 +11,7 @@ import {
 } from '@cdlab996/ui/components/dialog'
 import { Label } from '@cdlab996/ui/components/label'
 import { Textarea } from '@cdlab996/ui/components/textarea'
-import { copyToClipboard } from '@cdlab996/utils'
-import { Clipboard, Download } from 'lucide-react'
+import { Download } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { ProcessResult } from '@/types'
 import { ModeEnum } from '@/types'
@@ -63,13 +63,7 @@ export function SCResultDialog({
                 >
                   <Download />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => result?.text && copyToClipboard(result.text)}
-                >
-                  <Clipboard />
-                </Button>
+                <CopyButton size="icon" value={result?.text || ''} />
               </div>
             </div>
             <Textarea

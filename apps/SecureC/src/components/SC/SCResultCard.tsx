@@ -1,16 +1,9 @@
 import { Button } from '@cdlab996/ui/components/button'
+import { CopyButton } from '@cdlab996/ui/components/copy-button'
 import { IKAssetFailed, IKAssetLoading, IKAssetRenderer } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
-import { copyToClipboard, formatFileSize } from '@cdlab996/utils'
-import {
-  Clipboard,
-  Download,
-  Eye,
-  FileText,
-  Lock,
-  Unlock,
-  X,
-} from 'lucide-react'
+import { formatFileSize } from '@cdlab996/utils'
+import { Download, Eye, FileText, Lock, Unlock, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -110,48 +103,43 @@ export function SCResultCard({
                 {isMessage && (
                   <Button
                     variant="secondary"
-                    size="icon"
-                    className="size-6 bg-black/40 backdrop-blur-[2px]"
+                    size="icon-xs"
+                    className="bg-black/40 backdrop-blur-[2px]"
                     onClick={() => setDialogOpen(true)}
                     title={t('common.view')}
                   >
-                    <Eye className="size-4 text-white" />
+                    <Eye />
                   </Button>
                 )}
                 {isMessage && result.text && (
-                  <Button
+                  <CopyButton
                     variant="secondary"
-                    size="icon"
-                    className="size-6 bg-black/40 backdrop-blur-[2px]"
-                    onClick={() => {
-                      void copyToClipboard(result.text!)
-                      toast.success(t('toast.copiedToClipboard'))
-                    }}
+                    size="icon-xs"
+                    className="bg-black/40 backdrop-blur-[2px]"
+                    value={result.text}
                     title={t('common.copy')}
-                  >
-                    <Clipboard className="size-4 text-white" />
-                  </Button>
+                  />
                 )}
                 <Button
                   variant="secondary"
-                  size="icon"
-                  className="size-6 bg-black/40 backdrop-blur-[2px]"
+                  size="icon-xs"
+                  className="bg-black/40 backdrop-blur-[2px]"
                   onClick={() => onDownload(result)}
                   title={t('common.download')}
                 >
-                  <Download className="size-4 text-white" />
+                  <Download />
                 </Button>
                 <Button
                   variant="secondary"
-                  size="icon"
-                  className="size-6 bg-black/40 backdrop-blur-[2px]"
+                  size="icon-xs"
+                  className="bg-black/40 backdrop-blur-[2px]"
                   onClick={() => {
                     onRemove(result.id)
                     toast.success(t('toast.resultRemoved'))
                   }}
                   title={t('common.remove')}
                 >
-                  <X className="size-4 text-white" />
+                  <X />
                 </Button>
               </div>
             </div>
