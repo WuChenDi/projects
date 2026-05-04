@@ -1,9 +1,18 @@
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
+import type { LibSQLDatabase } from 'drizzle-orm/libsql'
 import { Hono } from 'hono'
 import pkg from '@/../package.json'
+import type * as schema from '@/database/schema'
 import { links } from '@/database/schema'
-import { isExpired, useDrizzle, withNotDeleted } from '@/lib'
+import {
+  getDrizzle,
+  isExpired,
+  notDeleted,
+  useDrizzle,
+  withNotDeleted,
+} from '@/lib'
 import { analyticsMiddleware } from '@/middleware/analytics'
+import { HomePage } from '@/pages/HomePage'
 import type {
   ApiResponse,
   CloudflareEnv,
@@ -11,7 +20,11 @@ import type {
   UrlData,
   Variables,
 } from '@/types'
-import { generateHashFromDomainAndCode, generateOgPageHtml } from '@/utils'
+import {
+  generateHashFromDomainAndCode,
+  generateOgPageHtml,
+  getAIConfig,
+} from '@/utils'
 
 const SOCIAL_CRAWLERS = [
   'facebookexternalhit',
@@ -24,6 +37,8 @@ const SOCIAL_CRAWLERS = [
 ] as const
 
 const URL_CACHE_TTL_SECONDS = 60 * 60 // 1 hour
+const TOTAL_LINKS_CACHE_TTL_SECONDS = 60
+const TOTAL_LINKS_CACHE_KEY = 'stats:total-links'
 
 export const shortCodeRoutes = new Hono<{
   Bindings: CloudflareEnv
@@ -71,8 +86,90 @@ async function deleteUrlCache(env: CloudflareEnv, hash: string) {
   }
 }
 
-// GET / - Service health check
+/**
+ * Count of active (non-deleted) links, KV-cached for one minute so the
+ * landing page doesn't pay D1 latency on every hit.
+ */
+async function getTotalActiveLinks(env: CloudflareEnv): Promise<number | null> {
+  if (env.SHORTENER_KV) {
+    try {
+      const cached = await env.SHORTENER_KV.get<{ count: number }>(
+        TOTAL_LINKS_CACHE_KEY,
+        'json',
+      )
+      if (cached && typeof cached.count === 'number') return cached.count
+    } catch (error) {
+      logger.warn(
+        `KV read error for ${TOTAL_LINKS_CACHE_KEY}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
+    }
+  }
+
+  try {
+    // The DrizzleDb union (D1 + LibSQL) confuses TS overload resolution on
+    // `.select({ ...fields })`, so cast to the LibSQL variant; runtime call
+    // is identical on both drivers.
+    const db = getDrizzle(env) as LibSQLDatabase<typeof schema>
+    const row = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(links)
+      .where(notDeleted(links))
+      .get()
+    const total = Number(row?.count ?? 0)
+    if (env.SHORTENER_KV) {
+      try {
+        await env.SHORTENER_KV.put(
+          TOTAL_LINKS_CACHE_KEY,
+          JSON.stringify({ count: total }),
+          { expirationTtl: TOTAL_LINKS_CACHE_TTL_SECONDS },
+        )
+      } catch (error) {
+        logger.warn(
+          `KV write error for ${TOTAL_LINKS_CACHE_KEY}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        )
+      }
+    }
+    return total
+  } catch (error) {
+    logger.warn(
+      `Total link count query failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    )
+    return null
+  }
+}
+
+// GET / - Landing page
 shortCodeRoutes.get('/', async (c) => {
+  const requestId = c.get('requestId')
+  logger.info(`[${requestId}] Landing page requested`)
+
+  const db = useDrizzle(c)
+  let database: 'connected' | 'disconnected' = 'disconnected'
+  let totalLinks: number | null = null
+  try {
+    await db.select().from(links).limit(1)
+    database = 'connected'
+    totalLinks = await getTotalActiveLinks(c.env)
+  } catch (error) {
+    logger.warn(
+      `Database not reachable for landing page: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    )
+  }
+
+  return c.html(
+    <HomePage
+      url={new URL(c.req.url).origin}
+      version={pkg.version}
+      totalLinks={totalLinks}
+      database={database}
+      analytics={c.env.ANALYTICS ? 'available' : 'unavailable'}
+      ai={getAIConfig(c.env).ENABLE_AI_SLUG ? 'enabled' : 'disabled'}
+    />,
+  )
+})
+
+// GET /health - JSON service health check
+shortCodeRoutes.get('/health', async (c) => {
   const requestId = c.get('requestId')
   logger.info(`[${requestId}] Service health check requested`)
 

@@ -1,9 +1,10 @@
 {
   "extends": "@cdlab996/tsconfig/hono.json",
   "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext", "webworker"],
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["@cloudflare/workers-types", "@types/node"]
+    "types": ["@cloudflare/workers-types"]
   }
 }

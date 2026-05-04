@@ -1,7 +1,7 @@
 {
   "name": "@cdlab996/shortener",
   "type": "module",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "description": "A URL shortener service built with Cloudflare Workers and Hono.",
   "author": "wudi <wuchendi96@gmail.com>",
@@ -44,7 +44,6 @@
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",
     "@cloudflare/workers-types": "catalog:dev",
-    "@types/node": "catalog:dev",
     "drizzle-kit": "catalog:dev",
     "wrangler": "catalog:dev"
   }

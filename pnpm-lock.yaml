@@ -922,9 +922,6 @@ importers:
       '@cloudflare/workers-types':
         specifier: catalog:dev
         version: 4.20260411.1
-      '@types/node':
-        specifier: catalog:dev
-        version: 25.3.3
       drizzle-kit:
         specifier: catalog:dev
         version: 0.31.10
