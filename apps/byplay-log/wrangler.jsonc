@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "byplay-log",
   "main": "src/index.ts",
-  "compatibility_date": "2026-02-28",
+  "compatibility_date": "2026-05-04",
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
     // The Service runtime preset to use for deployment.

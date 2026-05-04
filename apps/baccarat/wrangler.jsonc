@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "baccarat",
   "main": "src/index.ts",
-  "compatibility_date": "2026-02-28",
+  "compatibility_date": "2026-05-04",
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
     "BOT_TOKEN": "your-bot-token",
@@ -37,9 +37,7 @@
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": [
-        "BaccaratGameRoom"
-      ]
+      "new_sqlite_classes": ["BaccaratGameRoom"]
     }
   ]
 }
