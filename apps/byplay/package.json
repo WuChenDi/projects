@@ -28,7 +28,7 @@
     "@next/third-parties": "catalog:prod",
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",
-    "hls.js": "^1.6.15",
+    "hls.js": "catalog:prod",
     "lucide-react": "catalog:prod",
     "next": "catalog:prod",
     "next-intl": "catalog:prod",

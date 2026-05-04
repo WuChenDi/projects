@@ -42,7 +42,7 @@
     "react": "catalog:prod",
     "react-compare-slider": "^3.1.0",
     "react-dom": "catalog:prod",
-    "react-dropzone": "^15.0.0",
+    "react-dropzone": "catalog:prod",
     "sonner": "catalog:prod"
   },
   "devDependencies": {

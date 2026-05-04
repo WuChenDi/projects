@@ -35,7 +35,7 @@
     "eventemitter3": "^5.0.4",
     "date-fns": "catalog:prod",
     "lucide-react": "catalog:prod",
-    "mediabunny": "^1.40.1",
+    "mediabunny": "^1.43.1",
     "motion": "catalog:prod",
     "next": "catalog:prod",
     "next-intl": "catalog:prod",
@@ -45,7 +45,7 @@
     "react-dom": "catalog:prod",
     "sonner": "catalog:prod",
     "use-deep-compare-effect": "^1.8.1",
-    "wavesurfer.js": "^7.12.5",
+    "wavesurfer.js": "^7.12.6",
     "zod": "catalog:prod",
     "zustand": "catalog:prod"
   },
