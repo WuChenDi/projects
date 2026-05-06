@@ -35,8 +35,8 @@ export const ImageItem = ({
           <div className="absolute top-2 right-2 z-10 flex gap-1">
             <Button
               variant="secondary"
-              size="icon"
-              className="size-6 bg-black/40 backdrop-blur-[2px]"
+              size="icon-xs"
+              className="bg-black/40 backdrop-blur-[2px]"
               onClick={() => onRemove(image.id)}
               title="Remove"
             >
@@ -71,8 +71,8 @@ export const ImageItem = ({
             {image.blob && (
               <Button
                 variant="secondary"
-                size="icon"
-                className="size-6 bg-black/40 backdrop-blur-[2px]"
+                size="icon-xs"
+                className="bg-black/40 backdrop-blur-[2px]"
                 onClick={() => onCompare(image)}
               >
                 <Eye className="size-4" />
@@ -80,8 +80,8 @@ export const ImageItem = ({
             )}
             <Button
               variant="secondary"
-              size="icon"
-              className="size-6 bg-black/40 backdrop-blur-[2px]"
+              size="icon-xs"
+              className="bg-black/40 backdrop-blur-[2px]"
               onClick={() => onDownload(image)}
               title="Download"
             >
@@ -89,8 +89,8 @@ export const ImageItem = ({
             </Button>
             <Button
               variant="secondary"
-              size="icon"
-              className="size-6 bg-black/40 backdrop-blur-[2px]"
+              size="icon-xs"
+              className="bg-black/40 backdrop-blur-[2px]"
               onClick={() => onRemove(image.id)}
               title="Remove"
             >
@@ -138,8 +138,8 @@ export const ImageItem = ({
           <div className="absolute top-2 right-2 z-10 flex gap-1">
             <Button
               variant="secondary"
-              size="icon"
-              className="size-6 bg-black/40 backdrop-blur-[2px]"
+              size="icon-xs"
+              className="bg-black/40 backdrop-blur-[2px]"
               onClick={() => onRetry(image.id)}
               title="Retry"
             >
@@ -147,8 +147,8 @@ export const ImageItem = ({
             </Button>
             <Button
               variant="secondary"
-              size="icon"
-              className="size-6 bg-black/40 backdrop-blur-[2px]"
+              size="icon-xs"
+              className="bg-black/40 backdrop-blur-[2px]"
               onClick={() => onRemove(image.id)}
               title="Remove"
             >

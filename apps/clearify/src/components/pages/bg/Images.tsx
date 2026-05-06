@@ -66,8 +66,8 @@ function ImageItem({ image, onDelete }: ImageItemProps) {
         <div className="absolute top-2 right-2 z-10 flex gap-1">
           <Button
             variant="secondary"
-            size="icon"
-            className="size-6 bg-black/40 backdrop-blur-[2px]"
+            size="icon-xs"
+            className="bg-black/40 backdrop-blur-[2px]"
             onClick={() => onDelete(image.id)}
             title="Remove"
           >
@@ -112,8 +112,8 @@ function ImageItem({ image, onDelete }: ImageItemProps) {
         <div className="absolute top-2 right-2 z-10 flex gap-1">
           <Button
             variant="secondary"
-            size="icon"
-            className="size-6 bg-black/40 backdrop-blur-[2px]"
+            size="icon-xs"
+            className="bg-black/40 backdrop-blur-[2px]"
             onClick={() => setIsEditModalOpen(true)}
             title="Edit"
           >
@@ -121,8 +121,8 @@ function ImageItem({ image, onDelete }: ImageItemProps) {
           </Button>
           <Button
             variant="secondary"
-            size="icon"
-            className="size-6 bg-black/40 backdrop-blur-[2px]"
+            size="icon-xs"
+            className="bg-black/40 backdrop-blur-[2px]"
             asChild
             title="Download"
           >
@@ -135,8 +135,8 @@ function ImageItem({ image, onDelete }: ImageItemProps) {
           </Button>
           <Button
             variant="secondary"
-            size="icon"
-            className="size-6 bg-black/40 backdrop-blur-[2px]"
+            size="icon-xs"
+            className="bg-black/40 backdrop-blur-[2px]"
             onClick={() => onDelete(image.id)}
             title="Remove"
           >
@@ -155,8 +155,8 @@ function ImageItem({ image, onDelete }: ImageItemProps) {
         <div className="absolute top-2 right-2 z-10 flex gap-1">
           <Button
             variant="secondary"
-            size="icon"
-            className="size-6 bg-black/40 backdrop-blur-[2px]"
+            size="icon-xs"
+            className="bg-black/40 backdrop-blur-[2px]"
             onClick={() => onDelete(image.id)}
             title="Remove"
           >
