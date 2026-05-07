@@ -18,8 +18,10 @@ import {
   TooltipTrigger,
 } from '@cdlab996/ui/components/tooltip'
 import { IKEmpty } from '@cdlab996/ui/IK'
-import { ArrowUpDownIcon, InboxIcon, ListIcon } from 'lucide-react'
+import { ArrowUpDownIcon, DownloadIcon, InboxIcon, ListIcon } from 'lucide-react'
 import { useCallback, useMemo, useRef } from 'react'
+
+const VIDL_URL = 'https://vidl.pages.dev'
 import { useKeyboardNavigation } from '@/lib/hooks/useKeyboardNavigation'
 
 interface Episode {
@@ -186,6 +188,26 @@ export function EpisodeList({
                         />
                       </TooltipTrigger>
                       <TooltipContent>复制播放地址</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={isCurrentEpisode ? 'default' : 'outline'}
+                          size="icon"
+                          aria-label={`下载第 ${originalIndex + 1} 集`}
+                          asChild
+                        >
+                          <a
+                            href={`${VIDL_URL}/zh?url=${encodeURIComponent(episode.url)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <DownloadIcon className="size-4" />
+                          </a>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>在 vidl 中下载</TooltipContent>
                     </Tooltip>
                   </ButtonGroup>
                 )
