@@ -1,12 +1,20 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@cdlab996/ui/components/dropdown-menu'
 import { GitHubIcon } from '@cdlab996/ui/icon'
 import {
   BookmarkIcon,
   ChevronLeftIcon,
   HeartIcon,
   HistoryIcon,
+  MoreHorizontalIcon,
   SettingsIcon,
   TrophyIcon,
 } from 'lucide-react'
@@ -100,51 +108,106 @@ function HeaderInner() {
               strategy="afterInteractive"
             />
 
-            {!isPremiumMode && (
-              <Button asChild variant="outline" size="icon" aria-label="排行榜">
-                <Link href="/ranking">
-                  <TrophyIcon className="size-4" />
+            {/* Desktop: all buttons */}
+            <div className="hidden sm:flex items-center gap-2">
+              {!isPremiumMode && (
+                <Button asChild variant="outline" size="icon" aria-label="排行榜">
+                  <Link href="/ranking">
+                    <TrophyIcon className="size-4" />
+                  </Link>
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="我的收藏"
+                onClick={() => setFavoritesOpen(true)}
+              >
+                <HeartIcon className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="稍后观看"
+                onClick={() => setWatchLaterOpen(true)}
+              >
+                <BookmarkIcon className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="观看历史"
+                onClick={() => setHistoryOpen(true)}
+              >
+                <HistoryIcon className="size-4" />
+              </Button>
+              <Button asChild variant="outline" size="icon" aria-label="设置">
+                <Link href={settingsHref}>
+                  <SettingsIcon className="size-4" />
                 </Link>
               </Button>
-            )}
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label="我的收藏"
-              onClick={() => setFavoritesOpen(true)}
-            >
-              <HeartIcon className="size-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label="稍后观看"
-              onClick={() => setWatchLaterOpen(true)}
-            >
-              <BookmarkIcon className="size-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label="观看历史"
-              onClick={() => setHistoryOpen(true)}
-            >
-              <HistoryIcon className="size-4" />
-            </Button>
-            <Button asChild variant="outline" size="icon" aria-label="设置">
-              <Link href={settingsHref}>
-                <SettingsIcon className="size-4" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="icon" aria-label="GitHub">
-              <Link
-                href="https://github.com/WuChenDi/projects/tree/main/apps/flox"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <GitHubIcon className="size-4" />
-              </Link>
-            </Button>
+              <Button asChild variant="outline" size="icon" aria-label="GitHub">
+                <Link
+                  href="https://github.com/WuChenDi/projects/tree/main/apps/flox"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <GitHubIcon className="size-4" />
+                </Link>
+              </Button>
+            </div>
+
+            {/* Mobile: collapsed dropdown */}
+            <div className="flex sm:hidden">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" aria-label="更多">
+                    <MoreHorizontalIcon className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {!isPremiumMode && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/ranking" className="flex items-center gap-2">
+                        <TrophyIcon className="size-4" />
+                        排行榜
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => setFavoritesOpen(true)}>
+                    <HeartIcon className="size-4" />
+                    我的收藏
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setWatchLaterOpen(true)}>
+                    <BookmarkIcon className="size-4" />
+                    稍后观看
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setHistoryOpen(true)}>
+                    <HistoryIcon className="size-4" />
+                    观看历史
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href={settingsHref} className="flex items-center gap-2">
+                      <SettingsIcon className="size-4" />
+                      设置
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="https://github.com/WuChenDi/projects/tree/main/apps/flox"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2"
+                    >
+                      <GitHubIcon className="size-4" />
+                      GitHub
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
             <ThemeToggle />
           </div>
         </div>
