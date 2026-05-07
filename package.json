@@ -53,7 +53,7 @@
     "@cdlab996/tsconfig": "workspace:*",
     "@nsio/nsl": "^0.1.5",
     "@types/node": "catalog:dev",
-    "turbo": "^2.9.8",
+    "turbo": "^2.9.9",
     "typescript": "catalog:dev"
   }
 }
