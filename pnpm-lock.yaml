@@ -774,6 +774,9 @@ importers:
       '@volcengine/veplayer':
         specifier: 1.10.0
         version: 1.10.0
+      date-fns:
+        specifier: catalog:prod
+        version: 4.1.0
       hls.js:
         specifier: catalog:prod
         version: 1.6.16
