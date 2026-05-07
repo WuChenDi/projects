@@ -121,17 +121,26 @@ export function useHomePage({ isPremium = false }: UseHomePageOptions = {}) {
     (searchQuery: string) => {
       if (!searchQuery.trim()) return
 
-      // Clear scroll position for fresh search
       const scrollKey = `scroll-pos:${basePath}?q=${encodeURIComponent(searchQuery)}`
       sessionStorage.removeItem(scrollKey)
 
-      isInitialCacheLoad.current = false
+      // Cache hit → restore instantly, skip network
+      const cached = loadFromCache(searchQuery)
+      if (cached && cached.results.length > 0) {
+        isInitialCacheLoad.current = true
+        setQuery(searchQuery)
+        setHasSearched(true)
+        loadCachedResults(cached.results, cached.availableSources)
+        onUrlUpdate(searchQuery)
+        return
+      }
 
+      isInitialCacheLoad.current = false
       setQuery(searchQuery)
       setHasSearched(true)
       executeSearch(searchQuery)
     },
-    [executeSearch, basePath],
+    [executeSearch, basePath, loadFromCache, loadCachedResults, onUrlUpdate],
   )
 
   // Sync search state with URL query parameter
@@ -146,8 +155,8 @@ export function useHomePage({ isPremium = false }: UseHomePageOptions = {}) {
 
     // Try loading from cache (normal mode only)
     if (!isPremium) {
-      const cached = loadFromCache()
-      if (cached && cached.query === urlQuery && cached.results.length > 0) {
+      const cached = loadFromCache(urlQuery)
+      if (cached && cached.results.length > 0) {
         isInitialCacheLoad.current = true
         setHasSearched(true)
         loadCachedResults(cached.results, cached.availableSources)
