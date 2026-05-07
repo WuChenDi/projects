@@ -7,6 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@cdlab996/ui/components/tooltip'
+import { cn } from '@cdlab996/ui/lib/utils'
 import { BookmarkIcon } from 'lucide-react'
 import { memo, useCallback, useEffect, useState } from 'react'
 import { useWatchLater } from '@/lib/store/watch-later-store'
@@ -24,6 +25,8 @@ interface WatchLaterButtonProps {
   size?: number
   showTooltip?: boolean
   isPremium?: boolean
+  /** Use plain ghost style (for list item actions). Defaults to card-overlay style. */
+  plain?: boolean
 }
 
 export const WatchLaterButton = memo<WatchLaterButtonProps>(
@@ -40,6 +43,7 @@ export const WatchLaterButton = memo<WatchLaterButtonProps>(
     size = 20,
     showTooltip = true,
     isPremium = false,
+    plain = false,
   }) => {
     const { isInWatchLater, toggleWatchLater } = useWatchLater(isPremium)
     const [isAnimating, setIsAnimating] = useState(false)
@@ -68,16 +72,31 @@ export const WatchLaterButton = memo<WatchLaterButtonProps>(
         setInQueue(newState)
         setTimeout(() => setIsAnimating(false), 300)
       },
-      [videoId, source, title, poster, sourceName, type, year, remarks, toggleWatchLater],
+      [
+        videoId,
+        source,
+        title,
+        poster,
+        sourceName,
+        type,
+        year,
+        remarks,
+        toggleWatchLater,
+      ],
     )
 
     const button = (
       <Button
         variant="ghost"
-        size="icon"
+        size={plain ? 'icon-xs' : 'icon'}
         onClick={handleClick}
         aria-label={inQueue ? '从稍后观看移除' : '加入稍后观看'}
-        className={`rounded-full bg-background/95 backdrop-blur-sm border border-border hover:scale-110 active:scale-95 transition-all duration-200 ease-out ${isAnimating ? 'scale-125' : ''} ${className}`}
+        className={cn(
+          !plain &&
+            'rounded-full bg-background/95 backdrop-blur-sm border border-border hover:scale-110 active:scale-95 transition-all duration-200 ease-out',
+          !plain && isAnimating && 'scale-125',
+          className,
+        )}
       >
         <BookmarkIcon
           size={size}

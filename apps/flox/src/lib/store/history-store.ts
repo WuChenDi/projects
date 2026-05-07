@@ -74,18 +74,24 @@ const createHistoryStore = (name: string) =>
             let newHistory: VideoHistoryItem[]
 
             if (existingIndex !== -1) {
+              const existing = state.viewingHistory[existingIndex]
+              const isSameEpisode = existing.episodeIndex === episodeIndex
               // Update existing item and move to top
               const updatedItem: VideoHistoryItem = {
-                ...state.viewingHistory[existingIndex],
+                ...existing,
                 url,
                 episodeIndex,
-                playbackPosition,
-                duration,
+                // Don't overwrite valid progress with 0 for the same episode
+                playbackPosition:
+                  isSameEpisode && playbackPosition === 0
+                    ? existing.playbackPosition
+                    : playbackPosition,
+                duration:
+                  isSameEpisode && duration === 0
+                    ? existing.duration
+                    : duration,
                 timestamp,
-                episodes:
-                  episodes.length > 0
-                    ? episodes
-                    : state.viewingHistory[existingIndex].episodes,
+                episodes: episodes.length > 0 ? episodes : existing.episodes,
               }
 
               newHistory = [

@@ -1,10 +1,7 @@
-/**
- * FavoritesList - Scrollable list of favorite items
- */
-
 import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
 import { InboxIcon } from 'lucide-react'
 import type { FavoriteItem } from '@/lib/types'
+import { groupByDate } from '@/lib/utils/format-utils'
 import { FavoritesItem } from './FavoritesItem'
 
 interface FavoritesListProps {
@@ -28,15 +25,26 @@ export function FavoritesList({
     )
   }
 
+  const groups = groupByDate(favorites, (item) => item.addedAt)
+
   return (
-    <div className="flex-1 overflow-y-auto -mx-2 px-2 space-y-2 scroll-smooth">
-      {favorites.map((item) => (
-        <FavoritesItem
-          key={`${item.source}:${item.videoId}`}
-          item={item}
-          onRemove={() => onRemove(item.videoId, item.source)}
-          isPremium={isPremium}
-        />
+    <div className="flex-1 overflow-y-auto -mx-2 px-2 space-y-4 scroll-smooth">
+      {groups.map((group) => (
+        <div key={group.label}>
+          <p className="text-xs font-medium text-muted-foreground px-1 mb-2">
+            {group.label}
+          </p>
+          <div className="space-y-2">
+            {group.items.map((item) => (
+              <FavoritesItem
+                key={`${item.source}:${item.videoId}`}
+                item={item}
+                onRemove={() => onRemove(item.videoId, item.source)}
+                isPremium={isPremium}
+              />
+            ))}
+          </div>
+        </div>
       ))}
     </div>
   )

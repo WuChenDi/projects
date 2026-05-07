@@ -12,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@cdlab996/ui/components/tooltip'
+import { cn } from '@cdlab996/ui/lib/utils'
 import { HeartIcon } from 'lucide-react'
 import { memo, useCallback, useEffect, useState } from 'react'
 import { useFavorites } from '@/lib/store/favorites-store'
@@ -29,6 +30,8 @@ interface FavoriteButtonProps {
   size?: number
   showTooltip?: boolean
   isPremium?: boolean
+  /** Use plain ghost style (for list item actions). Defaults to card-overlay style. */
+  plain?: boolean
 }
 
 export const FavoriteButton = memo<FavoriteButtonProps>(
@@ -45,6 +48,7 @@ export const FavoriteButton = memo<FavoriteButtonProps>(
     size = 20,
     showTooltip = true,
     isPremium = false,
+    plain = false,
   }) => {
     const { isFavorite, toggleFavorite } = useFavorites(isPremium)
     const [isAnimating, setIsAnimating] = useState(false)
@@ -90,10 +94,15 @@ export const FavoriteButton = memo<FavoriteButtonProps>(
     const button = (
       <Button
         variant="ghost"
-        size="icon"
+        size={plain ? 'icon-xs' : 'icon'}
         onClick={handleClick}
         aria-label={isFav ? '取消收藏' : '收藏'}
-        className={`rounded-full bg-background/95 backdrop-blur-sm border border-border hover:scale-110 active:scale-95 transition-all duration-200 ease-out ${isAnimating ? 'scale-125' : ''} ${className}`}
+        className={cn(
+          !plain &&
+            'rounded-full bg-background/95 backdrop-blur-sm border border-border hover:scale-110 active:scale-95 transition-all duration-200 ease-out',
+          !plain && isAnimating && 'scale-125',
+          className,
+        )}
       >
         {isFav ? (
           <span

@@ -22,6 +22,7 @@ interface VideoPlayerProps {
   /** 起始播放时间（秒） */
   initialTime?: number
   className?: string
+  onTimeUpdate?: (currentTime: number, duration: number) => void
 }
 
 export function FloxPlayer({
@@ -31,9 +32,12 @@ export function FloxPlayer({
   watermark = false,
   initialTime,
   className,
+  onTimeUpdate,
 }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const playerRef = useRef<VePlayer | null>(null)
+  const onTimeUpdateRef = useRef(onTimeUpdate)
+  onTimeUpdateRef.current = onTimeUpdate
 
   const extractIdFromUrl = (urlStr: string) => {
     try {
@@ -110,8 +114,21 @@ export function FloxPlayer({
 
     playerRef.current = new VePlayer(playerConfig)
 
+    const handleTimeUpdate = () => {
+      const player = playerRef.current
+      if (!player || !onTimeUpdateRef.current) return
+      const ct = (player as any).currentTime as number | undefined
+      const dur = (player as any).duration as number | undefined
+      if (ct !== undefined && dur !== undefined) {
+        onTimeUpdateRef.current(ct, dur)
+      }
+    }
+
+    playerRef.current.on('timeupdate', handleTimeUpdate)
+
     return () => {
       if (playerRef.current) {
+        playerRef.current.off?.('timeupdate', handleTimeUpdate)
         playerRef.current.destroy?.()
         playerRef.current = null
       }

@@ -230,6 +230,7 @@ export function VideoPlayer({
                   ? switchTimeRef.current
                   : getSavedProgress()
               }
+              onTimeUpdate={handleTimeUpdate}
               className="w-full h-full object-contain"
             />
           ) : videoError ? (

@@ -17,6 +17,29 @@ export function formatTime(seconds: number): string {
 }
 
 /**
+ * Group an array of items by day label, preserving existing order.
+ */
+export function groupByDate<T>(
+  items: T[],
+  getTimestamp: (item: T) => number,
+): { label: string; items: T[] }[] {
+  const groups: { label: string; items: T[] }[] = []
+  const seen = new Map<string, T[]>()
+
+  for (const item of items) {
+    const label = formatDate(getTimestamp(item))
+    if (!seen.has(label)) {
+      const bucket: T[] = []
+      seen.set(label, bucket)
+      groups.push({ label, items: bucket })
+    }
+    seen.get(label)!.push(item)
+  }
+
+  return groups
+}
+
+/**
  * Format timestamp to relative date (今天, 昨天, X天前, or date)
  */
 export function formatDate(ts: number): string {
