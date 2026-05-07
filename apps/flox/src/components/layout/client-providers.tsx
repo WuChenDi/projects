@@ -6,7 +6,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useTheme } from 'next-themes'
 import { useEffect, useMemo, useState } from 'react'
 import { ThemeProvider } from '@/components/layout/theme-provider'
+import { useSubscriptionAutoRefresh } from '@/lib/hooks/useSubscriptionAutoRefresh'
 import pkg from '../../../package.json'
+
+function SubscriptionAutoRefresh() {
+  useSubscriptionAutoRefresh()
+  return null
+}
 
 function ThemedBackground({ children }: { children: React.ReactNode }) {
   const { resolvedTheme } = useTheme()
@@ -75,6 +81,7 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         <TooltipProvider>
+          <SubscriptionAutoRefresh />
           <ThemedBackground>{children}</ThemedBackground>
         </TooltipProvider>
         <IKVersionInfo

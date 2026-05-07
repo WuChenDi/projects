@@ -35,6 +35,7 @@
     "next-themes": "catalog:prod",
     "react": "catalog:prod",
     "react-dom": "catalog:prod",
+    "sonner": "catalog:prod",
     "zustand": "catalog:prod"
   },
   "devDependencies": {

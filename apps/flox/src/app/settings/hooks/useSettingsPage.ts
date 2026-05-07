@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { useSourceSettings } from '@/lib/hooks/useSourceSettings'
 import type {
   AdFilterMode,
   PlayerEngine,
@@ -7,7 +9,6 @@ import type {
   SortOption,
 } from '@/lib/store/settings-store'
 import { settingsStore } from '@/lib/store/settings-store'
-import { useSourceSettings } from '@/lib/hooks/useSourceSettings'
 import type { SourceSubscription } from '@/lib/types'
 import type { ImportResult } from '@/lib/utils/source-import-utils'
 import {
@@ -264,7 +265,6 @@ export function useSettingsPage({ isPremium = false }: UseSettingsPageOptions = 
       const result = await fetchSourcesFromUrl(sub.url)
       handleImportLink(result, true)
 
-      // Update last updated timestamp
       const updatedSubscriptions = subscriptions.map((s) =>
         s.id === sub.id ? { ...s, lastUpdated: Date.now() } : s,
       )
@@ -275,10 +275,23 @@ export function useSettingsPage({ isPremium = false }: UseSettingsPageOptions = 
         ...currentSettings,
         subscriptions: updatedSubscriptions,
       })
-    } catch (e) {
-      console.error(e)
-      // Optionally notify user of failure
+
+      toast.success(`「${sub.name}」更新成功，共 ${result.totalCount} 个源`)
+    } catch {
+      toast.error(`「${sub.name}」更新失败，请检查链接是否有效`)
     }
+  }
+
+  const handleToggleAutoRefresh = (id: string) => {
+    const updatedSubscriptions = subscriptions.map((s) =>
+      s.id === id ? { ...s, autoRefresh: !s.autoRefresh } : s,
+    )
+    setSubscriptions(updatedSubscriptions)
+    const currentSettings = settingsStore.getSettings()
+    settingsStore.saveSettings({
+      ...currentSettings,
+      subscriptions: updatedSubscriptions,
+    })
   }
 
   const handleRealtimeLatencyChange = (enabled: boolean) => {
@@ -389,9 +402,10 @@ export function useSettingsPage({ isPremium = false }: UseSettingsPageOptions = 
     handleExport,
     handleImportFile, // Renamed from handleImport
     handleImportLink, // New
-    handleAddSubscription, // New
-    handleRemoveSubscription, // New
-    handleRefreshSubscription, // New
+    handleAddSubscription,
+    handleRemoveSubscription,
+    handleRefreshSubscription,
+    handleToggleAutoRefresh,
     handleRestoreDefaults,
     handleResetAll,
     editingSource,

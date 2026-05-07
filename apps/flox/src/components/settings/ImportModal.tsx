@@ -18,6 +18,8 @@ import {
   TabsTrigger,
 } from '@cdlab996/ui/components/tabs'
 import {
+  BellIcon,
+  BellOffIcon,
   CheckCircle2Icon,
   RefreshCwIcon,
   Trash2Icon,
@@ -41,6 +43,7 @@ interface ImportModalProps {
   onAddSubscription: (sub: SourceSubscription) => Promise<boolean> | boolean
   onRemoveSubscription: (id: string) => void
   onRefreshSubscription: (sub: SourceSubscription) => Promise<void>
+  onToggleAutoRefresh: (id: string) => void
 }
 
 // ─── File Import ──────────────────────────────────────────────────────────────
@@ -258,17 +261,24 @@ function SubscriptionImportTab({
   onAdd,
   onRemove,
   onRefresh,
+  onToggleAutoRefresh,
 }: {
   subscriptions: SourceSubscription[]
   onAdd: (subscription: SourceSubscription) => Promise<boolean> | boolean
   onRemove: (id: string) => void
   onRefresh: (subscription: SourceSubscription) => Promise<void>
+  onToggleAutoRefresh: (id: string) => void
 }) {
   const [url, setUrl] = useState('')
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [refreshingIds, setRefreshingIds] = useState<Set<string>>(new Set())
   const [error, setError] = useState('')
+
+  const formatLastUpdated = (ts: number) => {
+    if (ts === 0) return '从未'
+    return new Date(ts).toLocaleString()
+  }
 
   const handleAdd = async () => {
     if (!url.trim() || !name.trim()) {
@@ -364,14 +374,27 @@ function SubscriptionImportTab({
                   {sub.url}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  上次更新: {new Date(sub.lastUpdated).toLocaleString()}
+                  上次更新: {formatLastUpdated(sub.lastUpdated)}
                 </p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  onClick={() => handleRefresh(sub)}
+                  onClick={() => onToggleAutoRefresh(sub.id)}
+                  title={sub.autoRefresh ? '自动更新已开启，点击关闭' : '自动更新已关闭，点击开启'}
+                  className={sub.autoRefresh ? 'text-primary' : 'text-muted-foreground'}
+                >
+                  {sub.autoRefresh ? (
+                    <BellIcon className="size-4" />
+                  ) : (
+                    <BellOffIcon className="size-4" />
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => void handleRefresh(sub)}
                   disabled={refreshingIds.has(sub.id)}
                   title="立即更新"
                 >
@@ -410,6 +433,7 @@ export function ImportModal({
   onAddSubscription,
   onRemoveSubscription,
   onRefreshSubscription,
+  onToggleAutoRefresh,
 }: ImportModalProps) {
   const [activeTab, setActiveTab] = useState<'file' | 'link' | 'subscription'>(
     'file',
@@ -456,6 +480,7 @@ export function ImportModal({
                 onAdd={onAddSubscription}
                 onRemove={onRemoveSubscription}
                 onRefresh={onRefreshSubscription}
+                onToggleAutoRefresh={onToggleAutoRefresh}
               />
             </TabsContent>
           </ScrollArea>

@@ -51,6 +51,7 @@ export function SettingsPageContent({
     handleAddSubscription,
     handleRemoveSubscription,
     handleRefreshSubscription,
+    handleToggleAutoRefresh,
     handleRestoreDefaults,
     handleResetAll,
     editingSource,
@@ -161,6 +162,7 @@ export function SettingsPageContent({
         onAddSubscription={handleAddSubscription}
         onRemoveSubscription={handleRemoveSubscription}
         onRefreshSubscription={handleRefreshSubscription}
+        onToggleAutoRefresh={handleToggleAutoRefresh}
       />
 
       <IKConfirmDialog
