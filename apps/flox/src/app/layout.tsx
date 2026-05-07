@@ -17,6 +17,7 @@ import { PasswordGate } from '@/components/PasswordGate'
 import { ScrollPositionManager } from '@/components/ScrollPositionManager'
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
 import { BackToTop } from '@/components/ui/BackToTop'
+import { WatchLaterSidebar } from '@/components/watch-later/WatchLaterSidebar'
 import { siteConfig } from '@/lib/config/site-config'
 
 // Server Component specifically for reading env/file (async for best practices)
@@ -248,6 +249,8 @@ export default function RootLayout({
             <ScrollPositionManager />
             <Suspense fallback={null}>
               <FavoritesSidebar />
+              <WatchLaterSidebar />
+              <WatchLaterSidebar />
               <WatchHistorySidebar />
             </Suspense>
           </PasswordGate>

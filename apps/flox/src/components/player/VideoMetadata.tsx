@@ -4,6 +4,7 @@ import { Badge } from '@cdlab996/ui/components/badge'
 import { Card, CardContent } from '@cdlab996/ui/components/card'
 import { CalendarIcon, CheckIcon, GlobeIcon } from 'lucide-react'
 import { FavoriteButton } from '@/components/favorites/FavoriteButton'
+import { WatchLaterButton } from '@/components/watch-later/WatchLaterButton'
 import { getSourceName } from '@/lib/utils/source-names'
 
 interface VideoMetadataProps {
@@ -39,17 +40,28 @@ export function VideoMetadata({
                 {videoData?.vod_name || title}
               </h1>
               {videoData && videoId && source && (
-                <FavoriteButton
-                  videoId={videoId}
-                  source={source}
-                  title={videoData.vod_name || title || '未知视频'}
-                  poster={videoData.vod_pic}
-                  type={videoData.type_name}
-                  year={videoData.vod_year}
-                  size={20}
-                  isPremium={isPremium}
-                  className="flex-shrink-0"
-                />
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <FavoriteButton
+                    videoId={videoId}
+                    source={source}
+                    title={videoData.vod_name || title || '未知视频'}
+                    poster={videoData.vod_pic}
+                    type={videoData.type_name}
+                    year={videoData.vod_year}
+                    size={20}
+                    isPremium={isPremium}
+                  />
+                  <WatchLaterButton
+                    videoId={videoId}
+                    source={source}
+                    title={videoData.vod_name || title || '未知视频'}
+                    poster={videoData.vod_pic}
+                    type={videoData.type_name}
+                    year={videoData.vod_year}
+                    size={20}
+                    isPremium={isPremium}
+                  />
+                </div>
               )}
             </div>
 

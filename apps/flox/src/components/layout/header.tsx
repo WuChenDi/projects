@@ -3,6 +3,7 @@
 import { Button } from '@cdlab996/ui/components/button'
 import { GitHubIcon } from '@cdlab996/ui/icon'
 import {
+  BookmarkIcon,
   ChevronLeftIcon,
   HeartIcon,
   HistoryIcon,
@@ -31,7 +32,7 @@ function HeaderInner() {
   const homeHref = isPremiumMode ? '/premium' : '/'
   const settingsHref = isPremiumMode ? '/premium/settings' : '/settings'
   const onReset = useHeaderResetStore((s) => s.onReset)
-  const { setFavoritesOpen, setHistoryOpen } = useSidebarStore()
+  const { setFavoritesOpen, setHistoryOpen, setWatchLaterOpen } = useSidebarStore()
 
   return (
     <header className="relative w-full z-10">
@@ -113,6 +114,14 @@ function HeaderInner() {
               onClick={() => setFavoritesOpen(true)}
             >
               <HeartIcon className="size-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="稍后观看"
+              onClick={() => setWatchLaterOpen(true)}
+            >
+              <BookmarkIcon className="size-4" />
             </Button>
             <Button
               variant="outline"

@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { memo, useMemo, useState } from 'react'
 import { FavoriteButton } from '@/components/favorites/FavoriteButton'
 import { LatencyBadge } from '@/components/ui/LatencyBadge'
+import { WatchLaterButton } from '@/components/watch-later/WatchLaterButton'
 import type { Video } from '@/lib/types'
 import { parseVideoTitle } from '@/lib/utils/video'
 
@@ -129,8 +130,21 @@ export const VideoCard = memo<VideoCardProps>(
                 )}
               </div>
 
-              <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col gap-1">
                 <FavoriteButton
+                  videoId={representativeVideo.vod_id}
+                  source={representativeVideo.source}
+                  title={displayName}
+                  poster={representativeVideo.vod_pic}
+                  sourceName={representativeVideo.sourceName}
+                  type={representativeVideo.type_name}
+                  year={representativeVideo.vod_year}
+                  remarks={representativeVideo.vod_remarks}
+                  size={17}
+                  className="shadow-md"
+                  isPremium={isPremium}
+                />
+                <WatchLaterButton
                   videoId={representativeVideo.vod_id}
                   source={representativeVideo.source}
                   title={displayName}

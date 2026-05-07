@@ -109,6 +109,9 @@ export interface FavoriteItem {
   remarks?: string // e.g., episode info
 }
 
+// Watch Later Entry (same shape as FavoriteItem)
+export type WatchLaterItem = FavoriteItem
+
 // API Response Structures
 export interface ApiSearchResponse {
   code: number
