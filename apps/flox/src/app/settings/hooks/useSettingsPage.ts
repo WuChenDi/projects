@@ -1,3 +1,4 @@
+import { hashPasswordFn, verifyPasswordFn } from '@cdlab996/utils'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { useSourceSettings } from '@/lib/hooks/useSourceSettings'
@@ -21,7 +22,9 @@ interface UseSettingsPageOptions {
   isPremium?: boolean
 }
 
-export function useSettingsPage({ isPremium = false }: UseSettingsPageOptions = {}) {
+export function useSettingsPage({
+  isPremium = false,
+}: UseSettingsPageOptions = {}) {
   const {
     sources,
     isAddModalOpen,
@@ -109,8 +112,14 @@ export function useSettingsPage({ isPremium = false }: UseSettingsPageOptions = 
     })
   }
 
-  const handleAddPassword = (password: string) => {
-    const updated = [...accessPasswords, password]
+  const handleAddPassword = async (
+    password: string,
+  ): Promise<string | undefined> => {
+    for (const hash of accessPasswords) {
+      if (await verifyPasswordFn(hash, password)) return '密码已存在'
+    }
+    const hash = await hashPasswordFn(password)
+    const updated = [...accessPasswords, hash]
     setAccessPasswords(updated)
     const currentSettings = settingsStore.getSettings()
     settingsStore.saveSettings({
