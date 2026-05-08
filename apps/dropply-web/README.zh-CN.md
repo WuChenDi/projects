@@ -6,10 +6,7 @@
 
 预览：https://dropply.pages.dev/
 
-<details>
-  <summary>预览</summary>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Dropply/index.png" />
-</details>
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Dropply/og-image.png)
 
 ## 功能特性
 

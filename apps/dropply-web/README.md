@@ -6,10 +6,7 @@ Secure file and text sharing platform with end-to-end encryption, built with Nex
 
 Preview: https://dropply.pages.dev/
 
-<details>
-  <summary>Preview</summary>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Dropply/index.png" />
-</details>
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Dropply/og-image.png)
 
 ## Features
 

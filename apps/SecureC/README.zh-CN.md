@@ -6,10 +6,7 @@ SecureC 是一个基于 Next.js 的客户端加密工具，使用 XChaCha20-Poly
 
 预览：https://securec.pages.dev/
 
-<details>
-  <summary>预览</summary>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/og-image.png" />
-</details>
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/og-image.png)
 
 ## 功能特性
 

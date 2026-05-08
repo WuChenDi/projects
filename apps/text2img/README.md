@@ -6,10 +6,7 @@ A free online AI text-to-image tool built with Next.js, powered by Cloudflare Wo
 
 Preview: https://text2img.cdlab.workers.dev/
 
-<details>
-  <summary>Preview</summary>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/index.png" />
-</details>
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/og-image.png)
 
 ## Features
 

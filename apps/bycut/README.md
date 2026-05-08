@@ -1,35 +1,58 @@
-# byplay
+# ByCut
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
-Online video player supporting HLS (M3U8 adaptive bitrate), MP4, WebM, OGG, and more.
+Open-source browser-based video editor — a free alternative to CapCut. No installation, no uploads, all processing runs locally in your browser.
 
 > All video processing is done locally in the browser. No data is uploaded to any server.
 
-Preview: https://byplay.pages.dev/
+Preview: https://bycut.pages.dev/
 
-![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byplay/og-image.png)
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/ByCut/index.png)
 
 ## Features
 
-- **Multi-format Playback**
-  - HLS/M3U8 via hls.js with adaptive bitrate
-  - Direct playback for MP4, WebM, OGG, MOV, MKV, and more
-  - Auto-detects format — HLS config panels hidden for direct video
+- **Multi-track Timeline Editing**
+  - Drag and drop media clips onto a multi-track timeline
+  - Timeline bookmarks with drag-to-reposition support
+  - Full undo/redo command system
 
-- **HLS Controls**
-  - Manual quality level switching or auto ABR
-  - Configurable buffer, ABR, performance, and retry settings
-  - Real-time stats: bandwidth, buffered, dropped frames, current level
+- **AI Features**
+  - Automatic caption/subtitle generation
+  - Text-to-speech synthesis
 
-- **General Playback**
-  - Adjustable playback rate (0.25x – 4x)
-  - Auto-play toggle
-  - Event logs for debugging
+- **Rich Media Effects**
+  - Stickers and transition effects
+  - Keyframe animation
+  - Export individual frames as images
 
-- **Cross-tool Integration**
-  - One-click jump to [vidl](https://vidl.pages.dev/) to download the current video
-  - Locale is preserved across navigation (en/zh)
+- **Playback & Preview**
+  - Adjustable playback speed
+  - Volume control
+  - Real-time canvas preview
+
+- **User Experience**
+  - GPU-accelerated canvas rendering
+  - Customizable keyboard shortcuts
+  - Internationalization support (English / Chinese)
+  - Dark / Light theme
+  - Responsive editor layout
+
+## Tech Stack
+
+- **Framework**: Next.js (App Router, static export)
+- **State**: Zustand
+- **Video processing**: FFmpeg.wasm + mediabunny
+- **AI**: Hugging Face Transformers (Web Worker)
+- **Audio**: WaveSurfer.js
+- **i18n**: next-intl (en / zh)
+
+## Privacy
+
+- All video processing runs locally in the browser
+- No data is uploaded to any server
+- No registration or login required
+- Open-source and auditable
 
 ## License
 

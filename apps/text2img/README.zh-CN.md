@@ -6,10 +6,7 @@
 
 预览：https://text2img.cdlab.workers.dev/
 
-<details>
-  <summary>预览</summary>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/index.png" />
-</details>
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/og-image.png)
 
 ## 功能特性
 

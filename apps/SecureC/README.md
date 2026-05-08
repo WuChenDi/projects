@@ -6,10 +6,7 @@ SecureC is a Next.js-based client-side encryption tool designed to securely encr
 
 Preview: https://securec.pages.dev/
 
-<details>
-  <summary>Preview</summary>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/og-image.png" />
-</details>
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/og-image.png)
 
 ## Features
 
