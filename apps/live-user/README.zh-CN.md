@@ -1,10 +1,14 @@
 # LiveUser
 
-[English](./README.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 任意网站的实时在线用户计数器。嵌入一行 script 标签，即可显示当前在线人数。
 
 基于 [Hono](https://hono.dev/) + Cloudflare Workers + Durable Objects（WebSocket Hibernation API + SQLite）构建。
+
+预览：https://live-user.cdlab.workers.dev/
+
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/live-user/index.png)
 
 ## 使用方式
 

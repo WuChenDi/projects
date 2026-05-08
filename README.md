@@ -6,7 +6,7 @@
 [![Turborepo](https://img.shields.io/badge/built%20with-Turborepo-cc00ff.svg)](https://turbo.build/)
 [![NSL](https://img.shields.io/badge/dev%20proxy-%40nsio%2Fnsl-4a9eff.svg)](https://github.com/nsiod/nsl)
 
-[中文文档](./README.zh-CN.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 A modern web tools monorepo built with **Turborepo + pnpm**, spanning Next.js, Nuxt, Hono, and more. Local dev is proxied by [@nsio/nsl](https://github.com/nsiod/nsl) — every app gets a stable URL at `http://<name>.localhost:3355`, no port hunting needed.
 
@@ -207,15 +207,29 @@ https://live-user.cdlab.workers.dev/
 - Visit counter stored in DO-embedded SQLite with atomic updates (no data loss under concurrency)
 - Tech: Hono + Cloudflare Workers + Durable Objects + SQLite
 
+<details>
+  <summary>Preview</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/live-user/index.png" alt="live-user" />
+</details>
+
 ### shortener
 
 **URL Shortener Service**
+
+https://shortener.cdlab.workers.dev/
 
 - Edge URL shortener with D1 / LibSQL storage (switchable via `DB_TYPE`), KV caching, and JWT-protected admin API
 - AI-powered semantic slug generation via Cloudflare Workers AI (with KV cache + Base62 fallback)
 - Analytics Engine ingestion + query endpoints (overview / time series / countries / referrers / devices / browsers / OS)
 - OG-tag rendering for crawlers, daily cron cleanup of expired links, soft-delete on every table
 - Tech: Hono + Cloudflare Workers + Drizzle + D1/LibSQL + KV + Workers AI + Analytics Engine
+
+<details>
+  <summary>Preview</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Shortener/index.png" alt="Shortener" />
+</details>
 
 ### repo-changelog
 

@@ -1,10 +1,14 @@
 # LiveUser
 
-[中文文档](./README.zh-CN.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 Real-time online user counter for any website. Drop a script tag, see who's here.
 
 Built with [Hono](https://hono.dev/) + Cloudflare Workers + Durable Objects (WebSocket Hibernation API + SQLite).
+
+Preview: https://live-user.cdlab.workers.dev/
+
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/live-user/index.png)
 
 ## Usage
 

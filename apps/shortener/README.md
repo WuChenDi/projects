@@ -1,6 +1,6 @@
 # shortener
 
-[中文文档](./README.zh-CN.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 A URL shortener service built with [Hono](https://hono.dev/) on Cloudflare Workers — D1/LibSQL storage via Drizzle, KV caching, JWT-protected admin API, AI-powered slug generation, and Analytics Engine reporting.
 

@@ -1,6 +1,6 @@
 # AI Text-to-Image Tool (Cloudflare AI)
 
-[中文文档](./README.zh-CN.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 A free online AI text-to-image tool built with Next.js, powered by Cloudflare Workers AI. Supports multiple models including FLUX.1, Stable Diffusion XL, and DreamShaper.
 

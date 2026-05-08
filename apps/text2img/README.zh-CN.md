@@ -1,6 +1,6 @@
 # 基于 CloudFlare 的在线文生图服务
 
-[English](./README.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 这是一个使用 Next.js 的文本生成图像服务，基于 Cloudflare AI Workers 的 AI 模型。免费使用，无需注册，即刻生成高质量 AI 图像。
 

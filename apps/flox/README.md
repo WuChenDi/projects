@@ -1,6 +1,6 @@
 # Flox
 
-[中文文档](./README.zh-CN.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 A modern video aggregation and playback platform built with Next.js 16, React 19, and Tailwind CSS 4.
 

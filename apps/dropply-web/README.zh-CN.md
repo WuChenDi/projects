@@ -1,6 +1,6 @@
 # Dropply
 
-[English](./README.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 基于 Next.js 构建、部署于 Cloudflare Pages 的端到端加密文件与文本分享平台。
 

@@ -1,6 +1,6 @@
 # bytts
 
-[中文文档](./README.zh-CN.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 Free online text-to-speech tool. Supports 300+ voices, adjustable speed and pitch, long-text auto-splitting, and persistent generation history.
 

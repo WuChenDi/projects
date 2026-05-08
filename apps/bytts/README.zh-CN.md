@@ -1,6 +1,6 @@
 # bytts
 
-[English](./README.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 免费在线文字转语音工具。支持 300+ 种语音、语速语调调节、长文本自动分段，以及持久化生成历史。
 

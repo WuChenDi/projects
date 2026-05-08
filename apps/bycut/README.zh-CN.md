@@ -1,6 +1,6 @@
 # ByCut
 
-[English](./README.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 开源浏览器端视频编辑器 —— 免费的 CapCut 替代方案。无需安装，无需上传，所有处理均在浏览器本地完成。
 

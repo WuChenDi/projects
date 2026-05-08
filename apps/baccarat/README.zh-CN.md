@@ -1,6 +1,6 @@
 # baccarat
 
-[English](./README.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 部署在 Cloudflare Workers 上的 Telegram 百家乐游戏机器人，基于 Hono + Grammy 构建，使用 Durable Objects 实现多群组隔离。
 

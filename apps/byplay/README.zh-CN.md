@@ -1,6 +1,6 @@
 # ByCut
 
-[中文文档](./README.zh-CN.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 Open-source browser-based video editor — a free CapCut alternative. No installation, no uploads, everything runs locally in your browser.
 

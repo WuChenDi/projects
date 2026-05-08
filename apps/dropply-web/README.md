@@ -1,6 +1,6 @@
 # Dropply
 
-[中文文档](./README.zh-CN.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 Secure file and text sharing platform with end-to-end encryption, built with Next.js and deployed on Cloudflare Pages.
 

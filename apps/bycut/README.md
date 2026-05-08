@@ -1,6 +1,6 @@
 # byplay
 
-[中文文档](./README.zh-CN.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 Online video player supporting HLS (M3U8 adaptive bitrate), MP4, WebM, OGG, and more.
 

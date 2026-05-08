@@ -1,6 +1,6 @@
 # shortener
 
-[English](./README.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 基于 [Hono](https://hono.dev/) + Cloudflare Workers 的短链服务 —— 通过 Drizzle 适配 D1/LibSQL，KV 缓存，JWT 鉴权的管理 API，由 Cloudflare Workers AI 生成语义化 slug，并接入 Analytics Engine 上报与查询。
 

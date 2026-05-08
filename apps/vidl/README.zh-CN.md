@@ -1,6 +1,6 @@
 # 视频下载工具
 
-[English](./README.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 在线视频下载工具，支持 M3U8/HLS、MP4 等视频格式，提供范围下载、流式下载、AES 解密和 MP4 转码功能。
 

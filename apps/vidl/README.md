@@ -1,6 +1,6 @@
 # Video Downloader
 
-[中文文档](./README.zh-CN.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 Online video download tool supporting M3U8/HLS, MP4, and other video formats with range download, streaming, AES decryption, and MP4 conversion.
 

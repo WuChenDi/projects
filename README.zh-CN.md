@@ -6,7 +6,7 @@
 [![Turborepo](https://img.shields.io/badge/built%20with-Turborepo-cc00ff.svg)](https://turbo.build/)
 [![NSL](https://img.shields.io/badge/dev%20proxy-%40nsio%2Fnsl-4a9eff.svg)](https://github.com/nsiod/nsl)
 
-[English](./README.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 现代 Web 工具集合 monorepo —— 基于 **Turborepo + pnpm**，涵盖 Next.js、Nuxt、Hono 等多技术栈。本地开发通过 [@nsio/nsl](https://github.com/nsiod/nsl) 反向代理，每个应用都有固定的访问地址 `http://<name>.localhost:3355`，无需记忆端口号。
 
@@ -207,15 +207,29 @@ https://live-user.cdlab.workers.dev/
 - 访问量存储在 DO 内嵌 SQLite 中，原子更新，高并发下不丢数据
 - 核心技术：Hono + Cloudflare Workers + Durable Objects + SQLite
 
+<details>
+  <summary>预览</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/live-user/index.png" alt="live-user" />
+</details>
+
 ### shortener
 
 **短链服务**
+
+https://shortener.cdlab.workers.dev/
 
 - 边缘短链服务，支持 D1 / LibSQL 存储（通过 `DB_TYPE` 切换），KV 缓存，JWT 鉴权的管理 API
 - 使用 Cloudflare Workers AI 生成语义化 slug，KV 缓存命中后回退到 Base62 算法
 - Analytics Engine 实时上报 + 查询接口（总览 / 时间序列 / 国家 / 来源 / 设备 / 浏览器 / 操作系统）
 - 自动识别爬虫返回 OG 元数据，过期短链每天定时清理，所有表均使用软删除
 - 核心技术：Hono + Cloudflare Workers + Drizzle + D1/LibSQL + KV + Workers AI + Analytics Engine
+
+<details>
+  <summary>预览</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Shortener/index.png" alt="Shortener" />
+</details>
 
 ### repo-changelog
 

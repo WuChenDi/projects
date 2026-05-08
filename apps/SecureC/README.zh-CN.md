@@ -1,6 +1,6 @@
 # SecureC
 
-[English](./README.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 SecureC 是一个基于 Next.js 的客户端加密工具，使用 XChaCha20-Poly1305 对称加密算法对文件和文本进行安全加解密。借助 `@noble/ciphers` 库实现加密，Argon2id 进行安全的基于密码的密钥派生，支持大文件分块处理，并通过 Web Workers 确保流畅的性能体验。
 

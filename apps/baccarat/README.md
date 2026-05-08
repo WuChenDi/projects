@@ -1,6 +1,6 @@
 # baccarat
 
-[中文](./README.zh-CN.md)
+[English](./README.md) | [中文](./README.zh-CN.md)
 
 A Telegram Baccarat game bot deployed on Cloudflare Workers with Durable Objects, built with Hono and Grammy.
 
