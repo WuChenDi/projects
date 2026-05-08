@@ -1,5 +1,6 @@
 'use client'
 
+import { Spinner } from '@cdlab996/ui/components/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
 import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -218,7 +219,7 @@ function PlayerContent() {
       <div className="max-w-7xl mx-auto w-full">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+            <Spinner className="size-12 text-primary" />
             <p className="text-sm text-muted-foreground">正在加载视频详情...</p>
           </div>
         ) : videoError && !videoData ? (
@@ -314,7 +315,7 @@ export default function PlayerPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent" />
+          <Spinner className="size-12 text-primary" />
         </div>
       }
     >

@@ -4,6 +4,7 @@ import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
 import { Card } from '@cdlab996/ui/components/card'
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
+import { Spinner } from '@cdlab996/ui/components/spinner'
 import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
 import {
@@ -247,7 +248,7 @@ function RankingPage() {
         {loading && movies.length > 0 && (
           <div className="flex justify-center py-8">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+              <Spinner className="size-4 text-primary" />
               加载更多...
             </div>
           </div>
@@ -276,7 +277,7 @@ export default function Ranking() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent" />
+          <Spinner className="size-12 text-primary" />
         </div>
       }
     >

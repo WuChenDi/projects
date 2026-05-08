@@ -1,5 +1,6 @@
 'use client'
 
+import { Spinner } from '@cdlab996/ui/components/spinner'
 import { IKEmpty } from '@cdlab996/ui/IK'
 import { FilmIcon } from 'lucide-react'
 import type { Video } from '@/lib/types'
@@ -50,7 +51,7 @@ export function InfiniteVideoGrid({
       {loading && (
         <div className="flex justify-center py-12">
           <div className="flex flex-col items-center gap-3">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+            <Spinner className="size-6" />
             <p className="text-sm text-muted-foreground">加载中...</p>
           </div>
         </div>

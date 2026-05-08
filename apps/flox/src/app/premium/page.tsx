@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
+import { Spinner } from '@cdlab996/ui/components/spinner'
 import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { Search } from 'lucide-react'
 import { Suspense, useEffect, useMemo } from 'react'
@@ -91,7 +92,7 @@ export default function PremiumPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent"></div>
+          <Spinner className="size-12 text-primary" />
         </div>
       }
     >
