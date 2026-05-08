@@ -26,7 +26,7 @@ interface PasswordSettingsProps {
   passwords: string[]
   envPasswordSet: boolean
   onToggle: (enabled: boolean) => void
-  onAdd: (password: string) => void
+  onAdd: (password: string) => Promise<string | undefined>
   onRemove: (password: string) => void
 }
 
@@ -41,15 +41,18 @@ export function PasswordSettings({
   const [newPassword, setNewPassword] = useState('')
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [isAdding, setIsAdding] = useState(false)
 
-  const handleAdd = (e: React.FormEvent) => {
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newPassword) return
-    if (passwords.includes(newPassword)) {
-      setError('密码已存在')
+    setIsAdding(true)
+    const err = await onAdd(newPassword)
+    setIsAdding(false)
+    if (err) {
+      setError(err)
       return
     }
-    onAdd(newPassword)
     setNewPassword('')
     setError('')
   }
@@ -117,7 +120,7 @@ export function PasswordSettings({
                       variant="secondary"
                       className="gap-2 px-3 py-1.5 font-mono text-sm transition-transform hover:scale-105"
                     >
-                      {showPassword ? pwd : '••••••'}
+                      ••••••
                       <button
                         onClick={() => onRemove(pwd)}
                         className="text-muted-foreground hover:text-destructive transition-colors"
@@ -166,7 +169,7 @@ export function PasswordSettings({
               <Button
                 type="submit"
                 size="icon"
-                disabled={!newPassword}
+                disabled={!newPassword || isAdding}
                 aria-label="添加密码"
               >
                 <Plus size={18} />
