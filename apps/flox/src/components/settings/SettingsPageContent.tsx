@@ -22,8 +22,6 @@ export function SettingsPageContent({
   const {
     sources,
     sortBy,
-    passwordAccess,
-    accessPasswords,
     envPasswordSet,
     realtimeLatency,
     searchDisplayMode,
@@ -41,9 +39,6 @@ export function SettingsPageContent({
     handleSourcesChange,
     handleAddSource,
     handleSortChange,
-    handlePasswordToggle,
-    handleAddPassword,
-    handleRemovePassword,
     handleExport,
     handleImportFile,
     handleImportLink,
@@ -90,15 +85,8 @@ export function SettingsPageContent({
             onAdKeywordsChange={handleAdKeywordsChange}
           />
 
-          {/* Password Settings */}
-          <PasswordSettings
-            enabled={passwordAccess}
-            passwords={accessPasswords}
-            envPasswordSet={envPasswordSet}
-            onToggle={handlePasswordToggle}
-            onAdd={handleAddPassword}
-            onRemove={handleRemovePassword}
-          />
+          {/* Password Settings (env-only info card) */}
+          {envPasswordSet && <PasswordSettings />}
 
           {/* Display Settings */}
           <DisplaySettings

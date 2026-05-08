@@ -16,13 +16,13 @@ import {
 } from '@cdlab996/ui/components/field'
 import { PasswordInput } from '@cdlab996/ui/components/password-input'
 import { Spinner } from '@cdlab996/ui/components/spinner'
-import { hashPasswordFn, verifyPasswordFn } from '@cdlab996/utils'
+import { hashPasswordFn } from '@cdlab996/utils'
 import { useForm } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import * as z from 'zod'
 import { useSubscriptionSync } from '@/lib/hooks/useSubscriptionSync'
-import { settingsStore, useSettingsStore } from '@/lib/store/settings-store'
+import { settingsStore } from '@/lib/store/settings-store'
 import { useUnlockStore } from '@/lib/store/unlock-store'
 
 const passwordSchema = z.object({
@@ -31,10 +31,7 @@ const passwordSchema = z.object({
 
 type PasswordForm = z.infer<typeof passwordSchema>
 
-type UnlockResult =
-  | { valid: true; source: 'local' }
-  | { valid: true; source: 'env'; token: string }
-  | { valid: false }
+type UnlockResult = { valid: true; token: string } | { valid: false }
 
 interface AppConfig {
   hasEnvPassword: boolean
@@ -67,9 +64,6 @@ export function PasswordGate({
   hasEnvPassword: boolean
 }) {
   useSubscriptionSync()
-
-  const passwordAccess = useSettingsStore((s) => s.passwordAccess)
-  const accessPasswords = useSettingsStore((s) => s.accessPasswords)
 
   const isUnlocked = useUnlockStore((s) => s.isUnlocked)
   const hasHydrated = useUnlockStore((s) => s._hasHydrated)
@@ -120,30 +114,19 @@ export function PasswordGate({
 
   const { mutateAsync: unlock, isPending } = useMutation({
     mutationFn: async (pwd: string): Promise<UnlockResult> => {
-      for (const hash of accessPasswords) {
-        if (await verifyPasswordFn(hash, pwd)) {
-          return { valid: true, source: 'local' }
-        }
-      }
-      if (config?.hasEnvPassword) {
-        const envHash = await hashPasswordFn(pwd)
-        const res = await fetch('/api/config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ hash: envHash }),
-        })
-        const data = await res.json()
-        if (data.valid) {
-          return { valid: true, source: 'env', token: envHash }
-        }
-      }
-      return { valid: false }
+      if (!config?.hasEnvPassword) return { valid: false }
+      const envHash = await hashPasswordFn(pwd)
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hash: envHash }),
+      })
+      const data = await res.json()
+      return data.valid ? { valid: true, token: envHash } : { valid: false }
     },
     onSuccess: (result) => {
       if (!result.valid) return
-      if (result.source === 'env') {
-        setEnvToken(result.token)
-      }
+      setEnvToken(result.token)
       doUnlock()
     },
   })
@@ -171,9 +154,7 @@ export function PasswordGate({
     },
   })
 
-  const isProtected =
-    (passwordAccess && accessPasswords.length > 0) ||
-    (config?.hasEnvPassword ?? initialHasEnvPassword)
+  const isProtected = config?.hasEnvPassword ?? initialHasEnvPassword
 
   if (!hasHydrated || isEnvVerifying || (isLoading && !initialHasEnvPassword)) {
     return <LoadingScreen />

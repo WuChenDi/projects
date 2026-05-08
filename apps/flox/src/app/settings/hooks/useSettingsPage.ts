@@ -1,4 +1,3 @@
-import { hashPasswordFn, verifyPasswordFn } from '@cdlab996/utils'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { useSourceSettings } from '@/lib/hooks/useSourceSettings'
@@ -45,8 +44,6 @@ export function useSettingsPage({
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
 
-  const [passwordAccess, setPasswordAccess] = useState(false)
-  const [accessPasswords, setAccessPasswords] = useState<string[]>([])
   const [envPasswordSet, setEnvPasswordSet] = useState(false)
 
   // Display settings
@@ -66,8 +63,6 @@ export function useSettingsPage({
     const settings = settingsStore.getSettings()
     setSubscriptions(settings.subscriptions || [])
     setSortBy(settings.sortBy)
-    setPasswordAccess(settings.passwordAccess)
-    setAccessPasswords(settings.accessPasswords)
     setRealtimeLatency(settings.realtimeLatency)
     setSearchDisplayMode(settings.searchDisplayMode)
     setFullscreenType(settings.fullscreenType)
@@ -93,58 +88,6 @@ export function useSettingsPage({
       sortBy: newSort,
       searchHistory: true,
       watchHistory: true,
-      passwordAccess,
-      accessPasswords,
-    })
-  }
-
-  const handlePasswordToggle = (enabled: boolean) => {
-    setPasswordAccess(enabled)
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      sources,
-      sortBy,
-      searchHistory: true,
-      watchHistory: true,
-      passwordAccess: enabled,
-      accessPasswords,
-    })
-  }
-
-  const handleAddPassword = async (
-    password: string,
-  ): Promise<string | undefined> => {
-    for (const hash of accessPasswords) {
-      if (await verifyPasswordFn(hash, password)) return '密码已存在'
-    }
-    const hash = await hashPasswordFn(password)
-    const updated = [...accessPasswords, hash]
-    setAccessPasswords(updated)
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      sources,
-      sortBy,
-      searchHistory: true,
-      watchHistory: true,
-      passwordAccess,
-      accessPasswords: updated,
-    })
-  }
-
-  const handleRemovePassword = (password: string) => {
-    const updated = accessPasswords.filter((p) => p !== password)
-    setAccessPasswords(updated)
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      sources,
-      sortBy,
-      searchHistory: true,
-      watchHistory: true,
-      passwordAccess,
-      accessPasswords: updated,
     })
   }
 
@@ -172,8 +115,6 @@ export function useSettingsPage({
       handleSourcesChange(settings.sources)
       setSortBy(settings.sortBy)
       setSubscriptions(settings.subscriptions || [])
-      setPasswordAccess(settings.passwordAccess)
-      setAccessPasswords(settings.accessPasswords)
 
       // Reload to apply changes
       setTimeout(() => window.location.reload(), 1000)
@@ -386,8 +327,6 @@ export function useSettingsPage({
     sources,
     subscriptions,
     sortBy,
-    passwordAccess,
-    accessPasswords,
     envPasswordSet,
     realtimeLatency,
     searchDisplayMode,
@@ -405,9 +344,6 @@ export function useSettingsPage({
     handleSourcesChange,
     handleAddSource,
     handleSortChange,
-    handlePasswordToggle,
-    handleAddPassword,
-    handleRemovePassword,
     handleExport,
     handleImportFile, // Renamed from handleImport
     handleImportLink, // New

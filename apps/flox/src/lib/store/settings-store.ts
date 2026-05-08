@@ -39,8 +39,6 @@ export interface AppSettings {
   sortBy: SortOption
   searchHistory: boolean
   watchHistory: boolean
-  passwordAccess: boolean
-  accessPasswords: string[]
   autoNextEpisode: boolean
   autoSkipIntro: boolean
   skipIntroSeconds: number
@@ -109,8 +107,6 @@ function getDefaultAppSettings(): AppSettings {
     sortBy: 'default',
     searchHistory: true,
     watchHistory: true,
-    passwordAccess: false,
-    accessPasswords: [],
     autoNextEpisode: true,
     autoSkipIntro: false,
     skipIntroSeconds: 30,
@@ -171,8 +167,6 @@ function mergePersistedSettings(persisted: any, defaults: AppSettings): AppSetti
     sortBy: persisted.sortBy || 'default',
     searchHistory: persisted.searchHistory !== undefined ? persisted.searchHistory : true,
     watchHistory: persisted.watchHistory !== undefined ? persisted.watchHistory : true,
-    passwordAccess: persisted.passwordAccess !== undefined ? persisted.passwordAccess : false,
-    accessPasswords: Array.isArray(persisted.accessPasswords) ? persisted.accessPasswords : [],
     autoNextEpisode: persisted.autoNextEpisode !== undefined ? persisted.autoNextEpisode : true,
     autoSkipIntro: persisted.autoSkipIntro !== undefined ? persisted.autoSkipIntro : false,
     skipIntroSeconds: typeof persisted.skipIntroSeconds === 'number' ? persisted.skipIntroSeconds : 30,
