@@ -3,6 +3,7 @@
  * Exposes configuration status (never actual values) to the client
  */
 
+import { verifyPasswordFn } from '@cdlab996/utils'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
@@ -25,13 +26,13 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { password } = await request.json()
+    const { hash } = await request.json()
 
     if (!ACCESS_PASSWORD) {
       return NextResponse.json({ valid: false, message: 'No env password set' })
     }
 
-    const valid = password === ACCESS_PASSWORD
+    const valid = await verifyPasswordFn(hash, ACCESS_PASSWORD)
     return NextResponse.json({ valid })
   } catch {
     return NextResponse.json(
