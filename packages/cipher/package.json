@@ -32,11 +32,11 @@
   },
   "dependencies": {
     "@cdlab996/uncrypto": "workspace:*",
-    "@noble/ciphers": "^2.2.0",
-    "@noble/curves": "^2.2.0",
-    "@noble/hashes": "^2.2.0",
-    "@scure/base": "^2.2.0",
-    "eciesjs": "^0.5.0"
+    "@noble/ciphers": "catalog:prod",
+    "@noble/curves": "catalog:prod",
+    "@noble/hashes": "catalog:prod",
+    "@scure/base": "catalog:prod",
+    "eciesjs": "catalog:prod"
   },
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",

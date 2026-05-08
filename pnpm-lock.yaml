@@ -58,12 +58,24 @@ catalogs:
     '@next/third-parties':
       specifier: 16.2.5
       version: 16.2.5
+    '@noble/ciphers':
+      specifier: ^2.2.0
+      version: 2.2.0
+    '@noble/curves':
+      specifier: ^2.2.0
+      version: 2.2.0
+    '@noble/hashes':
+      specifier: ^2.2.0
+      version: 2.2.0
+    '@scure/base':
+      specifier: ^2.2.0
+      version: 2.2.0
     '@tanstack/react-form':
       specifier: ^1.29.1
       version: 1.29.1
     '@tanstack/react-query':
-      specifier: ^5.100.1
-      version: 5.100.1
+      specifier: ^5.100.9
+      version: 5.100.9
     '@vercel/analytics':
       specifier: ^2.0.1
       version: 2.0.1
@@ -82,6 +94,9 @@ catalogs:
     drizzle-orm:
       specifier: ^0.45.2
       version: 0.45.2
+    eciesjs:
+      specifier: ^0.5.0
+      version: 0.5.0
     hls.js:
       specifier: ^1.6.16
       version: 1.6.16
@@ -490,7 +505,7 @@ importers:
         version: 1.29.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-query':
         specifier: catalog:prod
-        version: 5.100.1(react@19.2.4)
+        version: 5.100.9(react@19.2.4)
       lucide-react:
         specifier: catalog:prod
         version: 1.14.0(react@19.2.4)
@@ -768,9 +783,12 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.2
         version: 3.2.2(react@19.2.4)
+      '@tanstack/react-form':
+        specifier: catalog:prod
+        version: 1.29.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-query':
         specifier: catalog:prod
-        version: 5.100.1(react@19.2.4)
+        version: 5.100.9(react@19.2.4)
       '@volcengine/veplayer':
         specifier: 1.10.0
         version: 1.10.0
@@ -798,6 +816,9 @@ importers:
       sonner:
         specifier: catalog:prod
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      zod:
+        specifier: catalog:prod
+        version: 4.4.3
       zustand:
         specifier: catalog:prod
         version: 5.0.12(@types/react@19.2.14)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
@@ -948,7 +969,7 @@ importers:
         version: link:../../packages/utils
       '@tanstack/react-query':
         specifier: catalog:prod
-        version: 5.100.1(react@19.2.4)
+        version: 5.100.9(react@19.2.4)
       class-variance-authority:
         specifier: catalog:prod
         version: 0.7.1
@@ -1133,19 +1154,19 @@ importers:
         specifier: workspace:*
         version: link:../uncrypto
       '@noble/ciphers':
-        specifier: ^2.2.0
+        specifier: catalog:prod
         version: 2.2.0
       '@noble/curves':
-        specifier: ^2.2.0
+        specifier: catalog:prod
         version: 2.2.0
       '@noble/hashes':
-        specifier: ^2.2.0
+        specifier: catalog:prod
         version: 2.2.0
       '@scure/base':
-        specifier: ^2.2.0
+        specifier: catalog:prod
         version: 2.2.0
       eciesjs:
-        specifier: ^0.5.0
+        specifier: catalog:prod
         version: 0.5.0
     devDependencies:
       '@cdlab996/tsconfig':
@@ -1268,6 +1289,9 @@ importers:
 
   packages/utils:
     dependencies:
+      '@noble/hashes':
+        specifier: catalog:prod
+        version: 2.2.0
       date-fns:
         specifier: catalog:prod
         version: 4.1.0
@@ -2034,12 +2058,6 @@ packages:
 
   '@dxup/unimport@0.1.2':
     resolution: {integrity: sha512-/B8YJGPzaYq1NbsQmwgP8EZqg40NpTw4ZB3suuI0TplbxKHeK94jeaawLmVhCv+YwUnOpiWEz9U6SeThku/8JQ==}
-
-  '@ecies/ciphers@0.2.5':
-    resolution: {integrity: sha512-GalEZH4JgOMHYYcYmVqnFirFsjZHeoGMDt9IxEnM9F7GRUUyUksJ7Ou53L83WHJq3RWKD3AcBpo0iQh0oMpf8A==}
-    engines: {bun: '>=1', deno: '>=2', node: '>=16'}
-    peerDependencies:
-      '@noble/ciphers': ^1.0.0
 
   '@ecies/ciphers@0.2.6':
     resolution: {integrity: sha512-patgsRPKGkhhoBjETV4XxD0En4ui5fbX0hzayqI3M8tvNMGUoUvmyYAIWwlxBc1KX5cturfqByYdj5bYGRpN9g==}
@@ -5706,8 +5724,8 @@ packages:
     resolution: {integrity: sha512-y/xtNPNt/YeyoVxE/JCx+T7yjEzpezmbb+toK8DDD1P4m7Kzs5YR956+7OKexG3f8aXgC3rLZl7b1V+yNUSy5w==}
     engines: {node: '>=18'}
 
-  '@tanstack/query-core@5.100.1':
-    resolution: {integrity: sha512-awvQhOO/2TrSCHE5LKKsXcvvj6WSBncwEcMFCB/ez0Qs0b17iyyivoGArNV3HFfXryZwCpnb/olsaBBKrIbtSw==}
+  '@tanstack/query-core@5.100.9':
+    resolution: {integrity: sha512-SJSFw1S8+kQ0+knv/XGfrbocWoAlT7vDKsSImtLx3ZPQmEcR46hkDjLSvynSy25N8Ms4tIEini1FuBd5k7IscQ==}
 
   '@tanstack/react-form@1.29.1':
     resolution: {integrity: sha512-hVHk4g0phd0HxRsv2ry6Xt8BqmalT55Q3cokhJBCC1St0hcGZhgwJJbohm9atao45BPG9e55DGvtbwExqZe35g==}
@@ -5718,8 +5736,8 @@ packages:
       '@tanstack/react-start':
         optional: true
 
-  '@tanstack/react-query@5.100.1':
-    resolution: {integrity: sha512-UgWRLhQKprC37SsO6y1zRabOqDmM2gsdTNPbqTT35yl7kOOhwXU4nyfOiGHXPwoEFJV1IpSk85hjIFjNFWVpzw==}
+  '@tanstack/react-query@5.100.9':
+    resolution: {integrity: sha512-Oa44XkaI3kCNN6ME0KByU3xT3SEUNOMfZpHxL6+wFoTm+OeUFYHKdeYVe0aOXlRDm/f15sgLwEt2HDorIdW8+A==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -12544,10 +12562,6 @@ snapshots:
 
   '@dxup/unimport@0.1.2': {}
 
-  '@ecies/ciphers@0.2.5(@noble/ciphers@1.3.0)':
-    dependencies:
-      '@noble/ciphers': 1.3.0
-
   '@ecies/ciphers@0.2.6(@noble/ciphers@1.3.0)':
     dependencies:
       '@noble/ciphers': 1.3.0
@@ -16053,7 +16067,7 @@ snapshots:
 
   '@tanstack/pacer-lite@0.1.1': {}
 
-  '@tanstack/query-core@5.100.1': {}
+  '@tanstack/query-core@5.100.9': {}
 
   '@tanstack/react-form@1.29.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
@@ -16063,9 +16077,9 @@ snapshots:
     transitivePeerDependencies:
       - react-dom
 
-  '@tanstack/react-query@5.100.1(react@19.2.4)':
+  '@tanstack/react-query@5.100.9(react@19.2.4)':
     dependencies:
-      '@tanstack/query-core': 5.100.1
+      '@tanstack/query-core': 5.100.9
       react: 19.2.4
 
   '@tanstack/react-store@0.9.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
@@ -17514,7 +17528,7 @@ snapshots:
 
   eciesjs@0.4.18:
     dependencies:
-      '@ecies/ciphers': 0.2.5(@noble/ciphers@1.3.0)
+      '@ecies/ciphers': 0.2.6(@noble/ciphers@1.3.0)
       '@noble/ciphers': 1.3.0
       '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0

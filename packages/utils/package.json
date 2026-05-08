@@ -31,6 +31,7 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
+    "@noble/hashes": "catalog:prod",
     "date-fns": "catalog:prod",
     "jszip": "catalog:prod"
   },

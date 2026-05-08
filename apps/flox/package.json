@@ -27,6 +27,7 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@tanstack/react-form": "catalog:prod",
     "@tanstack/react-query": "catalog:prod",
     "@volcengine/veplayer": "1.10.0",
     "hls.js": "catalog:prod",
@@ -37,6 +38,7 @@
     "react": "catalog:prod",
     "react-dom": "catalog:prod",
     "sonner": "catalog:prod",
+    "zod": "catalog:prod",
     "zustand": "catalog:prod"
   },
   "devDependencies": {

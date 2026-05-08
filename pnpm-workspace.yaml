@@ -21,14 +21,21 @@ catalogs:
     '@hono/zod-validator': ^0.7.6
     '@libsql/client': ^0.17.3
     '@next/third-parties': 16.2.5
+    '@noble/ciphers': ^2.2.0
+    '@noble/curves': ^2.2.0
+    '@noble/hashes': ^2.2.0
+    '@scure/base': ^2.2.0
+    '@scure/bip32': ^2.2.0
+    '@scure/bip39': ^2.2.0
     '@tanstack/react-form': ^1.29.1
-    '@tanstack/react-query': ^5.100.1
+    '@tanstack/react-query': ^5.100.9
     '@vercel/analytics': ^2.0.1
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
     cmdk: ^1.1.1
     date-fns: ^4.1.0
     drizzle-orm: ^0.45.2
+    eciesjs: ^0.5.0
     'hls.js': ^1.6.16
     hono: ^4.12.16
     jszip: ^3.10.1
