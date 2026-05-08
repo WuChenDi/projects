@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { createJSONStorage, persist } from 'zustand/middleware'
+import { persist } from 'zustand/middleware'
 
 interface UnlockState {
   isUnlocked: boolean
@@ -36,7 +36,6 @@ export const useUnlockStore = create<UnlockState>()(
     }),
     {
       name: 'flox-unlock-state',
-      storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({
         isUnlocked: state.isUnlocked,
         envToken: state.envToken,
