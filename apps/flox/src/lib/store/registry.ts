@@ -14,6 +14,13 @@ export interface StoreEntry {
   reset: () => void
   serialize: () => unknown
   hydrate: (data: unknown) => void
+  /**
+   * When false, the store is excluded from `exportAllStores` /
+   * `importAllStores` — used for session-scoped or sensitive state
+   * (e.g. auth tokens) that should not travel in user backup files.
+   * Reset semantics are unaffected.
+   */
+  includeInBackup: boolean
 }
 
 const registry = new Map<string, StoreEntry>()
@@ -32,13 +39,17 @@ export function resetAllStores(): void {
 
 export function exportAllStores(): Record<string, unknown> {
   const out: Record<string, unknown> = {}
-  for (const entry of registry.values()) out[entry.key] = entry.serialize()
+  for (const entry of registry.values()) {
+    if (entry.includeInBackup) out[entry.key] = entry.serialize()
+  }
   return out
 }
 
 export function importAllStores(data: Record<string, unknown>): void {
   for (const entry of registry.values()) {
-    if (entry.key in data) entry.hydrate(data[entry.key])
+    if (entry.includeInBackup && entry.key in data) {
+      entry.hydrate(data[entry.key])
+    }
   }
 }
 

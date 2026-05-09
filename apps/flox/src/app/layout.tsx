@@ -19,6 +19,9 @@ import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
 import { BackToTop } from '@/components/ui/BackToTop'
 import { WatchLaterSidebar } from '@/components/watch-later/WatchLaterSidebar'
 import { siteConfig } from '@/lib/config/site-config'
+// Side-effect: register every persisted store with the registry so that
+// global ops (reset / export / import) see the full set on any route.
+import '@/lib/store/init'
 
 // Server Component specifically for reading env/file (async for best practices)
 async function AdKeywordsWrapper() {
