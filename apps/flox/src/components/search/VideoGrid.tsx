@@ -3,7 +3,7 @@
 import { cn } from '@cdlab996/ui/lib/utils'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { settingsStore } from '@/lib/store/settings-store'
+import { useSettingsStore } from '@/lib/store/settings-store'
 import type { Video } from '@/lib/types'
 import { VideoCard } from './VideoCard'
 
@@ -25,7 +25,7 @@ export const VideoGrid = memo(function VideoGrid({
 }: VideoGridProps) {
   const [activeCardId, setActiveCardId] = useState<string | null>(null)
   const [visibleCount, setVisibleCount] = useState(24)
-  const [displayMode, setDisplayMode] = useState<'normal' | 'grouped'>('normal')
+  const displayMode = useSettingsStore((s) => s.searchDisplayMode)
 
   const gridRef = useRef<HTMLDivElement>(null)
   const observerRef = useRef<IntersectionObserver | null>(null)
@@ -34,14 +34,13 @@ export const VideoGrid = memo(function VideoGrid({
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    const settings = settingsStore.getSettings()
-    setDisplayMode(settings.searchDisplayMode)
+    const { rememberScrollPosition } = useSettingsStore.getState()
 
     const params = searchParams.toString()
     const scrollKey = `scroll-pos:${pathname}${params ? '?' + params : ''}`
     const savedPos = sessionStorage.getItem(scrollKey)
 
-    if (savedPos && settings.rememberScrollPosition) {
+    if (savedPos && rememberScrollPosition) {
       const position = parseInt(savedPos, 10)
       if (!isNaN(position) && position > 500) {
         const estimatedRowsNeeded = Math.ceil(position / 300) + 2
@@ -65,12 +64,6 @@ export const VideoGrid = memo(function VideoGrid({
         }
       }
     }
-
-    const unsubscribe = settingsStore.subscribe(() => {
-      setDisplayMode(settingsStore.getSettings().searchDisplayMode)
-    })
-
-    return () => unsubscribe()
   }, [pathname, searchParams, videos.length])
 
   const groupedVideos = useMemo(() => {

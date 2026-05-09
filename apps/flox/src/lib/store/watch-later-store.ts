@@ -1,6 +1,5 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import type { WatchLaterItem } from '@/lib/types'
+import { createPersistedStore } from './create-persisted-store'
 
 const MAX_WATCH_LATER = 100
 
@@ -16,61 +15,58 @@ interface WatchLaterActions {
   clearWatchLater: () => void
 }
 
-interface WatchLaterStore extends WatchLaterState, WatchLaterActions {}
+const itemId = (videoId: string | number, source: string) =>
+  `${source}:${videoId}`
 
-function generateId(videoId: string | number, source: string): string {
-  return `${source}:${videoId}`
-}
-
-const createWatchLaterStore = (name: string) =>
-  create<WatchLaterStore>()(
-    persist(
-      (set, get) => ({
-        items: [],
-
-        addToWatchLater: (item) => {
-          const id = generateId(item.videoId, item.source)
-          set((state) => {
-            if (state.items.some((i) => generateId(i.videoId, i.source) === id)) {
-              return state
-            }
-            const newItems = [{ ...item, addedAt: Date.now() }, ...state.items]
-            return { items: newItems.slice(0, MAX_WATCH_LATER) }
-          })
-        },
-
-        removeFromWatchLater: (videoId, source) => {
-          const id = generateId(videoId, source)
-          set((state) => ({
-            items: state.items.filter((i) => generateId(i.videoId, i.source) !== id),
-          }))
-        },
-
-        toggleWatchLater: (item) => {
-          const state = get()
-          const id = generateId(item.videoId, item.source)
-          const exists = state.items.some((i) => generateId(i.videoId, i.source) === id)
-          if (exists) {
-            state.removeFromWatchLater(item.videoId, item.source)
-            return false
+const createWatchLaterStore = (key: string) =>
+  createPersistedStore<WatchLaterState, WatchLaterActions>({
+    key,
+    defaultState: () => ({ items: [] }),
+    actions: (set, get) => ({
+      addToWatchLater: (item) => {
+        const id = itemId(item.videoId, item.source)
+        set((state) => {
+          if (state.items.some((i) => itemId(i.videoId, i.source) === id)) {
+            return state
           }
-          state.addToWatchLater(item)
-          return true
-        },
+          const list = [{ ...item, addedAt: Date.now() }, ...state.items]
+          return { items: list.slice(0, MAX_WATCH_LATER) }
+        })
+      },
 
-        isInWatchLater: (videoId, source) => {
-          const id = generateId(videoId, source)
-          return get().items.some((i) => generateId(i.videoId, i.source) === id)
-        },
+      removeFromWatchLater: (videoId, source) => {
+        const id = itemId(videoId, source)
+        set((state) => ({
+          items: state.items.filter((i) => itemId(i.videoId, i.source) !== id),
+        }))
+      },
 
-        clearWatchLater: () => set({ items: [] }),
-      }),
-      { name },
-    ),
-  )
+      toggleWatchLater: (item) => {
+        const id = itemId(item.videoId, item.source)
+        const exists = get().items.some(
+          (i) => itemId(i.videoId, i.source) === id,
+        )
+        if (exists) {
+          get().removeFromWatchLater(item.videoId, item.source)
+          return false
+        }
+        get().addToWatchLater(item)
+        return true
+      },
 
-export const useWatchLaterStore = createWatchLaterStore('flox-watch-later-store')
-export const usePremiumWatchLaterStore = createWatchLaterStore('flox-premium-watch-later-store')
+      isInWatchLater: (videoId, source) => {
+        const id = itemId(videoId, source)
+        return get().items.some((i) => itemId(i.videoId, i.source) === id)
+      },
+
+      clearWatchLater: () => set({ items: [] }),
+    }),
+  })
+
+export const useWatchLaterStore = createWatchLaterStore('flox:watch-later')
+export const usePremiumWatchLaterStore = createWatchLaterStore(
+  'flox:watch-later:premium',
+)
 
 export function useWatchLater(isPremium = false) {
   const normalStore = useWatchLaterStore()

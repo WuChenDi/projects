@@ -1,7 +1,4 @@
-import type { AppSettings } from './settings-store'
-
-export const SEARCH_HISTORY_KEY = 'flox-search-history'
-export const WATCH_HISTORY_KEY = 'flox-watch-history'
+import { exportAllStores, importAllStores } from './registry'
 
 export const sortOptions = {
   default: '默认排序',
@@ -14,92 +11,54 @@ export const sortOptions = {
   'name-desc': '按名称（Z-A）',
 } as const
 
-export function exportSettings(
-  settings: AppSettings,
-  includeHistory: boolean = true,
-): string {
-  const exportData: Record<string, unknown> = {
-    settings,
-  }
+const HISTORY_KEYS = ['flox:history', 'flox:history:premium']
+const SEARCH_HISTORY_KEYS = [
+  'flox:search-history',
+  'flox:search-history:premium',
+]
 
-  if (includeHistory && typeof window !== 'undefined') {
-    const searchHistory = localStorage.getItem(SEARCH_HISTORY_KEY)
-    const watchHistory = localStorage.getItem(WATCH_HISTORY_KEY)
-
-    if (searchHistory) exportData.searchHistory = JSON.parse(searchHistory)
-    if (watchHistory) exportData.watchHistory = JSON.parse(watchHistory)
-  }
-
-  return JSON.stringify(exportData, null, 2)
+export interface ExportOptions {
+  includeSearchHistory?: boolean
+  includeHistory?: boolean
 }
 
-import {
-  mergeSources,
-  parseSourcesFromJson,
-} from '@/lib/utils/source-import-utils'
+const EXPORT_VERSION = 2
 
-export function importSettings(
-  jsonString: string,
-  saveSettings: (settings: AppSettings) => void,
-  currentSettings?: AppSettings,
-): boolean {
+/**
+ * Serialize every persisted store to a JSON backup string.
+ * History/search-history can be excluded via flags.
+ */
+export function exportSettings(opts: ExportOptions = {}): string {
+  const stores = exportAllStores()
+
+  if (!opts.includeSearchHistory) {
+    for (const k of SEARCH_HISTORY_KEYS) delete stores[k]
+  }
+  if (!opts.includeHistory) {
+    for (const k of HISTORY_KEYS) delete stores[k]
+  }
+
+  return JSON.stringify({ version: EXPORT_VERSION, stores }, null, 2)
+}
+
+/**
+ * Restore stores from a backup string produced by `exportSettings`.
+ * Returns true on success, false if the payload is not a recognized backup.
+ */
+export function importSettings(jsonString: string): boolean {
   try {
     const data = JSON.parse(jsonString)
-    let imported = false
-
-    // Case 1: Full Settings Export
-    if (data.settings && typeof data.settings === 'object') {
-      saveSettings(data.settings)
-      imported = true
+    if (
+      data &&
+      typeof data === 'object' &&
+      data.stores &&
+      typeof data.stores === 'object'
+    ) {
+      importAllStores(data.stores as Record<string, unknown>)
+      return true
     }
-
-    // Case 2: History only (can be independent)
-    if (data.searchHistory && typeof window !== 'undefined') {
-      localStorage.setItem(
-        SEARCH_HISTORY_KEY,
-        JSON.stringify(data.searchHistory),
-      )
-      imported = true
-    }
-    if (data.watchHistory && typeof window !== 'undefined') {
-      localStorage.setItem(WATCH_HISTORY_KEY, JSON.stringify(data.watchHistory))
-      imported = true
-    }
-
-    if (imported) return true
-
-    // Case 3: Source List (Array or Object wrapper)
-    // If we didn't find "settings" key, try to parse the whole thing as sources
-    if (currentSettings) {
-      try {
-        const result = parseSourcesFromJson(jsonString)
-        if (result.totalCount > 0) {
-          const newSettings = { ...currentSettings }
-
-          if (result.normalSources.length > 0) {
-            newSettings.sources = mergeSources(
-              newSettings.sources,
-              result.normalSources,
-            )
-          }
-
-          if (result.premiumSources.length > 0) {
-            newSettings.premiumSources = mergeSources(
-              newSettings.premiumSources,
-              result.premiumSources,
-            )
-          }
-
-          saveSettings(newSettings)
-          return true
-        }
-      } catch (e) {
-        // Not a valid source format either
-      }
-    }
-
-    return false
   } catch {
-    return false
+    // fall through
   }
+  return false
 }

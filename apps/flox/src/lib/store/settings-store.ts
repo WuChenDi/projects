@@ -1,21 +1,18 @@
 /**
- * Settings Store - Manages application settings and preferences
- * Uses zustand/vanilla + persist for reactive, consistent state management.
+ * Settings Store - Application-wide preferences, sources, subscriptions.
+ * zustand hook + persist + actions inlined. State accessed via
+ * `useSettingsStore(selector)` in components, or `useSettingsStore.getState()`
+ * outside React.
  */
 
 import { DEFAULT_SOURCES } from '@/lib/api/default-sources'
 import { PREMIUM_SOURCES } from '@/lib/api/premium-sources'
 import type { SourceSubscription, VideoSource } from '@/lib/types'
-import { createSubscription } from '@/lib/utils/source-import-utils'
-import { createStore } from 'zustand/vanilla'
-import { useStore } from 'zustand'
-import { persist } from 'zustand/middleware'
 import {
-  exportSettings,
-  importSettings,
-  SEARCH_HISTORY_KEY,
-  WATCH_HISTORY_KEY,
-} from './settings-helpers'
+  createSubscription,
+  mergeSources,
+} from '@/lib/utils/source-import-utils'
+import { createPersistedStore } from './create-persisted-store'
 
 export type SortOption =
   | 'default'
@@ -31,8 +28,9 @@ export type SearchDisplayMode = 'normal' | 'grouped'
 export type AdFilterMode = 'off' | 'keyword' | 'heuristic' | 'aggressive'
 export type ProxyMode = 'retry' | 'none' | 'always'
 export type PlayerEngine = 'veplayer' | 'native'
+export type PlayerViewportMode = 'standard' | 'wide' | 'cinema'
 
-export interface AppSettings {
+export interface SettingsState {
   sources: VideoSource[]
   premiumSources: VideoSource[]
   subscriptions: SourceSubscription[]
@@ -54,10 +52,53 @@ export interface AppSettings {
   fullscreenType: 'native' | 'window'
   proxyMode: ProxyMode
   playerEngine: PlayerEngine
+  playerViewportMode: PlayerViewportMode
   rememberScrollPosition: boolean
 }
 
-const SETTINGS_KEY = 'flox-settings'
+export interface SettingsActions {
+  patch: (partial: Partial<SettingsState>) => void
+  replaceAll: (state: SettingsState) => void
+
+  setSortBy: (v: SortOption) => void
+  setSearchDisplayMode: (v: SearchDisplayMode) => void
+  setRealtimeLatency: (v: boolean) => void
+  setRememberScrollPosition: (v: boolean) => void
+  setFullscreenType: (v: 'native' | 'window') => void
+  setProxyMode: (v: ProxyMode) => void
+  setPlayerEngine: (v: PlayerEngine) => void
+  setPlayerViewportMode: (v: PlayerViewportMode) => void
+  setEpisodeReverseOrder: (v: boolean) => void
+
+  setAutoNextEpisode: (v: boolean) => void
+  setAutoSkipIntro: (v: boolean) => void
+  setSkipIntroSeconds: (v: number) => void
+  setAutoSkipOutro: (v: boolean) => void
+  setSkipOutroSeconds: (v: number) => void
+  setShowModeIndicator: (v: boolean) => void
+
+  setAdFilter: (v: boolean) => void
+  /** Sets the ad filter mode and toggles `adFilter` accordingly (off → false, anything else → true). */
+  setAdFilterMode: (v: AdFilterMode) => void
+  setAdKeywords: (v: string[]) => void
+
+  setSources: (v: VideoSource[]) => void
+  setPremiumSources: (v: VideoSource[]) => void
+  mergeImportedSources: (input: {
+    normalSources?: VideoSource[]
+    premiumSources?: VideoSource[]
+  }) => void
+
+  addSubscription: (sub: SourceSubscription) => void
+  removeSubscription: (id: string) => void
+  markSubscriptionRefreshed: (id: string) => void
+  toggleSubscriptionAutoRefresh: (id: string) => void
+  syncEnvSubscriptions: (rawEnvValue: string) => void
+}
+
+export type AppSettings = SettingsState
+
+export const SETTINGS_STORE_KEY = 'flox:settings'
 
 export const getDefaultSources = (): VideoSource[] => DEFAULT_SOURCES
 export const getDefaultPremiumSources = (): VideoSource[] => PREMIUM_SOURCES
@@ -77,16 +118,21 @@ function getEnvSubscriptions(customValue?: string): SourceSubscription[] {
       return raw
         .filter(
           (item: any) =>
-            item && typeof item.name === 'string' && typeof item.url === 'string',
+            item &&
+            typeof item.name === 'string' &&
+            typeof item.url === 'string',
         )
         .map((item: any) => createSubscription(item.name, item.url))
     }
   } catch {
-    // Not JSON, try URL
+    // Not JSON, fall through to URL parsing
   }
 
   if (envValue.includes('http')) {
-    const urls = envValue.split(',').map((u) => u.trim()).filter((u) => u.length > 0)
+    const urls = envValue
+      .split(',')
+      .map((u) => u.trim())
+      .filter((u) => u.length > 0)
     return urls
       .map((url, index) => {
         if (!url.startsWith('http')) return null
@@ -99,7 +145,7 @@ function getEnvSubscriptions(customValue?: string): SourceSubscription[] {
   return []
 }
 
-function getDefaultAppSettings(): AppSettings {
+function getDefaultSettingsState(): SettingsState {
   return {
     sources: getDefaultSources(),
     premiumSources: getDefaultPremiumSources(),
@@ -122,28 +168,32 @@ function getDefaultAppSettings(): AppSettings {
     fullscreenType: 'native',
     proxyMode: 'retry',
     playerEngine: 'veplayer',
+    playerViewportMode: 'standard',
     rememberScrollPosition: true,
   }
 }
 
 /**
- * Validates and merges persisted state with defaults.
- * Called by the persist middleware on hydration.
+ * Validate persisted state against defaults; merge env-provided subscriptions
+ * (re-applied on every hydration so SUBSCRIPTION_SOURCES env var stays authoritative).
  */
-function mergePersistedSettings(persisted: any, defaults: AppSettings): AppSettings {
-  if (!persisted || typeof persisted !== 'object') return defaults
+function mergePersistedSettings(
+  persisted: unknown,
+  defaults: SettingsState,
+): SettingsState {
+  const data = (persisted ?? {}) as Partial<SettingsState> & Record<string, any>
 
   const envSubscriptions = getEnvSubscriptions()
-  const storedSubscriptions: SourceSubscription[] = Array.isArray(persisted.subscriptions)
-    ? persisted.subscriptions
+  const stored: SourceSubscription[] = Array.isArray(data.subscriptions)
+    ? data.subscriptions
     : []
 
-  const mergedSubscriptions = [...storedSubscriptions]
+  const mergedSubscriptions = [...stored]
   envSubscriptions.forEach((envSub) => {
-    const existingIndex = mergedSubscriptions.findIndex((s) => s.url === envSub.url)
-    if (existingIndex > -1) {
-      mergedSubscriptions[existingIndex] = {
-        ...mergedSubscriptions[existingIndex],
+    const i = mergedSubscriptions.findIndex((s) => s.url === envSub.url)
+    if (i > -1) {
+      mergedSubscriptions[i] = {
+        ...mergedSubscriptions[i],
         name: envSub.name,
         autoRefresh: true,
       }
@@ -152,139 +202,156 @@ function mergePersistedSettings(persisted: any, defaults: AppSettings): AppSetti
     }
   })
 
-  const validSources = (
-    Array.isArray(persisted.sources) ? persisted.sources : getDefaultSources()
-  ).filter((s: any) => s && s.id && s.name && s.baseUrl)
-
-  const validPremiumSources = (
-    Array.isArray(persisted.premiumSources) ? persisted.premiumSources : getDefaultPremiumSources()
-  ).filter((s: any) => s && s.id && s.name && s.baseUrl)
+  const isVideoSource = (s: any) => s && s.id && s.name && s.baseUrl
 
   return {
-    sources: validSources,
-    premiumSources: validPremiumSources,
-    subscriptions: mergedSubscriptions.filter((s: any) => s && s.id && s.name && s.url),
-    sortBy: persisted.sortBy || 'default',
-    searchHistory: persisted.searchHistory !== undefined ? persisted.searchHistory : true,
-    watchHistory: persisted.watchHistory !== undefined ? persisted.watchHistory : true,
-    autoNextEpisode: persisted.autoNextEpisode !== undefined ? persisted.autoNextEpisode : true,
-    autoSkipIntro: persisted.autoSkipIntro !== undefined ? persisted.autoSkipIntro : false,
-    skipIntroSeconds: typeof persisted.skipIntroSeconds === 'number' ? persisted.skipIntroSeconds : 30,
-    autoSkipOutro: persisted.autoSkipOutro !== undefined ? persisted.autoSkipOutro : false,
-    skipOutroSeconds: typeof persisted.skipOutroSeconds === 'number' ? persisted.skipOutroSeconds : 60,
-    showModeIndicator: persisted.showModeIndicator !== undefined ? persisted.showModeIndicator : false,
-    adFilter: persisted.adFilter !== undefined ? persisted.adFilter : false,
-    adFilterMode: persisted.adFilterMode || 'heuristic',
-    adKeywords: Array.isArray(persisted.adKeywords) ? persisted.adKeywords : [],
-    realtimeLatency: persisted.realtimeLatency !== undefined ? persisted.realtimeLatency : false,
-    searchDisplayMode: persisted.searchDisplayMode === 'grouped' ? 'grouped' : 'normal',
-    episodeReverseOrder: persisted.episodeReverseOrder !== undefined ? persisted.episodeReverseOrder : false,
-    fullscreenType: persisted.fullscreenType === 'window' ? 'window' : 'native',
+    sources: (Array.isArray(data.sources)
+      ? data.sources
+      : defaults.sources
+    ).filter(isVideoSource),
+    premiumSources: (Array.isArray(data.premiumSources)
+      ? data.premiumSources
+      : defaults.premiumSources
+    ).filter(isVideoSource),
+    subscriptions: mergedSubscriptions.filter(
+      (s: any) => s && s.id && s.name && s.url,
+    ),
+    sortBy: data.sortBy || defaults.sortBy,
+    searchHistory: data.searchHistory ?? defaults.searchHistory,
+    watchHistory: data.watchHistory ?? defaults.watchHistory,
+    autoNextEpisode: data.autoNextEpisode ?? defaults.autoNextEpisode,
+    autoSkipIntro: data.autoSkipIntro ?? defaults.autoSkipIntro,
+    skipIntroSeconds:
+      typeof data.skipIntroSeconds === 'number'
+        ? data.skipIntroSeconds
+        : defaults.skipIntroSeconds,
+    autoSkipOutro: data.autoSkipOutro ?? defaults.autoSkipOutro,
+    skipOutroSeconds:
+      typeof data.skipOutroSeconds === 'number'
+        ? data.skipOutroSeconds
+        : defaults.skipOutroSeconds,
+    showModeIndicator: data.showModeIndicator ?? defaults.showModeIndicator,
+    adFilter: data.adFilter ?? defaults.adFilter,
+    adFilterMode: data.adFilterMode || defaults.adFilterMode,
+    adKeywords: Array.isArray(data.adKeywords)
+      ? data.adKeywords
+      : defaults.adKeywords,
+    realtimeLatency: data.realtimeLatency ?? defaults.realtimeLatency,
+    searchDisplayMode:
+      data.searchDisplayMode === 'grouped' ? 'grouped' : 'normal',
+    episodeReverseOrder:
+      data.episodeReverseOrder ?? defaults.episodeReverseOrder,
+    fullscreenType: data.fullscreenType === 'window' ? 'window' : 'native',
     proxyMode:
-      persisted.proxyMode === 'retry' || persisted.proxyMode === 'none' || persisted.proxyMode === 'always'
-        ? persisted.proxyMode
-        : 'retry',
-    playerEngine: persisted.playerEngine === 'native' ? 'native' : 'veplayer',
+      data.proxyMode === 'retry' ||
+      data.proxyMode === 'none' ||
+      data.proxyMode === 'always'
+        ? data.proxyMode
+        : defaults.proxyMode,
+    playerEngine: data.playerEngine === 'native' ? 'native' : 'veplayer',
+    playerViewportMode:
+      data.playerViewportMode === 'wide' || data.playerViewportMode === 'cinema'
+        ? data.playerViewportMode
+        : 'standard',
     rememberScrollPosition:
-      persisted.rememberScrollPosition !== undefined ? persisted.rememberScrollPosition : true,
+      data.rememberScrollPosition ?? defaults.rememberScrollPosition,
   }
 }
 
-/**
- * Zustand vanilla store with localStorage persistence.
- * Use settingsStore.getSettings() / saveSettings() for access.
- */
-const _store = createStore<AppSettings>()(
-  persist(() => getDefaultAppSettings(), {
-    name: SETTINGS_KEY,
-    merge: (persisted, current) => {
-      try {
-        return mergePersistedSettings(persisted, current)
-      } catch {
-        return current
+export const useSettingsStore = createPersistedStore<
+  SettingsState,
+  SettingsActions
+>({
+  key: SETTINGS_STORE_KEY,
+  defaultState: getDefaultSettingsState,
+  merge: mergePersistedSettings,
+  actions: (set, get) => ({
+    patch: (partial) =>
+      set(partial as Partial<SettingsState & SettingsActions>),
+    replaceAll: (state) =>
+      set(state as Partial<SettingsState & SettingsActions>),
+
+    setSortBy: (v) => set({ sortBy: v }),
+    setSearchDisplayMode: (v) => set({ searchDisplayMode: v }),
+    setRealtimeLatency: (v) => set({ realtimeLatency: v }),
+    setRememberScrollPosition: (v) => set({ rememberScrollPosition: v }),
+    setFullscreenType: (v) => set({ fullscreenType: v }),
+    setProxyMode: (v) => set({ proxyMode: v }),
+    setPlayerEngine: (v) => set({ playerEngine: v }),
+    setPlayerViewportMode: (v) => set({ playerViewportMode: v }),
+    setEpisodeReverseOrder: (v) => set({ episodeReverseOrder: v }),
+
+    setAutoNextEpisode: (v) => set({ autoNextEpisode: v }),
+    setAutoSkipIntro: (v) => set({ autoSkipIntro: v }),
+    setSkipIntroSeconds: (v) => set({ skipIntroSeconds: Math.max(0, v) }),
+    setAutoSkipOutro: (v) => set({ autoSkipOutro: v }),
+    setSkipOutroSeconds: (v) => set({ skipOutroSeconds: Math.max(0, v) }),
+    setShowModeIndicator: (v) => set({ showModeIndicator: v }),
+
+    setAdFilter: (v) => set({ adFilter: v }),
+    setAdFilterMode: (v) => set({ adFilterMode: v, adFilter: v !== 'off' }),
+    setAdKeywords: (v) => set({ adKeywords: v }),
+
+    setSources: (v) => set({ sources: v }),
+    setPremiumSources: (v) => set({ premiumSources: v }),
+    mergeImportedSources: ({ normalSources, premiumSources }) => {
+      const current = get()
+      const next: Partial<SettingsState> = {}
+      if (normalSources?.length) {
+        next.sources = mergeSources(current.sources, normalSources)
+      }
+      if (premiumSources?.length) {
+        next.premiumSources = mergeSources(
+          current.premiumSources,
+          premiumSources,
+        )
+      }
+      if (Object.keys(next).length > 0) {
+        set(next as Partial<SettingsState & SettingsActions>)
       }
     },
-  }),
-)
 
-/**
- * React hook for reactive access to settings in components.
- * Usage: const sortBy = useSettingsStore(s => s.sortBy)
- */
-export const useSettingsStore = <T>(selector: (state: AppSettings) => T): T =>
-  useStore(_store, selector)
+    addSubscription: (sub) =>
+      set((s) => ({ subscriptions: [...s.subscriptions, sub] })),
+    removeSubscription: (id) =>
+      set((s) => ({
+        subscriptions: s.subscriptions.filter((sub) => sub.id !== id),
+      })),
+    markSubscriptionRefreshed: (id) =>
+      set((s) => ({
+        subscriptions: s.subscriptions.map((sub) =>
+          sub.id === id ? { ...sub, lastUpdated: Date.now() } : sub,
+        ),
+      })),
+    toggleSubscriptionAutoRefresh: (id) =>
+      set((s) => ({
+        subscriptions: s.subscriptions.map((sub) =>
+          sub.id === id ? { ...sub, autoRefresh: !sub.autoRefresh } : sub,
+        ),
+      })),
+    syncEnvSubscriptions: (rawEnvValue) => {
+      if (typeof window === 'undefined') return
+      const envSubs = getEnvSubscriptions(rawEnvValue)
+      if (envSubs.length === 0) return
 
-export const settingsStore = {
-  getSettings(): AppSettings {
-    if (typeof window === 'undefined') return getDefaultAppSettings()
-    return _store.getState()
-  },
+      const current = get().subscriptions
+      const merged = [...current]
+      let changed = false
 
-  saveSettings(settings: AppSettings): void {
-    if (typeof window === 'undefined') return
-    _store.setState(settings, true)
-  },
-
-  subscribe(listener: () => void): () => void {
-    return _store.subscribe(listener)
-  },
-
-  exportSettings(includeHistory = true): string {
-    return exportSettings(this.getSettings(), includeHistory)
-  },
-
-  importSettings(jsonString: string): boolean {
-    return importSettings(jsonString, (s) => this.saveSettings(s), this.getSettings())
-  },
-
-  syncEnvSubscriptions(rawEnvValue: string): void {
-    if (typeof window === 'undefined') return
-
-    const currentSettings = this.getSettings()
-    const envSubs = getEnvSubscriptions(rawEnvValue)
-
-    if (envSubs.length === 0) return
-
-    const mergedSubscriptions = [...currentSettings.subscriptions]
-    let changed = false
-
-    envSubs.forEach((envSub) => {
-      const existingIndex = mergedSubscriptions.findIndex((s) => s.url === envSub.url)
-      if (existingIndex > -1) {
-        if (mergedSubscriptions[existingIndex].name !== envSub.name) {
-          mergedSubscriptions[existingIndex] = {
-            ...mergedSubscriptions[existingIndex],
-            name: envSub.name,
-            autoRefresh: true,
+      envSubs.forEach((envSub) => {
+        const i = merged.findIndex((s) => s.url === envSub.url)
+        if (i > -1) {
+          if (merged[i].name !== envSub.name) {
+            merged[i] = { ...merged[i], name: envSub.name, autoRefresh: true }
+            changed = true
           }
+        } else {
+          merged.push(envSub)
           changed = true
         }
-      } else {
-        mergedSubscriptions.push(envSub)
-        changed = true
-      }
-    })
+      })
 
-    if (changed) {
-      this.saveSettings({ ...currentSettings, subscriptions: mergedSubscriptions })
-    }
-  },
-
-  resetToDefaults(): void {
-    if (typeof window === 'undefined') return
-
-    localStorage.removeItem(SETTINGS_KEY)
-    localStorage.removeItem(SEARCH_HISTORY_KEY)
-    localStorage.removeItem(WATCH_HISTORY_KEY)
-
-    document.cookie.split(';').forEach((c) => {
-      document.cookie = c
-        .replace(/^ +/, '')
-        .replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/')
-    })
-
-    if ('caches' in window) {
-      caches.keys().then((names) => names.forEach((name) => caches.delete(name)))
-    }
-  },
-}
+      if (changed) set({ subscriptions: merged })
+    },
+  }),
+})

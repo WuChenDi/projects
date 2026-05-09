@@ -3,7 +3,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { useCallback, useRef, useState } from 'react'
 import type { SortOption } from '@/lib/store/settings-store'
-import { settingsStore } from '@/lib/store/settings-store'
+import { useSettingsStore } from '@/lib/store/settings-store'
 import type { SourceBadge, Video } from '@/lib/types'
 import { processSearchStream } from '@/lib/utils/search-stream'
 import { sortVideos } from '@/lib/utils/sort'
@@ -16,7 +16,11 @@ interface ParallelSearchResult {
   completedSources: number
   totalSources: number
   totalVideosFound: number
-  performSearch: (query: string, sources?: any[], sortBy?: SortOption) => Promise<void>
+  performSearch: (
+    query: string,
+    sources?: any[],
+    sortBy?: SortOption,
+  ) => Promise<void>
   resetSearch: () => void
   loadCachedResults: (results: Video[], sources: any[]) => void
   applySorting: (sortBy: SortOption) => void
@@ -100,12 +104,16 @@ export function useParallelSearch(
   })
 
   const performSearch = useCallback(
-    async (searchQuery: string, sources: any[] = [], sortBy: SortOption = 'default') => {
+    async (
+      searchQuery: string,
+      sources: any[] = [],
+      sortBy: SortOption = 'default',
+    ) => {
       if (!searchQuery.trim()) return
 
       let targetSources = sources
       if (!targetSources.length) {
-        const settings = settingsStore.getSettings()
+        const settings = useSettingsStore.getState()
         targetSources = [
           ...settings.sources,
           ...settings.subscriptions.filter((s) => (s as any).enabled !== false),
@@ -120,7 +128,11 @@ export function useParallelSearch(
       onUrlUpdate(searchQuery)
 
       try {
-        await mutateAsync({ query: searchQuery.trim(), sources: targetSources, sortBy })
+        await mutateAsync({
+          query: searchQuery.trim(),
+          sources: targetSources,
+          sortBy,
+        })
       } catch (error) {
         if (error instanceof Error && error.name !== 'AbortError') {
           console.error('Search error:', error)
@@ -139,11 +151,14 @@ export function useParallelSearch(
     setTotalVideosFound(0)
   }, [])
 
-  const loadCachedResults = useCallback((cachedResults: Video[], cachedSources: any[]) => {
-    setResults(cachedResults)
-    setAvailableSources(cachedSources)
-    setTotalVideosFound(cachedResults.length)
-  }, [])
+  const loadCachedResults = useCallback(
+    (cachedResults: Video[], cachedSources: any[]) => {
+      setResults(cachedResults)
+      setAvailableSources(cachedSources)
+      setTotalVideosFound(cachedResults.length)
+    },
+    [],
+  )
 
   const applySorting = useCallback((sortBy: SortOption) => {
     setResults((current) => sortVideos(current, sortBy))

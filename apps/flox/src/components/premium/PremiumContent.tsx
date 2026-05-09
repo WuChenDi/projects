@@ -1,16 +1,16 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { TagManager } from '@/components/home/TagManager'
 import { InfiniteVideoGrid } from '@/components/search/InfiniteVideoGrid'
 import { usePremiumContent } from '@/lib/hooks/usePremiumContent'
 import { useTagManager } from '@/lib/hooks/useTagManager'
-import { settingsStore } from '@/lib/store/settings-store'
+import { useSettingsStore } from '@/lib/store/settings-store'
 import type { Tag } from '@/lib/types'
 
 async function fetchPremiumTypes(): Promise<Tag[]> {
-  const enabledSources = settingsStore
-    .getSettings()
+  const enabledSources = useSettingsStore
+    .getState()
     .premiumSources.filter((s) => s.enabled)
   const response = await fetch('/api/premium/types', {
     method: 'POST',
@@ -22,10 +22,15 @@ async function fetchPremiumTypes(): Promise<Tag[]> {
 }
 
 export function PremiumContent() {
-  const enabledSources = settingsStore
-    .getSettings()
-    .premiumSources.filter((s) => s.enabled)
-  const sourcesKey = enabledSources.map((s) => s.id).join(',')
+  const premiumSources = useSettingsStore((s) => s.premiumSources)
+  const sourcesKey = useMemo(
+    () =>
+      premiumSources
+        .filter((s) => s.enabled)
+        .map((s) => s.id)
+        .join(','),
+    [premiumSources],
+  )
 
   const {
     tags,
@@ -41,7 +46,7 @@ export function PremiumContent() {
     handleRestoreDefaults,
     handleDragEnd,
   } = useTagManager({
-    storageKey: 'flox_premium_custom_tags',
+    scope: 'premium',
     queryKey: ['premiumTypes', sourcesKey],
     fetchTags: useCallback(() => fetchPremiumTypes(), []),
     defaultSelectedTag: 'recommend',

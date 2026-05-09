@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect } from 'react'
-import { settingsStore } from '@/lib/store/settings-store'
+import { useSettingsStore } from '@/lib/store/settings-store'
 
 /**
  * ScrollPositionManager - Maintains scroll position across navigation and refreshes
@@ -20,8 +20,7 @@ export function ScrollPositionManager() {
 
   // Restoration logic
   useEffect(() => {
-    const settings = settingsStore.getSettings()
-    if (!settings.rememberScrollPosition) return
+    if (!useSettingsStore.getState().rememberScrollPosition) return
 
     const key = getPageKey()
     const savedPos = sessionStorage.getItem(key)
@@ -61,8 +60,7 @@ export function ScrollPositionManager() {
     let timeoutId: NodeJS.Timeout
 
     const handleScroll = () => {
-      const settings = settingsStore.getSettings()
-      if (!settings.rememberScrollPosition) return
+      if (!useSettingsStore.getState().rememberScrollPosition) return
 
       // Debounce saving to avoid excessive writes to sessionStorage
       clearTimeout(timeoutId)

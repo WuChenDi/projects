@@ -7,7 +7,7 @@ import {
   setCachedResolution,
   shouldReuseCachedResolution,
 } from '@/lib/player/resolution-cache'
-import { settingsStore } from '@/lib/store/settings-store'
+import { useSettingsStore } from '@/lib/store/settings-store'
 import type { VideoSource } from '@/lib/types'
 
 export type ResolutionInfo = ResolutionCacheEntry
@@ -31,7 +31,7 @@ function getSourceConfigsForProbe(videos: VideoToProbe[]): VideoSource[] {
   if (typeof window === 'undefined' || videos.length === 0) return []
 
   const configuredSources = new Map<string, VideoSource>()
-  const { sources, premiumSources } = settingsStore.getSettings()
+  const { sources, premiumSources } = useSettingsStore.getState()
 
   ;[...sources, ...premiumSources].forEach((source) => {
     if (source?.id) configuredSources.set(source.id, source)

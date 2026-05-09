@@ -1,11 +1,8 @@
 /**
- * Search History Store using Zustand
- * Manages search query history with localStorage persistence
- * Separate stores for normal and premium modes
+ * Search History Store - Persists recent search queries (normal + premium).
  */
 
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { createPersistedStore } from './create-persisted-store'
 
 const MAX_HISTORY_ITEMS = 20
 
@@ -15,117 +12,82 @@ export interface SearchHistoryItem {
   resultCount?: number
 }
 
-interface SearchHistoryStore {
+interface SearchHistoryState {
   searchHistory: SearchHistoryItem[]
+}
 
-  // Actions
+interface SearchHistoryActions {
   addToSearchHistory: (query: string, resultCount?: number) => void
   removeFromSearchHistory: (query: string) => void
   clearSearchHistory: () => void
   getRecentSearches: (limit?: number) => SearchHistoryItem[]
 }
 
-/**
- * Normalize query for comparison (trim, lowercase)
- */
-function normalizeQuery(query: string): string {
-  return query.trim().toLowerCase()
-}
+const normalizeQuery = (q: string) => q.trim().toLowerCase()
 
-function createSearchHistoryStore(name: string) {
-  return create<SearchHistoryStore>()(
-    persist(
-      (set, get) => ({
-        searchHistory: [],
+const createSearchHistoryStore = (key: string) =>
+  createPersistedStore<SearchHistoryState, SearchHistoryActions>({
+    key,
+    defaultState: () => ({ searchHistory: [] }),
+    actions: (set, get) => ({
+      addToSearchHistory: (query, resultCount) => {
+        const trimmed = query.trim()
+        if (!trimmed) return
+        const normalized = normalizeQuery(trimmed)
+        const timestamp = Date.now()
 
-        addToSearchHistory: (query, resultCount) => {
-          const trimmedQuery = query.trim()
+        set((state) => {
+          const existingIndex = state.searchHistory.findIndex(
+            (item) => normalizeQuery(item.query) === normalized,
+          )
+          let next: SearchHistoryItem[]
 
-          // Don't add empty queries
-          if (!trimmedQuery) return
-
-          const normalized = normalizeQuery(trimmedQuery)
-          const timestamp = Date.now()
-
-          set((state) => {
-            // Check if query already exists (case-insensitive)
-            const existingIndex = state.searchHistory.findIndex(
-              (item) => normalizeQuery(item.query) === normalized,
-            )
-
-            let newHistory: SearchHistoryItem[]
-
-            if (existingIndex !== -1) {
-              // Update existing item and move to top
-              const updatedItem: SearchHistoryItem = {
-                query: trimmedQuery, // Keep original casing from new search
-                timestamp,
-                resultCount,
-              }
-
-              newHistory = [
-                updatedItem,
-                ...state.searchHistory.filter(
-                  (_, index) => index !== existingIndex,
-                ),
-              ]
-            } else {
-              // Add new item at the top
-              const newItem: SearchHistoryItem = {
-                query: trimmedQuery,
-                timestamp,
-                resultCount,
-              }
-
-              newHistory = [newItem, ...state.searchHistory]
+          if (existingIndex !== -1) {
+            const updated: SearchHistoryItem = {
+              query: trimmed,
+              timestamp,
+              resultCount,
             }
+            next = [
+              updated,
+              ...state.searchHistory.filter((_, i) => i !== existingIndex),
+            ]
+          } else {
+            next = [
+              { query: trimmed, timestamp, resultCount },
+              ...state.searchHistory,
+            ]
+          }
 
-            // Trim to max items
-            if (newHistory.length > MAX_HISTORY_ITEMS) {
-              newHistory = newHistory.slice(0, MAX_HISTORY_ITEMS)
-            }
-
-            return { searchHistory: newHistory }
-          })
-        },
-
-        removeFromSearchHistory: (query) => {
-          const normalized = normalizeQuery(query)
-
-          set((state) => ({
-            searchHistory: state.searchHistory.filter(
-              (item) => normalizeQuery(item.query) !== normalized,
-            ),
-          }))
-        },
-
-        clearSearchHistory: () => {
-          set({ searchHistory: [] })
-        },
-
-        getRecentSearches: (limit = 10) => {
-          const history = get().searchHistory
-          return history.slice(0, limit)
-        },
-      }),
-      {
-        name,
-        version: 1,
+          if (next.length > MAX_HISTORY_ITEMS) {
+            next = next.slice(0, MAX_HISTORY_ITEMS)
+          }
+          return { searchHistory: next }
+        })
       },
-    ),
-  )
-}
+
+      removeFromSearchHistory: (query) => {
+        const normalized = normalizeQuery(query)
+        set((state) => ({
+          searchHistory: state.searchHistory.filter(
+            (item) => normalizeQuery(item.query) !== normalized,
+          ),
+        }))
+      },
+
+      clearSearchHistory: () => set({ searchHistory: [] }),
+
+      getRecentSearches: (limit = 10) => get().searchHistory.slice(0, limit),
+    }),
+  })
 
 export const useSearchHistoryStore = createSearchHistoryStore(
-  'flox-search-history',
+  'flox:search-history',
 )
 export const usePremiumSearchHistoryStore = createSearchHistoryStore(
-  'flox-premium-search-history',
+  'flox:search-history:premium',
 )
 
-/**
- * Helper hook to get the appropriate search history store
- */
 export function useSearchHistory(isPremium = false) {
   const normalStore = useSearchHistoryStore()
   const premiumStore = usePremiumSearchHistoryStore()
