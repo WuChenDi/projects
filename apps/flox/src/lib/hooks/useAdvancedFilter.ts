@@ -205,8 +205,8 @@ export function useAdvancedFilter(contentType: 'movie' | 'tv') {
   const { prefetchRef, loadMoreRef } = useInfiniteScroll({
     hasMore,
     loading,
-    page,
-    onLoadMore: (nextPage) => {
+    onLoadMore: () => {
+      const nextPage = page + 1
       setPage(nextPage)
       void loadMovies(filter, nextPage * PAGE_LIMIT, true)
     },
