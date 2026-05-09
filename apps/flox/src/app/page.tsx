@@ -45,51 +45,49 @@ function HomePage() {
   }, [handleReset])
 
   return (
-    <IKPageContainer>
-      <div className="max-w-7xl mx-auto w-full">
-        <div className="my-8 relative">
-          <SearchForm
-            onSearch={handleSearch}
-            onClear={handleReset}
-            isLoading={loading}
-            initialQuery={query}
-            currentSource=""
-            placeholder="搜索电影、电视剧、综艺..."
-            checkedSources={completedSources}
-            totalSources={totalSources}
-            contentType={!hasSearched ? contentType : undefined}
-            onContentTypeChange={!hasSearched ? setContentType : undefined}
-          />
-        </div>
-
-        {/* Results Section */}
-        {(results.length >= 1 || (!loading && results.length > 0)) && (
-          <SearchResults
-            results={results}
-            availableSources={availableSources}
-            loading={loading}
-            latencies={latencies}
-          />
-        )}
-
-        {/* Popular Features - Homepage */}
-        {!loading && !hasSearched && (
-          <PopularFeatures onSearch={handleSearch} contentType={contentType} />
-        )}
-
-        {!loading && hasSearched && results.length === 0 && (
-          <IKEmpty
-            title="未找到相关内容"
-            description="试试其他关键词或检查拼写"
-            icon={Search}
-            iconClassName="size-4 text-muted-foreground"
-          >
-            <Button variant="default" onClick={handleReset} size="lg">
-              返回首页
-            </Button>
-          </IKEmpty>
-        )}
+    <IKPageContainer className="flex-col max-w-7xl mx-auto">
+      <div className="my-8 relative">
+        <SearchForm
+          onSearch={handleSearch}
+          onClear={handleReset}
+          isLoading={loading}
+          initialQuery={query}
+          currentSource=""
+          placeholder="搜索电影、电视剧、综艺..."
+          checkedSources={completedSources}
+          totalSources={totalSources}
+          contentType={!hasSearched ? contentType : undefined}
+          onContentTypeChange={!hasSearched ? setContentType : undefined}
+        />
       </div>
+
+      {/* Results Section */}
+      {(results.length >= 1 || (!loading && results.length > 0)) && (
+        <SearchResults
+          results={results}
+          availableSources={availableSources}
+          loading={loading}
+          latencies={latencies}
+        />
+      )}
+
+      {/* Popular Features - Homepage */}
+      {!loading && !hasSearched && (
+        <PopularFeatures onSearch={handleSearch} contentType={contentType} />
+      )}
+
+      {!loading && hasSearched && results.length === 0 && (
+        <IKEmpty
+          title="未找到相关内容"
+          description="试试其他关键词或检查拼写"
+          icon={Search}
+          iconClassName="size-4 text-muted-foreground"
+        >
+          <Button variant="default" onClick={handleReset} size="lg">
+            返回首页
+          </Button>
+        </IKEmpty>
+      )}
     </IKPageContainer>
   )
 }

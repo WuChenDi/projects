@@ -235,16 +235,14 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
         suppressHydrationWarning
       >
         <ClientProviders>
           <PasswordGate hasEnvPassword={!!process.env.ACCESS_PASSWORD}>
             <AdKeywordsWrapper />
-            <div className="min-h-screen">
-              <Header />
-              {children}
-            </div>
+            <Header />
+            {children}
             <BackToTop />
             <ScrollPositionManager />
             <Suspense fallback={null}>

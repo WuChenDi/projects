@@ -42,47 +42,45 @@ function PremiumHomePage() {
   }, [handleReset])
 
   return (
-    <IKPageContainer>
-      <div className="max-w-7xl mx-auto w-full">
-        <div className="my-8 relative">
-          <SearchForm
-            onSearch={handleSearch}
-            onClear={handleReset}
-            isLoading={loading}
-            initialQuery={query}
-            currentSource=""
-            checkedSources={completedSources}
-            totalSources={totalSources}
-            placeholder="输入关键词开始搜索..."
-            isPremium
-          />
-        </div>
-
-        {(results.length >= 1 || (!loading && results.length > 0)) && (
-          <SearchResults
-            results={results}
-            availableSources={availableSources}
-            loading={loading}
-            isPremium={true}
-            latencies={latencies}
-          />
-        )}
-
-        {!loading && !hasSearched && <PremiumContent />}
-
-        {!loading && hasSearched && results.length === 0 && (
-          <IKEmpty
-            title="未找到相关内容"
-            description="试试其他关键词或检查拼写"
-            icon={Search}
-            iconClassName="size-4 text-muted-foreground"
-          >
-            <Button variant="default" onClick={handleReset} size="lg">
-              返回首页
-            </Button>
-          </IKEmpty>
-        )}
+    <IKPageContainer className="flex-col max-w-7xl mx-auto">
+      <div className="my-8 relative">
+        <SearchForm
+          onSearch={handleSearch}
+          onClear={handleReset}
+          isLoading={loading}
+          initialQuery={query}
+          currentSource=""
+          checkedSources={completedSources}
+          totalSources={totalSources}
+          placeholder="输入关键词开始搜索..."
+          isPremium
+        />
       </div>
+
+      {(results.length >= 1 || (!loading && results.length > 0)) && (
+        <SearchResults
+          results={results}
+          availableSources={availableSources}
+          loading={loading}
+          isPremium={true}
+          latencies={latencies}
+        />
+      )}
+
+      {!loading && !hasSearched && <PremiumContent />}
+
+      {!loading && hasSearched && results.length === 0 && (
+        <IKEmpty
+          title="未找到相关内容"
+          description="试试其他关键词或检查拼写"
+          icon={Search}
+          iconClassName="size-4 text-muted-foreground"
+        >
+          <Button variant="default" onClick={handleReset} size="lg">
+            返回首页
+          </Button>
+        </IKEmpty>
+      )}
     </IKPageContainer>
   )
 }

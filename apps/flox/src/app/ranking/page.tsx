@@ -195,79 +195,77 @@ function RankingPage() {
   const isInitialLoading = loading && movies.length === 0
 
   return (
-    <IKPageContainer>
-      <div className="max-w-7xl mx-auto w-full">
-        <div className="my-6 flex items-center gap-2">
-          <TrophyIcon className="size-5 text-primary" />
-          <h1 className="text-xl font-semibold">豆瓣排行榜</h1>
-          <span className="text-xs text-muted-foreground ml-1">
-            按 90% 评分区间排名
-          </span>
-        </div>
-
-        <div className="sticky top-0 z-10 -mx-4 sm:mx-0 mb-4 px-4 sm:px-0 py-2">
-          <div className="flex flex-wrap gap-2">
-            {RANKING_CATEGORIES.map((cat) => (
-              <Button
-                key={cat.id}
-                variant={selectedCategory.id === cat.id ? 'default' : 'outline'}
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => setSelectedCategory(cat)}
-              >
-                {cat.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {isInitialLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-6 gap-4">
-            {Array.from({ length: 12 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: no unique identifier available
-              <RankingCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : (
-          <div
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-6 gap-4"
-            role="list"
-          >
-            {movies.map((movie, index) => (
-              <RankingCard
-                key={movie.id || index}
-                movie={movie}
-                onMovieClick={handleMovieClick}
-              />
-            ))}
-          </div>
-        )}
-
-        {hasMore && !loading && <div ref={prefetchRef} className="h-1" />}
-
-        {loading && movies.length > 0 && (
-          <div className="flex justify-center py-8">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Spinner className="size-4 text-primary" />
-              加载更多...
-            </div>
-          </div>
-        )}
-
-        {hasMore && !loading && <div ref={loadMoreRef} className="h-20" />}
-
-        {!hasMore && movies.length > 0 && (
-          <IKEmpty title="没有更多内容了" showIcon={false} className="py-12" />
-        )}
-
-        {!loading && movies.length === 0 && (
-          <IKEmpty
-            title="暂无排行数据"
-            icon={TrophyIcon}
-            iconClassName="size-4 text-muted-foreground"
-          />
-        )}
+    <IKPageContainer className="flex-col max-w-7xl mx-auto">
+      <div className="my-6 flex items-center gap-2">
+        <TrophyIcon className="size-5 text-primary" />
+        <h1 className="text-xl font-semibold">豆瓣排行榜</h1>
+        <span className="text-xs text-muted-foreground ml-1">
+          按 90% 评分区间排名
+        </span>
       </div>
+
+      <div className="sticky top-0 z-10 -mx-4 sm:mx-0 mb-4 px-4 sm:px-0 py-2">
+        <div className="flex flex-wrap gap-2">
+          {RANKING_CATEGORIES.map((cat) => (
+            <Button
+              key={cat.id}
+              variant={selectedCategory.id === cat.id ? 'default' : 'outline'}
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => setSelectedCategory(cat)}
+            >
+              {cat.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {isInitialLoading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-6 gap-4">
+          {Array.from({ length: 12 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: no unique identifier available
+            <RankingCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : (
+        <div
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-6 gap-4"
+          role="list"
+        >
+          {movies.map((movie, index) => (
+            <RankingCard
+              key={movie.id || index}
+              movie={movie}
+              onMovieClick={handleMovieClick}
+            />
+          ))}
+        </div>
+      )}
+
+      {hasMore && !loading && <div ref={prefetchRef} className="h-1" />}
+
+      {loading && movies.length > 0 && (
+        <div className="flex justify-center py-8">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Spinner className="size-4 text-primary" />
+            加载更多...
+          </div>
+        </div>
+      )}
+
+      {hasMore && !loading && <div ref={loadMoreRef} className="h-20" />}
+
+      {!hasMore && movies.length > 0 && (
+        <IKEmpty title="没有更多内容了" showIcon={false} className="py-12" />
+      )}
+
+      {!loading && movies.length === 0 && (
+        <IKEmpty
+          title="暂无排行数据"
+          icon={TrophyIcon}
+          iconClassName="size-4 text-muted-foreground"
+        />
+      )}
     </IKPageContainer>
   )
 }
