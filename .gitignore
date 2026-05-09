@@ -91,6 +91,10 @@ web_modules/
 *.tsbuildinfo
 next-env.d.ts
 
+# OSX
+.DS_Store
+.AppleDouble
+.LSOverride
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -103,7 +107,6 @@ out
 apps/*/messages/en.d.json.ts
 
 # Nuxt.js build / generate output
-.DS_Store
 .nitro
 .nuxt
 .output
@@ -151,7 +154,18 @@ open-next.config.ts:Zone.Identifier
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Intellij idea
+*.iml
 .idea
+!.idea/nuxt.iml
+!.idea/modules.xml
+!.idea/inspectionProfiles/Project_Default.xml
+
+# AI config
+.agents
+.claude
+skills-lock.json
 
 ### Node Patch ###
 # Serverless Webpack directories
@@ -168,3 +182,5 @@ open-next.config.ts:Zone.Identifier
 # other
 collect_files.sh
 files_summary*.md
+temp
+tmp
