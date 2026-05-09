@@ -1,6 +1,6 @@
 {
   "name": "@cdlab996/flox",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "private": true,
   "description": "A modern video aggregation and playback platform with multi-source parallel search",
   "author": "wudi <wuchendi96@gmail.com>",
