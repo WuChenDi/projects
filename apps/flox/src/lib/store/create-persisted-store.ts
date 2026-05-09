@@ -22,6 +22,12 @@ export interface PersistedStoreConfig<S extends object, A extends object> {
   partialize?: (state: S) => Partial<S>
   /** Fires once persist middleware finishes rehydrating from storage. */
   onRehydrate?: (state: (S & A) | undefined) => void
+  /**
+   * When false, this store is excluded from `exportAllStores` /
+   * `importAllStores` (e.g. session-scoped auth state). Defaults to true.
+   * Reset semantics are unaffected.
+   */
+  includeInBackup?: boolean
 }
 
 /**
@@ -39,12 +45,6 @@ export function createPersistedStore<S extends object, A extends object>(
     if (config.partialize) {
       return config.partialize(state as unknown as S) as Partial<Store>
     }
-    const out: Record<string, unknown> = {}
-    for (const k of stateKeys) out[k as string] = state[k as keyof Store]
-    return out as Partial<Store>
-  }
-
-  const pickAllState = (state: Store): Partial<Store> => {
     const out: Record<string, unknown> = {}
     for (const k of stateKeys) out[k as string] = state[k as keyof Store]
     return out as Partial<Store>
@@ -81,11 +81,14 @@ export function createPersistedStore<S extends object, A extends object>(
 
   registerStore({
     key: config.key,
+    includeInBackup: config.includeInBackup ?? true,
     reset() {
       useStore.setState(config.defaultState() as Partial<Store>, false)
     },
+    // Mirror the persist `partialize` projection so backups never carry
+    // transient or sensitive fields that were excluded from storage.
     serialize() {
-      return pickAllState(useStore.getState())
+      return pickStateForPersist(useStore.getState())
     },
     hydrate(data) {
       if (data && typeof data === 'object') {

@@ -17,6 +17,10 @@ interface UnlockActions {
 
 export const useUnlockStore = createPersistedStore<UnlockState, UnlockActions>({
   key: 'flox:unlock',
+  // Session-scoped auth state. Reset still wipes it; backups intentionally
+  // skip it so an exported file can't be replayed to bypass the password
+  // gate on another device.
+  includeInBackup: false,
   defaultState: () => ({
     isUnlocked: false,
     envToken: null,
