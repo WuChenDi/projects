@@ -73,7 +73,6 @@ export function usePremiumContent(categoryValue: string) {
   const { prefetchRef, loadMoreRef } = useInfiniteScroll({
     hasMore: !!hasNextPage,
     loading,
-    page: data?.pages.length ?? 0,
     onLoadMore: useCallback(() => fetchNextPage(), [fetchNextPage]),
   })
 

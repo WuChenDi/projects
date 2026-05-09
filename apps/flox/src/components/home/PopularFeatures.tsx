@@ -1,18 +1,14 @@
 /**
  * PopularFeatures - Main component for popular movies section
- * Two browsing modes:
- *   - Tag mode: uses /api/douban/recommend (search_subjects)
- *   - Advanced filter mode: uses /api/douban/filter (new_search_subjects)
+ * Uses /api/douban/recommend (search_subjects) with tag selection.
  */
 
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { InfiniteVideoGrid } from '@/components/search/InfiniteVideoGrid'
-import { useAdvancedFilter } from '@/lib/hooks/useAdvancedFilter'
 import { useTagManager } from '@/lib/hooks/useTagManager'
 import type { Tag, Video } from '@/lib/types'
-import { AdvancedFilter } from './AdvancedFilter'
 import { usePopularMovies } from './hooks/usePopularMovies'
 import { TagManager } from './TagManager'
 
@@ -40,18 +36,12 @@ interface PopularFeaturesProps {
   contentType: 'movie' | 'tv'
 }
 
-export function PopularFeatures({
-  onSearch,
-  contentType,
-}: PopularFeaturesProps) {
-  const [mode, setMode] = useState<'tag' | 'filter'>('tag')
-
+export function PopularFeatures({ contentType }: PopularFeaturesProps) {
   const fetchTags = useCallback(
     () => fetchDoubanTags(contentType),
     [contentType],
   )
 
-  // Tag mode: /api/douban/recommend
   const {
     tags,
     selectedTag,
@@ -73,26 +63,8 @@ export function PopularFeatures({
     supportCustomTags: true,
   })
 
-  const {
-    movies: tagMovies,
-    loading: tagLoading,
-    hasMore: tagHasMore,
-    prefetchRef: tagPrefetchRef,
-    loadMoreRef: tagLoadMoreRef,
-  } = usePopularMovies(selectedTag, tags, contentType)
-
-  // Filter mode: /api/douban/filter
-  const {
-    filter,
-    updateFilter,
-    presets,
-    presetsLoading,
-    movies: filterMovies,
-    loading: filterLoading,
-    hasMore: filterHasMore,
-    prefetchRef: filterPrefetchRef,
-    loadMoreRef: filterLoadMoreRef,
-  } = useAdvancedFilter(contentType)
+  const { movies, loading, hasMore, prefetchRef, loadMoreRef } =
+    usePopularMovies(selectedTag, tags, contentType)
 
   const searchUrlBuilder = useCallback(
     (video: Video) => `/?q=${encodeURIComponent(video.vod_name)}`,
@@ -101,60 +73,38 @@ export function PopularFeatures({
 
   return (
     <div className="animate-fade-in">
-      {mode === 'tag' ? (
-        <>
-          <TagManager
-            tags={tags}
-            selectedTag={selectedTag}
-            showTagManager={showTagManager}
-            newTagInput={newTagInput}
-            isLoadingTags={isLoadingTags}
-            onTagSelect={(tagId) => {
-              if (
-                tagId === 'custom_高级' ||
-                tags.find((t) => t.id === tagId)?.label === '高级'
-              ) {
-                window.location.href = '/premium'
-                return
-              }
-              setSelectedTag(tagId)
-            }}
-            onTagDelete={handleDeleteTag}
-            onToggleManager={() => setShowTagManager(!showTagManager)}
-            onRestoreDefaults={handleRestoreDefaults}
-            onNewTagInputChange={setNewTagInput}
-            onAddTag={handleAddTag}
-            onDragEnd={handleDragEnd}
-          />
+      <TagManager
+        tags={tags}
+        selectedTag={selectedTag}
+        showTagManager={showTagManager}
+        newTagInput={newTagInput}
+        isLoadingTags={isLoadingTags}
+        onTagSelect={(tagId) => {
+          if (
+            tagId === 'custom_高级' ||
+            tags.find((t) => t.id === tagId)?.label === '高级'
+          ) {
+            window.location.href = '/premium'
+            return
+          }
+          setSelectedTag(tagId)
+        }}
+        onTagDelete={handleDeleteTag}
+        onToggleManager={() => setShowTagManager(!showTagManager)}
+        onRestoreDefaults={handleRestoreDefaults}
+        onNewTagInputChange={setNewTagInput}
+        onAddTag={handleAddTag}
+        onDragEnd={handleDragEnd}
+      />
 
-          <InfiniteVideoGrid
-            videos={tagMovies}
-            loading={tagLoading}
-            hasMore={tagHasMore}
-            prefetchRef={tagPrefetchRef}
-            loadMoreRef={tagLoadMoreRef}
-            urlBuilder={searchUrlBuilder}
-          />
-        </>
-      ) : (
-        <>
-          <AdvancedFilter
-            filter={filter}
-            presets={presets}
-            presetsLoading={presetsLoading}
-            onFilterChange={updateFilter}
-          />
-
-          <InfiniteVideoGrid
-            videos={filterMovies}
-            loading={filterLoading}
-            hasMore={filterHasMore}
-            prefetchRef={filterPrefetchRef}
-            loadMoreRef={filterLoadMoreRef}
-            urlBuilder={searchUrlBuilder}
-          />
-        </>
-      )}
+      <InfiniteVideoGrid
+        videos={movies}
+        loading={loading}
+        hasMore={hasMore}
+        prefetchRef={prefetchRef}
+        loadMoreRef={loadMoreRef}
+        urlBuilder={searchUrlBuilder}
+      />
     </div>
   )
 }

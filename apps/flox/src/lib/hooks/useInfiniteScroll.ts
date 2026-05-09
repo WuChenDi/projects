@@ -10,39 +10,38 @@ import { useEffect, useRef } from 'react'
 interface UseInfiniteScrollProps {
   hasMore: boolean
   loading: boolean
-  page: number
-  onLoadMore: (nextPage: number) => void
+  onLoadMore: () => void
 }
 
 export function useInfiniteScroll({
   hasMore,
   loading,
-  page,
   onLoadMore,
 }: UseInfiniteScrollProps) {
   const prefetchRef = useRef<HTMLDivElement>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
+  // Keep latest callback without re-binding the observer each render.
+  const onLoadMoreRef = useRef(onLoadMore)
   useEffect(() => {
-    if (!prefetchRef.current) return
+    onLoadMoreRef.current = onLoadMore
+  })
 
-    const prefetchObserver = new IntersectionObserver(
+  useEffect(() => {
+    const target = prefetchRef.current
+    if (!target || !hasMore || loading) return
+
+    const observer = new IntersectionObserver(
       (entries) => {
-        const target = entries[0]
-        if (target.isIntersecting && hasMore && !loading) {
-          const nextPage = page + 1
-          onLoadMore(nextPage)
-        }
+        if (entries[0].isIntersecting) onLoadMoreRef.current()
       },
-      { threshold: 0.1, rootMargin: '200px' }, // Reduced from 400px to 200px
+      { threshold: 0.1, rootMargin: '200px' },
     )
 
-    prefetchObserver.observe(prefetchRef.current)
+    observer.observe(target)
 
-    return () => {
-      prefetchObserver.disconnect()
-    }
-  }, [hasMore, loading, page, onLoadMore])
+    return () => observer.disconnect()
+  }, [hasMore, loading])
 
   return { prefetchRef, loadMoreRef }
 }

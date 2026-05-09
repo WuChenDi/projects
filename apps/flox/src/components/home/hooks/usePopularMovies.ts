@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { useCallback, useMemo } from 'react'
 import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll'
-import type { Video } from '@/lib/types'
+import type { Tag, Video } from '@/lib/types'
 
 interface DoubanMovie {
   id: string
@@ -15,7 +16,8 @@ function mapToVideo(movie: DoubanMovie): Video {
     vod_id: movie.id,
     vod_name: movie.title,
     vod_pic: movie.cover,
-    vod_remarks: movie.rate && parseFloat(movie.rate) > 0 ? `⭐ ${movie.rate}` : undefined,
+    vod_remarks:
+      movie.rate && parseFloat(movie.rate) > 0 ? `⭐ ${movie.rate}` : undefined,
     source: 'douban',
     sourceName: '豆瓣',
   }
@@ -25,66 +27,46 @@ const PAGE_LIMIT = 20
 
 export function usePopularMovies(
   selectedTag: string,
-  tags: any[],
+  tags: Tag[],
   contentType: 'movie' | 'tv' = 'movie',
 ) {
-  const [movies, setMovies] = useState<Video[]>([])
-  const [loading, setLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
-  const [page, setPage] = useState(0)
-  const loadingRef = useRef(false)
+  // Resolve to a stable string so unrelated `tags` reference changes
+  // don't cause an unnecessary re-fetch.
+  const tagValue = tags.find((t) => t.id === selectedTag)?.value || '热门'
 
-  const loadMovies = useCallback(
-    async (tag: string, pageStart: number, append = false) => {
-      if (loadingRef.current) return
-
-      loadingRef.current = true
-      setLoading(true)
-      try {
-        const tagValue = tags.find((t) => t.id === tag)?.value || '热门'
-        const response = await fetch(
-          `/api/douban/recommend?type=${contentType}&tag=${encodeURIComponent(tagValue)}&page_limit=${PAGE_LIMIT}&page_start=${pageStart}`,
+  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } =
+    useInfiniteQuery({
+      queryKey: ['popularMovies', contentType, tagValue],
+      queryFn: async ({ pageParam, signal }) => {
+        const res = await fetch(
+          `/api/douban/recommend?type=${contentType}&tag=${encodeURIComponent(tagValue)}&page_limit=${PAGE_LIMIT}&page_start=${pageParam}`,
+          { signal },
         )
+        if (!res.ok) throw new Error('Failed to fetch')
+        const json = await res.json()
+        return ((json.subjects ?? []) as DoubanMovie[]).map(mapToVideo)
+      },
+      initialPageParam: 0,
+      getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+        lastPage.length === PAGE_LIMIT
+          ? (lastPageParam as number) + PAGE_LIMIT
+          : undefined,
+      staleTime: 5 * 60 * 1000,
+    })
 
-        if (!response.ok) throw new Error('Failed to fetch')
-
-        const data = await response.json()
-        const newMovies = (data.subjects || []).map(mapToVideo)
-
-        setMovies((prev) => (append ? [...prev, ...newMovies] : newMovies))
-        setHasMore(newMovies.length === PAGE_LIMIT)
-      } catch (error) {
-        console.error('Failed to load movies:', error)
-        setHasMore(false)
-      } finally {
-        loadingRef.current = false
-        setLoading(false)
-      }
-    },
-    [tags, contentType],
-  )
-
-  useEffect(() => {
-    setPage(0)
-    setMovies([])
-    setHasMore(true)
-    void loadMovies(selectedTag, 0, false)
-  }, [selectedTag, loadMovies])
+  const movies = useMemo(() => data?.pages.flat() ?? [], [data?.pages])
+  const loading = isLoading || isFetchingNextPage
 
   const { prefetchRef, loadMoreRef } = useInfiniteScroll({
-    hasMore,
+    hasMore: !!hasNextPage,
     loading,
-    page,
-    onLoadMore: (nextPage) => {
-      setPage(nextPage)
-      void loadMovies(selectedTag, nextPage * PAGE_LIMIT, true)
-    },
+    onLoadMore: useCallback(() => fetchNextPage(), [fetchNextPage]),
   })
 
   return {
     movies,
     loading,
-    hasMore,
+    hasMore: !!hasNextPage,
     prefetchRef,
     loadMoreRef,
   }

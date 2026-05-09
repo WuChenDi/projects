@@ -1,7 +1,12 @@
 import type { DragEndEvent } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
+import { useCallback, useMemo, useState } from 'react'
 import type { Tag } from '@/lib/types'
 
 interface UseTagManagerOptions {
@@ -24,6 +29,7 @@ interface UseTagManagerOptions {
  * Preserves user's custom ordering while picking up new tags from API.
  */
 function mergeWithSavedOrder(apiTags: Tag[], storageKey: string): Tag[] {
+  if (typeof window === 'undefined') return apiTags
   const savedJson = localStorage.getItem(storageKey)
   if (!savedJson) return apiTags
 
@@ -65,37 +71,46 @@ export function useTagManager({
   const [selectedTag, setSelectedTag] = useState(defaultSelectedTag)
   const [showTagManager, setShowTagManager] = useState(false)
   const [newTagInput, setNewTagInput] = useState('')
-  const [tags, setTags] = useState<Tag[]>([])
 
   const queryClient = useQueryClient()
 
-  const { data: fetchedTags, isLoading } = useQuery({
+  const { data: rawTags, isLoading } = useQuery({
     queryKey,
     queryFn: fetchTags,
     staleTime,
-    select: (data) => mergeWithSavedOrder(data, storageKey),
+    placeholderData: keepPreviousData,
   })
 
-  useEffect(() => {
-    if (fetchedTags) setTags(fetchedTags)
-  }, [fetchedTags])
+  // Merge API tags with the storageKey-specific saved order on every render.
+  // Cheap (O(n)) and always reflects the current storageKey, so switching
+  // contentType immediately shows the right tags without a sync useEffect.
+  const tags = useMemo(
+    () => (rawTags ? mergeWithSavedOrder(rawTags, storageKey) : []),
+    [rawTags, storageKey],
+  )
 
-  // Persist tag order to localStorage when it changes
-  useEffect(() => {
-    if (tags.length > 0 && !isLoading) {
-      localStorage.setItem(storageKey, JSON.stringify(tags))
-    }
-  }, [tags, isLoading, storageKey])
+  const writeOrder = useCallback(
+    (next: Tag[]) => {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(storageKey, JSON.stringify(next))
+      }
+      // Push the user-modified list into the cache so the UI re-renders
+      // and future reads stay consistent.
+      queryClient.setQueryData(queryKey, next)
+    },
+    [storageKey, queryClient, queryKey],
+  )
 
   const { mutate: restoreDefaults, isPending: isRestoring } = useMutation({
     mutationFn: async () => {
-      localStorage.removeItem(storageKey)
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(storageKey)
+      }
       return fetchTags()
     },
     onSuccess: (defaultTags) => {
-      setTags(defaultTags)
+      queryClient.setQueryData(queryKey, defaultTags)
       setSelectedTag(defaultSelectedTag)
-      queryClient.invalidateQueries({ queryKey })
     },
   })
 
@@ -106,28 +121,24 @@ export function useTagManager({
       label: newTagInput.trim(),
       value: newTagInput.trim(),
     }
-    setTags((prev) => [...prev, newTag])
+    writeOrder([...tags, newTag])
     setNewTagInput('')
   }
 
   const handleDeleteTag = (tagId: string) => {
-    setTags((prev) => {
-      const updated = prev.filter((t) => t.id !== tagId)
-      if (selectedTag === tagId) {
-        setSelectedTag(updated[0]?.id || defaultSelectedTag)
-      }
-      return updated
-    })
+    const updated = tags.filter((t) => t.id !== tagId)
+    if (selectedTag === tagId) {
+      setSelectedTag(updated[0]?.id || defaultSelectedTag)
+    }
+    writeOrder(updated)
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
     if (over && active.id !== over.id) {
-      setTags((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id)
-        const newIndex = items.findIndex((item) => item.id === over.id)
-        return arrayMove(items, oldIndex, newIndex)
-      })
+      const oldIndex = tags.findIndex((item) => item.id === active.id)
+      const newIndex = tags.findIndex((item) => item.id === over.id)
+      writeOrder(arrayMove(tags, oldIndex, newIndex))
     }
   }
 

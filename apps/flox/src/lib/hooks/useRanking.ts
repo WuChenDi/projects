@@ -96,8 +96,8 @@ export function useRanking() {
   const { prefetchRef, loadMoreRef } = useInfiniteScroll({
     hasMore,
     loading,
-    page,
-    onLoadMore: (nextPage) => {
+    onLoadMore: () => {
+      const nextPage = page + 1
       setPage(nextPage)
       void loadMovies(selectedCategory.typeId, nextPage * PAGE_LIMIT, true)
     },
