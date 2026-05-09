@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   getDefaultPremiumSources,
   getDefaultSources,
-  settingsStore,
+  useSettingsStore,
 } from '@/lib/store/settings-store'
 import type { VideoSource } from '@/lib/types'
 
@@ -13,33 +13,20 @@ interface UseSourceSettingsOptions {
 export function useSourceSettings({
   isPremium = false,
 }: UseSourceSettingsOptions = {}) {
-  const [sources, setSources] = useState<VideoSource[]>([])
+  const sources = useSettingsStore((s) =>
+    isPremium ? s.premiumSources : s.sources,
+  )
+  const setSources = useSettingsStore((s) => s.setSources)
+  const setPremiumSources = useSettingsStore((s) => s.setPremiumSources)
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isRestoreDefaultsDialogOpen, setIsRestoreDefaultsDialogOpen] =
     useState(false)
   const [editingSource, setEditingSource] = useState<VideoSource | null>(null)
 
-  useEffect(() => {
-    const settings = settingsStore.getSettings()
-    setSources(
-      isPremium ? settings.premiumSources || [] : settings.sources || [],
-    )
-  }, [isPremium])
-
-  const handleSourcesChange = (newSources: VideoSource[]) => {
-    setSources(newSources)
-    const currentSettings = settingsStore.getSettings()
-    if (isPremium) {
-      settingsStore.saveSettings({
-        ...currentSettings,
-        premiumSources: newSources,
-      })
-    } else {
-      settingsStore.saveSettings({
-        ...currentSettings,
-        sources: newSources,
-      })
-    }
+  const handleSourcesChange = (next: VideoSource[]) => {
+    if (isPremium) setPremiumSources(next)
+    else setSources(next)
   }
 
   const handleAddSource = (source: VideoSource) => {
@@ -57,8 +44,9 @@ export function useSourceSettings({
   }
 
   const handleRestoreDefaults = () => {
-    const defaults = isPremium ? getDefaultPremiumSources() : getDefaultSources()
-    handleSourcesChange(defaults)
+    handleSourcesChange(
+      isPremium ? getDefaultPremiumSources() : getDefaultSources(),
+    )
     setIsRestoreDefaultsDialogOpen(false)
   }
 

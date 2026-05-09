@@ -22,7 +22,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import * as z from 'zod'
 import { useSubscriptionSync } from '@/lib/hooks/useSubscriptionSync'
-import { settingsStore } from '@/lib/store/settings-store'
+import { useSettingsStore } from '@/lib/store/settings-store'
 import { useUnlockStore } from '@/lib/store/unlock-store'
 
 const passwordSchema = z.object({
@@ -80,9 +80,9 @@ export function PasswordGate({
     queryFn: async () => {
       const data = await fetchConfig()
       if (data.subscriptionSources) {
-        settingsStore.syncEnvSubscriptions(
-          JSON.stringify(data.subscriptionSources),
-        )
+        useSettingsStore
+          .getState()
+          .syncEnvSubscriptions(JSON.stringify(data.subscriptionSources))
       }
       return data
     },

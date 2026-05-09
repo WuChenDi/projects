@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { settingsStore } from '@/lib/store/settings-store'
+import { useSettingsStore } from '@/lib/store/settings-store'
 
 const VIDEO_EXTENSIONS = [
   '.m3u8',
@@ -23,10 +23,7 @@ function isVideoUrl(url: string): boolean {
   }
 }
 
-function resolveEpisodeUrl(episode: {
-  name?: string
-  url: string
-}): string {
+function resolveEpisodeUrl(episode: { name?: string; url: string }): string {
   if (episode.url) return episode.url
   if (episode.name && isVideoUrl(episode.name)) return episode.name
   return ''
@@ -61,7 +58,7 @@ async function fetchVideoDetail(
   videoId: string,
   source: string,
 ): Promise<VideoData> {
-  const settings = settingsStore.getSettings()
+  const settings = useSettingsStore.getState()
   const allSources = [
     ...settings.sources,
     ...settings.premiumSources,

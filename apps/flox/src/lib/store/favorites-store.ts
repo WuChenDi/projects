@@ -1,11 +1,9 @@
 /**
- * Favorites Store - Manages user's favorite videos
- * Uses Zustand with localStorage persistence
+ * Favorites Store - Manages user's favorite videos.
  */
 
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import type { FavoriteItem } from '@/lib/types'
+import { createPersistedStore } from './create-persisted-store'
 
 const MAX_FAVORITES = 100
 
@@ -22,108 +20,69 @@ interface FavoritesActions {
   importFavorites: (favorites: FavoriteItem[]) => void
 }
 
-interface FavoritesStore extends FavoritesState, FavoritesActions {}
-
-/**
- * Generate unique identifier for a favorite item
- */
-function generateFavoriteId(videoId: string | number, source: string): string {
+function favoriteId(videoId: string | number, source: string): string {
   return `${source}:${videoId}`
 }
 
-const createFavoritesStore = (name: string) =>
-  create<FavoritesStore>()(
-    persist(
-      (set, get) => ({
-        favorites: [],
-
-        addFavorite: (item) => {
-          const favoriteId = generateFavoriteId(item.videoId, item.source)
-
-          set((state) => {
-            // Check if already exists
-            const exists = state.favorites.some(
-              (fav) =>
-                generateFavoriteId(fav.videoId, fav.source) === favoriteId,
-            )
-
-            if (exists) {
-              return state
-            }
-
-            const newFavorite: FavoriteItem = {
-              ...item,
-              addedAt: Date.now(),
-            }
-
-            let newFavorites = [newFavorite, ...state.favorites]
-
-            // Limit favorites size
-            if (newFavorites.length > MAX_FAVORITES) {
-              newFavorites = newFavorites.slice(0, MAX_FAVORITES)
-            }
-
-            return { favorites: newFavorites }
-          })
-        },
-
-        removeFavorite: (videoId, source) => {
-          const favoriteId = generateFavoriteId(videoId, source)
-
-          set((state) => ({
-            favorites: state.favorites.filter(
-              (fav) =>
-                generateFavoriteId(fav.videoId, fav.source) !== favoriteId,
-            ),
-          }))
-        },
-
-        toggleFavorite: (item) => {
-          const state = get()
-          const favoriteId = generateFavoriteId(item.videoId, item.source)
-          const exists = state.favorites.some(
-            (fav) => generateFavoriteId(fav.videoId, fav.source) === favoriteId,
-          )
-
-          if (exists) {
-            state.removeFavorite(item.videoId, item.source)
-            return false
-          } else {
-            state.addFavorite(item)
-            return true
+const createFavoritesStore = (key: string) =>
+  createPersistedStore<FavoritesState, FavoritesActions>({
+    key,
+    defaultState: () => ({ favorites: [] }),
+    actions: (set, get) => ({
+      addFavorite: (item) => {
+        const id = favoriteId(item.videoId, item.source)
+        set((state) => {
+          if (
+            state.favorites.some((f) => favoriteId(f.videoId, f.source) === id)
+          ) {
+            return state
           }
-        },
-
-        isFavorite: (videoId, source) => {
-          const state = get()
-          const favoriteId = generateFavoriteId(videoId, source)
-          return state.favorites.some(
-            (fav) => generateFavoriteId(fav.videoId, fav.source) === favoriteId,
-          )
-        },
-
-        clearFavorites: () => {
-          set({ favorites: [] })
-        },
-
-        importFavorites: (favorites) => {
-          set({ favorites })
-        },
-      }),
-      {
-        name,
+          const next: FavoriteItem = { ...item, addedAt: Date.now() }
+          let list = [next, ...state.favorites]
+          if (list.length > MAX_FAVORITES) list = list.slice(0, MAX_FAVORITES)
+          return { favorites: list }
+        })
       },
-    ),
-  )
 
-export const useFavoritesStore = createFavoritesStore('flox-favorites-store')
+      removeFavorite: (videoId, source) => {
+        const id = favoriteId(videoId, source)
+        set((state) => ({
+          favorites: state.favorites.filter(
+            (f) => favoriteId(f.videoId, f.source) !== id,
+          ),
+        }))
+      },
+
+      toggleFavorite: (item) => {
+        const id = favoriteId(item.videoId, item.source)
+        const exists = get().favorites.some(
+          (f) => favoriteId(f.videoId, f.source) === id,
+        )
+        if (exists) {
+          get().removeFavorite(item.videoId, item.source)
+          return false
+        }
+        get().addFavorite(item)
+        return true
+      },
+
+      isFavorite: (videoId, source) => {
+        const id = favoriteId(videoId, source)
+        return get().favorites.some(
+          (f) => favoriteId(f.videoId, f.source) === id,
+        )
+      },
+
+      clearFavorites: () => set({ favorites: [] }),
+      importFavorites: (favorites) => set({ favorites }),
+    }),
+  })
+
+export const useFavoritesStore = createFavoritesStore('flox:favorites')
 export const usePremiumFavoritesStore = createFavoritesStore(
-  'flox-premium-favorites-store',
+  'flox:favorites:premium',
 )
 
-/**
- * Helper hook to get the appropriate favorites store
- */
 export function useFavorites(isPremium = false) {
   const normalStore = useFavoritesStore()
   const premiumStore = usePremiumFavoritesStore()

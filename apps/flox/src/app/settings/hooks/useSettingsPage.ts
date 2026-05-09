@@ -1,19 +1,13 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { useSourceSettings } from '@/lib/hooks/useSourceSettings'
-import type {
-  AdFilterMode,
-  PlayerEngine,
-  ProxyMode,
-  SearchDisplayMode,
-  SortOption,
-} from '@/lib/store/settings-store'
-import { settingsStore } from '@/lib/store/settings-store'
+import { clearAppCaches, resetAllStores } from '@/lib/store/registry'
+import { exportSettings, importSettings } from '@/lib/store/settings-helpers'
+import { useSettingsStore } from '@/lib/store/settings-store'
 import type { SourceSubscription } from '@/lib/types'
 import type { ImportResult } from '@/lib/utils/source-import-utils'
 import {
   fetchSourcesFromUrl,
-  mergeSources,
   parseSourcesFromJson,
 } from '@/lib/utils/source-import-utils'
 
@@ -38,66 +32,60 @@ export function useSettingsPage({
     handleRestoreDefaults,
   } = useSourceSettings({ isPremium })
 
-  const [subscriptions, setSubscriptions] = useState<SourceSubscription[]>([])
-  const [sortBy, setSortBy] = useState<SortOption>('default')
+  const subscriptions = useSettingsStore((s) => s.subscriptions)
+  const sortBy = useSettingsStore((s) => s.sortBy)
+  const realtimeLatency = useSettingsStore((s) => s.realtimeLatency)
+  const searchDisplayMode = useSettingsStore((s) => s.searchDisplayMode)
+  const fullscreenType = useSettingsStore((s) => s.fullscreenType)
+  const proxyMode = useSettingsStore((s) => s.proxyMode)
+  const playerEngine = useSettingsStore((s) => s.playerEngine)
+  const rememberScrollPosition = useSettingsStore(
+    (s) => s.rememberScrollPosition,
+  )
+  const adFilterMode = useSettingsStore((s) => s.adFilterMode)
+  const adKeywords = useSettingsStore((s) => s.adKeywords)
+
+  const setSortBy = useSettingsStore((s) => s.setSortBy)
+  const setRealtimeLatency = useSettingsStore((s) => s.setRealtimeLatency)
+  const setSearchDisplayMode = useSettingsStore((s) => s.setSearchDisplayMode)
+  const setFullscreenType = useSettingsStore((s) => s.setFullscreenType)
+  const setProxyMode = useSettingsStore((s) => s.setProxyMode)
+  const setPlayerEngine = useSettingsStore((s) => s.setPlayerEngine)
+  const setRememberScrollPosition = useSettingsStore(
+    (s) => s.setRememberScrollPosition,
+  )
+  const setAdFilterMode = useSettingsStore((s) => s.setAdFilterMode)
+  const setAdKeywords = useSettingsStore((s) => s.setAdKeywords)
+  const addSubscription = useSettingsStore((s) => s.addSubscription)
+  const removeSubscription = useSettingsStore((s) => s.removeSubscription)
+  const markSubscriptionRefreshed = useSettingsStore(
+    (s) => s.markSubscriptionRefreshed,
+  )
+  const toggleSubscriptionAutoRefresh = useSettingsStore(
+    (s) => s.toggleSubscriptionAutoRefresh,
+  )
+  const mergeImportedSources = useSettingsStore((s) => s.mergeImportedSources)
+
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
-
   const [envPasswordSet, setEnvPasswordSet] = useState(false)
 
-  // Display settings
-  const [realtimeLatency, setRealtimeLatency] = useState(false)
-  const [searchDisplayMode, setSearchDisplayMode] =
-    useState<SearchDisplayMode>('normal')
-  const [fullscreenType, setFullscreenType] = useState<'native' | 'window'>(
-    'native',
-  )
-  const [proxyMode, setProxyMode] = useState<ProxyMode>('retry')
-  const [playerEngine, setPlayerEngine] = useState<PlayerEngine>('veplayer')
-  const [rememberScrollPosition, setRememberScrollPosition] = useState(true)
-  const [adFilterMode, setAdFilterMode] = useState<AdFilterMode>('heuristic')
-  const [adKeywords, setAdKeywords] = useState<string[]>([])
-
   useEffect(() => {
-    const settings = settingsStore.getSettings()
-    setSubscriptions(settings.subscriptions || [])
-    setSortBy(settings.sortBy)
-    setRealtimeLatency(settings.realtimeLatency)
-    setSearchDisplayMode(settings.searchDisplayMode)
-    setFullscreenType(settings.fullscreenType)
-    setProxyMode(settings.proxyMode)
-    setPlayerEngine(settings.playerEngine)
-    setRememberScrollPosition(settings.rememberScrollPosition)
-    setAdFilterMode(settings.adFilterMode)
-    setAdKeywords(settings.adKeywords)
-
-    // Fetch env password status
     fetch('/api/config')
       .then((res) => res.json())
       .then((data) => setEnvPasswordSet(data.hasEnvPassword))
       .catch(() => setEnvPasswordSet(false))
   }, [])
 
-  const handleSortChange = (newSort: SortOption) => {
-    setSortBy(newSort)
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      sources,
-      sortBy: newSort,
-      searchHistory: true,
-      watchHistory: true,
-    })
-  }
-
   const handleExport = (
     includeSearchHistory: boolean,
     includeWatchHistory: boolean,
   ) => {
-    const data = settingsStore.exportSettings(
-      includeSearchHistory || includeWatchHistory,
-    )
+    const data = exportSettings({
+      includeSearchHistory,
+      includeHistory: includeWatchHistory,
+    })
     const blob = new Blob([data], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -107,26 +95,35 @@ export function useSettingsPage({
     URL.revokeObjectURL(url)
   }
 
+  const handleImportLink = (
+    result: ImportResult,
+    isSync: boolean = false,
+  ): boolean => {
+    try {
+      mergeImportedSources({
+        normalSources: result.normalSources,
+        premiumSources: result.premiumSources,
+      })
+      if (!isSync) {
+        setTimeout(() => window.location.reload(), 1000)
+      }
+      return true
+    } catch (e) {
+      console.error('Import error:', e)
+      return false
+    }
+  }
+
   const handleImportFile = (jsonString: string): boolean => {
-    // 1. Try to import as full settings backup
-    const asBackupSuccess = settingsStore.importSettings(jsonString)
-    if (asBackupSuccess) {
-      const settings = settingsStore.getSettings()
-      handleSourcesChange(settings.sources)
-      setSortBy(settings.sortBy)
-      setSubscriptions(settings.subscriptions || [])
-
-      // Reload to apply changes
+    if (importSettings(jsonString)) {
       setTimeout(() => window.location.reload(), 1000)
-
       return true
     }
 
-    // 2. Try to import as source list (JSON format)
     try {
       const result = parseSourcesFromJson(jsonString)
       if (result.totalCount > 0) {
-        return handleImportLink(result, false) // Reuse link import logic
+        return handleImportLink(result, false)
       }
     } catch {
       return false
@@ -135,63 +132,13 @@ export function useSettingsPage({
     return false
   }
 
-  const handleImportLink = (
-    result: ImportResult,
-    isSync: boolean = false,
-  ): boolean => {
-    try {
-      // Merge normal sources
-      let updatedSources = mergeSources(sources, result.normalSources)
-
-      // Merge premium sources if needed
-      const currentSettings = settingsStore.getSettings()
-      let updatedPremiumSources = mergeSources(
-        currentSettings.premiumSources,
-        result.premiumSources,
-      )
-
-      // Save everything
-      settingsStore.saveSettings({
-        ...currentSettings,
-        sources: updatedSources,
-        premiumSources: updatedPremiumSources,
-      })
-
-      handleSourcesChange(updatedSources) // Update local state
-
-      // If strictly creating/editing subscription, we don't reload page usually, but here we might want to refresh UI
-      if (!isSync) {
-        setTimeout(() => window.location.reload(), 1000)
-      }
-
-      return true
-    } catch (e) {
-      console.error('Import error:', e)
-      return false
-    }
-  }
-
-  // Subscription Handlers
   const handleAddSubscription = async (
     sub: SourceSubscription,
   ): Promise<boolean> => {
-    // Verify we can fetch it
     try {
       const result = await fetchSourcesFromUrl(sub.url)
-
-      // Import the content
       handleImportLink(result, true)
-
-      // Add subscription to store
-      const newSubscriptions = [...subscriptions, sub]
-      setSubscriptions(newSubscriptions)
-
-      const currentSettings = settingsStore.getSettings()
-      settingsStore.saveSettings({
-        ...currentSettings,
-        subscriptions: newSubscriptions,
-      })
-
+      addSubscription(sub)
       return true
     } catch (e) {
       console.error(e)
@@ -199,126 +146,20 @@ export function useSettingsPage({
     }
   }
 
-  const handleRemoveSubscription = (id: string) => {
-    const newSubscriptions = subscriptions.filter((s) => s.id !== id)
-    setSubscriptions(newSubscriptions)
-
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      subscriptions: newSubscriptions,
-    })
-  }
-
   const handleRefreshSubscription = async (sub: SourceSubscription) => {
     try {
       const result = await fetchSourcesFromUrl(sub.url)
       handleImportLink(result, true)
-
-      const updatedSubscriptions = subscriptions.map((s) =>
-        s.id === sub.id ? { ...s, lastUpdated: Date.now() } : s,
-      )
-      setSubscriptions(updatedSubscriptions)
-
-      const currentSettings = settingsStore.getSettings()
-      settingsStore.saveSettings({
-        ...currentSettings,
-        subscriptions: updatedSubscriptions,
-      })
-
+      markSubscriptionRefreshed(sub.id)
       toast.success(`「${sub.name}」更新成功，共 ${result.totalCount} 个源`)
     } catch {
       toast.error(`「${sub.name}」更新失败，请检查链接是否有效`)
     }
   }
 
-  const handleToggleAutoRefresh = (id: string) => {
-    const updatedSubscriptions = subscriptions.map((s) =>
-      s.id === id ? { ...s, autoRefresh: !s.autoRefresh } : s,
-    )
-    setSubscriptions(updatedSubscriptions)
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      subscriptions: updatedSubscriptions,
-    })
-  }
-
-  const handleRealtimeLatencyChange = (enabled: boolean) => {
-    setRealtimeLatency(enabled)
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      realtimeLatency: enabled,
-    })
-  }
-
-  const handleSearchDisplayModeChange = (mode: SearchDisplayMode) => {
-    setSearchDisplayMode(mode)
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      searchDisplayMode: mode,
-    })
-  }
-
-  const handleFullscreenTypeChange = (type: 'native' | 'window') => {
-    setFullscreenType(type)
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      fullscreenType: type,
-    })
-  }
-
-  const handleProxyModeChange = (mode: ProxyMode) => {
-    setProxyMode(mode)
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      proxyMode: mode,
-    })
-  }
-
-  const handlePlayerEngineChange = (engine: PlayerEngine) => {
-    setPlayerEngine(engine)
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      playerEngine: engine,
-    })
-  }
-
-  const handleRememberScrollPositionChange = (enabled: boolean) => {
-    setRememberScrollPosition(enabled)
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      rememberScrollPosition: enabled,
-    })
-  }
-
-  const handleAdFilterModeChange = (mode: AdFilterMode) => {
-    setAdFilterMode(mode)
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      adFilterMode: mode,
-      adFilter: mode !== 'off',
-    })
-  }
-
-  const handleAdKeywordsChange = (keywords: string[]) => {
-    setAdKeywords(keywords)
-    const currentSettings = settingsStore.getSettings()
-    settingsStore.saveSettings({
-      ...currentSettings,
-      adKeywords: keywords,
-    })
-  }
-
-  const handleResetAll = () => {
-    settingsStore.resetToDefaults()
+  const handleResetAll = async () => {
+    resetAllStores()
+    await clearAppCaches()
     setIsResetDialogOpen(false)
     window.location.reload()
   }
@@ -330,44 +171,48 @@ export function useSettingsPage({
     envPasswordSet,
     realtimeLatency,
     searchDisplayMode,
+    fullscreenType,
+    proxyMode,
+    playerEngine,
+    rememberScrollPosition,
+    adFilterMode,
+    adKeywords,
+
     isAddModalOpen,
     isExportModalOpen,
     isImportModalOpen,
     isResetDialogOpen,
     isRestoreDefaultsDialogOpen,
+    editingSource,
+
     setIsAddModalOpen,
     setIsExportModalOpen,
     setIsImportModalOpen,
     setIsResetDialogOpen,
     setIsRestoreDefaultsDialogOpen,
     setEditingSource,
+
     handleSourcesChange,
     handleAddSource,
-    handleSortChange,
-    handleExport,
-    handleImportFile, // Renamed from handleImport
-    handleImportLink, // New
-    handleAddSubscription,
-    handleRemoveSubscription,
-    handleRefreshSubscription,
-    handleToggleAutoRefresh,
+    handleEditSource,
     handleRestoreDefaults,
     handleResetAll,
-    editingSource,
-    handleEditSource,
-    handleRealtimeLatencyChange,
-    handleSearchDisplayModeChange,
-    fullscreenType,
-    handleFullscreenTypeChange,
-    proxyMode,
-    handleProxyModeChange,
-    playerEngine,
-    handlePlayerEngineChange,
-    rememberScrollPosition,
-    handleRememberScrollPositionChange,
-    adFilterMode,
-    adKeywords,
-    handleAdFilterModeChange,
-    handleAdKeywordsChange,
+    handleSortChange: setSortBy,
+    handleRealtimeLatencyChange: setRealtimeLatency,
+    handleSearchDisplayModeChange: setSearchDisplayMode,
+    handleFullscreenTypeChange: setFullscreenType,
+    handleProxyModeChange: setProxyMode,
+    handlePlayerEngineChange: setPlayerEngine,
+    handleRememberScrollPositionChange: setRememberScrollPosition,
+    handleAdFilterModeChange: setAdFilterMode,
+    handleAdKeywordsChange: setAdKeywords,
+
+    handleExport,
+    handleImportFile,
+    handleImportLink,
+    handleAddSubscription,
+    handleRemoveSubscription: removeSubscription,
+    handleRefreshSubscription,
+    handleToggleAutoRefresh: toggleSubscriptionAutoRefresh,
   }
 }

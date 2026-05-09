@@ -22,10 +22,7 @@ import { VideoPlayer } from '@/components/player/VideoPlayer'
 import { useResolutionProbe } from '@/lib/hooks/useResolutionProbe'
 import { useVideoPlayer } from '@/lib/hooks/useVideoPlayer'
 import { useHistory } from '@/lib/store/history-store'
-import { settingsStore } from '@/lib/store/settings-store'
-
-type PlayerViewportMode = 'standard' | 'wide' | 'cinema'
-const VIEWPORT_MODE_KEY = 'flox-player-viewport-mode'
+import { useSettingsStore } from '@/lib/store/settings-store'
 
 function PlayerContent() {
   const searchParams = useSearchParams()
@@ -39,31 +36,19 @@ function PlayerContent() {
   const episodeParam = searchParams.get('episode')
   const groupedSourcesParam = searchParams.get('groupedSources')
 
-  const [isReversed, setIsReversed] = useState(() =>
-    typeof window !== 'undefined'
-      ? settingsStore.getSettings().episodeReverseOrder
-      : false,
+  const isReversed = useSettingsStore((s) => s.episodeReverseOrder)
+  const setEpisodeReverseOrder = useSettingsStore(
+    (s) => s.setEpisodeReverseOrder,
   )
   const [activeTab, setActiveTab] = useState<'episodes' | 'info' | 'sources'>(
     'episodes',
   )
-  const [viewportMode, setViewportMode] = useState<PlayerViewportMode>(() => {
-    if (typeof window === 'undefined') return 'standard'
-    const saved = localStorage.getItem(VIEWPORT_MODE_KEY)
-    return saved === 'wide' || saved === 'cinema' ? saved : 'standard'
-  })
+  const viewportMode = useSettingsStore((s) => s.playerViewportMode)
+  const setViewportMode = useSettingsStore((s) => s.setPlayerViewportMode)
   const playerTimeRef = useRef(0)
   const [detectedResolution, setDetectedResolution] =
     useState<VideoResolutionInfo | null>(null)
   const [currentSourceId, setCurrentSourceId] = useState(source)
-
-  useEffect(() => {
-    setIsReversed(settingsStore.getSettings().episodeReverseOrder)
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem(VIEWPORT_MODE_KEY, viewportMode)
-  }, [viewportMode])
 
   // Redirect if params missing — must be after all hooks
   useEffect(() => {
@@ -150,9 +135,7 @@ function PlayerContent() {
   )
 
   const handleToggleReverse = (reversed: boolean) => {
-    setIsReversed(reversed)
-    const settings = settingsStore.getSettings()
-    settingsStore.saveSettings({ ...settings, episodeReverseOrder: reversed })
+    setEpisodeReverseOrder(reversed)
   }
 
   const handleNextEpisode = useCallback(() => {

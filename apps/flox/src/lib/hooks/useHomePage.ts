@@ -1,10 +1,9 @@
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParallelSearch } from '@/lib/hooks/useParallelSearch'
 import { useSearchCache } from '@/lib/hooks/useSearchCache'
 import { useSubscriptionSync } from '@/lib/hooks/useSubscriptionSync'
-import type { SortOption } from '@/lib/store/settings-store'
-import { settingsStore } from '@/lib/store/settings-store'
+import { useSettingsStore } from '@/lib/store/settings-store'
 
 interface UseHomePageOptions {
   isPremium?: boolean
@@ -22,14 +21,17 @@ export function useHomePage({ isPremium = false }: UseHomePageOptions = {}) {
 
   const [query, setQuery] = useState('')
   const [hasSearched, setHasSearched] = useState(false)
-  const [currentSortBy, setCurrentSortBy] = useState<SortOption>('default')
 
-  const getEnabledSources = useCallback(() => {
-    const settings = settingsStore.getSettings()
-    return isPremium
-      ? settings.premiumSources.filter((s) => s.enabled)
-      : settings.sources.filter((s) => s.enabled)
-  }, [isPremium])
+  const storedSortBy = useSettingsStore((s) => s.sortBy)
+  const sources = useSettingsStore((s) => s.sources)
+  const premiumSources = useSettingsStore((s) => s.premiumSources)
+  // Premium mode keeps an independent (non-persisted) sort selection.
+  const currentSortBy = isPremium ? 'default' : storedSortBy
+
+  const enabledSources = useMemo(
+    () => (isPremium ? premiumSources : sources).filter((s) => s.enabled),
+    [isPremium, sources, premiumSources],
+  )
 
   const onUrlUpdate = useCallback(
     (q: string) => {
@@ -40,7 +42,6 @@ export function useHomePage({ isPremium = false }: UseHomePageOptions = {}) {
     [router, basePath],
   )
 
-  // Search stream hook
   const {
     loading,
     results,
@@ -53,24 +54,16 @@ export function useHomePage({ isPremium = false }: UseHomePageOptions = {}) {
     applySorting,
   } = useParallelSearch(saveToCache, onUrlUpdate)
 
-  // Core search execution function
   const executeSearch = useCallback(
     (searchQuery: string) => {
       if (!searchQuery.trim()) return false
-
-      const enabledSources = getEnabledSources()
       if (enabledSources.length === 0) return false
 
-      const settings = settingsStore.getSettings()
-      void performSearch(
-        searchQuery,
-        enabledSources,
-        isPremium ? currentSortBy : settings.sortBy,
-      )
+      void performSearch(searchQuery, enabledSources, currentSortBy)
       hasSearchedWithSourcesRef.current = true
       return true
     },
-    [performSearch, getEnabledSources, isPremium, currentSortBy],
+    [performSearch, enabledSources, currentSortBy],
   )
 
   // Re-sort results when sort preference changes
@@ -80,42 +73,19 @@ export function useHomePage({ isPremium = false }: UseHomePageOptions = {}) {
     }
   }, [currentSortBy, applySorting, hasSearched, results.length])
 
-  // Subscribe to settings changes (source loading, sort preference)
+  // Re-trigger search when sources become available after initial load
   useEffect(() => {
-    const updateSettings = () => {
-      const settings = settingsStore.getSettings()
-
-      // Sync sort preference (normal mode uses store value)
-      if (!isPremium && settings.sortBy !== currentSortBy) {
-        setCurrentSortBy(settings.sortBy)
-      }
-
-      // Re-trigger search when sources become available after initial load
-      const enabledSources = getEnabledSources()
-      if (
-        query &&
-        enabledSources.length > 0 &&
-        !hasSearchedWithSourcesRef.current &&
-        !loading
-      ) {
-        if (executeSearch(query)) {
-          setHasSearched(true)
-        }
+    if (
+      query &&
+      enabledSources.length > 0 &&
+      !hasSearchedWithSourcesRef.current &&
+      !loading
+    ) {
+      if (executeSearch(query)) {
+        setHasSearched(true)
       }
     }
-
-    updateSettings()
-
-    const unsubscribe = settingsStore.subscribe(updateSettings)
-    return () => unsubscribe()
-  }, [
-    query,
-    loading,
-    executeSearch,
-    currentSortBy,
-    isPremium,
-    getEnabledSources,
-  ])
+  }, [query, loading, executeSearch, enabledSources])
 
   const handleSearch = useCallback(
     (searchQuery: string) => {
@@ -124,7 +94,6 @@ export function useHomePage({ isPremium = false }: UseHomePageOptions = {}) {
       const scrollKey = `scroll-pos:${basePath}?q=${encodeURIComponent(searchQuery)}`
       sessionStorage.removeItem(scrollKey)
 
-      // Cache hit → restore instantly, skip network
       const cached = loadFromCache(searchQuery)
       if (cached && cached.results.length > 0) {
         isInitialCacheLoad.current = true
@@ -143,7 +112,6 @@ export function useHomePage({ isPremium = false }: UseHomePageOptions = {}) {
     [executeSearch, basePath, loadFromCache, loadCachedResults, onUrlUpdate],
   )
 
-  // Sync search state with URL query parameter
   const urlQuery = searchParams.get('q') || ''
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: handleSearch/loadFromCache/loadCachedResults cause loops
@@ -153,7 +121,6 @@ export function useHomePage({ isPremium = false }: UseHomePageOptions = {}) {
 
     setQuery(urlQuery)
 
-    // Try loading from cache (normal mode only)
     if (!isPremium) {
       const cached = loadFromCache(urlQuery)
       if (cached && cached.results.length > 0) {
@@ -165,12 +132,9 @@ export function useHomePage({ isPremium = false }: UseHomePageOptions = {}) {
       }
     }
 
-    // Execute search if sources are ready
-    const enabledSources = getEnabledSources()
     if (enabledSources.length > 0) {
       handleSearch(urlQuery)
     }
-    // If no sources yet, the subscription effect will catch it
   }, [urlQuery])
 
   const handleReset = useCallback(() => {

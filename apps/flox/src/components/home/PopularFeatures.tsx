@@ -56,7 +56,7 @@ export function PopularFeatures({ contentType }: PopularFeaturesProps) {
     handleRestoreDefaults,
     handleDragEnd,
   } = useTagManager({
-    storageKey: `flox_custom_tags_${contentType}`,
+    scope: `douban:${contentType}`,
     queryKey: ['doubanTags', contentType],
     fetchTags,
     defaultSelectedTag: 'popular',

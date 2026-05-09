@@ -1,12 +1,10 @@
 /**
- * History State Store using Zustand
- * Manages viewing history with localStorage persistence
+ * History Store - Viewing history persisted to localStorage.
  */
 
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import type { Episode, VideoHistoryItem } from '@/lib/types'
 import { clearAllCache, clearSegmentsForUrl } from '@/lib/utils/cacheManager'
+import { createPersistedStore } from './create-persisted-store'
 
 const MAX_HISTORY_ITEMS = 50
 
@@ -26,18 +24,12 @@ interface HistoryActions {
     poster?: string,
     episodes?: Episode[],
   ) => void
-
   removeFromHistory: (videoId: string | number, source: string) => void
   clearHistory: () => void
   importHistory: (history: VideoHistoryItem[]) => void
 }
 
-interface HistoryStore extends HistoryState, HistoryActions {}
-
-/**
- * Generate unique identifier for deduplication
- */
-function generateShowIdentifier(
+function showIdentifier(
   title: string,
   source: string,
   videoId: string | number,
@@ -45,131 +37,100 @@ function generateShowIdentifier(
   return `${source}:${videoId}:${title.toLowerCase().trim()}`
 }
 
-const createHistoryStore = (name: string) =>
-  create<HistoryStore>()(
-    persist(
-      (set, get) => ({
-        viewingHistory: [],
+const createHistoryStore = (key: string) =>
+  createPersistedStore<HistoryState, HistoryActions>({
+    key,
+    defaultState: () => ({ viewingHistory: [] }),
+    actions: (set, get) => ({
+      addToHistory: (
+        videoId,
+        title,
+        url,
+        episodeIndex,
+        source,
+        playbackPosition,
+        duration,
+        poster,
+        episodes = [],
+      ) => {
+        const sid = showIdentifier(title, source, videoId)
+        const timestamp = Date.now()
 
-        addToHistory: (
-          videoId,
-          title,
-          url,
-          episodeIndex,
-          source,
-          playbackPosition,
-          duration,
-          poster,
-          episodes = [],
-        ) => {
-          const showIdentifier = generateShowIdentifier(title, source, videoId)
-          const timestamp = Date.now()
-
-          set((state) => {
-            // Check if item already exists
-            const existingIndex = state.viewingHistory.findIndex(
-              (item) => item.showIdentifier === showIdentifier,
-            )
-
-            let newHistory: VideoHistoryItem[]
-
-            if (existingIndex !== -1) {
-              const existing = state.viewingHistory[existingIndex]
-              const isSameEpisode = existing.episodeIndex === episodeIndex
-              // Update existing item and move to top
-              const updatedItem: VideoHistoryItem = {
-                ...existing,
-                url,
-                episodeIndex,
-                // Don't overwrite valid progress with 0 for the same episode
-                playbackPosition:
-                  isSameEpisode && playbackPosition === 0
-                    ? existing.playbackPosition
-                    : playbackPosition,
-                duration:
-                  isSameEpisode && duration === 0
-                    ? existing.duration
-                    : duration,
-                timestamp,
-                episodes: episodes.length > 0 ? episodes : existing.episodes,
-              }
-
-              newHistory = [
-                updatedItem,
-                ...state.viewingHistory.filter(
-                  (_, index) => index !== existingIndex,
-                ),
-              ]
-            } else {
-              // Add new item at the top
-              const newItem: VideoHistoryItem = {
-                videoId,
-                title,
-                url,
-                episodeIndex,
-                source,
-                timestamp,
-                playbackPosition,
-                duration,
-                poster,
-                episodes,
-                showIdentifier,
-              }
-
-              newHistory = [newItem, ...state.viewingHistory]
-            }
-
-            // Limit history size
-            if (newHistory.length > MAX_HISTORY_ITEMS) {
-              newHistory = newHistory.slice(0, MAX_HISTORY_ITEMS)
-            }
-
-            return { viewingHistory: newHistory }
-          })
-        },
-
-        removeFromHistory: (videoId, source) => {
-          const state = get()
-          const itemToRemove = state.viewingHistory.find(
-            (item) => item.videoId === videoId && item.source === source,
+        set((state) => {
+          const existingIndex = state.viewingHistory.findIndex(
+            (i) => i.showIdentifier === sid,
           )
+          let next: VideoHistoryItem[]
 
-          if (itemToRemove) {
-            // Clear cache for this video
-            void clearSegmentsForUrl(itemToRemove.url)
+          if (existingIndex !== -1) {
+            const existing = state.viewingHistory[existingIndex]
+            const isSameEpisode = existing.episodeIndex === episodeIndex
+            const updated: VideoHistoryItem = {
+              ...existing,
+              url,
+              episodeIndex,
+              playbackPosition:
+                isSameEpisode && playbackPosition === 0
+                  ? existing.playbackPosition
+                  : playbackPosition,
+              duration:
+                isSameEpisode && duration === 0 ? existing.duration : duration,
+              timestamp,
+              episodes: episodes.length > 0 ? episodes : existing.episodes,
+            }
+            next = [
+              updated,
+              ...state.viewingHistory.filter((_, i) => i !== existingIndex),
+            ]
+          } else {
+            const item: VideoHistoryItem = {
+              videoId,
+              title,
+              url,
+              episodeIndex,
+              source,
+              timestamp,
+              playbackPosition,
+              duration,
+              poster,
+              episodes,
+              showIdentifier: sid,
+            }
+            next = [item, ...state.viewingHistory]
           }
 
-          set((state) => ({
-            viewingHistory: state.viewingHistory.filter(
-              (item) => !(item.videoId === videoId && item.source === source),
-            ),
-          }))
-        },
-
-        clearHistory: () => {
-          // Clear all cached segments
-          void clearAllCache()
-          set({ viewingHistory: [] })
-        },
-
-        importHistory: (history) => {
-          set({ viewingHistory: history })
-        },
-      }),
-      {
-        name,
+          if (next.length > MAX_HISTORY_ITEMS) {
+            next = next.slice(0, MAX_HISTORY_ITEMS)
+          }
+          return { viewingHistory: next }
+        })
       },
-    ),
-  )
 
-export const useHistoryStore = createHistoryStore('flox-history-store')
-export const usePremiumHistoryStore = createHistoryStore(
-  'flox-premium-history-store',
-)
+      removeFromHistory: (videoId, source) => {
+        const item = get().viewingHistory.find(
+          (i) => i.videoId === videoId && i.source === source,
+        )
+        if (item) void clearSegmentsForUrl(item.url)
 
-/**
- * Helper hook to get the appropriate history store
- */
+        set((state) => ({
+          viewingHistory: state.viewingHistory.filter(
+            (i) => !(i.videoId === videoId && i.source === source),
+          ),
+        }))
+      },
+
+      clearHistory: () => {
+        void clearAllCache()
+        set({ viewingHistory: [] })
+      },
+
+      importHistory: (history) => set({ viewingHistory: history }),
+    }),
+  })
+
+export const useHistoryStore = createHistoryStore('flox:history')
+export const usePremiumHistoryStore = createHistoryStore('flox:history:premium')
+
 export function useHistory(isPremium = false) {
   const normalStore = useHistoryStore()
   const premiumStore = usePremiumHistoryStore()
