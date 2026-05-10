@@ -79,7 +79,7 @@ export const VideoCard = memo<VideoCardProps>(
         >
           <Card
             className={cn(
-              'h-full overflow-hidden border cursor-pointer transition-all p-0',
+              'h-full overflow-hidden border cursor-pointer transition-all p-0 gap-0',
               'hover:border-primary/60 hover:shadow-xl hover:-translate-y-0.5',
             )}
           >
@@ -106,8 +106,8 @@ export const VideoCard = memo<VideoCardProps>(
 
               <div className="absolute top-3 left-3 right-3 z-10 flex justify-between gap-2">
                 {isGrouped && video.sourceName !== '豆瓣' ? (
-                  <Badge className="bg-primary text-primary-foreground flex items-center gap-1 shadow-sm">
-                    <LayersIcon size={13} />
+                  <Badge className="bg-primary text-primary-foreground flex items-center shadow-sm">
+                    <LayersIcon className="size-3.5" />
                     {sourceCount} 源
                   </Badge>
                 ) : (
@@ -185,7 +185,7 @@ export const VideoCard = memo<VideoCardProps>(
 
                   {representativeVideo.vod_year && (
                     <div className="flex items-center gap-1.5 text-white/90 text-xs">
-                      <CalendarIcon size={13} />
+                      <CalendarIcon className="size-3.5" />
                       <span>{representativeVideo.vod_year}</span>
                     </div>
                   )}
@@ -193,13 +193,19 @@ export const VideoCard = memo<VideoCardProps>(
               </div>
             </div>
 
-            <div className="pb-3.5 px-3.5 flex flex-col flex-1">
-              <h4 className="font-semibold text-sm leading-tight line-clamp-2 text-foreground mb-1.5">
+            <div className="flex flex-col flex-1 p-3 gap-1">
+              <h4
+                className="font-semibold text-sm leading-tight line-clamp-2 text-foreground"
+                title={displayName}
+              >
                 {cleanTitle}
               </h4>
 
               {displayQuality && (
-                <p className="text-xs text-muted-foreground font-medium line-clamp-1">
+                <p
+                  className="text-xs text-muted-foreground font-medium line-clamp-1"
+                  title={displayQuality}
+                >
                   {displayQuality}
                 </p>
               )}
@@ -207,7 +213,10 @@ export const VideoCard = memo<VideoCardProps>(
               {representativeVideo.vod_remarks &&
                 !isRating &&
                 representativeVideo.vod_remarks !== displayQuality && (
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                  <p
+                    className="text-xs text-muted-foreground line-clamp-1"
+                    title={representativeVideo.vod_remarks}
+                  >
                     {representativeVideo.vod_remarks}
                   </p>
                 )}

@@ -65,7 +65,7 @@ function RankingCard({
     <div className="group relative">
       <Card
         className={cn(
-          'h-full overflow-hidden border cursor-pointer transition-all p-0',
+          'h-full overflow-hidden border cursor-pointer transition-all p-0 gap-0',
           'hover:border-primary/60 hover:shadow-xl hover:-translate-y-0.5',
           isTopThree && medal?.border,
         )}
@@ -94,10 +94,7 @@ function RankingCard({
             <div className="flex items-center gap-1">
               {isTopThree && medal ? (
                 <Badge
-                  className={cn(
-                    'flex items-center gap-0.5 shadow-sm',
-                    medal.chip,
-                  )}
+                  className={cn('flex items-center shadow-sm', medal.chip)}
                 >
                   <MedalIcon className="size-3" strokeWidth={2} />
                   {rank}
@@ -113,7 +110,7 @@ function RankingCard({
               <Badge
                 variant="secondary"
                 className={cn(
-                  'flex items-center gap-0.5 shadow-sm',
+                  'flex items-center shadow-sm',
                   scoreBg,
                   scoreToneText,
                 )}
@@ -141,7 +138,7 @@ function RankingCard({
               )}
               {movie.release_date && (
                 <div className="flex items-center gap-1 text-white/90 text-xs">
-                  <CalendarIcon size={11} />
+                  <CalendarIcon className="size-3.5" />
                   <span>{movie.release_date}</span>
                 </div>
               )}
@@ -149,13 +146,19 @@ function RankingCard({
           </div>
         </div>
 
-        <div className="pb-3.5 px-3.5 flex flex-col flex-1">
-          <h4 className="font-semibold text-sm leading-tight line-clamp-2 text-foreground mb-1.5">
+        <div className="flex flex-col flex-1 p-3 gap-1">
+          <h4
+            className="font-semibold text-sm leading-tight line-clamp-2 text-foreground"
+            title={movie.title}
+          >
             {movie.title}
           </h4>
 
           {movie.actors && movie.actors.length > 0 && (
-            <p className="text-xs text-muted-foreground font-medium line-clamp-1">
+            <p
+              className="text-xs text-muted-foreground font-medium line-clamp-1"
+              title={movie.actors.join(' · ')}
+            >
               {movie.actors.slice(0, 2).join(' · ')}
             </p>
           )}
