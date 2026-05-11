@@ -49,11 +49,11 @@
     "prepare": "turbo run build --filter=./packages/*"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.14",
+    "@biomejs/biome": "^2.4.15",
     "@cdlab996/tsconfig": "workspace:*",
     "@nsio/nsl": "^0.1.5",
     "@types/node": "catalog:dev",
-    "turbo": "^2.9.9",
+    "turbo": "^2.9.12",
     "typescript": "catalog:dev"
   }
 }
