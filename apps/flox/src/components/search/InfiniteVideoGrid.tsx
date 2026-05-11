@@ -1,10 +1,14 @@
 'use client'
 
-import { Spinner } from '@cdlab996/ui/components/spinner'
+import { cn } from '@cdlab996/ui/lib/utils'
 import { IKEmpty } from '@cdlab996/ui/IK'
 import { FilmIcon } from 'lucide-react'
 import type { Video } from '@/lib/types'
+import { VideoCardSkeleton } from './VideoCard'
 import { VideoGrid } from './VideoGrid'
+
+const GRID_CLASS =
+  'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 max-w-[1920px] mx-auto'
 
 interface InfiniteVideoGridProps {
   videos: Video[]
@@ -37,6 +41,17 @@ export function InfiniteVideoGrid({
     )
   }
 
+  if (videos.length === 0 && loading) {
+    return (
+      <div className={cn(GRID_CLASS)}>
+        {Array.from({ length: 12 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton items have no natural key
+          <VideoCardSkeleton key={i} />
+        ))}
+      </div>
+    )
+  }
+
   return (
     <>
       <VideoGrid
@@ -49,11 +64,11 @@ export function InfiniteVideoGrid({
       {hasMore && !loading && <div ref={prefetchRef} className="h-1" />}
 
       {loading && (
-        <div className="flex justify-center py-12">
-          <div className="flex flex-col items-center gap-3">
-            <Spinner className="size-6" />
-            <p className="text-sm text-muted-foreground">加载中...</p>
-          </div>
+        <div className={cn(GRID_CLASS, 'mt-4')}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton items have no natural key
+            <VideoCardSkeleton key={i} />
+          ))}
         </div>
       )}
 

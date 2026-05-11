@@ -2,6 +2,7 @@
 
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Card } from '@cdlab996/ui/components/card'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { CalendarIcon, FilmIcon, LayersIcon } from 'lucide-react'
 import Image from 'next/image'
@@ -229,3 +230,15 @@ export const VideoCard = memo<VideoCardProps>(
 )
 
 VideoCard.displayName = 'VideoCard'
+
+export function VideoCardSkeleton() {
+  return (
+    <Card className="h-full overflow-hidden border p-0 gap-0">
+      <Skeleton className="aspect-square w-full" />
+      <div className="p-3 flex flex-col gap-2">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-3 w-1/2" />
+      </div>
+    </Card>
+  )
+}

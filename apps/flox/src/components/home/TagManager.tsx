@@ -7,7 +7,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@cdlab996/ui/components/input-group'
-import { Spinner } from '@cdlab996/ui/components/spinner'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { cn } from '@cdlab996/ui/lib/utils'
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
 import {
@@ -198,9 +198,11 @@ export function TagManager({
       )}
 
       {isLoadingTags ? (
-        <div className="flex items-center justify-center py-12 text-muted-foreground gap-2">
-          <Spinner className="size-5" />
-          <span>正在加载标签...</span>
+        <div className="flex flex-wrap gap-2 pt-3 pb-1">
+          {Array.from({ length: 8 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton items have no natural key
+            <Skeleton key={i} className="h-8 w-16 rounded-md" />
+          ))}
         </div>
       ) : (
         <DndContext

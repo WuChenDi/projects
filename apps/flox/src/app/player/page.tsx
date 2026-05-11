@@ -1,6 +1,6 @@
 'use client'
 
-import { Spinner } from '@cdlab996/ui/components/spinner'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
 import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -200,9 +200,25 @@ function PlayerContent() {
   return (
     <IKPageContainer className="flex-col max-w-7xl mx-auto">
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <Spinner className="size-12 text-primary" />
-          <p className="text-sm text-muted-foreground">正在加载视频详情...</p>
+        <div className={`grid gap-4 items-start ${playerGridClass}`}>
+          <div className="lg:col-span-2 space-y-4">
+            <Skeleton className="w-full aspect-video rounded-lg" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-2/3" />
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+            </div>
+          </div>
+          <div className="hidden lg:block lg:col-span-1">
+            <div className="sticky top-[88px] space-y-2">
+              <Skeleton className="h-6 w-1/3 mb-4" />
+              {Array.from({ length: 16 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton items have no natural key
+                <Skeleton key={i} className="h-9 w-full rounded-md" />
+              ))}
+            </div>
+          </div>
         </div>
       ) : videoError && !videoData ? (
         <PlayerError
@@ -289,15 +305,36 @@ function PlayerContent() {
   )
 }
 
+function PlayerFallback() {
+  return (
+    <IKPageContainer className="flex-col max-w-7xl mx-auto">
+      <div className="grid gap-4 items-start lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-4">
+          <Skeleton className="w-full aspect-video rounded-lg" />
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-2/3" />
+            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+          </div>
+        </div>
+        <div className="hidden lg:block lg:col-span-1">
+          <div className="sticky top-[88px] space-y-2">
+            <Skeleton className="h-6 w-1/3 mb-4" />
+            {Array.from({ length: 16 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton items have no natural key
+              <Skeleton key={i} className="h-9 w-full rounded-md" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </IKPageContainer>
+  )
+}
+
 export default function PlayerPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <Spinner className="size-12 text-primary" />
-        </div>
-      }
-    >
+    <Suspense fallback={<PlayerFallback />}>
       <PlayerContent />
     </Suspense>
   )
