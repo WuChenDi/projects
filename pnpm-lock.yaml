@@ -172,14 +172,14 @@ importers:
         specifier: workspace:*
         version: link:packages/tsconfig
       '@nsio/nsl':
-        specifier: ^0.1.5
-        version: 0.1.5
+        specifier: ^0.1.7
+        version: 0.1.7
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
       turbo:
-        specifier: ^2.9.12
-        version: 2.9.12
+        specifier: ^2.9.14
+        version: 2.9.14
       typescript:
         specifier: catalog:dev
         version: 6.0.2
@@ -3250,33 +3250,33 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@nsio/nsl-darwin-arm64@0.1.5':
-    resolution: {integrity: sha512-MasH15h3vsVPTgufuiMXqgAwu6YkwBRDErJDQM6mseYKX7kjylLOHhj5kXx2i5Ksifv0/AyZsAH9qYBTs8qTUw==}
+  '@nsio/nsl-darwin-arm64@0.1.7':
+    resolution: {integrity: sha512-422GusrlWwO5oyHlpeAm5dlg5Hti8S6in5oJGmwtZxr9sG16o8ytKPGHofGWv6cf7XZXdPHFDG8ZJSLj07bBwg==}
     cpu: [arm64]
     os: [darwin]
 
-  '@nsio/nsl-darwin-x64@0.1.5':
-    resolution: {integrity: sha512-qTZQ5CkKGbuMoXM9cTwE20MUOXahGsv39C2CFjkdjatZ9ml20SnQnbTmmSqdOJc/88p69YhodgLaVdoHiT7ZKg==}
+  '@nsio/nsl-darwin-x64@0.1.7':
+    resolution: {integrity: sha512-GswSfQofn9U+TSGtf6meG3rxg5fZ0KAdbQ5kiutOCsTwc3jeLslsXmZy12s5aAAcaUzEWw69K2n6RxzCtQmDvA==}
     cpu: [x64]
     os: [darwin]
 
-  '@nsio/nsl-linux-arm64@0.1.5':
-    resolution: {integrity: sha512-9eIEVXoF5IihKcqVWhIw+u6Yp9H0jXdWc6Ws9p17oizswvGidMhGykuexqdaXjTw/c6jD3iO2vc97Phzp1ckJg==}
+  '@nsio/nsl-linux-arm64@0.1.7':
+    resolution: {integrity: sha512-QOPFaqvntp7CaOK1xD+7vKB3OyVpaWrZAU61FFnSniphh0+lpP/4QHtU9TkkTPf/GSAHH2xPI7OysFxJP3Q9Ww==}
     cpu: [arm64]
     os: [linux]
 
-  '@nsio/nsl-linux-x64@0.1.5':
-    resolution: {integrity: sha512-gpW9f2zxHyrPNjp4F6JOOmd+ck9QOXWErl4+xP0bnTdsseMdVs7ER7KiZfWnpf0j19CuMSiuTcwcFiLZbFBlmg==}
+  '@nsio/nsl-linux-x64@0.1.7':
+    resolution: {integrity: sha512-yYJWb1xUkJJhGB91CQPdXjcQ8GCBdjqlOZ9Hl+YVcS7kN9nPVyicq2gyJuAipqXcNV+Ultf4F6W7p73ezYg7iw==}
     cpu: [x64]
     os: [linux]
 
-  '@nsio/nsl-win32-x64@0.1.5':
-    resolution: {integrity: sha512-iDmXFuHa/Q62nYs0Ig206r4NqcPHEG9pQznOo+WDFfRcNJAXrvJmxsCEwOxu3oriJb0gn7fq5WkZmWh920leew==}
+  '@nsio/nsl-win32-x64@0.1.7':
+    resolution: {integrity: sha512-fqUfi48GqIdJeYXi0JpbqC6mGH4amugQ5blRtd2SODikXULiWfjy2uvixXaUvnGCvBnXUhkoWimt3NvjDkyoYA==}
     cpu: [x64]
     os: [win32]
 
-  '@nsio/nsl@0.1.5':
-    resolution: {integrity: sha512-y6FfjjzPAwmmKjHHJ+OjkqzSGQPc84nl7y9kYLbvDHk7bo8QjzUvWFXnsz9Pln16YD7aR4rYXwS7UopcNlkoag==}
+  '@nsio/nsl@0.1.7':
+    resolution: {integrity: sha512-mC+0Ft/AdIWbW+oW+4pVX96QvbjZV88hiSETh/z6wAa5C8s1TeUTTETvVkeNhBacm2WxWexH69fDqdB2Lgh13A==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -6092,33 +6092,33 @@ packages:
   '@tsconfig/node18@1.0.3':
     resolution: {integrity: sha512-RbwvSJQsuN9TB04AQbGULYfOGE/RnSFk/FLQ5b0NmDf5Kx2q/lABZbHQPKCO1vZ6Fiwkplu+yb9pGdLy1iGseQ==}
 
-  '@turbo/darwin-64@2.9.12':
-    resolution: {integrity: sha512-eu3eFRmE9NjgZ0wPdRJ44l+LGSeIky+tz5ZQd8zQkw/Yqi+BM7wq+8nbabeoiVUcICi/IZweMOKl/MCmkrd1+g==}
+  '@turbo/darwin-64@2.9.14':
+    resolution: {integrity: sha512-t7QiPflaEyBE4oayeZtSmu4mEfjgIrcNlNNl1z1dmIVPqEdtA7+CfTf8d7KXsOGPh6aNgWjKxyvQg9uGfDQF+A==}
     cpu: [x64]
     os: [darwin]
 
-  '@turbo/darwin-arm64@2.9.12':
-    resolution: {integrity: sha512-RUkAE404z/J8NsyrUosMcBaXT6M4bRFxTQrmkDQBLQVXaC8Jl0e9bMvYDSX0GW7Ffm2m3j9y7RXgR1foeUAM9w==}
+  '@turbo/darwin-arm64@2.9.14':
+    resolution: {integrity: sha512-d23147mC9BsCPA9mJ0h/ubcpbRgcJBXbcG3+Vq7YLhjz3IXuvQsJ1UXH8f4MD76ZjJ4m/E4aRdJV+MW88CDfbw==}
     cpu: [arm64]
     os: [darwin]
 
-  '@turbo/linux-64@2.9.12':
-    resolution: {integrity: sha512-InIUtH7cw/vqXNX1Gr7QgWfmw3ct08pV5CpfdEOR48z2u2rzdmpIuk00B/Q2xCb0PMWtKgiMQynfuphmEuUyTQ==}
+  '@turbo/linux-64@2.9.14':
+    resolution: {integrity: sha512-P3ZKB5tuUDdDQWuAsACGUR1qv9W7BNWxdxqVJ0kZNuNNPRaVYTPPikLcp79+GiEcW3npsR+KyP38lnQiBc5aSA==}
     cpu: [x64]
     os: [linux]
 
-  '@turbo/linux-arm64@2.9.12':
-    resolution: {integrity: sha512-lC6nD//Xh67fmJM0LKaLsg74Wry0aYrgMklpiNgCbUaMdPIOqj0A00iri3NU7Lb7pZHx8ViisgpeDKlpSgFUCA==}
+  '@turbo/linux-arm64@2.9.14':
+    resolution: {integrity: sha512-ZRTlzcUMrrPv9ZuDzRF9n60Ym13bKeG9jDB8WjxyLhWNzV+AJQN+zdpIk3NJYf2zQsGUm1mNar2P0elRzLw25g==}
     cpu: [arm64]
     os: [linux]
 
-  '@turbo/windows-64@2.9.12':
-    resolution: {integrity: sha512-conYri8VUl72JOdYnLDPYwzqbPcY5ECoHmo9FWoKznemhaAIilj4maHqs9Uar0aKfNoZIULniy+6iWaLtLO34A==}
+  '@turbo/windows-64@2.9.14':
+    resolution: {integrity: sha512-exanwN6sIduZwykYeiTQj8kCmOhazP5WOz3bvXMcYtjhL6Z3iRWLewKrXCBq0bqwSP3iBMb/AerRCnHI4lx46A==}
     cpu: [x64]
     os: [win32]
 
-  '@turbo/windows-arm64@2.9.12':
-    resolution: {integrity: sha512-XoR4bsg62/L/esRVcmoMESEiNZ36+YmyjYGLpoqk8nwMgXzzVjNOgX0lRSz5w/U/ajLGv3nhMsS0Q2QOdvp2AQ==}
+  '@turbo/windows-arm64@2.9.14':
+    resolution: {integrity: sha512-fVdCsnmYoKICsycbWuuGp6Jvi51/3G/UluFWuAUCvR8PIW5IJkAk5BM9UF8PSm0Q2IphWHFZjYEgjHsh3B9y/g==}
     cpu: [arm64]
     os: [win32]
 
@@ -10663,8 +10663,8 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  turbo@2.9.12:
-    resolution: {integrity: sha512-lCPgus1NuTiBdaITWqzSH/Ff6HVL8HHGBtOXHg1dHRfcshN79XkygSdh0M6g8b0td91ILLG5MTkLOkp5UvyPJw==}
+  turbo@2.9.14:
+    resolution: {integrity: sha512-BQqXRr4UoWI3UPFrtznCLykYHxwxWh53iCB57x092jPMjIlW1wnm3N895g5irpiXmnxUhREBB0n6+y8BHhs4nw==}
     hasBin: true
 
   tw-animate-css@1.4.0:
@@ -13536,28 +13536,28 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.1
 
-  '@nsio/nsl-darwin-arm64@0.1.5':
+  '@nsio/nsl-darwin-arm64@0.1.7':
     optional: true
 
-  '@nsio/nsl-darwin-x64@0.1.5':
+  '@nsio/nsl-darwin-x64@0.1.7':
     optional: true
 
-  '@nsio/nsl-linux-arm64@0.1.5':
+  '@nsio/nsl-linux-arm64@0.1.7':
     optional: true
 
-  '@nsio/nsl-linux-x64@0.1.5':
+  '@nsio/nsl-linux-x64@0.1.7':
     optional: true
 
-  '@nsio/nsl-win32-x64@0.1.5':
+  '@nsio/nsl-win32-x64@0.1.7':
     optional: true
 
-  '@nsio/nsl@0.1.5':
+  '@nsio/nsl@0.1.7':
     optionalDependencies:
-      '@nsio/nsl-darwin-arm64': 0.1.5
-      '@nsio/nsl-darwin-x64': 0.1.5
-      '@nsio/nsl-linux-arm64': 0.1.5
-      '@nsio/nsl-linux-x64': 0.1.5
-      '@nsio/nsl-win32-x64': 0.1.5
+      '@nsio/nsl-darwin-arm64': 0.1.7
+      '@nsio/nsl-darwin-x64': 0.1.7
+      '@nsio/nsl-linux-arm64': 0.1.7
+      '@nsio/nsl-linux-x64': 0.1.7
+      '@nsio/nsl-win32-x64': 0.1.7
 
   '@nuxt/cli@3.34.0(@nuxt/schema@4.4.2)(cac@6.7.14)(magicast@0.5.2)':
     dependencies:
@@ -16514,22 +16514,22 @@ snapshots:
 
   '@tsconfig/node18@1.0.3': {}
 
-  '@turbo/darwin-64@2.9.12':
+  '@turbo/darwin-64@2.9.14':
     optional: true
 
-  '@turbo/darwin-arm64@2.9.12':
+  '@turbo/darwin-arm64@2.9.14':
     optional: true
 
-  '@turbo/linux-64@2.9.12':
+  '@turbo/linux-64@2.9.14':
     optional: true
 
-  '@turbo/linux-arm64@2.9.12':
+  '@turbo/linux-arm64@2.9.14':
     optional: true
 
-  '@turbo/windows-64@2.9.12':
+  '@turbo/windows-64@2.9.14':
     optional: true
 
-  '@turbo/windows-arm64@2.9.12':
+  '@turbo/windows-arm64@2.9.14':
     optional: true
 
   '@tybys/wasm-util@0.10.1':
@@ -21868,14 +21868,14 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  turbo@2.9.12:
+  turbo@2.9.14:
     optionalDependencies:
-      '@turbo/darwin-64': 2.9.12
-      '@turbo/darwin-arm64': 2.9.12
-      '@turbo/linux-64': 2.9.12
-      '@turbo/linux-arm64': 2.9.12
-      '@turbo/windows-64': 2.9.12
-      '@turbo/windows-arm64': 2.9.12
+      '@turbo/darwin-64': 2.9.14
+      '@turbo/darwin-arm64': 2.9.14
+      '@turbo/linux-64': 2.9.14
+      '@turbo/linux-arm64': 2.9.14
+      '@turbo/windows-64': 2.9.14
+      '@turbo/windows-arm64': 2.9.14
 
   tw-animate-css@1.4.0: {}
 

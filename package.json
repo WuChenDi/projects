@@ -51,9 +51,9 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
     "@cdlab996/tsconfig": "workspace:*",
-    "@nsio/nsl": "^0.1.5",
+    "@nsio/nsl": "^0.1.7",
     "@types/node": "catalog:dev",
-    "turbo": "^2.9.12",
+    "turbo": "^2.9.14",
     "typescript": "catalog:dev"
   }
 }
