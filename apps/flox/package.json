@@ -29,7 +29,6 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@tanstack/react-form": "catalog:prod",
     "@tanstack/react-query": "catalog:prod",
-    "@volcengine/veplayer": "1.10.0",
     "hls.js": "catalog:prod",
     "date-fns": "catalog:prod",
     "lucide-react": "catalog:prod",

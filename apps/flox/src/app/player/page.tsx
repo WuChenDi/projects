@@ -43,8 +43,6 @@ function PlayerContent() {
   const [activeTab, setActiveTab] = useState<'episodes' | 'info' | 'sources'>(
     'episodes',
   )
-  const viewportMode = useSettingsStore((s) => s.playerViewportMode)
-  const setViewportMode = useSettingsStore((s) => s.setPlayerViewportMode)
   const playerTimeRef = useRef(0)
   const [detectedResolution, setDetectedResolution] =
     useState<VideoResolutionInfo | null>(null)
@@ -92,13 +90,6 @@ function PlayerContent() {
     [groupedSources],
   )
   const { resolutions: sourceResolutions } = useResolutionProbe(probeList)
-
-  const playerGridClass =
-    viewportMode === 'cinema'
-      ? 'lg:grid-cols-[minmax(0,1.9fr)_minmax(260px,0.55fr)]'
-      : viewportMode === 'wide'
-        ? 'lg:grid-cols-[minmax(0,1.65fr)_minmax(280px,0.72fr)]'
-        : 'lg:grid-cols-3'
 
   useEffect(() => {
     if (videoData && playUrl && videoId) {
@@ -200,7 +191,7 @@ function PlayerContent() {
   return (
     <IKPageContainer className="flex-col max-w-7xl mx-auto">
       {loading ? (
-        <div className={`grid gap-4 items-start ${playerGridClass}`}>
+        <div className="grid gap-4 items-start lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-4">
             <Skeleton className="w-full aspect-video rounded-lg" />
             <div className="space-y-2">
@@ -227,7 +218,7 @@ function PlayerContent() {
           onRetry={fetchVideoDetails}
         />
       ) : (
-        <div className={`grid gap-4 items-start ${playerGridClass}`}>
+        <div className="grid gap-4 items-start lg:grid-cols-3">
           {/* Left column */}
           <div className="lg:col-span-2 space-y-4">
             <VideoPlayer
@@ -238,12 +229,9 @@ function PlayerContent() {
               onBack={() => router.back()}
               totalEpisodes={videoData?.episodes?.length || 0}
               onNextEpisode={handleNextEpisode}
-              isReversed={isReversed}
               isPremium={isPremium}
               externalTimeRef={playerTimeRef}
               onResolutionDetected={setDetectedResolution}
-              viewportMode={viewportMode}
-              onViewportModeChange={setViewportMode}
             />
 
             {/* Mobile tabs */}

@@ -20,7 +20,6 @@ export function usePlayerSettings() {
       adKeywords: s.adKeywords,
       fullscreenType: s.fullscreenType,
       proxyMode: s.proxyMode,
-      playerEngine: s.playerEngine,
       setAutoNextEpisode: s.setAutoNextEpisode,
       setAutoSkipIntro: s.setAutoSkipIntro,
       setSkipIntroSeconds: s.setSkipIntroSeconds,
@@ -32,7 +31,6 @@ export function usePlayerSettings() {
       setAdKeywords: s.setAdKeywords,
       setFullscreenType: s.setFullscreenType,
       setProxyMode: s.setProxyMode,
-      setPlayerEngine: s.setPlayerEngine,
     })),
   )
 }

@@ -38,7 +38,6 @@ export function useSettingsPage({
   const searchDisplayMode = useSettingsStore((s) => s.searchDisplayMode)
   const fullscreenType = useSettingsStore((s) => s.fullscreenType)
   const proxyMode = useSettingsStore((s) => s.proxyMode)
-  const playerEngine = useSettingsStore((s) => s.playerEngine)
   const rememberScrollPosition = useSettingsStore(
     (s) => s.rememberScrollPosition,
   )
@@ -50,7 +49,6 @@ export function useSettingsPage({
   const setSearchDisplayMode = useSettingsStore((s) => s.setSearchDisplayMode)
   const setFullscreenType = useSettingsStore((s) => s.setFullscreenType)
   const setProxyMode = useSettingsStore((s) => s.setProxyMode)
-  const setPlayerEngine = useSettingsStore((s) => s.setPlayerEngine)
   const setRememberScrollPosition = useSettingsStore(
     (s) => s.setRememberScrollPosition,
   )
@@ -173,7 +171,6 @@ export function useSettingsPage({
     searchDisplayMode,
     fullscreenType,
     proxyMode,
-    playerEngine,
     rememberScrollPosition,
     adFilterMode,
     adKeywords,
@@ -202,7 +199,6 @@ export function useSettingsPage({
     handleSearchDisplayModeChange: setSearchDisplayMode,
     handleFullscreenTypeChange: setFullscreenType,
     handleProxyModeChange: setProxyMode,
-    handlePlayerEngineChange: setPlayerEngine,
     handleRememberScrollPositionChange: setRememberScrollPosition,
     handleAdFilterModeChange: setAdFilterMode,
     handleAdKeywordsChange: setAdKeywords,

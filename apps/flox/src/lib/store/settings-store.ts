@@ -27,8 +27,6 @@ export type SortOption =
 export type SearchDisplayMode = 'normal' | 'grouped'
 export type AdFilterMode = 'off' | 'keyword' | 'heuristic' | 'aggressive'
 export type ProxyMode = 'retry' | 'none' | 'always'
-export type PlayerEngine = 'veplayer' | 'native'
-export type PlayerViewportMode = 'standard' | 'wide' | 'cinema'
 
 export interface SettingsState {
   sources: VideoSource[]
@@ -51,8 +49,6 @@ export interface SettingsState {
   episodeReverseOrder: boolean
   fullscreenType: 'native' | 'window'
   proxyMode: ProxyMode
-  playerEngine: PlayerEngine
-  playerViewportMode: PlayerViewportMode
   rememberScrollPosition: boolean
 }
 
@@ -66,8 +62,6 @@ export interface SettingsActions {
   setRememberScrollPosition: (v: boolean) => void
   setFullscreenType: (v: 'native' | 'window') => void
   setProxyMode: (v: ProxyMode) => void
-  setPlayerEngine: (v: PlayerEngine) => void
-  setPlayerViewportMode: (v: PlayerViewportMode) => void
   setEpisodeReverseOrder: (v: boolean) => void
 
   setAutoNextEpisode: (v: boolean) => void
@@ -167,8 +161,6 @@ function getDefaultSettingsState(): SettingsState {
     episodeReverseOrder: false,
     fullscreenType: 'native',
     proxyMode: 'retry',
-    playerEngine: 'veplayer',
-    playerViewportMode: 'standard',
     rememberScrollPosition: true,
   }
 }
@@ -248,11 +240,6 @@ function mergePersistedSettings(
       data.proxyMode === 'always'
         ? data.proxyMode
         : defaults.proxyMode,
-    playerEngine: data.playerEngine === 'native' ? 'native' : 'veplayer',
-    playerViewportMode:
-      data.playerViewportMode === 'wide' || data.playerViewportMode === 'cinema'
-        ? data.playerViewportMode
-        : 'standard',
     rememberScrollPosition:
       data.rememberScrollPosition ?? defaults.rememberScrollPosition,
   }
@@ -277,8 +264,6 @@ export const useSettingsStore = createPersistedStore<
     setRememberScrollPosition: (v) => set({ rememberScrollPosition: v }),
     setFullscreenType: (v) => set({ fullscreenType: v }),
     setProxyMode: (v) => set({ proxyMode: v }),
-    setPlayerEngine: (v) => set({ playerEngine: v }),
-    setPlayerViewportMode: (v) => set({ playerViewportMode: v }),
     setEpisodeReverseOrder: (v) => set({ episodeReverseOrder: v }),
 
     setAutoNextEpisode: (v) => set({ autoNextEpisode: v }),
