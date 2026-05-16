@@ -789,9 +789,6 @@ importers:
       '@tanstack/react-query':
         specifier: catalog:prod
         version: 5.100.9(react@19.2.4)
-      '@volcengine/veplayer':
-        specifier: 1.10.0
-        version: 1.10.0
       date-fns:
         specifier: catalog:prod
         version: 4.1.0
@@ -6310,9 +6307,6 @@ packages:
 
   '@volar/typescript@2.4.28':
     resolution: {integrity: sha512-Ja6yvWrbis2QtN4ClAKreeUZPVYMARDYZl9LMEv1iQ1QdepB6wn0jTRxA9MftYmYa4DQ4k/DaSZpFPUfxl8giw==}
-
-  '@volcengine/veplayer@1.10.0':
-    resolution: {integrity: sha512-LxizgJpgt3fZIwk0Nte+UnNTvQfP8xs0IB0U1j7JCh3xv3W6V9D9uInSkYKiEN8x7lS7+UX8CWo0ydrg+yqb9g==}
 
   '@vue-macros/common@3.1.2':
     resolution: {integrity: sha512-h9t4ArDdniO9ekYHAD95t9AZcAbb19lEGK+26iAjUODOIJKmObDNBSe4+6ELQAA3vtYiFPPBtHh7+cQCKi3Dng==}
@@ -16738,8 +16732,6 @@ snapshots:
       '@volar/language-core': 2.4.28
       path-browserify: 1.0.1
       vscode-uri: 3.1.0
-
-  '@volcengine/veplayer@1.10.0': {}
 
   '@vue-macros/common@3.1.2(vue@3.5.31(typescript@6.0.2))':
     dependencies:

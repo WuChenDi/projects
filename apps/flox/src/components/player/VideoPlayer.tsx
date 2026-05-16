@@ -1,14 +1,17 @@
 'use client'
 
 import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
-import { Card, CardContent } from '@cdlab996/ui/components/card'
-import { Separator } from '@cdlab996/ui/components/separator'
+import { Card, CardContent, CardFooter } from '@cdlab996/ui/components/card'
+import { Label } from '@cdlab996/ui/components/label'
 import { Switch } from '@cdlab996/ui/components/switch'
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@cdlab996/ui/components/toggle-group'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useHistory } from '@/lib/store/history-store'
-import { FloxPlayer } from '../FloxPlayer'
+import type { AdFilterMode } from '@/lib/store/settings-store'
 import { usePlayerSettings } from './hooks/usePlayerSettings'
 import { NativePlayer } from './NativePlayer'
 import { VideoPlayerEmpty } from './VideoPlayerEmpty'
@@ -22,23 +25,22 @@ interface VideoPlayerProps {
   onBack: () => void
   totalEpisodes?: number
   onNextEpisode?: () => void
-  isReversed?: boolean
   isPremium?: boolean
-  externalTimeRef?: React.MutableRefObject<number>
+  externalTimeRef?: React.RefObject<number>
   onResolutionDetected?: (
     info: import('./hooks/useVideoResolution').VideoResolutionInfo,
   ) => void
-  viewportMode?: 'standard' | 'wide' | 'cinema'
-  onViewportModeChange?: (mode: 'standard' | 'wide' | 'cinema') => void
 }
 
 const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const
 
-const VIEWPORT_OPTIONS = [
-  { value: 'standard', label: '标准' },
-  { value: 'wide', label: '宽屏' },
-  { value: 'cinema', label: '影院' },
-] as const
+const AD_FILTER_OPTIONS: { value: AdFilterMode; label: string }[] = [
+  { value: 'off', label: '关' },
+  { value: 'heuristic', label: '启发' },
+  { value: 'aggressive', label: '激进' },
+]
+
+const SKIP_PRESETS = [15, 30, 45, 60, 90, 120]
 
 export function VideoPlayer({
   playUrl,
@@ -48,19 +50,15 @@ export function VideoPlayer({
   onBack,
   totalEpisodes,
   onNextEpisode,
-  isReversed = false,
   isPremium = false,
   externalTimeRef,
   onResolutionDetected,
-  viewportMode,
-  onViewportModeChange,
 }: VideoPlayerProps) {
   const [videoError, setVideoError] = useState<string>('')
   const [useProxy, setUseProxy] = useState(false)
   const [shouldAutoPlay, setShouldAutoPlay] = useState(true)
   const [retryCount, setRetryCount] = useState(0)
   const [playbackRate, setPlaybackRate] = useState(1)
-  const [copied, setCopied] = useState(false)
   const [resolution, setResolution] = useState<
     import('./hooks/useVideoResolution').VideoResolutionInfo | null
   >(null)
@@ -68,13 +66,10 @@ export function VideoPlayer({
   const lastSaveTimeRef = useRef(0)
   const currentTimeRef = useRef(0)
   const durationRef = useRef(0)
-  const switchTimeRef = useRef(0)
   const SAVE_INTERVAL = 5000
 
   const {
     proxyMode,
-    playerEngine,
-    setPlayerEngine,
     autoNextEpisode,
     setAutoNextEpisode,
     autoSkipIntro,
@@ -186,12 +181,6 @@ export function VideoPlayer({
     setUseProxy((prev) => !prev)
   }
 
-  const switchEngine = (engine: typeof playerEngine) => {
-    switchTimeRef.current = currentTimeRef.current
-    setPlayerEngine(engine)
-    setVideoError('')
-  }
-
   const toggleProxy = () => {
     setUseProxy((prev) => !prev)
     setVideoError('')
@@ -199,8 +188,8 @@ export function VideoPlayer({
   }
 
   const cycleSkipSeconds = (current: number, setter: (v: number) => void) => {
-    const presets = [15, 30, 45, 60, 90, 120]
-    const next = presets[(presets.indexOf(current) + 1) % presets.length]
+    const next =
+      SKIP_PRESETS[(SKIP_PRESETS.indexOf(current) + 1) % SKIP_PRESETS.length]
     setter(next ?? 30)
   }
 
@@ -213,27 +202,12 @@ export function VideoPlayer({
 
   const hasMultipleEpisodes = (totalEpisodes ?? 0) > 1
   const canToggleProxy = proxyMode === 'retry'
-  const isNative = playerEngine === 'native'
-  const adFilterEnabled = adFilterMode !== 'off'
 
   return (
     <div className="space-y-4">
       <Card className="p-0 overflow-hidden">
         <div className="relative aspect-video bg-black overflow-hidden">
-          {playerEngine === 'veplayer' ? (
-            <FloxPlayer
-              url={finalPlayUrl}
-              autoplay
-              poster={poster}
-              initialTime={
-                switchTimeRef.current > 0
-                  ? switchTimeRef.current
-                  : getSavedProgress()
-              }
-              onTimeUpdate={handleTimeUpdate}
-              className="w-full h-full object-contain"
-            />
-          ) : videoError ? (
+          {videoError ? (
             <VideoPlayerError
               error={videoError}
               onBack={onBack}
@@ -247,11 +221,7 @@ export function VideoPlayer({
               src={finalPlayUrl}
               poster={poster}
               autoPlay={shouldAutoPlay}
-              initialTime={
-                switchTimeRef.current > 0
-                  ? switchTimeRef.current
-                  : getSavedProgress()
-              }
+              initialTime={getSavedProgress()}
               playbackRate={playbackRate}
               skipIntroSeconds={autoSkipIntro ? skipIntroSeconds : 0}
               skipOutroSeconds={autoSkipOutro ? skipOutroSeconds : 0}
@@ -269,179 +239,114 @@ export function VideoPlayer({
       </Card>
 
       <Card>
-        <CardContent className="py-3 px-4 space-y-3">
-          {/* Row 1: 引擎 + 窗口(desktop) — 右侧固定：分辨率/代理/复制 */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-xs text-muted-foreground">引擎</span>
-              <div className="flex gap-1">
-                <Button
-                  size="sm"
-                  variant={!isNative ? 'default' : 'outline'}
-                  className="h-7 text-xs px-2.5"
-                  onClick={() => switchEngine('veplayer')}
-                >
-                  VePlayer
-                </Button>
-                <Button
-                  size="sm"
-                  variant={isNative ? 'default' : 'outline'}
-                  className="h-7 text-xs px-2.5"
-                  onClick={() => switchEngine('native')}
-                >
-                  原生
-                </Button>
-              </div>
-            </div>
-
-            {onViewportModeChange && (
-              <>
-                <Separator
-                  orientation="vertical"
-                  className="h-5 hidden sm:block"
-                />
-                <div className="hidden sm:flex items-center gap-2 shrink-0">
-                  <span className="text-xs text-muted-foreground">窗口</span>
-                  <div className="flex gap-1">
-                    {VIEWPORT_OPTIONS.map(({ value, label }) => (
-                      <Button
-                        key={value}
-                        size="sm"
-                        variant={viewportMode === value ? 'default' : 'outline'}
-                        className="h-7 text-xs px-2.5"
-                        onClick={() => onViewportModeChange(value)}
-                      >
-                        {label}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* 右侧始终固定，不参与换行 */}
-            <div className="ml-auto flex items-center gap-2 shrink-0">
+        <CardContent>
+          <div className="flex items-center gap-x-2 gap-y-2 flex-wrap">
+            <ToggleGroup
+              type="single"
+              size="sm"
+              variant="outline"
+              value={String(playbackRate)}
+              onValueChange={(v) => v && setPlaybackRate(Number(v))}
+              aria-label="播放速度"
+              className="max-w-full flex-wrap"
+            >
+              {SPEED_OPTIONS.map((s) => (
+                <ToggleGroupItem key={s} value={String(s)} aria-label={`${s}x`}>
+                  {s === 1 ? '1x' : `${s}x`}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+            <div className="ml-auto flex items-center gap-1.5 shrink-0">
               {resolution && (
-                <span
-                  className={`text-[10px] font-bold text-white px-1.5 py-0.5 rounded ${resolution.color}`}
-                >
+                <Badge className={`${resolution.color} text-white`}>
                   {resolution.label}
-                </span>
+                </Badge>
               )}
               {canToggleProxy && (
                 <Badge
-                  variant="outline"
+                  variant={useProxy ? 'destructive' : 'secondary'}
                   onClick={toggleProxy}
-                  className={`cursor-pointer text-xs select-none transition-colors ${
-                    useProxy
-                      ? 'border-orange-400 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-950'
-                      : 'border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950'
-                  }`}
+                  className="cursor-pointer"
                 >
                   {useProxy ? '代理' : '直连'}
                 </Badge>
               )}
             </div>
           </div>
+        </CardContent>
 
-          {/* Row 2: 速度 — 单独一行，移动端也展示完整 */}
-          {isNative && (
+        <CardFooter className="flex items-center gap-x-4 gap-y-2 flex-wrap">
+          {hasMultipleEpisodes && (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground shrink-0">
-                速度
-              </span>
-              <div className="flex flex-wrap gap-1">
-                {SPEED_OPTIONS.map((s) => (
-                  <Button
-                    key={s}
-                    size="sm"
-                    variant={playbackRate === s ? 'default' : 'outline'}
-                    className="h-7 text-xs px-2"
-                    onClick={() => setPlaybackRate(s)}
-                  >
-                    {s === 1 ? '1x' : `${s}x`}
-                  </Button>
-                ))}
-              </div>
+              <Switch
+                id="autoplay-next"
+                checked={autoNextEpisode}
+                onCheckedChange={setAutoNextEpisode}
+              />
+              <Label htmlFor="autoplay-next">自动播放</Label>
             </div>
           )}
 
-          <Separator />
-
-          {/* Row 3: 播放行为开关 */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            {hasMultipleEpisodes && (
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <Switch
-                  checked={autoNextEpisode}
-                  onCheckedChange={setAutoNextEpisode}
-                />
-                <span className="text-xs text-muted-foreground">自动连播</span>
-              </label>
-            )}
-
-            <div className="flex items-center gap-1.5">
-              <Switch
-                checked={autoSkipIntro}
-                onCheckedChange={setAutoSkipIntro}
-              />
-              <span className="text-xs text-muted-foreground">跳片头</span>
-              {autoSkipIntro && (
-                <button
-                  className="text-xs text-primary underline underline-offset-2 tabular-nums"
-                  onClick={() =>
-                    cycleSkipSeconds(skipIntroSeconds, setSkipIntroSeconds)
-                  }
-                  title="点击切换秒数"
-                >
-                  {skipIntroSeconds}s
-                </button>
-              )}
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <Switch
-                checked={autoSkipOutro}
-                onCheckedChange={setAutoSkipOutro}
-              />
-              <span className="text-xs text-muted-foreground">跳片尾</span>
-              {autoSkipOutro && (
-                <button
-                  className="text-xs text-primary underline underline-offset-2 tabular-nums"
-                  onClick={() =>
-                    cycleSkipSeconds(skipOutroSeconds, setSkipOutroSeconds)
-                  }
-                  title="点击切换秒数"
-                >
-                  {skipOutroSeconds}s
-                </button>
-              )}
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <Switch
-                checked={adFilterEnabled}
-                onCheckedChange={(v) =>
-                  setAdFilterMode(v ? 'heuristic' : 'off')
+          <div className="flex items-center gap-2">
+            <Switch
+              id="skip-intro"
+              checked={autoSkipIntro}
+              onCheckedChange={setAutoSkipIntro}
+            />
+            <Label htmlFor="skip-intro">跳片头</Label>
+            {autoSkipIntro && (
+              <button
+                type="button"
+                className="text-xs text-primary underline underline-offset-2 tabular-nums"
+                onClick={() =>
+                  cycleSkipSeconds(skipIntroSeconds, setSkipIntroSeconds)
                 }
-              />
-              <span className="text-xs text-muted-foreground">广告过滤</span>
-              {adFilterEnabled && (
-                <button
-                  className="text-xs text-primary underline underline-offset-2 tabular-nums"
-                  onClick={() =>
-                    setAdFilterMode(
-                      adFilterMode === 'heuristic' ? 'aggressive' : 'heuristic',
-                    )
-                  }
-                  title="点击切换过滤强度"
-                >
-                  {adFilterMode === 'aggressive' ? '激进' : '启发式'}
-                </button>
-              )}
-            </div>
+                title="点击切换秒数"
+              >
+                {skipIntroSeconds}s
+              </button>
+            )}
           </div>
-        </CardContent>
+
+          <div className="flex items-center gap-2">
+            <Switch
+              id="skip-outro"
+              checked={autoSkipOutro}
+              onCheckedChange={setAutoSkipOutro}
+            />
+            <Label htmlFor="skip-outro">跳片尾</Label>
+            {autoSkipOutro && (
+              <button
+                type="button"
+                className="text-xs text-primary underline underline-offset-2 tabular-nums"
+                onClick={() =>
+                  cycleSkipSeconds(skipOutroSeconds, setSkipOutroSeconds)
+                }
+                title="点击切换秒数"
+              >
+                {skipOutroSeconds}s
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Label>广告过滤</Label>
+            <ToggleGroup
+              type="single"
+              size="sm"
+              variant="outline"
+              value={adFilterMode}
+              onValueChange={(v) => v && setAdFilterMode(v as AdFilterMode)}
+              aria-label="广告过滤"
+            >
+              {AD_FILTER_OPTIONS.map(({ value, label }) => (
+                <ToggleGroupItem key={value} value={value}>
+                  {label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
+        </CardFooter>
       </Card>
     </div>
   )

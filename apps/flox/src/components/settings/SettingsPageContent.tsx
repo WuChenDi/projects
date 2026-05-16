@@ -57,8 +57,6 @@ export function SettingsPageContent({
     handleFullscreenTypeChange,
     proxyMode,
     handleProxyModeChange,
-    playerEngine,
-    handlePlayerEngineChange,
     rememberScrollPosition,
     handleRememberScrollPositionChange,
     adFilterMode,
@@ -77,8 +75,6 @@ export function SettingsPageContent({
             onFullscreenTypeChange={handleFullscreenTypeChange}
             proxyMode={proxyMode}
             onProxyModeChange={handleProxyModeChange}
-            playerEngine={playerEngine}
-            onPlayerEngineChange={handlePlayerEngineChange}
             adFilterMode={adFilterMode}
             adKeywords={adKeywords}
             onAdFilterModeChange={handleAdFilterModeChange}

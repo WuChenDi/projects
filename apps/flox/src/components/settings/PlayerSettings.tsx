@@ -1,39 +1,49 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@cdlab996/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@cdlab996/ui/components/card'
 import { Separator } from '@cdlab996/ui/components/separator'
 import { Textarea } from '@cdlab996/ui/components/textarea'
-import { GlobeIcon, MaximizeIcon, MonitorPlayIcon, ShieldIcon } from 'lucide-react'
-import type { AdFilterMode, PlayerEngine, ProxyMode } from '@/lib/store/settings-store'
+import { GlobeIcon, MaximizeIcon, ShieldIcon } from 'lucide-react'
+import type { AdFilterMode, ProxyMode } from '@/lib/store/settings-store'
 
 interface PlayerSettingsProps {
   fullscreenType: 'native' | 'window'
   onFullscreenTypeChange: (type: 'native' | 'window') => void
   proxyMode: ProxyMode
   onProxyModeChange: (mode: ProxyMode) => void
-  playerEngine: PlayerEngine
-  onPlayerEngineChange: (engine: PlayerEngine) => void
   adFilterMode: AdFilterMode
   adKeywords: string[]
   onAdFilterModeChange: (mode: AdFilterMode) => void
   onAdKeywordsChange: (keywords: string[]) => void
 }
 
-const AD_FILTER_MODES: { value: AdFilterMode; label: string; desc: string }[] = [
-  { value: 'off', label: '关闭', desc: '不过滤广告' },
-  { value: 'keyword', label: '关键词', desc: '仅根据自定义关键词过滤' },
-  { value: 'heuristic', label: '启发式', desc: '自动分析播放列表结构识别广告（推荐）' },
-  { value: 'aggressive', label: '激进', desc: '更严格的启发式检测，可能误删正常片段' },
-]
+const AD_FILTER_MODES: { value: AdFilterMode; label: string; desc: string }[] =
+  [
+    { value: 'off', label: '关闭', desc: '不过滤广告' },
+    { value: 'keyword', label: '关键词', desc: '仅根据自定义关键词过滤' },
+    {
+      value: 'heuristic',
+      label: '启发式',
+      desc: '自动分析播放列表结构识别广告（推荐）',
+    },
+    {
+      value: 'aggressive',
+      label: '激进',
+      desc: '更严格的启发式检测，可能误删正常片段',
+    },
+  ]
 
 export function PlayerSettings({
   fullscreenType,
   onFullscreenTypeChange,
   proxyMode,
   onProxyModeChange,
-  playerEngine,
-  onPlayerEngineChange,
   adFilterMode,
   adKeywords,
   onAdFilterModeChange,
@@ -45,36 +55,6 @@ export function PlayerSettings({
         <CardTitle>播放器设置</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-
-        {/* Player Engine */}
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <MonitorPlayIcon className="size-4 text-muted-foreground" />
-            <span className="font-medium text-sm">播放引擎</span>
-          </div>
-          <p className="text-xs text-muted-foreground mb-3">
-            VePlayer 功能丰富，原生播放器兼容性更好
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant={playerEngine === 'veplayer' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => onPlayerEngineChange('veplayer')}
-            >
-              VePlayer
-            </Button>
-            <Button
-              variant={playerEngine === 'native' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => onPlayerEngineChange('native')}
-            >
-              原生播放器
-            </Button>
-          </div>
-        </div>
-
-        <Separator />
-
         {/* Fullscreen Mode */}
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -147,7 +127,7 @@ export function PlayerSettings({
             <span className="font-medium text-sm">广告过滤</span>
           </div>
           <p className="text-xs text-muted-foreground mb-3">
-            过滤 M3U8 播放流中的广告片段，仅对原生播放器有效
+            过滤 M3U8 播放流中的广告片段
           </p>
           <div className="flex flex-wrap gap-2 mb-3">
             {AD_FILTER_MODES.map(({ value, label, desc }) => (
@@ -180,7 +160,6 @@ export function PlayerSettings({
             </div>
           )}
         </div>
-
       </CardContent>
     </Card>
   )

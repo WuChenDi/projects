@@ -150,10 +150,20 @@ export function useHlsPlayer({
         hls.loadSource(src)
         hls.attachMedia(video)
 
+        // Try to play; if blocked by autoplay policy, retry muted, then surface error.
+        const tryPlay = () => {
+          video.play().catch(() => {
+            video.muted = true
+            video.play().catch((err) => {
+              onAutoPlayPreventedRef.current?.(err)
+            })
+          })
+        }
+
         // Auto Play Handler
         hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
           if (autoPlay && video.paused && data.frag.start === 0) {
-            video.play().catch(console.warn)
+            tryPlay()
           }
         })
 
@@ -178,10 +188,7 @@ export function useHlsPlayer({
           }
 
           if (autoPlay) {
-            video.play().catch((err) => {
-              // console.warn('[HLS] Autoplay prevented:', err);
-              onAutoPlayPreventedRef.current?.(err)
-            })
+            tryPlay()
           }
         })
 
