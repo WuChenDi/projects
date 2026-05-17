@@ -8,6 +8,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from '@cdlab996/ui/components/toggle-group'
+import { cn } from '@cdlab996/ui/lib/utils'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useHistory } from '@/lib/store/history-store'
@@ -240,7 +241,10 @@ export function VideoPlayer({
 
       <Card>
         <CardContent>
-          <div className="flex items-center gap-x-2 gap-y-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Label className="text-xs font-normal text-muted-foreground whitespace-nowrap">
+              速度
+            </Label>
             <ToggleGroup
               type="single"
               size="sm"
@@ -248,7 +252,7 @@ export function VideoPlayer({
               value={String(playbackRate)}
               onValueChange={(v) => v && setPlaybackRate(Number(v))}
               aria-label="播放速度"
-              className="max-w-full flex-wrap"
+              className="w-max flex-nowrap flex-1"
             >
               {SPEED_OPTIONS.map((s) => (
                 <ToggleGroupItem key={s} value={String(s)} aria-label={`${s}x`}>
@@ -256,95 +260,115 @@ export function VideoPlayer({
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>
-            <div className="ml-auto flex items-center gap-1.5 shrink-0">
-              {resolution && (
-                <Badge className={`${resolution.color} text-white`}>
-                  {resolution.label}
-                </Badge>
-              )}
-              {canToggleProxy && (
-                <Badge
-                  variant={useProxy ? 'destructive' : 'secondary'}
-                  onClick={toggleProxy}
-                  className="cursor-pointer"
-                >
-                  {useProxy ? '代理' : '直连'}
-                </Badge>
-              )}
-            </div>
+            {(resolution || canToggleProxy) && (
+              <div className="flex items-center gap-1.5 shrink-0">
+                {resolution && (
+                  <Badge className={cn('hidden sm:block', resolution.color)}>
+                    {resolution.label}
+                  </Badge>
+                )}
+                {canToggleProxy && (
+                  <Badge
+                    variant={useProxy ? 'destructive' : 'secondary'}
+                    onClick={toggleProxy}
+                    className="cursor-pointer select-none"
+                  >
+                    {useProxy ? '代理' : '直连'}
+                  </Badge>
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
-
-        <CardFooter className="flex items-center gap-x-4 gap-y-2 flex-wrap">
-          {hasMultipleEpisodes && (
-            <div className="flex items-center gap-2">
-              <Switch
-                id="autoplay-next"
-                checked={autoNextEpisode}
-                onCheckedChange={setAutoNextEpisode}
-              />
-              <Label htmlFor="autoplay-next">自动播放</Label>
+        <CardFooter>
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="flex items-center gap-1.5">
+              <Label className="text-xs text-muted-foreground whitespace-nowrap">
+                广告过滤
+              </Label>
+              <ToggleGroup
+                type="single"
+                size="sm"
+                variant="outline"
+                value={adFilterMode}
+                onValueChange={(v) => v && setAdFilterMode(v as AdFilterMode)}
+                aria-label="广告过滤"
+              >
+                {AD_FILTER_OPTIONS.map(({ value, label }) => (
+                  <ToggleGroupItem key={value} value={value}>
+                    {label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
             </div>
-          )}
 
-          <div className="flex items-center gap-2">
-            <Switch
-              id="skip-intro"
-              checked={autoSkipIntro}
-              onCheckedChange={setAutoSkipIntro}
-            />
-            <Label htmlFor="skip-intro">跳片头</Label>
-            {autoSkipIntro && (
-              <button
-                type="button"
-                className="text-xs text-primary underline underline-offset-2 tabular-nums"
-                onClick={() =>
-                  cycleSkipSeconds(skipIntroSeconds, setSkipIntroSeconds)
-                }
-                title="点击切换秒数"
-              >
-                {skipIntroSeconds}s
-              </button>
+            {hasMultipleEpisodes && (
+              <div className="flex items-center gap-1.5">
+                <Switch
+                  id="autoplay-next"
+                  checked={autoNextEpisode}
+                  onCheckedChange={setAutoNextEpisode}
+                />
+                <Label
+                  htmlFor="autoplay-next"
+                  className="cursor-pointer text-xs whitespace-nowrap"
+                >
+                  自动播放
+                </Label>
+              </div>
             )}
-          </div>
 
-          <div className="flex items-center gap-2">
-            <Switch
-              id="skip-outro"
-              checked={autoSkipOutro}
-              onCheckedChange={setAutoSkipOutro}
-            />
-            <Label htmlFor="skip-outro">跳片尾</Label>
-            {autoSkipOutro && (
-              <button
-                type="button"
-                className="text-xs text-primary underline underline-offset-2 tabular-nums"
-                onClick={() =>
-                  cycleSkipSeconds(skipOutroSeconds, setSkipOutroSeconds)
-                }
-                title="点击切换秒数"
+            <div className="flex items-center gap-1.5">
+              <Switch
+                id="skip-intro"
+                checked={autoSkipIntro}
+                onCheckedChange={setAutoSkipIntro}
+              />
+              <Label
+                htmlFor="skip-intro"
+                className="cursor-pointer text-xs whitespace-nowrap"
               >
-                {skipOutroSeconds}s
-              </button>
-            )}
-          </div>
+                跳片头
+              </Label>
+              {autoSkipIntro && (
+                <button
+                  type="button"
+                  className="text-xs text-primary underline underline-offset-2 tabular-nums text-left"
+                  onClick={() =>
+                    cycleSkipSeconds(skipIntroSeconds, setSkipIntroSeconds)
+                  }
+                  title="点击切换秒数"
+                >
+                  {skipIntroSeconds}s
+                </button>
+              )}
+            </div>
 
-          <div className="flex items-center gap-2">
-            <Label>广告过滤</Label>
-            <ToggleGroup
-              type="single"
-              size="sm"
-              variant="outline"
-              value={adFilterMode}
-              onValueChange={(v) => v && setAdFilterMode(v as AdFilterMode)}
-              aria-label="广告过滤"
-            >
-              {AD_FILTER_OPTIONS.map(({ value, label }) => (
-                <ToggleGroupItem key={value} value={value}>
-                  {label}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
+            <div className="flex items-center gap-1.5">
+              <Switch
+                id="skip-outro"
+                checked={autoSkipOutro}
+                onCheckedChange={setAutoSkipOutro}
+              />
+              <Label
+                htmlFor="skip-outro"
+                className="cursor-pointer text-xs whitespace-nowrap"
+              >
+                跳片尾
+              </Label>
+              {autoSkipOutro && (
+                <button
+                  type="button"
+                  className="text-xs text-primary underline underline-offset-2 tabular-nums text-left"
+                  onClick={() =>
+                    cycleSkipSeconds(skipOutroSeconds, setSkipOutroSeconds)
+                  }
+                  title="点击切换秒数"
+                >
+                  {skipOutroSeconds}s
+                </button>
+              )}
+            </div>
           </div>
         </CardFooter>
       </Card>
