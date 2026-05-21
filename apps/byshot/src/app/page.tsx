@@ -5,29 +5,32 @@ import getResults from '@/utils/cachedImages'
 import getBase64ImageUrl from '@/utils/generateBlurPlaceholder'
 import type { ImageProps } from '@/utils/types'
 
+// Limit how many blur placeholders we fetch per SSR.
+// Cloudflare Workers caps outgoing subrequests (50 free / 1000 paid),
+// and only the first viewport's photos benefit visually from blur.
+const BLUR_PLACEHOLDER_COUNT = 30
+
 export default async function HomePage() {
   const results: ResourceApiResponse = await getResults()
 
-  const reducedResults: ImageProps[] = []
-  let i = 0
-  for (const result of results.resources) {
-    reducedResults.push({
-      id: i,
-      height: result.height,
-      width: result.width,
-      public_id: result.public_id,
-      format: result.format,
-    })
-    i++
-  }
+  const reducedResults: ImageProps[] = results.resources.map((result, i) => ({
+    id: i,
+    asset_id: result.asset_id,
+    height: result.height,
+    width: result.width,
+    public_id: result.public_id,
+    format: result.format,
+  }))
 
-  const blurImagePromises = reducedResults.map((image) =>
-    getBase64ImageUrl(image),
+  const blurTargets = reducedResults.slice(0, BLUR_PLACEHOLDER_COUNT)
+  const blurDataUrls = await Promise.all(
+    blurTargets.map((image) => getBase64ImageUrl(image)),
   )
-  const imagesWithBlurDataUrls = await Promise.all(blurImagePromises)
-
-  for (let j = 0; j < reducedResults.length; j++) {
-    reducedResults[j].blurDataUrl = imagesWithBlurDataUrls[j]
+  for (let j = 0; j < blurTargets.length; j++) {
+    const target = blurTargets[j]
+    if (target) {
+      target.blurDataUrl = blurDataUrls[j]
+    }
   }
 
   return (

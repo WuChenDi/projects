@@ -11,16 +11,15 @@ export default function downloadPhoto(url: string, filename: string) {
   if (!filename) {
     filename = url.split('\\').pop()?.split('/').pop() ?? 'image'
   }
-  fetch(url, {
-    headers: new Headers({
-      Origin: location.origin,
-    }),
-    mode: 'cors',
-  })
+  fetch(url, { mode: 'cors' })
     .then((response) => response.blob())
     .then((blob) => {
       const blobUrl = window.URL.createObjectURL(blob)
-      forceDownload(blobUrl, filename)
+      try {
+        forceDownload(blobUrl, filename)
+      } finally {
+        window.URL.revokeObjectURL(blobUrl)
+      }
     })
     .catch((e) => console.error(e))
 }

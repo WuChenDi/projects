@@ -1,17 +1,17 @@
 import { create } from 'zustand'
 
 type LastViewedPhotoState = {
-  photoToScrollTo: number | null
-  setPhotoToScrollTo: (photoToScrollTo: number | null) => void
+  lastViewedAssetId: string | null
+  setLastViewedAssetId: (assetId: string | null) => void
 }
 
 const useLastViewedPhotoStore = create<LastViewedPhotoState>((set) => ({
-  photoToScrollTo: null,
-  setPhotoToScrollTo: (photoToScrollTo) => set({ photoToScrollTo }),
+  lastViewedAssetId: null,
+  setLastViewedAssetId: (lastViewedAssetId) => set({ lastViewedAssetId }),
 }))
 
 export const useLastViewedPhoto = () =>
   [
-    useLastViewedPhotoStore((s) => s.photoToScrollTo),
-    useLastViewedPhotoStore((s) => s.setPhotoToScrollTo),
+    useLastViewedPhotoStore((s) => s.lastViewedAssetId),
+    useLastViewedPhotoStore((s) => s.setLastViewedAssetId),
   ] as const

@@ -15,10 +15,10 @@ export default function Carousel({
   currentPhoto: ImageProps
 }) {
   const router = useRouter()
-  const [, setLastViewedPhoto] = useLastViewedPhoto()
+  const [, setLastViewedAssetId] = useLastViewedPhoto()
 
   function closeModal() {
-    setLastViewedPhoto(currentPhoto.id)
+    setLastViewedAssetId(currentPhoto.asset_id)
     router.push('/', { scroll: false })
   }
 
