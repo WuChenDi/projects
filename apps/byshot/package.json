@@ -15,10 +15,11 @@
   "scripts": {
     "dev": "nsl run next dev",
     "build": "next build",
+    "build:cf": "next-on-pages",
     "start": "next start",
-    "lint": "biome check",
-    "typecheck": "tsc --noEmit",
-    "pages:build": "npx @cloudflare/next-on-pages@latest"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@cdlab996/ui": "workspace:*",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",
+    "@cloudflare/next-on-pages": "catalog:dev",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",

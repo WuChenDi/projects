@@ -531,6 +531,9 @@ importers:
       '@cdlab996/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
+      '@cloudflare/next-on-pages':
+        specifier: catalog:dev
+        version: 1.13.16(@cloudflare/workers-types@4.20260504.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.87.0(@cloudflare/workers-types@4.20260504.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
