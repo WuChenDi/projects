@@ -1,5 +1,6 @@
 'use client'
 
+import { IKPageContainer } from '@cdlab996/ui/IK/IKPageContainer'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -28,7 +29,10 @@ export default function Gallery({ images }: { images: ImageProps[] }) {
 
   return (
     <>
-      <main className="mx-auto max-w-[1960px] p-4">
+      <IKPageContainer
+        scrollable={false}
+        className="block mx-auto w-full max-w-[1960px] p-4"
+      >
         {modalPhotoExists && photoAssetId && (
           <Modal
             images={images}
@@ -99,7 +103,7 @@ export default function Gallery({ images }: { images: ImageProps[] }) {
             </Link>
           ))}
         </div>
-      </main>
+      </IKPageContainer>
       <footer className="p-6 text-center text-white/80 sm:p-12">
         Copyright (c) 2023-PRESENT |{' '}
         <a
