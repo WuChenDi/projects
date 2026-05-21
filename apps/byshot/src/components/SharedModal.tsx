@@ -1,5 +1,6 @@
 'use client'
 
+import { XIcon } from '@cdlab996/ui/icon/XIcon'
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,7 +17,6 @@ import { variants } from '@/utils/animationVariants'
 import downloadPhoto from '@/utils/downloadPhoto'
 import { range } from '@/utils/range'
 import type { ImageProps, SharedModalProps } from '@/utils/types'
-import Twitter from './Icons/Twitter'
 
 export default function SharedModal({
   index,
@@ -131,15 +131,15 @@ export default function SharedModal({
                   </a>
                 ) : (
                   <a
-                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                    href={`https://x.com/intent/post?text=${encodeURIComponent(
                       `Check out this photo from byshot!\n\nhttps://byshot.pages.dev/p/${currentImage.asset_id}`,
                     )}`}
                     className="rounded-full bg-black/50 p-2 text-white/75 backdrop-blur-lg transition hover:bg-black/75 hover:text-white"
                     target="_blank"
-                    title="Share on Twitter"
+                    title="Share on X"
                     rel="noreferrer"
                   >
-                    <Twitter className="h-5 w-5" />
+                    <XIcon className="h-5 w-5" />
                   </a>
                 )}
                 <button
