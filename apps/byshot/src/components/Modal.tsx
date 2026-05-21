@@ -14,16 +14,20 @@ import SharedModal from './SharedModal'
 
 export default function Modal({
   images,
-  photoId,
+  photoAssetId,
   onClose,
 }: {
   images: ImageProps[]
-  photoId: number
+  photoAssetId: string
   onClose?: () => void
 }) {
   const router = useRouter()
+  const initialIndex = Math.max(
+    0,
+    images.findIndex((img) => img.asset_id === photoAssetId),
+  )
   const [direction, setDirection] = useState(0)
-  const [curIndex, setCurIndex] = useState(photoId)
+  const [curIndex, setCurIndex] = useState(initialIndex)
 
   function handleClose() {
     router.push('/', { scroll: false })
@@ -33,7 +37,10 @@ export default function Modal({
   function changePhotoId(newVal: number) {
     setDirection(newVal > curIndex ? 1 : -1)
     setCurIndex(newVal)
-    window.history.replaceState(null, '', `/?photoId=${newVal}`)
+    const nextAssetId = images[newVal]?.asset_id
+    if (nextAssetId) {
+      window.history.replaceState(null, '', `/?photoId=${nextAssetId}`)
+    }
   }
 
   useKeypress('ArrowRight', () => {

@@ -9,40 +9,45 @@ import type { ImageProps } from '@/utils/types'
 
 type PageProps = { params: Promise<{ photoId: string }> }
 
-async function loadPhoto(photoId: string): Promise<ImageProps | null> {
+async function loadPhoto(
+  assetId: string,
+): Promise<{ photo: ImageProps; index: number } | null> {
   const results: ResourceApiResponse = await getResults()
 
-  const reducedResults: ImageProps[] = []
-  let i = 0
-  for (const result of results.resources) {
-    reducedResults.push({
-      id: i,
-      height: result.height,
-      width: result.width,
-      public_id: result.public_id,
-      format: result.format,
-    })
-    i++
+  let index = -1
+  let match: ResourceApiResponse['resources'][number] | undefined
+  for (let i = 0; i < results.resources.length; i++) {
+    if (results.resources[i]?.asset_id === assetId) {
+      index = i
+      match = results.resources[i]
+      break
+    }
   }
+  if (!match || index < 0) return null
 
-  const currentPhoto = reducedResults.find((img) => img.id === Number(photoId))
-  if (!currentPhoto) return null
-
-  currentPhoto.blurDataUrl = await getBase64ImageUrl(currentPhoto)
-  return currentPhoto
+  const photo: ImageProps = {
+    id: index,
+    asset_id: match.asset_id,
+    height: match.height,
+    width: match.width,
+    public_id: match.public_id,
+    format: match.format,
+  }
+  photo.blurDataUrl = await getBase64ImageUrl(photo)
+  return { photo, index }
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { photoId } = await params
-  const currentPhoto = await loadPhoto(photoId)
-  if (!currentPhoto) return {}
+  const loaded = await loadPhoto(photoId)
+  if (!loaded) return {}
 
-  const currentPhotoUrl = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_2560/${currentPhoto.public_id}.${currentPhoto.format}`
+  const currentPhotoUrl = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_2560/${loaded.photo.public_id}.${loaded.photo.format}`
 
   return {
-    title: 'Next.js Conf 2022 Photos',
+    title: `Photo ${loaded.index + 1} | byshot`,
     openGraph: { images: [currentPhotoUrl] },
     twitter: { images: [currentPhotoUrl] },
   }
@@ -55,19 +60,19 @@ export async function generateStaticParams() {
     .max_results(400)
     .execute()) as ResourceApiResponse
 
-  return results.resources.map((_, i) => ({ photoId: i.toString() }))
+  return results.resources.map((r) => ({ photoId: r.asset_id }))
 }
 
 export const dynamicParams = false
 
 export default async function PhotoPage({ params }: PageProps) {
   const { photoId } = await params
-  const currentPhoto = await loadPhoto(photoId)
-  if (!currentPhoto) notFound()
+  const loaded = await loadPhoto(photoId)
+  if (!loaded) notFound()
 
   return (
     <main className="mx-auto max-w-[1960px] p-4">
-      <Carousel currentPhoto={currentPhoto} index={Number(photoId)} />
+      <Carousel currentPhoto={loaded.photo} index={loaded.index} />
     </main>
   )
 }

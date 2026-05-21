@@ -83,7 +83,7 @@ export default function SharedModal({
                   width={navigation ? 1280 : 1920}
                   height={navigation ? 853 : 1280}
                   priority
-                  alt="Next.js Conf image"
+                  alt={`Photo ${currentImage.id + 1} from the collection`}
                   onLoad={() => setLoaded(true)}
                 />
               </motion.div>
@@ -131,10 +131,12 @@ export default function SharedModal({
                   </a>
                 ) : (
                   <a
-                    href={`https://twitter.com/intent/tweet?text=Check%20out%20this%20pic%20from%20Next.js%20Conf!%0A%0Ahttps://nextjsconf-pics.vercel.app/p/${index}`}
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                      `Check out this photo from byshot!\n\nhttps://byshot.pages.dev/p/${currentImage.asset_id}`,
+                    )}`}
                     className="rounded-full bg-black/50 p-2 text-white/75 backdrop-blur-lg transition hover:bg-black/75 hover:text-white"
                     target="_blank"
-                    title="Open fullsize version"
+                    title="Share on Twitter"
                     rel="noreferrer"
                   >
                     <Twitter className="h-5 w-5" />

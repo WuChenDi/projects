@@ -1,10 +1,12 @@
-export const range = (start: number, end: number) => {
+export const range = (start: number, end?: number) => {
   const output: number[] = []
-  if (typeof end === 'undefined') {
-    end = start
-    start = 0
+  let from = start
+  let to = end
+  if (typeof to === 'undefined') {
+    to = from
+    from = 0
   }
-  for (let i = start; i < end; i += 1) {
+  for (let i = from; i < to; i += 1) {
     output.push(i)
   }
   return output

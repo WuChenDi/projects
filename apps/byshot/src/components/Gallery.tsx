@@ -11,27 +11,30 @@ import Modal from './Modal'
 
 export default function Gallery({ images }: { images: ImageProps[] }) {
   const searchParams = useSearchParams()
-  const photoId = searchParams.get('photoId')
-  const [lastViewedPhoto, setLastViewedPhoto] = useLastViewedPhoto()
+  const photoAssetId = searchParams.get('photoId')
+  const [lastViewedAssetId, setLastViewedAssetId] = useLastViewedPhoto()
 
   const lastViewedPhotoRef = useRef<HTMLAnchorElement>(null)
 
   useEffect(() => {
-    if (lastViewedPhoto && !photoId) {
+    if (lastViewedAssetId && !photoAssetId) {
       lastViewedPhotoRef.current?.scrollIntoView({ block: 'center' })
-      setLastViewedPhoto(null)
+      setLastViewedAssetId(null)
     }
-  }, [photoId, lastViewedPhoto, setLastViewedPhoto])
+  }, [photoAssetId, lastViewedAssetId, setLastViewedAssetId])
+
+  const modalPhotoExists =
+    photoAssetId !== null && images.some((img) => img.asset_id === photoAssetId)
 
   return (
     <>
       <main className="mx-auto max-w-[1960px] p-4">
-        {photoId && (
+        {modalPhotoExists && photoAssetId && (
           <Modal
             images={images}
-            photoId={Number(photoId)}
+            photoAssetId={photoAssetId}
             onClose={() => {
-              setLastViewedPhoto(Number(photoId))
+              setLastViewedAssetId(photoAssetId)
             }}
           />
         )}
@@ -44,11 +47,9 @@ export default function Gallery({ images }: { images: ImageProps[] }) {
               <span className="absolute left-0 right-0 bottom-0 h-[400px] bg-gradient-to-b from-black/0 via-black to-black"></span>
             </div>
             <Image
-              alt="Next.js Conf photo"
+              alt="Byshot logo"
               className="transform rounded-lg brightness-90 transition will-change-auto group-hover:brightness-110"
               style={{ transform: 'translate3d(0, 0, 0)' }}
-              placeholder="blur"
-              blurDataURL="https://notes-wudi.vercel.app/images/logo.png"
               src="https://notes-wudi.vercel.app/images/logo.png"
               width={150}
               height={150}
@@ -72,20 +73,21 @@ export default function Gallery({ images }: { images: ImageProps[] }) {
               Notes
             </a>
           </div>
-          {images.map(({ id, public_id, format, blurDataUrl }) => (
+          {images.map(({ id, asset_id, public_id, format, blurDataUrl }) => (
             <Link
-              key={id}
-              href={`/?photoId=${id}`}
-              ref={id === Number(lastViewedPhoto) ? lastViewedPhotoRef : null}
+              key={asset_id}
+              href={`/?photoId=${asset_id}`}
+              ref={asset_id === lastViewedAssetId ? lastViewedPhotoRef : null}
               scroll={false}
               className="after:content group relative mb-5 block w-full cursor-zoom-in after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:shadow-highlight"
             >
               <Image
-                alt="Next.js Conf photo"
+                alt={`Photo ${id + 1} from the collection`}
                 className="transform rounded-lg brightness-90 transition will-change-auto group-hover:brightness-110"
                 style={{ transform: 'translate3d(0, 0, 0)' }}
-                placeholder="blur"
-                blurDataURL={blurDataUrl}
+                {...(blurDataUrl
+                  ? { placeholder: 'blur', blurDataURL: blurDataUrl }
+                  : {})}
                 src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_720/${public_id}.${format}`}
                 width={720}
                 height={480}
