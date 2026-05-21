@@ -1,0 +1,15 @@
+@import "@cdlab996/ui/globals.css";
+
+@theme {
+  --shadow-highlight: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+@custom-variant narrow (@media (max-aspect-ratio: 3 / 2));
+@custom-variant wide (@media (min-aspect-ratio: 3 / 2));
+@custom-variant taller-than-854 (@media (min-height: 854px));
+
+@supports (font: -apple-system-body) and (-webkit-appearance: none) {
+  img[loading="lazy"] {
+    clip-path: inset(0.6px);
+  }
+}

@@ -25,6 +25,7 @@
     "dev:bycut": "turbo dev --filter=./apps/bycut",
     "dev:byplay": "turbo dev --filter=./apps/byplay",
     "dev:byplay-log": "turbo dev --filter=./apps/byplay-log",
+    "dev:byshot": "turbo dev --filter=./apps/byshot",
     "dev:bytts": "turbo dev --filter=./apps/bytts",
     "dev:clearify": "turbo dev --filter=./apps/clearify",
     "dev:dropply": "turbo dev --filter=./apps/dropply-*",

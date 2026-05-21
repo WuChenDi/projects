@@ -1,0 +1,45 @@
+{
+  "name": "@cdlab996/byshot",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Personal photography collection — Cloudinary-backed image gallery.",
+  "author": "wudi <wuchendi96@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/WuChenDi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WuChenDi/projects.git",
+    "directory": "apps/byshot"
+  },
+  "scripts": {
+    "dev": "nsl run next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "biome check",
+    "typecheck": "tsc --noEmit",
+    "pages:build": "npx @cloudflare/next-on-pages@latest"
+  },
+  "dependencies": {
+    "@cdlab996/ui": "workspace:*",
+    "@cdlab996/utils": "workspace:*",
+    "@vercel/analytics": "catalog:prod",
+    "cloudinary": "2.10.0",
+    "lucide-react": "catalog:prod",
+    "motion": "catalog:prod",
+    "next": "catalog:prod",
+    "radix-ui": "catalog:prod",
+    "react": "catalog:prod",
+    "react-dom": "catalog:prod",
+    "react-swipeable": "7.0.2",
+    "react-use-keypress": "1.4.0",
+    "zustand": "catalog:prod"
+  },
+  "devDependencies": {
+    "@cdlab996/tsconfig": "workspace:*",
+    "@types/node": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}
