@@ -29,6 +29,7 @@
     "lucide-react": "catalog:prod",
     "motion": "catalog:prod",
     "next": "catalog:prod",
+    "next-themes": "catalog:prod",
     "radix-ui": "catalog:prod",
     "react": "catalog:prod",
     "react-dom": "catalog:prod",

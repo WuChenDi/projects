@@ -9,6 +9,7 @@ import type { ImageProps } from '@/utils/types'
 import { useLastViewedPhoto } from '@/utils/useLastViewedPhoto'
 import Bridge from './Icons/Bridge'
 import Modal from './Modal'
+import { IKFooter } from '@cdlab996/ui/IK/IKFooter'
 
 export default function Gallery({ images }: { images: ImageProps[] }) {
   const searchParams = useSearchParams()
@@ -104,17 +105,7 @@ export default function Gallery({ images }: { images: ImageProps[] }) {
           ))}
         </div>
       </IKPageContainer>
-      <footer className="p-6 text-center text-white/80 sm:p-12">
-        Copyright (c) 2023-PRESENT |{' '}
-        <a
-          href="https://github.com/WuChenDi"
-          target="_blank"
-          className="font-semibold hover:text-white"
-          rel="noreferrer"
-        >
-          wudi
-        </a>
-      </footer>
+      <IKFooter year={2023} />
     </>
   )
 }
