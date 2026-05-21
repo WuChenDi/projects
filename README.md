@@ -137,6 +137,24 @@ https://bytts.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/bytts/og-image.png" alt="bytts" />
 </details>
 
+### byshot
+
+**Personal Photography Collection**
+
+https://byshot.pages.dev/
+
+- Cloudinary-backed image gallery with responsive masonry layout (1 / 2 / 3 / 4 columns)
+- Full-screen lightbox with keyboard navigation (`←` / `→` / `Esc`), touch swipe, and animated transitions
+- Blurred placeholders via tiny Cloudinary-transformed JPEGs inlined as base64 data URLs
+- Deep-linkable: `/p/[photoId]` single-photo carousel + `/?photoId=N` in-grid modal; last-viewed scroll restore
+- Tech: Next.js 16 (App Router, RSC) + Cloudinary Node SDK + motion + Zustand + Tailwind CSS v4
+
+<details>
+  <summary>Preview</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/image-gallery/index.png" alt="byshot" />
+</details>
+
 ### vidl
 
 **Online Video Downloader**
@@ -277,6 +295,7 @@ pnpm --filter @cdlab996/values dev           # → http://values.localhost:3355
 pnpm --filter @cdlab996/byplay dev           # → http://byplay.localhost:3355
 pnpm --filter @cdlab996/byplay-log dev       # → http://byplay-log.localhost:3355
 pnpm --filter @cdlab996/bytts dev            # → http://bytts.localhost:3355
+pnpm --filter @cdlab996/byshot dev           # → http://byshot.localhost:3355
 pnpm --filter @cdlab996/dropply-web dev      # → http://dropply-web.localhost:3355
 pnpm --filter @cdlab996/flox dev             # → http://flox.localhost:3355
 pnpm --filter @cdlab996/live-user dev        # → http://live-user.localhost:3355
@@ -292,6 +311,7 @@ pnpm --filter @cdlab996/values run build
 pnpm --filter @cdlab996/byplay run build
 pnpm --filter @cdlab996/byplay-log run build
 pnpm --filter @cdlab996/bytts run build
+pnpm --filter @cdlab996/byshot run build
 pnpm --filter @cdlab996/dropply-web run build
 pnpm --filter @cdlab996/flox run build
 pnpm --filter @cdlab996/live-user run build
@@ -311,6 +331,7 @@ pnpm clean                         # Clean node_modules / cache / build artifact
 │   ├── bycut/             # Browser-based Video Editor
 │   ├── byplay/            # Online Video Player
 │   ├── byplay-log/        # ByPlay Monitoring & Analytics Service
+│   ├── byshot/            # Personal Photography Collection (Cloudinary)
 │   ├── bytts/             # Text-to-Speech Tool
 │   ├── clearify/          # Image & Video Toolbox
 │   ├── dropply-api/       # Dropply File Sharing Cloudflare API

@@ -137,6 +137,24 @@ https://bytts.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/bytts/og-image.png" alt="bytts" />
 </details>
 
+### byshot
+
+**个人摄影作品集**
+
+https://byshot.pages.dev/
+
+- 基于 Cloudinary 的图片画廊，瀑布流响应式布局（1 / 2 / 3 / 4 列）
+- 全屏灯箱，支持键盘导航（`←` / `→` / `Esc`）、触屏滑动与过渡动画
+- 模糊占位图：Cloudinary 极小 JPEG 转 base64 data URL 内联，瞬时呈现感
+- 深度链接：`/p/[photoId]` 单图轮播路由 + `/?photoId=N` 网格内模态切换；自动恢复上次查看位置
+- 核心技术：Next.js 16（App Router、RSC）+ Cloudinary Node SDK + motion + Zustand + Tailwind CSS v4
+
+<details>
+  <summary>预览</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/image-gallery/index.png" alt="byshot" />
+</details>
+
 ### vidl
 
 **在线视频下载工具**
@@ -277,6 +295,7 @@ pnpm --filter @cdlab996/values dev           # → http://values.localhost:3355
 pnpm --filter @cdlab996/byplay dev           # → http://byplay.localhost:3355
 pnpm --filter @cdlab996/byplay-log dev       # → http://byplay-log.localhost:3355
 pnpm --filter @cdlab996/bytts dev            # → http://bytts.localhost:3355
+pnpm --filter @cdlab996/byshot dev           # → http://byshot.localhost:3355
 pnpm --filter @cdlab996/dropply-web dev      # → http://dropply-web.localhost:3355
 pnpm --filter @cdlab996/flox dev             # → http://flox.localhost:3355
 pnpm --filter @cdlab996/live-user dev        # → http://live-user.localhost:3355
@@ -292,6 +311,7 @@ pnpm --filter @cdlab996/values run build
 pnpm --filter @cdlab996/byplay run build
 pnpm --filter @cdlab996/byplay-log run build
 pnpm --filter @cdlab996/bytts run build
+pnpm --filter @cdlab996/byshot run build
 pnpm --filter @cdlab996/dropply-web run build
 pnpm --filter @cdlab996/flox run build
 pnpm --filter @cdlab996/shortener run build
@@ -310,6 +330,7 @@ pnpm clean                         # 清理 node_modules / 缓存 / 构建产物
 │   ├── bycut/             # 浏览器端视频编辑器
 │   ├── byplay/            # 在线视频播放器
 │   ├── byplay-log/        # ByPlay 播放器监控与分析服务
+│   ├── byshot/            # 个人摄影作品集（Cloudinary）
 │   ├── bytts/             # 文字转语音工具
 │   ├── clearify/          # 图像 & 视频工具箱
 │   ├── dropply-api/       # Dropply 文件分享 Cloudflare API
