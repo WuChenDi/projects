@@ -145,7 +145,7 @@ onMounted(() => {
         //   icon: 'i-lucide-external-link',
         //   variant: 'outline',
         //   size: 'md',
-        //   to: 'https://notes-wudi.pages.dev/projects',
+        //   to: 'https://wcd.pages.dev/projects',
         //   target: '_blank'
         // }
       ]"

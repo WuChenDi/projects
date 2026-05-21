@@ -41,7 +41,7 @@ export async function generateMetadata({
   if (locale === 'zh') {
     return {
       title: 'Dropply - 安全文件分享平台',
-      icons: 'https://notes-wudi.pages.dev/images/logo.png',
+      icons: 'https://wcd.pages.dev/logo.png',
       description:
         '即时分享文件，军事级加密保护。无需账户，无追踪，纯粹的隐私保护。',
       keywords: [
@@ -109,7 +109,7 @@ export async function generateMetadata({
 
   return {
     title: 'Dropply - Secure File Sharing Platform',
-    icons: 'https://notes-wudi.pages.dev/images/logo.png',
+    icons: 'https://wcd.pages.dev/logo.png',
     description:
       'Share files instantly with military-grade encryption. No accounts, no tracking, just pure privacy.',
     keywords: [
@@ -313,7 +313,7 @@ export default async function LocaleLayout({
               '@type': 'SoftwareApplication',
               name: 'wudi',
               url: 'https://github.com/WuChenDi',
-              logo: 'https://notes-wudi.pages.dev/images/logo.png',
+              logo: 'https://wcd.pages.dev/logo.png',
               applicationCategory: 'UtilitiesApplication',
               offers: {
                 '@type': 'Offer',

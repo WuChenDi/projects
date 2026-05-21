@@ -18,30 +18,32 @@ export function Header() {
         <div className="flex items-center">
           <Link href="/" className="flex items-center">
             <Image
-              src="https://notes-wudi.pages.dev/images/logo.png"
+              src="https://wcd.pages.dev/logo.png"
               alt="Chendi Wu Logo"
               width={32}
               height={32}
               className="rounded-full mr-2"
             />
-            {t('title').split('').map((letter, index) => {
-              return (
-                <span
-                  // biome-ignore lint/suspicious/noArrayIndexKey: no unique identifier available
-                  key={index}
-                  className="hover:text-fun-pink hover:-mt-2 transition-all duration-500 hover:duration-100 click:goodbyeLetterAnim text-card-foreground"
-                >
-                  {letter}
-                </span>
-              )
-            })}
+            {t('title')
+              .split('')
+              .map((letter, index) => {
+                return (
+                  <span
+                    // biome-ignore lint/suspicious/noArrayIndexKey: no unique identifier available
+                    key={index}
+                    className="hover:text-fun-pink hover:-mt-2 transition-all duration-500 hover:duration-100 click:goodbyeLetterAnim text-card-foreground"
+                  >
+                    {letter}
+                  </span>
+                )
+              })}
           </Link>
         </div>
 
         <div className="flex items-center gap-6">
           <nav className="hidden md:flex items-center gap-6">
             <a
-              href="https://notes-wudi.pages.dev/projects/"
+              href="https://wcd.pages.dev/projects/"
               className="transition-colors flex items-center gap-1 uppercase text-card-foreground"
             >
               {t('more')}

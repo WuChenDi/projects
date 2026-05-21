@@ -21,14 +21,8 @@ const nextConfig: NextConfig = {
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'notes-wudi.pages.dev',
-      },
-      {
-        protocol: 'https',
-        hostname: 'developers.cloudflare.com',
-      },
+      { protocol: 'https', hostname: 'wcd.pages.dev' },
+      { protocol: 'https', hostname: 'developers.cloudflare.com' },
     ],
   },
 }

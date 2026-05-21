@@ -11,14 +11,8 @@ const nextConfig: NextConfig = {
     qualities: [50, 75, 100],
     formats: ['image/webp', 'image/avif'],
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'notes-wudi.pages.dev',
-      },
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
+      { protocol: 'https', hostname: 'wcd.pages.dev' },
     ],
   },
   // compiler: {

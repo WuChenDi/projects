@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   title: 'ByTTS - Free Online Text to Speech Converter',
   description:
     'ByTTS is a free online text-to-speech tool that supports multiple voice options, adjustable speed and pitch, instant preview, and download features. Quickly convert text into natural and fluent speech.',
-  icons: 'https://notes-wudi.pages.dev/images/logo.png',
+  icons: 'https://wcd.pages.dev/logo.png',
   keywords: [
     'text to speech',
     'TTS',

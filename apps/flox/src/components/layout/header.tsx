@@ -237,7 +237,7 @@ function HeaderInner() {
               className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0"
             >
               <Image
-                src="https://notes-wudi.pages.dev/images/logo.png"
+                src="https://wcd.pages.dev/logo.png"
                 alt="Chendi Wu Logo"
                 width={32}
                 height={32}

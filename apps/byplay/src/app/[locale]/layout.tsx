@@ -41,7 +41,7 @@ export async function generateMetadata({
   if (locale === 'zh') {
     return {
       title: 'ByPlay - 在线 HLS 播放器 | M3U8, MP4, WebM, TS 流媒体',
-      icons: 'https://notes-wudi.pages.dev/images/logo.png',
+      icons: 'https://wcd.pages.dev/logo.png',
       description:
         '基于 hls.js 的免费在线 HLS 流媒体播放器。支持 M3U8、MP4、WebM、OGG、TS、MPD 格式。具备自适应码率 (ABR)、低延迟模式、缓冲区配置、播放速率控制和画质切换功能。',
       keywords: [
@@ -113,7 +113,7 @@ export async function generateMetadata({
 
   return {
     title: 'ByPlay - Online HLS Player | M3U8, MP4, WebM, TS Streaming',
-    icons: 'https://notes-wudi.pages.dev/images/logo.png',
+    icons: 'https://wcd.pages.dev/logo.png',
     description:
       'Free online HLS streaming player powered by hls.js. Supports M3U8, MP4, WebM, OGG, TS, and MPD formats. Features adaptive bitrate (ABR), low-latency mode, buffer configuration, playback rate control, and quality switching.',
     keywords: [
@@ -333,7 +333,7 @@ export default async function RootLayout({
               '@type': 'SoftwareApplication',
               name: 'wudi',
               url: 'https://github.com/WuChenDi',
-              logo: 'https://notes-wudi.pages.dev/images/logo.png',
+              logo: 'https://wcd.pages.dev/logo.png',
               applicationCategory: 'MultimediaApplication',
               offers: {
                 '@type': 'Offer',

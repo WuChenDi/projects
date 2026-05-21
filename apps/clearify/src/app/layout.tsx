@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Clearify',
-  icons: 'https://notes-wudi.pages.dev/images/logo.png',
+  icons: 'https://wcd.pages.dev/logo.png',
   description: 'Powerful web-based tools for your image editing needs',
   keywords: [
     'image editing',

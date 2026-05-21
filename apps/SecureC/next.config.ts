@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'notes-wudi.pages.dev',
+        hostname: 'wcd.pages.dev',
       },
     ],
   },

@@ -14,11 +14,11 @@
     <br />
     <a href="https://gallery-wudi.vercel.app">Photography</a>
     ·
-    <a href="https://notes-wudi.pages.dev/media.html">Media</a>
+    <a href="https://wcd.pages.dev/media">Media</a>
     ·
-    <a href="https://notes-wudi.pages.dev/projects">Projects</a>
+    <a href="https://wcd.pages.dev/projects">Projects</a>
     ·
-    <a href="wuchendi96@gmail.com">Email</a>
+    <a href="mailto:wuchendi96@gmail.com">Email</a>
     ·
     <a href="https://t.me/wuchendi">Telegram</a>
   </p>

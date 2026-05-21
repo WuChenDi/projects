@@ -11,7 +11,7 @@ interface LayoutProps {
 
 const SITE_URL = 'https://shortener.cdlab.workers.dev'
 const SITE_NAME = 'Shortener'
-const DEFAULT_OG_IMAGE = 'https://notes-wudi.pages.dev/images/logo.png'
+const DEFAULT_OG_IMAGE = 'https://wcd.pages.dev/logo.png'
 const DEFAULT_DESCRIPTION =
   'Privacy-first URL shortener with AI-generated slugs and edge-cached redirects.'
 

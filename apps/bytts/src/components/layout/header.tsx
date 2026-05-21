@@ -14,7 +14,7 @@ export function Header() {
         <div className="flex items-center">
           <Link href="/" className="flex items-center">
             <Image
-              src="https://notes-wudi.pages.dev/images/logo.png"
+              src="https://wcd.pages.dev/logo.png"
               alt="Chendi Wu Logo"
               width={32}
               height={32}
@@ -37,7 +37,7 @@ export function Header() {
         <div className="flex items-center gap-6">
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="https://notes-wudi.pages.dev/projects/"
+              href="https://wcd.pages.dev/projects/"
               className="transition-colors flex items-center gap-1 uppercase"
             >
               more

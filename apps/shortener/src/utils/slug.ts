@@ -40,7 +40,7 @@ const FEW_SHOT_EXAMPLES: AIMessage[] = [
   { role: 'assistant', content: '{"slug": "WuChenDi"}' },
   { role: 'user', content: 'https://github.com/cdLab996' },
   { role: 'assistant', content: '{"slug": "cdlab996"}' },
-  { role: 'user', content: 'https://notes-wudi.pages.dev' },
+  { role: 'user', content: 'https://wcd.pages.dev' },
   { role: 'assistant', content: '{"slug": "notes-wudi"}' },
   { role: 'user', content: 'https://clearify.pages.dev' },
   { role: 'assistant', content: '{"slug": "clearify"}' },

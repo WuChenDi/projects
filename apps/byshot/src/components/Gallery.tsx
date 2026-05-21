@@ -54,7 +54,7 @@ export default function Gallery({ images }: { images: ImageProps[] }) {
               alt="Byshot logo"
               className="transform rounded-lg brightness-90 transition will-change-auto group-hover:brightness-110"
               style={{ transform: 'translate3d(0, 0, 0)' }}
-              src="https://notes-wudi.vercel.app/images/logo.png"
+              src="https://wcd.pages.dev/logo.png"
               width={150}
               height={150}
               sizes="(max-width: 640px) 100vw,
@@ -70,7 +70,7 @@ export default function Gallery({ images }: { images: ImageProps[] }) {
             </p>
             <a
               className="pointer z-10 mt-6 rounded-lg border border-white bg-white px-3 py-2 text-sm font-semibold text-black transition hover:bg-white/10 hover:text-white md:mt-4"
-              href="https://notes-wudi.pages.dev/"
+              href="https://wcd.pages.dev/"
               target="_blank"
               rel="noreferrer"
             >

@@ -49,7 +49,7 @@ const BackgroundEffects = () => (
 export const metadata: Metadata = {
   metadataBase: new URL('https://values.pages.dev/'),
   title: 'Values',
-  icons: 'https://notes-wudi.pages.dev/images/logo.png',
+  icons: 'https://wcd.pages.dev/logo.png',
   description:
     'A simple tool to compare the value of cryptocurrencies, fiat currencies, and products.',
   keywords: [

@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: 'https://notes-wudi.pages.dev/images/logo.png',
+    icon: 'https://wcd.pages.dev/logo.png',
     apple: '/images/apple-touch-icon.png',
   },
   openGraph: {

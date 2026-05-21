@@ -42,7 +42,7 @@ export async function generateMetadata({
   if (locale === 'zh') {
     return {
       title: 'SecureC - 客户端文件与文本加密工具 | AES-GCM 加密',
-      icons: 'https://notes-wudi.pages.dev/images/logo.png',
+      icons: 'https://wcd.pages.dev/logo.png',
       description:
         'SecureC 是一款强大的客户端加密工具，使用 AES-GCM 和 Argon2id 密钥派生进行安全的文件和文本加密/解密。免费使用，无需注册，隐私优先。',
       keywords: [
@@ -109,7 +109,7 @@ export async function generateMetadata({
   return {
     title:
       'SecureC - Client-Side File & Text Encryption Tool | AES-GCM Encryption',
-    icons: 'https://notes-wudi.pages.dev/images/logo.png',
+    icons: 'https://wcd.pages.dev/logo.png',
     description:
       'SecureC is a powerful client-side tool for secure file and text encryption/decryption using AES-GCM with Argon2id key derivation. Free, no registration required, privacy-first encryption.',
     keywords: [

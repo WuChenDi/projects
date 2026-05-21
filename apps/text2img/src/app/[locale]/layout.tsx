@@ -41,7 +41,7 @@ export async function generateMetadata({
   if (locale === 'zh') {
     return {
       title: 'AI文生图在线工具 | 基于 Cloudflare AI 的免费图像生成服务',
-      icons: 'https://notes-wudi.pages.dev/images/logo.png',
+      icons: 'https://wcd.pages.dev/logo.png',
       description:
         '免费的在线AI文生图工具，基于 Cloudflare Workers AI，支持 FLUX.1、Stable Diffusion XL 等多种模型。无需注册，即刻使用，快速生成高质量AI图像。',
       keywords: [
@@ -118,7 +118,7 @@ export async function generateMetadata({
 
   return {
     title: 'AI Text-to-Image Tool | Free Image Generation with Cloudflare AI',
-    icons: 'https://notes-wudi.pages.dev/images/logo.png',
+    icons: 'https://wcd.pages.dev/logo.png',
     description:
       'Free online AI text-to-image tool powered by Cloudflare Workers AI. Supports FLUX.1, Stable Diffusion XL and more. No registration required.',
     keywords: [
@@ -336,7 +336,7 @@ export default async function LocaleLayout({
               '@type': 'SoftwareApplication',
               name: 'wudi',
               url: 'https://github.com/WuChenDi',
-              logo: 'https://notes-wudi.pages.dev/images/logo.png',
+              logo: 'https://wcd.pages.dev/logo.png',
               applicationCategory: 'MultimediaApplication',
               offers: {
                 '@type': 'Offer',

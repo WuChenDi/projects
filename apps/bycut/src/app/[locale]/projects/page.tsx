@@ -209,7 +209,7 @@ function ProjectsHeader() {
           <div className="flex items-center gap-2.5">
             <Link href="/" className="flex items-center gap-2">
               <Image
-                src="https://notes-wudi.pages.dev/images/logo.png"
+                src="https://wcd.pages.dev/logo.png"
                 alt="Cutia Logo"
                 width={24}
                 height={24}

@@ -84,7 +84,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: siteConfig.title,
   description: siteConfig.description,
-  icons: 'https://notes-wudi.pages.dev/images/logo.png',
+  icons: 'https://wcd.pages.dev/logo.png',
   keywords: [
     '视频聚合',
     '在线视频',

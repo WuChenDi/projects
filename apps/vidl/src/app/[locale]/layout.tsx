@@ -41,7 +41,7 @@ export async function generateMetadata({
   if (locale === 'zh') {
     return {
       title: '视频在线下载工具 | 支持 M3U8/HLS、MP4 等格式下载',
-      icons: 'https://notes-wudi.pages.dev/images/logo.png',
+      icons: 'https://wcd.pages.dev/logo.png',
       description:
         '在线视频下载工具，支持 M3U8/HLS、MP4、FLV、MKV 等多种视频格式。提供范围下载、流式下载、AES-128 解密、转 MP4 功能。完全免费，无需注册，浏览器端处理，保护隐私。',
       keywords: [
@@ -108,7 +108,7 @@ export async function generateMetadata({
 
   return {
     title: 'Video Downloader Online | M3U8/HLS, MP4, and More Formats',
-    icons: 'https://notes-wudi.pages.dev/images/logo.png',
+    icons: 'https://wcd.pages.dev/logo.png',
     description:
       'Online video download tool supporting M3U8/HLS, MP4, FLV, MKV, and more. Features range download, streaming, AES-128 decryption, and MP4 conversion. Completely free, no registration, browser-based.',
     keywords: [
@@ -306,7 +306,7 @@ export default async function LocaleLayout({
               '@type': 'SoftwareApplication',
               name: 'wudi',
               url: 'https://github.com/WuChenDi',
-              logo: 'https://notes-wudi.pages.dev/images/logo.png',
+              logo: 'https://wcd.pages.dev/logo.png',
               applicationCategory: 'MultimediaApplication',
               offers: {
                 '@type': 'Offer',

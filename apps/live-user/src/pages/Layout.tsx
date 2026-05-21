@@ -11,7 +11,7 @@ interface LayoutProps {
 
 const SITE_URL = 'https://live-user.cdlab.workers.dev'
 const SITE_NAME = 'LiveUser'
-const DEFAULT_OG_IMAGE = 'https://notes-wudi.pages.dev/images/logo.png'
+const DEFAULT_OG_IMAGE = 'https://wcd.pages.dev/logo.png'
 
 export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
   title = 'LiveUser',

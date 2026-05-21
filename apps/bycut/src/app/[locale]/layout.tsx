@@ -72,7 +72,7 @@ export async function generateMetadata({
         languages: { en: '/en', zh: '/zh' },
       },
       applicationName: 'ByCut',
-      icons: 'https://notes-wudi.pages.dev/images/logo.png',
+      icons: 'https://wcd.pages.dev/logo.png',
       openGraph: {
         title: 'ByCut - 开源浏览器视频编辑器',
         description:
@@ -154,7 +154,7 @@ export async function generateMetadata({
     applicationName: 'ByCut',
     category: 'Video Editor, Multimedia',
     classification: 'Video Editor, Multimedia',
-    icons: 'https://notes-wudi.pages.dev/images/logo.png',
+    icons: 'https://wcd.pages.dev/logo.png',
     openGraph: {
       title: 'ByCut - Open Source Browser Video Editor | Free Editing',
       description:
