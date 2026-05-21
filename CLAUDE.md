@@ -15,7 +15,7 @@ Apps fall into three runtime families with different toolchains:
 
 | Family                        | Apps                                                                                                         | Build tool                      | Deploy target                                                                            |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------- | ---------------------------------------------------------------------------------------- |
-| **Next.js (App Router)**      | `bycut`, `byplay`, `bytts`, `clearify`, `dropply-web`, `flox`, `SecureC`, `text2img`, `value-vision`, `vidl` | `next build` (some `--webpack`) | Cloudflare Pages (`@cloudflare/next-on-pages`), `text2img` uses `@opennextjs/cloudflare` |
+| **Next.js (App Router)**      | `bycut`, `byplay`, `byshot`, `bytts`, `clearify`, `dropply-web`, `flox`, `SecureC`, `text2img`, `value-vision`, `vidl` | `next build` (some `--webpack`) | Cloudflare Pages (`@cloudflare/next-on-pages`), `text2img` uses `@opennextjs/cloudflare` |
 | **Cloudflare Workers (Hono)** | `baccarat`, `byplay-log`, `dropply-api`, `live-user`, `shortener`                                            | `wrangler deploy --minify`      | Cloudflare Workers + Durable Objects / D1                                                |
 | **Nuxt 4 (Vue 3)**            | `repo-changelog`                                                                                             | `nuxt build`/`generate`         | Vercel                                                                                   |
 
@@ -212,6 +212,19 @@ Pure-browser stream download — `mux.js` + Streams API, near-zero memory footpr
 
 - `src/lib/currencies.ts`, `rates.ts`, `exchangeRate.ts` — Static currency catalog + live rate fetch.
 - No backend; rates are pulled from public APIs at runtime.
+
+#### `byshot` — Cloudinary-backed personal photography collection
+
+- `src/app/page.tsx` — RSC entry: fetches the Cloudinary folder listing, generates blur placeholders, then hands off to `Gallery`. Server-rendered (no `output: 'export'`); deploys via `@cloudflare/next-on-pages`.
+- `src/app/p/[photoId]/page.tsx` — Single-photo carousel route (deep-linkable).
+- `src/utils/cachedImages.ts` — Module-level cache around `cloudinary.v2.search.expression('folder:${CLOUDINARY_FOLDER}/*')`. Memoizes across requests within the same isolate; Edge cold-starts refetch.
+- `src/utils/generateBlurPlaceholder.ts` — Fetches an 8px-wide Cloudinary JPEG and inlines it as a base64 data URL using native `Uint8Array` + `btoa()` (no `node:buffer`, so it works on the Edge runtime).
+- `src/components/Gallery.tsx` — Masonry grid (`columns-1 sm:columns-2 xl:columns-3 2xl:columns-4`); clicking a photo pushes `?photoId=N` to open `Modal`.
+- `src/components/Modal.tsx` — Lightbox built on `@cdlab996/ui/components/dialog` (`Dialog` + `DialogPortal` + `DialogOverlay`) plus `radix-ui` `Dialog.Content` for full-screen layout — the wrapper `DialogContent` hardcodes centered-card styling, so the primitive is used directly to satisfy the lightbox layout while still routing through the shared `Dialog` root.
+- `src/components/SharedModal.tsx` — Image swap with `motion`/`AnimatePresence`, `react-swipeable` for touch, bottom thumbnail strip filtered to ±15 around `index`. All icons are `lucide-react`.
+- `src/utils/useLastViewedPhoto.ts` — Zustand store powering scroll-restore after closing the lightbox.
+- `src/types/react-use-keypress.d.ts` — Local ambient declaration; `react-use-keypress` ships no types.
+- Cloudinary credentials are required at runtime (`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLOUDINARY_FOLDER`); without them the SSR page throws `Must supply cloud_name`.
 
 ### Nuxt 4 app
 
