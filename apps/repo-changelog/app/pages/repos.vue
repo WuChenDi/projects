@@ -23,15 +23,8 @@ const selectedRepos = computed(() => {
 const sidebarTitle = computed(() => {
   const repoCount = selectedRepos.value.length
   if (repoCount === 0) return 'Changelog'
-  if (repoCount === 1) return `${selectedRepos.value[0]} Changelog`
-  return `Changelog (${repoCount} repositories)`
-})
-
-const sidebarDescription = computed(() => {
-  const repoCount = selectedRepos.value.length
-  if (repoCount === 0) return 'Track the latest releases and changelogs'
-  if (repoCount === 1) return `Latest releases and updates for ${selectedRepos.value[0]}`
-  return `Latest releases and updates for ${repoCount} selected repositories`
+  if (repoCount === 1) return selectedRepos.value[0]!
+  return `${repoCount} repositories`
 })
 
 const expandedReleases = ref<Set<string>>(new Set())
@@ -78,6 +71,7 @@ async function fetchRepoReleases(repo: string) {
           tag: release.tag,
           title: release.name || release.tag,
           date: release.publishedAt,
+          rawMarkdown: release.markdown ?? '',
           body: (await parseMarkdown(release.markdown)).body
         }))
     )
@@ -119,6 +113,21 @@ function goBackToSelection() {
   router.push('/')
 }
 
+const keyword = ref('')
+const mobileMetaExpanded = ref(false)
+
+const filteredReleases = computed(() => {
+  if (!releases.value) return []
+  const q = keyword.value.trim().toLowerCase()
+  if (!q) return releases.value
+  return releases.value.filter(r =>
+    r.title.toLowerCase().includes(q)
+    || r.tag.toLowerCase().includes(q)
+    || r.repo.toLowerCase().includes(q)
+    || r.rawMarkdown.toLowerCase().includes(q)
+  )
+})
+
 onMounted(() => {
   if (selectedRepos.value.length === 0) {
     router.push('/')
@@ -127,140 +136,180 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-[calc(100vh-68px)] xl:grid xl:grid-cols-2">
-    <UPageSection
-      :title="sidebarTitle"
-      :description="sidebarDescription"
-      :links="[
-        {
-          label: 'GitHub',
-          icon: 'i-simple-icons-github',
-          variant: 'outline',
-          size: 'md',
-          to: 'https://github.com/WuChenDi/repo-changelog',
-          target: '_blank'
-        }
-        // {
-        //   label: 'More',
-        //   icon: 'i-lucide-external-link',
-        //   variant: 'outline',
-        //   size: 'md',
-        //   to: 'https://wcd.pages.dev/projects',
-        //   target: '_blank'
-        // }
-      ]"
-      :ui="{
-        root: 'border-b border-default xl:border-b-0 xl:sticky xl:inset-y-0 xl:h-screen overflow-hidden',
-        container: 'max-w-xl h-full items-center justify-center',
-        wrapper: 'flex flex-col',
-        headline: 'mb-6',
-        title: 'text-left text-4xl',
-        description: 'text-left max-w-lg',
-        links: 'justify-start'
-      }"
-    >
-      <template #top>
-        <SkyBg />
-        <div
-          class="absolute inset-0 z-[-1]"
-          :style="{
-            backgroundImage: `
-                linear-gradient(to right, rgba(99, 102, 241, 0.4) 0%, transparent 1px),
-                linear-gradient(to bottom, rgba(181, 184, 208, 0.3) 0%, transparent 1px)
-              `,
-            backgroundSize: `40px 40px`,
-            WebkitMaskImage:
-              `radial-gradient(ellipse 100% 100% at 50% 0%, #000 90%, transparent 100%)`,
-            maskImage:
-              `radial-gradient(ellipse 100% 100% at 50% 0%, #000 90%, transparent 100%)`
-          }"
-        />
-      </template>
-
-      <template #default>
-        <div class="mt-6 p-4 bg-muted/30 rounded-lg border border-border/50">
-          <div class="mb-6 sm:mb-8">
-            <UButton
-              variant="ghost"
-              icon="i-lucide-arrow-left"
-              size="sm"
-              class="w-full sm:w-auto justify-center"
-              @click="goBackToSelection"
-            >
-              Back to Repository Selection
-            </UButton>
-          </div>
-
-          <div v-if="selectedRepos.length > 0">
-            <p class="text-sm font-medium text-muted-foreground mb-2">
-              Tracking {{ selectedRepos.length }} {{ selectedRepos.length === 1 ? 'repository' : 'repositories' }}:
-            </p>
-            <div class="flex flex-wrap gap-1">
-              <ULink
-                v-for="repo in selectedRepos.slice(0, 5)"
-                :key="repo"
-                :to="getRepoUrl(repo)"
-                target="_blank"
-                class="inline-block"
-              >
-                <UBadge
-                  variant="outline"
-                  size="sm"
-                  class="hover:bg-primary/10 hover:border-primary transition-colors duration-200 cursor-pointer"
-                >
-                  {{ repo }}
-                </UBadge>
-              </ULink>
-              <UBadge
-                v-if="selectedRepos.length > 5"
-                variant="outline"
-                size="xs"
-              >
-                +{{ selectedRepos.length - 5 }} more
-              </UBadge>
-            </div>
+  <div class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-4 sm:px-6 lg:grid lg:grid-cols-[340px_1fr] lg:gap-8">
+    <!-- Left rail -->
+    <aside class="lg:sticky lg:top-[calc(56px+1rem)] lg:max-h-[calc(100vh-56px-2rem)] lg:overflow-y-auto py-4 lg:py-8">
+      <!-- Mobile header bar -->
+      <div class="flex items-center justify-between gap-3 lg:hidden">
+        <UButton
+          variant="ghost"
+          icon="i-lucide-arrow-left"
+          size="sm"
+          color="neutral"
+          @click="goBackToSelection"
+        >
+          Back
+        </UButton>
+        <div class="min-w-0 flex-1 text-right">
+          <div class="rc-mono truncate text-xs text-[var(--ui-text-muted)]">
+            {{ sidebarTitle }}
           </div>
         </div>
-      </template>
-    </UPageSection>
+        <UButton
+          variant="ghost"
+          size="sm"
+          color="neutral"
+          :icon="mobileMetaExpanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+          square
+          @click="mobileMetaExpanded = !mobileMetaExpanded"
+        />
+      </div>
 
-    <section class="px-4 sm:px-6 xl:px-0 xl:-ms-30 xl:flex-1 bg-background">
-      <UColorModeButton class="fixed top-4 right-4 z-10" />
+      <div
+        v-show="mobileMetaExpanded"
+        class="mt-3 space-y-4 lg:!block lg:mt-0"
+      >
+        <!-- Desktop header -->
+        <div class="hidden lg:block">
+          <div class="rc-mono mb-2 flex items-center gap-2 text-[10px] uppercase tracking-widest text-[var(--ui-text-muted)]">
+            <UIcon
+              name="i-lucide-git-commit-horizontal"
+              class="size-3"
+            />
+            Changelog
+          </div>
+          <h1 class="text-2xl font-semibold tracking-tight">
+            {{ sidebarTitle }}
+          </h1>
+          <p class="mt-1 text-xs text-[var(--ui-text-muted)]">
+            {{ selectedRepos.length === 1 ? 'Latest releases' : `Merged feed across ${selectedRepos.length} repositories` }}
+          </p>
+          <UButton
+            variant="ghost"
+            icon="i-lucide-arrow-left"
+            size="sm"
+            color="neutral"
+            class="-ml-2 mt-3"
+            @click="goBackToSelection"
+          >
+            Back to selection
+          </UButton>
+        </div>
 
+        <!-- Tracked repos -->
+        <div class="rc-surface rounded-lg p-4">
+          <div class="rc-mono mb-2.5 flex items-center justify-between text-[10px] uppercase tracking-widest text-[var(--ui-text-muted)]">
+            <span class="flex items-center gap-2">
+              <UIcon
+                name="i-lucide-layers"
+                class="size-3"
+              />
+              Tracking
+            </span>
+            <span class="opacity-60">
+              {{ selectedRepos.length }}
+            </span>
+          </div>
+          <div class="flex flex-wrap gap-1">
+            <ULink
+              v-for="repo in selectedRepos.slice(0, 12)"
+              :key="repo"
+              :to="getRepoUrl(repo)"
+              target="_blank"
+            >
+              <UBadge
+                variant="outline"
+                size="xs"
+                color="neutral"
+                class="rc-mono hover:border-[var(--ui-color-primary-500)] hover:text-[var(--ui-color-primary-400)]"
+              >
+                {{ repo }}
+              </UBadge>
+            </ULink>
+            <UBadge
+              v-if="selectedRepos.length > 12"
+              variant="soft"
+              size="xs"
+              color="neutral"
+            >
+              +{{ selectedRepos.length - 12 }} more
+            </UBadge>
+          </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="rc-surface rounded-lg p-4">
+          <label class="rc-mono mb-2 block text-[10px] uppercase tracking-widest text-[var(--ui-text-muted)]">
+            Filter
+          </label>
+          <UInput
+            v-model="keyword"
+            placeholder="Search release notes..."
+            icon="i-lucide-filter"
+            size="sm"
+            class="w-full"
+          >
+            <template
+              v-if="keyword?.length"
+              #trailing
+            >
+              <UButton
+                color="neutral"
+                variant="link"
+                size="sm"
+                icon="i-lucide-circle-x"
+                aria-label="Clear filter"
+                @click="keyword = ''"
+              />
+            </template>
+          </UInput>
+          <p
+            v-if="keyword"
+            class="rc-mono mt-2 text-[11px] text-[var(--ui-text-muted)]"
+          >
+            {{ filteredReleases.length }} / {{ releases?.length ?? 0 }} matched
+          </p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Timeline -->
+    <section class="flex flex-1 flex-col py-4 lg:py-8">
       <UChangelogVersions
-        as="main"
+        as="div"
         :indicator-motion="false"
         :ui="{
-          root: 'py-16 sm:py-24 lg:py-32',
+          root: 'py-4 sm:py-6',
           indicator: 'inset-y-0'
         }"
       >
         <div
           v-if="releasesLoading"
-          class="text-center py-8"
+          class="flex flex-col items-center py-16"
         >
           <UIcon
             name="i-lucide-loader-2"
-            class="w-8 h-8 animate-spin mx-auto mb-4"
+            class="mb-3 size-6 animate-spin text-[var(--ui-color-primary-500)]"
           />
-          <p class="text-muted-foreground">
+          <p class="text-xs text-[var(--ui-text-muted)]">
             Loading releases...
           </p>
         </div>
 
         <div
           v-else-if="releasesError"
-          class="text-center py-8"
+          class="flex flex-col items-center py-16"
         >
           <UIcon
             name="i-lucide-alert-circle"
-            class="w-8 h-8 mx-auto mb-4 text-red-500"
+            class="mb-3 size-8 text-red-500"
           />
-          <p class="text-red-500 mb-4">
+          <p class="mb-4 text-sm text-red-500">
             {{ releasesError.message || 'Failed to fetch releases' }}
           </p>
           <UButton
             variant="outline"
+            color="neutral"
             @click="() => refresh()"
           >
             Retry
@@ -269,25 +318,39 @@ onMounted(() => {
 
         <div
           v-else-if="!releases || releases.length === 0"
-          class="text-center py-8"
+          class="flex flex-col items-center py-16"
         >
           <UIcon
             name="i-lucide-package-x"
-            class="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50"
+            class="mb-3 size-10 text-[var(--ui-text-muted)] opacity-60"
           />
-          <p class="text-muted-foreground mb-4">
+          <p class="mb-4 text-sm text-[var(--ui-text-muted)]">
             No releases found for the selected repositories
           </p>
           <UButton
             variant="outline"
+            color="neutral"
             @click="goBackToSelection"
           >
-            Select Different Repositories
+            Pick different repositories
           </UButton>
         </div>
 
+        <div
+          v-if="keyword && filteredReleases.length === 0 && releases && releases.length > 0"
+          class="flex flex-col items-center py-12"
+        >
+          <UIcon
+            name="i-lucide-search-x"
+            class="mb-2 size-6 text-[var(--ui-text-muted)] opacity-60"
+          />
+          <p class="text-xs text-[var(--ui-text-muted)]">
+            No releases match "<span class="rc-mono">{{ keyword }}</span>"
+          </p>
+        </div>
+
         <UChangelogVersion
-          v-for="release in releases"
+          v-for="release in filteredReleases"
           :key="`${release.repo}-${release.tag}`"
           :to="release.url"
           target="_blank"
@@ -295,11 +358,11 @@ onMounted(() => {
           :date="formatTimeAgo(new Date(release.date))"
           :ui="{
             root: 'flex items-start',
-            container: 'max-w-xl',
-            header: 'border-b border-default pb-4',
-            title: 'text-3xl',
-            date: 'text-xs/9 text-highlighted font-mono',
-            indicator: 'sticky top-0 pt-16 -mt-16 sm:pt-24 sm:-mt-24 lg:pt-32 lg:-mt-32'
+            container: 'max-w-2xl',
+            header: 'border-b border-[var(--rc-border)] pb-3',
+            title: 'text-xl sm:text-2xl tracking-tight',
+            date: 'rc-mono text-[11px] text-[var(--ui-text-muted)]',
+            indicator: 'sticky top-0 pt-8 -mt-8 sm:pt-12 sm:-mt-12'
           }"
         >
           <template #badge>
@@ -309,10 +372,11 @@ onMounted(() => {
               @click.stop
             >
               <UBadge
-                :label="`@${release.repo}`"
+                :label="release.repo"
                 variant="outline"
                 color="neutral"
-                class="hover:bg-primary/10 hover:border-primary transition-colors duration-200"
+                size="xs"
+                class="rc-mono hover:border-[var(--ui-color-primary-500)] hover:text-[var(--ui-color-primary-400)]"
               />
             </ULink>
           </template>
@@ -332,17 +396,16 @@ onMounted(() => {
               />
               <div
                 v-if="!isReleaseExpanded(release.repo, release.tag) && release.body.children.length > 4"
-                class="h-12 sm:h-16 absolute inset-x-0 bottom-0 flex items-end justify-center"
-                :class="{ 'bg-linear-to-t from-default to-default/50': !isReleaseExpanded(release.repo, release.tag) }"
+                class="absolute inset-x-0 bottom-0 flex h-14 items-end justify-center bg-gradient-to-t from-[var(--ui-bg)] to-transparent"
               >
                 <UButton
-                  size="sm"
+                  size="xs"
                   icon="i-lucide-chevron-down"
                   color="neutral"
                   variant="outline"
                   :data-state="isReleaseExpanded(release.repo, release.tag) ? 'open' : 'closed'"
-                  :label="isReleaseExpanded(release.repo, release.tag) ? 'Collapse release' : 'Expand release'"
-                  class="group text-xs sm:text-sm"
+                  :label="isReleaseExpanded(release.repo, release.tag) ? 'Collapse' : 'Expand'"
+                  class="group text-xs"
                   :ui="{ leadingIcon: 'group-data-[state=open]:rotate-180' }"
                   @click="toggleRelease(release.repo, release.tag)"
                 />

@@ -50,11 +50,16 @@ async function navigateToRepo(repo: string) {
   })
 }
 
+async function openGroup(repos: string[]) {
+  if (repos.length === 0) return
+  saveToHistory(repos)
+  await navigateToRepo(repos.join(','))
+}
+
 function removeFromHistory(repo: string) {
   repoHistory.value = repoHistory.value.filter(r => r !== repo)
 }
 
-// Helper function to convert GithubRepo to SearchResult
 function convertToSearchResult(repo: GithubRepo): SearchResult {
   return {
     id: repo.id,
@@ -70,7 +75,6 @@ function convertToSearchResult(repo: GithubRepo): SearchResult {
 const sortOptions = [
   { value: 'stars', label: 'Stars', icon: 'i-lucide-star' },
   { value: 'forks', label: 'Forks', icon: 'i-lucide-git-fork' },
-  // { value: 'name', label: 'Name', icon: 'i-lucide-type' },
   { value: 'updated', label: 'Updated', icon: 'i-lucide-calendar' }
 ]
 
@@ -119,7 +123,7 @@ async function searchRepositories() {
   showResults.value = false
 
   if (!searchQuery.value.trim()) {
-    searchError.value = 'Please enter a repository, username, organization, or GitHub URL'
+    searchError.value = 'Enter a repo, user, organization, or GitHub URL'
     return
   }
 
@@ -142,7 +146,7 @@ async function searchRepositories() {
         )
 
         if (error.value || response.value?.error || !response.value?.repo) {
-          searchError.value = 'Repository not found. Please check the URL and try again.'
+          searchError.value = 'Repository not found. Check the URL and try again.'
           return
         }
 
@@ -167,13 +171,13 @@ async function searchRepositories() {
   try {
     if (processedInput.includes('/')) {
       if (!validateRepoFormat(processedInput)) {
-        searchError.value = 'Invalid format. Please use: owner/repository'
+        searchError.value = 'Invalid format. Use: owner/repository'
         return
       }
       await searchSingleRepository(processedInput)
     } else {
       if (!validateOwnerFormat(processedInput)) {
-        searchError.value = 'Please enter a valid username or organization name'
+        searchError.value = 'Enter a valid username or organization name'
         return
       }
       await searchOwnerRepositories(processedInput)
@@ -301,279 +305,284 @@ function openRepoLink(event: Event, repoName: string) {
   event.stopPropagation()
   window.open(getRepoUrl(repoName), '_blank')
 }
+
+function formatCount(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`
+  return String(n)
+}
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6">
-    <div class="mb-6 sm:mb-8">
-      <h3 class="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
-        <UIcon
-          name="i-lucide-search"
-          class="w-4 h-4 sm:w-5 sm:h-5"
-        />
-        Search Repositories
-      </h3>
-      <div class="space-y-3 sm:space-y-4">
-        <div class="flex items-center gap-2">
-          <UInput
-            v-model="searchQuery"
-            :loading="isLoading"
-            placeholder="Enter repository, username, organization, or GitHub URL"
-            class="flex-1 text-sm sm:text-base"
-            icon="i-lucide-search"
-            :color="searchError ? 'error' : 'primary'"
-            :disabled="isLoading"
-            @keyup.enter="searchRepositories"
-          >
-            <template
-              v-if="searchQuery?.length"
-              #trailing
-            >
+  <div class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-4 sm:px-6">
+    <div class="flex flex-1 flex-col lg:grid lg:grid-cols-[340px_1fr] lg:grid-rows-[auto_1fr] lg:gap-x-8">
+      <!-- Primary rail: Search + Selected -->
+      <aside class="py-6 lg:py-8 lg:col-start-1 lg:row-start-1 lg:self-start lg:sticky lg:top-[calc(56px+1rem)]">
+        <div class="space-y-6">
+          <!-- Search panel -->
+          <section class="rc-surface rounded-lg p-4">
+            <label class="rc-mono mb-2 block text-[10px] uppercase tracking-widest text-[var(--ui-text-muted)]">
+              Search
+            </label>
+            <div class="flex items-center gap-2">
+              <UInput
+                v-model="searchQuery"
+                :loading="isLoading"
+                placeholder="owner/repo, user, or URL"
+                class="flex-1"
+                icon="i-lucide-search"
+                :color="searchError ? 'error' : 'primary'"
+                :disabled="isLoading"
+                @keyup.enter="searchRepositories"
+              >
+                <template
+                  v-if="searchQuery?.length"
+                  #trailing
+                >
+                  <UButton
+                    color="neutral"
+                    variant="link"
+                    size="sm"
+                    icon="i-lucide-circle-x"
+                    aria-label="Clear input"
+                    @click="searchQuery = ''"
+                  />
+                </template>
+              </UInput>
               <UButton
-                color="neutral"
-                variant="link"
-                size="sm"
-                icon="i-lucide-circle-x"
-                aria-label="Clear input"
-                @click="searchQuery = ''"
+                icon="i-lucide-arrow-right"
+                :loading="isLoading"
+                :disabled="!searchQuery.trim()"
+                size="md"
+                color="primary"
+                square
+                aria-label="Search"
+                @click="searchRepositories"
               />
-            </template>
-          </UInput>
-          <UButton
-            icon="i-lucide-search"
-            :loading="isLoading"
-            :disabled="!searchQuery.trim()"
-            size="md"
-            @click="searchRepositories"
-          >
-            {{ isLoading ? 'Searching...' : 'Search' }}
-          </UButton>
-        </div>
-
-        <p
-          v-if="searchError"
-          class="text-red-500 text-xs sm:text-sm flex items-start gap-2"
-        >
-          <UIcon
-            name="i-lucide-alert-circle"
-            class="w-4 h-4 mt-0.5 shrink-0"
-          />
-          <span>{{ searchError }}</span>
-        </p>
-
-        <RepoList
-          v-if="repoHistory.length > 0"
-          title="Recent Searches"
-          :repos="repoHistory"
-          icon="i-lucide-history"
-          :clickable="true"
-          class="mt-6"
-          @click="navigateToRepo"
-          @remove="removeFromHistory"
-          @clear-all="() => repoHistory = []"
-        />
-      </div>
-    </div>
-
-    <div
-      v-if="showResults"
-      class="mb-6 sm:mb-8"
-    >
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <h3 class="text-lg sm:text-xl font-semibold flex items-center gap-2">
-          <UIcon
-            name="i-lucide-package-2"
-            class="w-4 h-4 sm:w-5 sm:h-5"
-          />
-          Search Results
-          <UBadge
-            variant="outline"
-            color="primary"
-            size="sm"
-          >
-            {{ searchResults.length }}
-          </UBadge>
-        </h3>
-
-        <div class="flex items-center gap-2 sm:gap-3">
-          <div class="text-xs text-muted-foreground">
-            Sort by:
-          </div>
-
-          <div class="sm:flex items-center gap-1 border border-default rounded-lg p-1">
-            <UButton
-              v-for="option in sortOptions"
-              :key="option.value"
-              :icon="option.icon"
-              size="xs"
-              :variant="sortBy === option.value ? 'solid' : 'ghost'"
-              :color="sortBy === option.value ? 'primary' : 'neutral'"
-              class="text-xs"
-              @click="sortBy = option.value as 'stars' | 'forks' | 'name' | 'updated'"
-            >
-              <span class="hidden lg:inline">{{ option.label }}</span>
-            </UButton>
-          </div>
-
-          <UButton
-            class="p-2"
-            :icon="sortOrder === 'desc' ? 'i-lucide-arrow-down' : 'i-lucide-arrow-up'"
-            size="xs"
-            variant="outline"
-            color="neutral"
-            :title="`Sort ${sortOrder === 'desc' ? 'Descending' : 'Ascending'}`"
-            @click="toggleSortOrder"
-          />
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-        <div
-          v-for="repo in sortedSearchResults"
-          :key="repo.id"
-          class="group relative p-3 sm:p-4 border rounded-lg transition-all duration-300 cursor-pointer overflow-hidden"
-          :class="{
-            'border-primary bg-primary/5 shadow-md transform scale-[1.02] ring-2 ring-primary/20': selectedRepos.includes(repo.repo),
-            'border-default hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm': !selectedRepos.includes(repo.repo)
-          }"
-          @click="toggleRepository(repo.repo)"
-        >
-          <template v-if="selectedRepos.includes(repo.repo)">
-            <div
-              class="absolute inset-0 bg-linear-to-br from-primary/10 via-primary/5 to-transparent pointer-events-none"
-            />
-
-            <div
-              class="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-primary rounded-full flex items-center justify-center shadow-lg transform rotate-12 animate-pulse"
+            </div>
+            <p
+              v-if="searchError"
+              class="mt-2 flex items-start gap-1.5 text-xs text-red-500"
             >
               <UIcon
-                name="i-lucide-check"
-                class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white"
+                name="i-lucide-alert-circle"
+                class="mt-0.5 size-3.5 shrink-0"
               />
-            </div>
-          </template>
-          <div
-            v-else
-            class="absolute inset-0 z-0"
-            :style="{
-              background: `
-                radial-gradient(ellipse 110% 70% at 25% 80%, rgba(147, 51, 234, 0.12), transparent 55%),
-                radial-gradient(ellipse 130% 60% at 75% 15%, rgba(59, 130, 246, 0.10), transparent 65%),
-                radial-gradient(ellipse 80% 90% at 20% 30%, rgba(236, 72, 153, 0.14), transparent 50%),
-                radial-gradient(ellipse 100% 40% at 60% 70%, rgba(16, 185, 129, 0.08), transparent 45%)
-              `
-            }"
-          />
-
-          <div class="relative z-10 flex flex-col h-full">
-            <div class="flex items-start justify-between mb-2">
-              <h4
-                class="font-medium text-sm sm:text-base truncate flex-1 min-w-0 pr-2 transition-colors duration-200"
-                :class="{
-                  'text-primary': selectedRepos.includes(repo.repo),
-                  'group-hover:text-primary': !selectedRepos.includes(repo.repo)
-                }"
-              >
-                <UIcon
-                  name="i-lucide-github"
-                  class="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2 opacity-60"
-                />
-                <span class="break-all">{{ repo.repo }}</span>
-              </h4>
-              <UButton
-                icon="i-lucide-external-link"
-                variant="ghost"
-                size="xs"
-                color="neutral"
-                class="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                @click="(e) => openRepoLink(e, repo.repo)"
-              />
-            </div>
-            <p class="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 flex-1 line-clamp-2 sm:line-clamp-3">
-              {{ repo.description }}
+              <span>{{ searchError }}</span>
             </p>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
-                <div
-                  class="flex items-center gap-1 transition-colors duration-200"
-                  :class="{
-                    'text-primary': selectedRepos.includes(repo.repo),
-                    'text-yellow-600 font-medium': sortBy === 'stars' && !selectedRepos.includes(repo.repo)
-                  }"
-                >
-                  <UIcon
-                    name="i-lucide-star"
-                    class="w-3 h-3 shrink-0"
-                  />
-                  <span class="text-xs">{{ repo.stars > 999 ? (repo.stars/1000).toFixed(1) + 'k' : repo.stars }}</span>
-                </div>
-                <div
-                  class="flex items-center gap-1 transition-colors duration-200"
-                  :class="{
-                    'text-primary': selectedRepos.includes(repo.repo),
-                    'text-blue-600 font-medium': sortBy === 'forks' && !selectedRepos.includes(repo.repo)
-                  }"
-                >
-                  <UIcon
-                    name="i-lucide-git-fork"
-                    class="w-3 h-3 shrink-0"
-                  />
-                  <span class="text-xs">{{ repo.forks > 999 ? (repo.forks/1000).toFixed(1) + 'k' : repo.forks }}</span>
-                </div>
-                <div
-                  class="hidden sm:flex items-center gap-1 transition-colors duration-200"
-                  :class="{
-                    'text-primary': selectedRepos.includes(repo.repo),
-                    'text-green-600 font-medium': sortBy === 'updated' && !selectedRepos.includes(repo.repo)
-                  }"
-                >
-                  <UIcon
-                    name="i-lucide-calendar"
-                    class="w-3 h-3 shrink-0"
-                  />
-                  <span class="text-xs">{{ formatTimeAgo(new Date(repo.updatedAt)) }}</span>
-                </div>
+            <p
+              v-else
+              class="mt-2 text-[11px] text-[var(--ui-text-muted)]"
+            >
+              Try
+              <button
+                class="rc-mono underline-offset-2 hover:underline"
+                @click="searchQuery = 'vuejs/core'; searchRepositories()"
+              >
+                vuejs/core
+              </button>
+              or
+              <button
+                class="rc-mono underline-offset-2 hover:underline"
+                @click="searchQuery = 'nuxt'; searchRepositories()"
+              >
+                nuxt
+              </button>
+            </p>
+          </section>
+
+          <!-- Selected -->
+          <section
+            v-if="selectedRepos.length > 0"
+            class="rc-surface rounded-lg p-4"
+          >
+            <RepoList
+              title="Selected"
+              :repos="selectedRepos"
+              :badge-count="selectedRepos.length"
+              icon="i-lucide-check-circle-2"
+              :clickable="false"
+              @remove="removeRepository"
+              @clear-all="() => selectedRepos = []"
+            />
+            <UButton
+              :loading="isLoading && selectedRepos.length > 0"
+              :disabled="isLoading"
+              size="md"
+              icon="i-lucide-arrow-right"
+              trailing
+              color="primary"
+              block
+              class="mt-3"
+              @click="viewReleases"
+            >
+              View changelog · {{ selectedRepos.length }}
+            </UButton>
+          </section>
+
+        </div>
+      </aside>
+
+      <!-- Right pane -->
+      <section class="flex flex-1 flex-col py-6 lg:col-start-2 lg:row-span-2 lg:py-8">
+        <!-- Hero header -->
+        <header class="mb-6 flex flex-col gap-2">
+          <div class="rc-mono flex items-center gap-2 text-[10px] uppercase tracking-widest text-[var(--ui-text-muted)]">
+            <UIcon
+              name="i-lucide-sparkles"
+              class="size-3"
+            />
+            Open-source release tracker
+          </div>
+          <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Track GitHub releases like a feed.
+          </h1>
+          <p class="max-w-xl text-sm text-[var(--ui-text-muted)]">
+            Search any owner or repo, select what you want to follow, and read a merged changelog timeline.
+          </p>
+        </header>
+
+        <!-- Results state -->
+        <div v-if="showResults">
+          <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="rc-mono flex items-center gap-2 rounded-md border border-[var(--rc-border)] px-2.5 py-1 text-xs">
+                <UIcon
+                  name="i-lucide-package-2"
+                  class="size-3.5"
+                />
+                <span>{{ searchResults.length }} results</span>
               </div>
+              <span class="text-xs text-[var(--ui-text-muted)]">
+                Click to add / remove
+              </span>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-0.5 rounded-md border border-[var(--rc-border)] p-0.5">
+                <UButton
+                  v-for="option in sortOptions"
+                  :key="option.value"
+                  :icon="option.icon"
+                  size="xs"
+                  :variant="sortBy === option.value ? 'solid' : 'ghost'"
+                  :color="sortBy === option.value ? 'primary' : 'neutral'"
+                  class="text-[11px]"
+                  @click="sortBy = option.value as 'stars' | 'forks' | 'name' | 'updated'"
+                >
+                  <span class="hidden sm:inline">{{ option.label }}</span>
+                </UButton>
+              </div>
+              <UButton
+                :icon="sortOrder === 'desc' ? 'i-lucide-arrow-down' : 'i-lucide-arrow-up'"
+                size="xs"
+                variant="outline"
+                color="neutral"
+                square
+                :title="`Sort ${sortOrder === 'desc' ? 'descending' : 'ascending'}`"
+                @click="toggleSortOrder"
+              />
             </div>
           </div>
+
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-3">
+            <button
+              v-for="repo in sortedSearchResults"
+              :key="repo.id"
+              type="button"
+              class="group/card relative overflow-hidden rounded-lg border p-3.5 text-left transition-all duration-200"
+              :class="selectedRepos.includes(repo.repo)
+                ? 'border-[var(--ui-color-primary-500)] bg-[color-mix(in_oklab,var(--ui-color-primary-500)_8%,transparent)]'
+                : 'border-[var(--rc-border)] hover:border-[var(--ui-color-primary-500)]/60 hover:bg-[color-mix(in_oklab,var(--ui-color-primary-500)_4%,transparent)]'"
+              @click="toggleRepository(repo.repo)"
+            >
+              <div class="mb-2 flex items-start justify-between gap-2">
+                <div class="flex min-w-0 flex-1 items-center gap-2">
+                  <UIcon
+                    :name="selectedRepos.includes(repo.repo) ? 'i-lucide-check-circle-2' : 'i-lucide-github'"
+                    class="size-4 shrink-0"
+                    :class="selectedRepos.includes(repo.repo) ? 'text-[var(--ui-color-primary-500)]' : 'text-[var(--ui-text-muted)]'"
+                  />
+                  <span class="rc-mono truncate text-sm font-medium">
+                    {{ repo.repo }}
+                  </span>
+                </div>
+                <UButton
+                  icon="i-lucide-external-link"
+                  variant="ghost"
+                  size="xs"
+                  color="neutral"
+                  square
+                  class="shrink-0 opacity-0 transition-opacity group-hover/card:opacity-100"
+                  @click="(e) => openRepoLink(e, repo.repo)"
+                />
+              </div>
+              <p class="mb-3 line-clamp-2 text-xs text-[var(--ui-text-muted)]">
+                {{ repo.description }}
+              </p>
+              <div class="rc-mono flex items-center gap-3 text-[11px] text-[var(--ui-text-muted)]">
+                <span class="flex items-center gap-1">
+                  <UIcon
+                    name="i-lucide-star"
+                    class="size-3"
+                  />
+                  {{ formatCount(repo.stars) }}
+                </span>
+                <span class="flex items-center gap-1">
+                  <UIcon
+                    name="i-lucide-git-fork"
+                    class="size-3"
+                  />
+                  {{ formatCount(repo.forks) }}
+                </span>
+                <span class="hidden items-center gap-1 sm:flex">
+                  <UIcon
+                    name="i-lucide-calendar"
+                    class="size-3"
+                  />
+                  {{ formatTimeAgo(new Date(repo.updatedAt)) }}
+                </span>
+              </div>
+            </button>
+          </div>
         </div>
-      </div>
+
+        <!-- Onboarding state -->
+        <EmptyState
+          v-else
+          icon="i-lucide-radar"
+          title="Ready when you are"
+          description="Use the search on the left to pull in repositories. Selected ones gather into a single timeline."
+        />
+      </section>
+
+      <!-- Secondary rail: Groups + Recent (below results on mobile, below sticky search on xl) -->
+      <aside class="pb-6 lg:col-start-1 lg:row-start-2 lg:self-start lg:pb-8">
+        <div class="space-y-6">
+          <!-- Groups -->
+          <section class="rc-surface rounded-lg p-4">
+            <FavoriteGroups
+              :selected-repos="selectedRepos"
+              @open="openGroup"
+            />
+          </section>
+
+          <!-- Recent -->
+          <section
+            v-if="repoHistory.length > 0"
+            class="rc-surface rounded-lg p-4"
+          >
+            <RepoList
+              title="Recent"
+              :repos="repoHistory"
+              icon="i-lucide-history"
+              :clickable="true"
+              @click="navigateToRepo"
+              @remove="removeFromHistory"
+              @clear-all="() => repoHistory = []"
+            />
+          </section>
+        </div>
+      </aside>
     </div>
-
-    <div
-      v-if="selectedRepos.length > 0"
-      class="mb-6 sm:mb-8"
-    >
-      <RepoList
-        title="Selected Repositories"
-        :repos="selectedRepos"
-        :badge-count="selectedRepos.length"
-        icon="i-lucide-bookmark"
-        :clickable="false"
-        @remove="removeRepository"
-        @clear-all="() => selectedRepos = []"
-      />
-
-      <div class="text-center mt-4 sm:mt-6">
-        <UButton
-          :loading="isLoading && selectedRepos.length > 0"
-          :disabled="isLoading"
-          size="lg"
-          icon="i-lucide-rocket"
-          color="primary"
-          class="w-full sm:w-auto animate-pulse shadow-lg hover:shadow-xl transition-shadow duration-300"
-          @click="viewReleases"
-        >
-          <span class="hidden sm:inline">
-            {{ isLoading ? 'Loading...' : `View Changelog (${selectedRepos.length} repositories)` }}
-          </span>
-          <span class="sm:hidden">
-            {{ isLoading ? 'Loading...' : `View Changelog (${selectedRepos.length})` }}
-          </span>
-        </UButton>
-      </div>
-    </div>
-
-    <EmptyState v-else />
   </div>
 </template>

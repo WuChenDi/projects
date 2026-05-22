@@ -1,6 +1,4 @@
 <script setup>
-const route = useRoute()
-
 const siteConfig = {
   title: 'Repository Changelog',
   description: 'Track the latest releases and changelogs from your favorite open source repositories',
@@ -222,69 +220,28 @@ useSeoMeta({
   twitterCard: 'summary_large_image'
 })
 
-const isReposPage = computed(() => {
-  return route.name === 'repos'
-})
-
-const isHomePage = computed(() => {
-  return route.name === 'index'
-})
 </script>
 
 <template>
   <UApp>
-    <div
-      v-if="isReposPage"
-      class="min-h-[calc(100vh-68px)]"
-    >
-      <UColorModeButton class="fixed top-4 right-4 z-10" />
-      <NuxtPage />
-    </div>
-
-    <div
-      v-else-if="isHomePage"
-      class="min-h-[calc(100vh-68px)] w-full relative bg-background dark:bg-black"
-    >
-      <UPageSection
-        :title="siteConfig.title"
-        :description="siteConfig.description"
-        :links="siteConfig.navigation.links"
-        orientation="vertical"
-        class="relative overflow-hidden"
+    <ThemedBackground>
+      <IKHeader
+        brand="Repo Changelog"
+        github-href="https://github.com/WuChenDi/repo-changelog"
       >
-        <template #top>
-          <SkyBg />
-          <div
-            class="absolute inset-0 z-[-1]"
-            :style="{
-              backgroundImage: `
-                  linear-gradient(to right, rgba(99, 102, 241, 0.4) 0%, transparent 1px),
-                  linear-gradient(to bottom, rgba(181, 184, 208, 0.3) 0%, transparent 1px)
-                `,
-              backgroundSize: `40px 40px`,
-              WebkitMaskImage:
-                `radial-gradient(ellipse 100% 90% at 50% 0%, #000 90%, transparent 100%)`,
-              maskImage:
-                `radial-gradient(ellipse 100% 90% at 50% 0%, #000 90%, transparent 100%)`
-            }"
-          />
-        </template>
-      </UPageSection>
+        <UColorModeButton
+          variant="ghost"
+          color="neutral"
+          size="md"
+          square
+        />
+      </IKHeader>
 
-      <main class="px-4 sm:px-6 pb-16 bg-background/50 dark:bg-transparent">
-        <UColorModeButton class="fixed top-4 right-4 z-10 backdrop-blur-sm bg-background/80 dark:bg-gray-900/80 rounded-full p-2" />
+      <main class="flex w-full flex-1 flex-col">
         <NuxtPage />
       </main>
-    </div>
 
-    <div
-      v-else
-      class="min-h-[calc(100vh-68px)] w-full"
-    >
-      <UColorModeButton class="fixed top-4 right-4 z-10" />
-      <NuxtPage />
-    </div>
-
-    <Footer />
+      <Footer />
+    </ThemedBackground>
   </UApp>
 </template>

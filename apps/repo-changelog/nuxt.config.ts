@@ -1,3 +1,5 @@
+import pkg from './package.json'
+
 const defaultApiUrl = 'https://ungh.cc' // 'https://unghs.vercel.app'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
@@ -33,6 +35,7 @@ export default defineNuxtConfig({
     apiUrl: process.env.API_URL || defaultApiUrl,
     public: {
       apiUrl: process.env.API_URL || defaultApiUrl,
+      version: pkg.version,
     },
   },
 
@@ -47,6 +50,9 @@ export default defineNuxtConfig({
   vite: {
     optimizeDeps: {
       include: ['@vercel/analytics'],
+    },
+    server: {
+      allowedHosts: ['.a.wd.ds.cc'],
     },
   },
 

@@ -7,24 +7,24 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {
   icon: 'i-lucide-package-search',
-  title: 'No repositories selected yet',
-  description: 'Search and add the open source projects you want to track'
+  title: 'Nothing here yet',
+  description: 'Search a repo, user or organization on the left to get started.'
 })
 </script>
 
 <template>
-  <div class="text-center py-8 sm:py-12">
-    <div class="text-muted-foreground mb-4">
+  <div class="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
+    <div class="grid size-14 place-items-center rounded-xl border border-[var(--rc-border)]">
       <UIcon
         :name="icon"
-        class="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 opacity-50"
+        class="size-6 text-[var(--ui-text-muted)]"
       />
-      <p class="text-base sm:text-lg font-medium mb-2">
-        {{ title }}
-      </p>
-      <p class="text-sm px-4">
-        {{ description }}
-      </p>
     </div>
+    <p class="mt-4 text-sm font-medium text-[var(--ui-text)]">
+      {{ title }}
+    </p>
+    <p class="mt-1 max-w-sm text-xs text-[var(--ui-text-muted)]">
+      {{ description }}
+    </p>
   </div>
 </template>
