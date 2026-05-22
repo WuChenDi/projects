@@ -23,6 +23,7 @@ import {
 } from '@/components/pages/squish'
 import { useImageQueue } from '@/hooks/useImageQueue'
 import { DEFAULT_QUALITY_SETTINGS, genid } from '@/lib'
+import { useSquishStore } from '@/store/useSquishStore'
 import type {
   CompressionOptions as CompressionOptionsType,
   ImageFile,
@@ -30,7 +31,12 @@ import type {
 } from '@/types'
 
 export default function Squish() {
-  const [images, setImages] = useState<ImageFile[]>([])
+  const images = useSquishStore((s) => s.images)
+  const addImages = useSquishStore((s) => s.addImages)
+  const updateImage = useSquishStore((s) => s.updateImage)
+  const removeImage = useSquishStore((s) => s.removeImage)
+  const clearImages = useSquishStore((s) => s.clearImages)
+
   const [outputType, setOutputType] = useState<OutputType>('webp')
   const [options, setOptions] = useState<CompressionOptionsType>({
     quality: DEFAULT_QUALITY_SETTINGS.webp,
@@ -39,7 +45,7 @@ export default function Squish() {
   const [isZipping, setIsZipping] = useState(false)
   const [compareImage, setCompareImage] = useState<ImageFile | null>(null)
 
-  const { addToQueue } = useImageQueue(options, outputType, setImages)
+  const { addToQueue } = useImageQueue(options, outputType)
 
   // Handle output format change
   const handleOutputTypeChange = useCallback((type: OutputType) => {
@@ -52,7 +58,7 @@ export default function Squish() {
   // Handle file drop or selection
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      const newImages = acceptedFiles
+      const newImages: ImageFile[] = acceptedFiles
         .filter(
           (file) =>
             file.type.startsWith('image/') ||
@@ -61,17 +67,19 @@ export default function Squish() {
         .map((file) => ({
           id: String(genid.nextId()),
           file,
+          fileName: file.name,
+          fileType: file.type || 'image/png',
           status: 'pending' as const,
           originalSize: file.size,
           preview: URL.createObjectURL(file),
         }))
-      setImages((prev) => [...prev, ...newImages])
+      addImages(newImages)
       toast.info(`Processing ${acceptedFiles.length} image(s)...`)
       requestAnimationFrame(() => {
         newImages.forEach((image) => addToQueue(image.id))
       })
     },
-    [addToQueue],
+    [addImages, addToQueue],
   )
 
   // Handle paste event for images
@@ -121,42 +129,31 @@ export default function Squish() {
   )
 
   // Handle removing a single image
-  const handleRemoveImage = useCallback((id: string) => {
-    setImages((prev) => {
-      const image = prev.find((img) => img.id === id)
-      if (image?.preview) URL.revokeObjectURL(image.preview)
-      return prev.filter((img) => img.id !== id)
-    })
-  }, [])
+  const handleRemoveImage = useCallback(
+    (id: string) => {
+      removeImage(id)
+    },
+    [removeImage],
+  )
 
   // Handle retrying a failed image
   const handleRetryImage = useCallback(
     (id: string) => {
-      setImages((prev) =>
-        prev.map((img) =>
-          img.id === id
-            ? { ...img, status: 'pending' as const, error: undefined }
-            : img,
-        ),
-      )
+      void updateImage(id, { status: 'pending', error: undefined })
       addToQueue(id)
       toast.info('Retrying image processing...')
     },
-    [addToQueue],
+    [addToQueue, updateImage],
   )
 
   // Handle clearing all images
   const handleClearAll = useCallback(() => {
-    images.forEach((image) => {
-      if (image.preview) URL.revokeObjectURL(image.preview)
-    })
-    setImages([])
+    clearImages()
     toast.success('All images cleared')
-  }, [images])
+  }, [clearImages])
 
   // Handle comparing images
   const handleCompareImage = (image: ImageFile) => {
-    console.log('Comparing image:', image)
     setCompareImage(image)
   }
 
@@ -168,8 +165,11 @@ export default function Squish() {
     if (completedImages.length === 0) return
 
     if (completedImages.length === 1) {
-      const img = completedImages[0]
-      downloadFile({ data: img.blob!, filename: `${img.file.name.split('.')[0]}.${img.outputType}` })
+      const img = completedImages[0]!
+      downloadFile({
+        data: img.blob!,
+        filename: `${img.fileName.split('.')[0]}.${img.outputType}`,
+      })
       toast.success('Downloaded 1 image')
       return
     }
@@ -177,7 +177,7 @@ export default function Squish() {
     setIsDownloading(true)
     try {
       const files: ZipFileEntry[] = completedImages.map((img) => ({
-        path: `${img.file.name.split('.')[0]}.${img.outputType}`,
+        path: `${img.fileName.split('.')[0]}.${img.outputType}`,
         data: img.blob!,
       }))
       await downloadFilesAsZip(files, 'clearify')
@@ -201,7 +201,7 @@ export default function Squish() {
         (img) => img.status === 'complete' && img.blob && img.outputType,
       )
       const files: ZipFileEntry[] = completedImages.map((img) => ({
-        path: `${img.file.name.split('.')[0]}.${img.outputType}`,
+        path: `${img.fileName.split('.')[0]}.${img.outputType}`,
         data: img.blob!,
       }))
       await downloadFilesAsZip(files, 'clearify')

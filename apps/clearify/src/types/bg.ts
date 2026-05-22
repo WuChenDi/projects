@@ -1,6 +1,9 @@
 export interface BgImageFile {
   id: string
-  file: File
+  /** Source file. Undefined after store rehydrate (originals are not persisted). */
+  file?: File
+  fileName: string
+  fileType: string
   preview?: string
   status: 'pending' | 'processing' | 'complete' | 'error'
   error?: string

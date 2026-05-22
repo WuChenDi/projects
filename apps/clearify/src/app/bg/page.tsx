@@ -19,16 +19,22 @@ import { toast } from 'sonner'
 import { LeftPanel, RightPanel } from '@/components/pages/bg'
 import { genid } from '@/lib'
 import { getModelInfo, initializeModel, processImages } from '@/lib/process'
+import { useBgStore } from '@/store/useBgStore'
 import type { BgError, BgImageFile, ModelStatus, RemovalModel } from '@/types'
 
 export default function BG() {
+  const images = useBgStore((s) => s.images)
+  const addImages = useBgStore((s) => s.addImages)
+  const updateImage = useBgStore((s) => s.updateImage)
+  const removeImage = useBgStore((s) => s.removeImage)
+  const clearImages = useBgStore((s) => s.clearImages)
+
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<BgError | null>(null)
   const [isIOS, setIsIOS] = useState(false)
   const [currentModel, setCurrentModel] =
     useState<RemovalModel>('wuchendi/MODNet')
   const [isModelSwitching, setIsModelSwitching] = useState(false)
-  const [images, setImages] = useState<BgImageFile[]>([])
   const [modelStatus, setModelStatus] = useState<ModelStatus>('unavailable')
   const [isModelInitialized, setIsModelInitialized] = useState(false)
   const abortRef = useRef(false)
@@ -153,11 +159,13 @@ export default function BG() {
       const newImages: BgImageFile[] = acceptedFiles.map((file) => ({
         id: String(genid.nextId()),
         file,
+        fileName: file.name,
+        fileType: file.type || 'image/png',
         status: 'pending' as const,
         originalSize: file.size,
         preview: URL.createObjectURL(file),
       }))
-      setImages((prev) => [...prev, ...newImages])
+      addImages(newImages)
       toast.info(`Processing ${acceptedFiles.length} image(s)...`)
 
       abortRef.current = false
@@ -165,17 +173,10 @@ export default function BG() {
         if (abortRef.current) break
 
         try {
-          setImages((prev) =>
-            prev.map((img) =>
-              img.id === image.id
-                ? { ...img, status: 'processing' as const }
-                : img,
-            ),
-          )
+          await updateImage(image.id, { status: 'processing' })
 
-          const result = await processImages([image.file])
+          const result = await processImages([image.file!])
           if (abortRef.current) {
-            // Clean up any URLs created during aborted processing
             result?.forEach((file) => {
               if (file) URL.revokeObjectURL(URL.createObjectURL(file))
             })
@@ -183,21 +184,14 @@ export default function BG() {
           }
 
           if (result && result.length > 0) {
-            const processedBlob = result[0]
-            const processedUrl = URL.createObjectURL(processedBlob!)
+            const processedBlob = result[0]!
+            const processedUrl = URL.createObjectURL(processedBlob)
 
-            setImages((prev) =>
-              prev.map((img) =>
-                img.id === image.id
-                  ? {
-                      ...img,
-                      status: 'complete' as const,
-                      processedBlob,
-                      processedUrl,
-                    }
-                  : img,
-              ),
-            )
+            await updateImage(image.id, {
+              status: 'complete',
+              processedBlob,
+              processedUrl,
+            })
             toast.success('Image processed successfully')
           }
         } catch (error) {
@@ -205,18 +199,15 @@ export default function BG() {
           const errorMessage =
             error instanceof Error ? error.message : 'Unknown error'
 
-          setImages((prev) =>
-            prev.map((img) =>
-              img.id === image.id
-                ? { ...img, status: 'error' as const, error: errorMessage }
-                : img,
-            ),
-          )
+          await updateImage(image.id, {
+            status: 'error',
+            error: errorMessage,
+          })
           toast.error(`Processing failed: ${errorMessage}`)
         }
       }
     },
-    [ensureModelInitialized],
+    [addImages, ensureModelInitialized, updateImage],
   )
 
   const handlePaste = async (event: React.ClipboardEvent) => {
@@ -276,12 +267,7 @@ export default function BG() {
   )
 
   const handleClearAllImages = () => {
-    // Clean up object URLs
-    images.forEach((image) => {
-      if (image.preview) URL.revokeObjectURL(image.preview)
-      if (image.processedUrl) URL.revokeObjectURL(image.processedUrl)
-    })
-    setImages([])
+    clearImages()
     toast.success('All images cleared')
   }
 
@@ -339,14 +325,9 @@ export default function BG() {
 
   const handleDeleteImage = useCallback(
     (id: string) => {
-      const image = images.find((img) => img.id === id)
-      if (image) {
-        if (image.preview) URL.revokeObjectURL(image.preview)
-        if (image.processedUrl) URL.revokeObjectURL(image.processedUrl)
-      }
-      setImages((prev) => prev.filter((img) => img.id !== id))
+      removeImage(id)
     },
-    [images],
+    [removeImage],
   )
 
   return (

@@ -41,7 +41,7 @@ export const RightPanel = ({
             if (!image.blob || !image.outputType) return
             downloadFile({
               data: image.blob,
-              filename: `${image.file.name.split('.')[0]}.${image.outputType}`,
+              filename: `${image.fileName.split('.')[0]}.${image.outputType}`,
             })
           }}
           onRetry={handleRetryImage}

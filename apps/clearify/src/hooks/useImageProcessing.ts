@@ -19,6 +19,9 @@ export function useImageProcessing(
           ),
         )
 
+        if (!image.file) {
+          throw new Error('Source file unavailable')
+        }
         const fileBuffer = await image.file.arrayBuffer()
         const sourceType = getFileType(image.file)
 

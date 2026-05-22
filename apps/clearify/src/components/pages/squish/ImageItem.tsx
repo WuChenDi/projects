@@ -61,14 +61,14 @@ export const ImageItem = ({
           >
             <Image
               src={image.preview || ''}
-              alt={image.file.name}
+              alt={image.fileName}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-110"
               unoptimized
             />
           </Link>
           <div className="absolute top-2 right-2 z-10 flex gap-1">
-            {image.blob && (
+            {image.blob && image.file && (
               <Button
                 variant="secondary"
                 size="icon-xs"
@@ -98,7 +98,7 @@ export const ImageItem = ({
             </Button>
           </div>
           <div className="absolute inset-x-0 bottom-0 w-full flex items-center justify-center p-2 text-xs text-white rounded border-t border-white/10 bg-black/40 backdrop-blur-[2px]">
-            <p className="truncate">{image.file.name}</p>
+            <p className="truncate">{image.fileName}</p>
           </div>
         </div>
         <div className="mt-3 flex items-center justify-between">

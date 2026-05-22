@@ -55,7 +55,7 @@ export const ImageComparisonModal = ({
             <h3 className="text-lg font-semibold text-foreground">
               Image Comparison
             </h3>
-            <p className="text-sm text-muted-foreground">{image.file.name}</p>
+            <p className="text-sm text-muted-foreground">{image.fileName}</p>
           </div>
           <Button
             variant="ghost"

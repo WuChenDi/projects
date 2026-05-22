@@ -1,13 +1,12 @@
 import { logger } from '@cdlab996/utils'
-import type React from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { decode, encode, getFileType } from '@/lib'
+import { useSquishStore } from '@/store/useSquishStore'
 import type { CompressionOptions, ImageFile, OutputType } from '@/types'
 
 export function useImageQueue(
   options: CompressionOptions,
   outputType: OutputType,
-  setImages: React.Dispatch<React.SetStateAction<ImageFile[]>>,
 ) {
   const MAX_PARALLEL_PROCESSING = 3
   const [queue, setQueue] = useState<string[]>([])
@@ -15,8 +14,8 @@ export function useImageQueue(
   const processingImages = useRef(new Set<string>())
   const optionsRef = useRef(options)
   const outputTypeRef = useRef(outputType)
+  const updateImage = useSquishStore((s) => s.updateImage)
 
-  // Keep refs in sync to avoid stale closures
   useEffect(() => {
     optionsRef.current = options
   }, [options])
@@ -31,7 +30,6 @@ export function useImageQueue(
         return
       }
 
-      // Atomic guard: check count before incrementing
       if (processingCount.current >= MAX_PARALLEL_PROCESSING) {
         return
       }
@@ -43,14 +41,11 @@ export function useImageQueue(
       const currentOutputType = outputTypeRef.current
 
       try {
-        setImages((prev) =>
-          prev.map((img) =>
-            img.id === image.id
-              ? { ...img, status: 'processing' as const }
-              : img,
-          ),
-        )
+        await updateImage(image.id, { status: 'processing' })
 
+        if (!image.file) {
+          throw new Error('Source file unavailable')
+        }
         const fileBuffer = await image.file.arrayBuffer()
         const sourceType = getFileType(image.file)
 
@@ -79,42 +74,26 @@ export function useImageQueue(
         })
         const preview = URL.createObjectURL(blob)
 
-        setImages((prev) =>
-          prev.map((img) =>
-            img.id === image.id
-              ? {
-                  ...img,
-                  status: 'complete' as const,
-                  preview,
-                  blob,
-                  compressedSize: compressedBuffer.byteLength,
-                  outputType: currentOutputType,
-                }
-              : img,
-          ),
-        )
+        await updateImage(image.id, {
+          status: 'complete',
+          preview,
+          blob,
+          compressedSize: compressedBuffer.byteLength,
+          outputType: currentOutputType,
+        })
       } catch (error) {
         logger.error('Error processing image:', error)
-        setImages((prev) =>
-          prev.map((img) =>
-            img.id === image.id
-              ? {
-                  ...img,
-                  status: 'error' as const,
-                  error:
-                    error instanceof Error
-                      ? error.message
-                      : 'Failed to process image',
-                }
-              : img,
-          ),
-        )
+        await updateImage(image.id, {
+          status: 'error',
+          error:
+            error instanceof Error ? error.message : 'Failed to process image',
+        })
       } finally {
         processingImages.current.delete(image.id)
         processingCount.current--
       }
     },
-    [setImages],
+    [updateImage],
   )
 
   const processNextInQueue = useCallback(() => {
@@ -126,47 +105,32 @@ export function useImageQueue(
 
     if (queue.length === 0) return
 
-    setImages((prev) => {
-      const availableSlots =
-        MAX_PARALLEL_PROCESSING - processingCount.current
-      if (availableSlots <= 0) return prev
+    const availableSlots = MAX_PARALLEL_PROCESSING - processingCount.current
+    if (availableSlots <= 0) return
 
-      const imagesToProcess = prev
-        .filter(
-          (img) =>
-            queue.includes(img.id) &&
-            !processingImages.current.has(img.id),
-        )
-        .slice(0, availableSlots)
-
-      logger.log('Found images to process:', imagesToProcess.length)
-
-      if (imagesToProcess.length === 0) return prev
-
-      const idsToProcess = imagesToProcess.map((img) => img.id)
-
-      // Start processing these images
-      for (const image of imagesToProcess) {
-        void processImage(image).then(() => {
-          // After each image completes, trigger next batch
-          setQueue((q) => [...q])
-        })
-      }
-
-      // Remove from queue
-      setQueue((current) =>
-        current.filter((id) => !idsToProcess.includes(id)),
+    const currentImages = useSquishStore.getState().images
+    const imagesToProcess = currentImages
+      .filter(
+        (img) =>
+          queue.includes(img.id) && !processingImages.current.has(img.id),
       )
+      .slice(0, availableSlots)
 
-      return prev.map((img) =>
-        idsToProcess.includes(img.id)
-          ? { ...img, status: 'queued' as const }
-          : img,
-      )
-    })
-  }, [queue, processImage, setImages])
+    logger.log('Found images to process:', imagesToProcess.length)
+    if (imagesToProcess.length === 0) return
 
-  // Start processing when queue changes
+    const idsToProcess = imagesToProcess.map((img) => img.id)
+
+    for (const image of imagesToProcess) {
+      void updateImage(image.id, { status: 'queued' })
+      void processImage(image).then(() => {
+        setQueue((q) => [...q])
+      })
+    }
+
+    setQueue((current) => current.filter((id) => !idsToProcess.includes(id)))
+  }, [queue, processImage, updateImage])
+
   useEffect(() => {
     logger.log('Queue changed:', queue.length)
     if (queue.length > 0) {
