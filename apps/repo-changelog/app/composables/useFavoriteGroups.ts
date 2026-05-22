@@ -9,6 +9,7 @@ export interface FavoriteGroup {
 
 export const useFavoriteGroups = () => {
   const groups = useStorage<FavoriteGroup[]>('repo-favorite-groups', [], undefined, {
+    initOnMounted: true,
     serializer: {
       read: (v: string) => {
         try {

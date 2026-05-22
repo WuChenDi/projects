@@ -72,7 +72,7 @@ async function fetchRepoReleases(repo: string) {
           title: release.name || release.tag,
           date: release.publishedAt,
           rawMarkdown: release.markdown ?? '',
-          body: (await parseMarkdown(release.markdown)).body
+          body: (await parseMarkdown(release.markdown ?? '')).body
         }))
     )
   } catch (error) {

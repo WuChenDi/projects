@@ -52,7 +52,7 @@ export default defineNuxtConfig({
       include: ['@vercel/analytics'],
     },
     server: {
-      allowedHosts: ['.a.wd.ds.cc'],
+      allowedHosts: process.env.VITE_ALLOWED_HOSTS?.split(',').map(h => h.trim()).filter(Boolean) ?? [],
     },
   },
 
