@@ -6,8 +6,9 @@ import Plasma from '@cdlab996/ui/reactbits/Plasma'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import { ClientProviders, Footer, Header } from '@/components/layout'
+import { ClientProviders } from '@/components/layout'
 import '@cdlab996/ui/globals.css'
+import { IKFooter, IKHeader } from '@cdlab996/ui/IK'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -251,9 +252,12 @@ export default function RootLayout({
         <ClientProviders>
           <div className="container mx-auto min-h-screen flex flex-col">
             <BackgroundEffects />
-            <Header />
+            <IKHeader
+              brand="Values"
+              githubHref="https://github.com/WuChenDi/projects/tree/main/apps/value-vision"
+            />
             {children}
-            <Footer />
+            <IKFooter year={2025} />
             <Toaster richColors position="top-center" duration={3000} />
           </div>
         </ClientProviders>

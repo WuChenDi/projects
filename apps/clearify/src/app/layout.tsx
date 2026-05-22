@@ -6,8 +6,8 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 
 import { ClientProviders } from '@/components/layout/client-providers'
-import { Header } from '@/components/layout/header'
 import '@cdlab996/ui/globals.css'
+import { IKHeader } from '@cdlab996/ui/IK'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -242,7 +242,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ClientProviders>
-          <Header />
+          <IKHeader
+            brand="Clearify"
+            githubHref="https://github.com/WuChenDi/projects/tree/main/apps/clearify"
+          />
           {children}
           <Toaster richColors position="top-center" duration={3000} />
         </ClientProviders>

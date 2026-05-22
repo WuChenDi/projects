@@ -5,7 +5,8 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 
 import '@cdlab996/ui/globals.css'
-import { ClientProviders, Header } from '@/components/layout'
+import { IKHeader } from '@cdlab996/ui/IK'
+import { ClientProviders, ThemeToggle } from '@/components/layout'
 import { PasswordGate } from '@/components/PasswordGate'
 
 const geistSans = Geist({
@@ -227,7 +228,12 @@ export default function RootLayout({
       >
         <ClientProviders>
           <PasswordGate hasEnvPassword={!!process.env.ACCESS_PASSWORD}>
-            <Header />
+            <IKHeader
+              brand="BYTTS"
+              githubHref="https://github.com/WuChenDi/projects/tree/main/apps/bytts"
+            >
+              <ThemeToggle />
+            </IKHeader>
             {children}
           </PasswordGate>
           <Toaster richColors position="top-right" duration={3000} />

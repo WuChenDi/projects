@@ -9,7 +9,12 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 
 import '@cdlab996/ui/globals.css'
-import { ClientProviders, Footer, Header } from '@/components/layout'
+import { IKFooter, IKHeader } from '@cdlab996/ui/IK'
+import {
+  ClientProviders,
+  LanguageSelector,
+  ThemeToggle,
+} from '@/components/layout'
 import { routing } from '@/i18n/routing'
 
 const geistSans = Geist({
@@ -350,9 +355,15 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider messages={messages}>
           <ClientProviders>
-            <Header />
+            <IKHeader
+              brand="ByPlay"
+              githubHref="https://github.com/WuChenDi/projects/tree/main/apps/byplay"
+            >
+              <LanguageSelector />
+              <ThemeToggle />
+            </IKHeader>
             {children}
-            <Footer />
+            <IKFooter year={2023} />
             <Toaster richColors position="top-center" duration={3000} />
           </ClientProviders>
         </NextIntlClientProvider>

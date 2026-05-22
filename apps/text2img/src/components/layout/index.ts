@@ -1,6 +1,4 @@
 export * from './client-providers'
-export * from './footer'
-export * from './header'
 export * from './language-selector'
 export * from './theme-provider'
 export * from './theme-toggle'

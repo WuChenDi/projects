@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import { IKPageContainer } from '@cdlab996/ui/IK'
+import { IKFooter, IKPageContainer } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
 import Aurora from '@cdlab996/ui/reactbits/Aurora'
 import GradientText from '@cdlab996/ui/reactbits/GradientText'
@@ -24,7 +24,6 @@ import {
   Video,
 } from 'lucide-react'
 import Link from 'next/link'
-import { Footer } from '@/components/layout'
 
 interface Task {
   id: string
@@ -147,7 +146,7 @@ export default function Home() {
             </div>
           </div>
         </IKPageContainer>
-        <Footer />
+        <IKFooter year={2025} />
       </div>
       <div className="fixed inset-0">
         <Aurora

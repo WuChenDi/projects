@@ -9,7 +9,12 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 
 import '@cdlab996/ui/globals.css'
-import { ClientProviders, Header } from '@/components/layout'
+import { IKHeader } from '@cdlab996/ui/IK'
+import {
+  ClientProviders,
+  LanguageSelector,
+  ThemeToggle,
+} from '@/components/layout'
 import { routing } from '@/i18n/routing'
 
 const geistSans = Geist({
@@ -353,7 +358,13 @@ export default async function LocaleLayout({
       >
         <NextIntlClientProvider messages={messages}>
           <ClientProviders>
-            <Header />
+            <IKHeader
+              brand="Text2Img"
+              githubHref="https://github.com/WuChenDi/projects/tree/main/apps/text2img"
+            >
+              <LanguageSelector />
+              <ThemeToggle />
+            </IKHeader>
             {children}
             <Toaster richColors position="top-center" duration={3000} />
           </ClientProviders>
