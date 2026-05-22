@@ -48,43 +48,39 @@ function handleClearAll() {
 </script>
 
 <template>
-  <div
+  <section
     v-if="repos.length > 0"
-    class="space-y-3"
+    class="space-y-2"
   >
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-base sm:text-lg font-semibold flex items-center gap-2">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--ui-text-muted)]">
         <UIcon
           :name="icon"
-          class="size-4"
+          class="size-3.5"
         />
-        <span class="font-medium text-gray-700 dark:text-gray-200">
-          {{ title }}
-        </span>
-      </h3>
+        {{ title }}
+        <span class="rc-mono text-[10px] opacity-60">{{ repos.length }}</span>
+      </div>
 
       <UButton
         v-if="showClearAll"
         variant="ghost"
-        size="sm"
-        icon="i-lucide-trash-2"
-        color="error"
-        class="text-xs sm:text-sm"
+        size="xs"
+        color="neutral"
+        class="-mr-1 text-[11px]"
         @click="handleClearAll"
       >
         Clear
       </UButton>
     </div>
 
-    <div class="flex flex-wrap gap-2">
-      <div
+    <ul class="space-y-0.5">
+      <li
         v-for="repo in repos"
         :key="repo"
         :class="[
-          'group inline-flex items-center gap-1.5 px-2.5 py-1.5',
-          'rounded-md border border-gray-200 dark:border-gray-700',
-          'hover:bg-gray-50 dark:hover:bg-gray-800/50',
-          'transition-colors duration-150',
+          'group/repo flex items-center gap-2 rounded-md border border-transparent px-2 py-1.5 transition',
+          'hover:border-[var(--rc-border)] hover:bg-[var(--ui-bg-muted)]',
           clickable && 'cursor-pointer'
         ]"
         :role="clickable ? 'button' : undefined"
@@ -94,29 +90,28 @@ function handleClearAll() {
       >
         <UIcon
           name="i-lucide-github"
-          class="size-4 shrink-0"
+          class="size-3.5 shrink-0 text-[var(--ui-text-muted)]"
         />
-
         <ULink
           :to="getRepoUrl(repo)"
           target="_blank"
-          class="text-sm text-gray-600 dark:text-gray-300 hover:text-primary truncate max-w-[200px]"
+          class="rc-mono min-w-0 flex-1 truncate text-xs text-[var(--ui-text)] hover:text-[var(--ui-color-primary-400)]"
           @click.stop
         >
           {{ repo }}
         </ULink>
-
         <UButton
           v-if="showRemoveButton"
           icon="i-lucide-x"
           variant="ghost"
           size="xs"
+          color="neutral"
           square
           :aria-label="`Remove ${repo}`"
-          class="shrink-0 p-0"
+          class="shrink-0 opacity-0 transition-opacity group-hover/repo:opacity-100"
           @click="(e) => handleRemove(repo, e)"
         />
-      </div>
-    </div>
-  </div>
+      </li>
+    </ul>
+  </section>
 </template>
