@@ -37,6 +37,13 @@ function confirmCreate() {
 function openGroup(repos: string[]) {
   emit('open', repos)
 }
+
+function handleGroupKeydown(repos: string[], event: KeyboardEvent) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    openGroup(repos)
+  }
+}
 </script>
 
 <template>
@@ -83,8 +90,12 @@ function openGroup(repos: string[]) {
       <li
         v-for="group in groups"
         :key="group.id"
-        class="group/item flex items-center justify-between gap-2 rounded-md border border-transparent px-2 py-1.5 transition hover:border-[var(--rc-border)] hover:bg-[var(--ui-bg-muted)] cursor-pointer"
+        role="button"
+        tabindex="0"
+        :aria-label="`Open group ${group.name}`"
+        class="group/item flex items-center justify-between gap-2 rounded-md border border-transparent px-2 py-1.5 transition hover:border-[var(--rc-border)] hover:bg-[var(--ui-bg-muted)] focus-visible:border-[var(--rc-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-color-primary-500)] cursor-pointer"
         @click="openGroup(group.repos)"
+        @keydown="handleGroupKeydown(group.repos, $event)"
       >
         <div class="min-w-0 flex-1">
           <div class="truncate text-sm font-medium">
