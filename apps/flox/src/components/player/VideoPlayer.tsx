@@ -1,14 +1,21 @@
 'use client'
 
 import { Badge } from '@cdlab996/ui/components/badge'
-import { Card, CardContent, CardFooter } from '@cdlab996/ui/components/card'
+import { Button } from '@cdlab996/ui/components/button'
+import { Card } from '@cdlab996/ui/components/card'
 import { Label } from '@cdlab996/ui/components/label'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@cdlab996/ui/components/popover'
 import { Switch } from '@cdlab996/ui/components/switch'
 import {
   ToggleGroup,
   ToggleGroupItem,
 } from '@cdlab996/ui/components/toggle-group'
 import { cn } from '@cdlab996/ui/lib/utils'
+import { SettingsIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useHistory } from '@/lib/store/history-store'
@@ -36,7 +43,7 @@ interface VideoPlayerProps {
 const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const
 
 const AD_FILTER_OPTIONS: { value: AdFilterMode; label: string }[] = [
-  { value: 'off', label: '关' },
+  { value: 'off', label: '关闭' },
   { value: 'heuristic', label: '启发' },
   { value: 'aggressive', label: '激进' },
 ]
@@ -239,138 +246,155 @@ export function VideoPlayer({
         </div>
       </Card>
 
-      <Card>
-        <CardContent>
-          <div className="flex items-center gap-2">
-            <Label className="text-xs font-normal text-muted-foreground whitespace-nowrap">
-              速度
-            </Label>
-            <ToggleGroup
-              type="single"
-              size="sm"
-              variant="outline"
-              value={String(playbackRate)}
-              onValueChange={(v) => v && setPlaybackRate(Number(v))}
-              aria-label="播放速度"
-              className="w-max flex-nowrap flex-1"
-            >
-              {SPEED_OPTIONS.map((s) => (
-                <ToggleGroupItem key={s} value={String(s)} aria-label={`${s}x`}>
-                  {s === 1 ? '1x' : `${s}x`}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-            {(resolution || canToggleProxy) && (
-              <div className="flex items-center gap-1.5 shrink-0">
-                {resolution && (
-                  <Badge className={cn('hidden sm:block', resolution.color)}>
-                    {resolution.label}
-                  </Badge>
-                )}
-                {canToggleProxy && (
-                  <Badge
-                    variant={useProxy ? 'destructive' : 'secondary'}
-                    onClick={toggleProxy}
-                    className="cursor-pointer select-none"
-                  >
-                    {useProxy ? '代理' : '直连'}
-                  </Badge>
-                )}
-              </div>
-            )}
-          </div>
-        </CardContent>
-        <CardFooter>
-          <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="flex items-center gap-1.5">
-              <Label className="text-xs text-muted-foreground whitespace-nowrap">
-                广告过滤
-              </Label>
-              <ToggleGroup
-                type="single"
-                size="sm"
-                variant="outline"
-                value={adFilterMode}
-                onValueChange={(v) => v && setAdFilterMode(v as AdFilterMode)}
-                aria-label="广告过滤"
-              >
-                {AD_FILTER_OPTIONS.map(({ value, label }) => (
-                  <ToggleGroupItem key={value} value={value}>
-                    {label}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            </div>
+      <Card className="px-3 sm:px-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          <ToggleGroup
+            type="single"
+            size="sm"
+            variant="outline"
+            value={String(playbackRate)}
+            onValueChange={(v) => v && setPlaybackRate(Number(v))}
+            aria-label="播放速度"
+            className="flex-nowrap"
+          >
+            {SPEED_OPTIONS.map((s) => (
+              <ToggleGroupItem key={s} value={String(s)} aria-label={`${s}x`}>
+                {s === 1 ? '1x' : `${s}x`}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
 
-            {hasMultipleEpisodes && (
-              <div className="flex items-center gap-1.5">
-                <Switch
-                  id="autoplay-next"
-                  checked={autoNextEpisode}
-                  onCheckedChange={setAutoNextEpisode}
-                />
-                <Label
-                  htmlFor="autoplay-next"
-                  className="cursor-pointer text-xs whitespace-nowrap"
-                >
-                  自动播放
-                </Label>
-              </div>
+          <div className="flex items-center gap-1.5 ml-auto">
+            {resolution && (
+              <Badge className={cn('hidden sm:inline-flex', resolution.color)}>
+                {resolution.label}
+              </Badge>
+            )}
+            {canToggleProxy && (
+              <Badge
+                variant={useProxy ? 'destructive' : 'secondary'}
+                onClick={toggleProxy}
+                className="cursor-pointer select-none"
+              >
+                {useProxy ? '代理' : '直连'}
+              </Badge>
             )}
 
-            <div className="flex items-center gap-1.5">
-              <Switch
-                id="skip-intro"
-                checked={autoSkipIntro}
-                onCheckedChange={setAutoSkipIntro}
-              />
-              <Label
-                htmlFor="skip-intro"
-                className="cursor-pointer text-xs whitespace-nowrap"
-              >
-                跳片头
-              </Label>
-              {autoSkipIntro && (
-                <button
-                  type="button"
-                  className="text-xs text-primary underline underline-offset-2 tabular-nums text-left"
-                  onClick={() =>
-                    cycleSkipSeconds(skipIntroSeconds, setSkipIntroSeconds)
-                  }
-                  title="点击切换秒数"
-                >
-                  {skipIntroSeconds}s
-                </button>
-              )}
-            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon-sm" aria-label="播放设置">
+                  <SettingsIcon className="size-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-72 p-0">
+                <div className="px-4 py-3 border-b">
+                  <p className="text-sm font-medium">播放设置</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    全局生效，下次播放保留
+                  </p>
+                </div>
 
-            <div className="flex items-center gap-1.5">
-              <Switch
-                id="skip-outro"
-                checked={autoSkipOutro}
-                onCheckedChange={setAutoSkipOutro}
-              />
-              <Label
-                htmlFor="skip-outro"
-                className="cursor-pointer text-xs whitespace-nowrap"
-              >
-                跳片尾
-              </Label>
-              {autoSkipOutro && (
-                <button
-                  type="button"
-                  className="text-xs text-primary underline underline-offset-2 tabular-nums text-left"
-                  onClick={() =>
-                    cycleSkipSeconds(skipOutroSeconds, setSkipOutroSeconds)
-                  }
-                  title="点击切换秒数"
-                >
-                  {skipOutroSeconds}s
-                </button>
-              )}
-            </div>
+                <div className="px-4 py-3 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-xs">广告过滤</Label>
+                    <ToggleGroup
+                      type="single"
+                      size="sm"
+                      variant="outline"
+                      value={adFilterMode}
+                      onValueChange={(v) =>
+                        v && setAdFilterMode(v as AdFilterMode)
+                      }
+                      aria-label="广告过滤"
+                    >
+                      {AD_FILTER_OPTIONS.map(({ value, label }) => (
+                        <ToggleGroupItem key={value} value={value}>
+                          {label}
+                        </ToggleGroupItem>
+                      ))}
+                    </ToggleGroup>
+                  </div>
+
+                  {hasMultipleEpisodes && (
+                    <>
+                      <div className="flex items-center justify-between gap-2">
+                        <Label
+                          htmlFor="autoplay-next"
+                          className="text-xs cursor-pointer"
+                        >
+                          自动播放下一集
+                        </Label>
+                        <Switch
+                          id="autoplay-next"
+                          checked={autoNextEpisode}
+                          onCheckedChange={setAutoNextEpisode}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  <div className="flex items-center justify-between gap-2">
+                    <Label
+                      htmlFor="skip-intro"
+                      className="text-xs cursor-pointer flex-1"
+                    >
+                      跳过片头
+                    </Label>
+                    {autoSkipIntro && (
+                      <button
+                        type="button"
+                        className="text-xs text-primary underline underline-offset-2 tabular-nums"
+                        onClick={() =>
+                          cycleSkipSeconds(
+                            skipIntroSeconds,
+                            setSkipIntroSeconds,
+                          )
+                        }
+                        title="点击切换秒数"
+                      >
+                        {skipIntroSeconds}s
+                      </button>
+                    )}
+                    <Switch
+                      id="skip-intro"
+                      checked={autoSkipIntro}
+                      onCheckedChange={setAutoSkipIntro}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2">
+                    <Label
+                      htmlFor="skip-outro"
+                      className="text-xs cursor-pointer flex-1"
+                    >
+                      跳过片尾
+                    </Label>
+                    {autoSkipOutro && (
+                      <button
+                        type="button"
+                        className="text-xs text-primary underline underline-offset-2 tabular-nums"
+                        onClick={() =>
+                          cycleSkipSeconds(
+                            skipOutroSeconds,
+                            setSkipOutroSeconds,
+                          )
+                        }
+                        title="点击切换秒数"
+                      >
+                        {skipOutroSeconds}s
+                      </button>
+                    )}
+                    <Switch
+                      id="skip-outro"
+                      checked={autoSkipOutro}
+                      onCheckedChange={setAutoSkipOutro}
+                    />
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
-        </CardFooter>
+        </div>
       </Card>
     </div>
   )
