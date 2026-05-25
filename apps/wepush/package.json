@@ -1,16 +1,16 @@
 {
-  "name": "@cdlab996/text2img",
+  "name": "@cdlab996/wepush",
   "type": "module",
-  "version": "1.1.0",
+  "version": "0.1.0",
   "private": true,
-  "description": "Free online AI text-to-image tool powered by Cloudflare Workers AI. Supports FLUX.1, Stable Diffusion XL and more. No registration required.",
+  "description": "WeChat official-account push console — Next.js + Drizzle on Cloudflare Workers.",
   "author": "wudi <wuchendi96@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/WuChenDi",
   "repository": {
     "type": "git",
     "url": "https://github.com/WuChenDi/projects.git",
-    "directory": "apps/text2img"
+    "directory": "apps/wepush"
   },
   "scripts": {
     "dev": "nsl run next dev",
@@ -21,30 +21,43 @@
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
+    "cf:localdb": "wrangler d1 migrations apply wepush",
+    "cf:remotedb": "wrangler d1 migrations apply wepush --remote",
+    "db:gen": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio --port 3020 --host 0.0.0.0",
+    "gen:cities": "node scripts/fetch-city-codes.mjs"
   },
   "dependencies": {
     "@cdlab996/genid": "catalog:prod",
     "@cdlab996/ui": "workspace:*",
     "@cdlab996/utils": "workspace:*",
+    "@libsql/client": "catalog:prod",
+    "@tanstack/react-form": "catalog:prod",
     "@tanstack/react-query": "catalog:prod",
-    "class-variance-authority": "catalog:prod",
-    "clsx": "catalog:prod",
     "date-fns": "catalog:prod",
+    "drizzle-orm": "catalog:prod",
     "lucide-react": "catalog:prod",
     "next": "catalog:prod",
-    "next-intl": "catalog:prod",
     "next-themes": "catalog:prod",
     "react": "catalog:prod",
+    "react-day-picker": "catalog:prod",
     "react-dom": "catalog:prod",
-    "sonner": "catalog:prod"
+    "tyme4ts": "^1.5.0",
+    "sonner": "catalog:prod",
+    "zod": "catalog:prod",
+    "zustand": "catalog:prod"
   },
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",
+    "@cloudflare/workers-types": "catalog:dev",
     "@opennextjs/cloudflare": "catalog:dev",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
+    "drizzle-kit": "catalog:dev",
     "typescript": "catalog:dev",
     "wrangler": "catalog:dev"
   }
