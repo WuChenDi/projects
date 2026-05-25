@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const db = getDb()
+  const db = await getDb()
   const [batch] = await db
     .select()
     .from(pushBatches)

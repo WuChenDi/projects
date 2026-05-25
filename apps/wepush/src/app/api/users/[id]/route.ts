@@ -38,7 +38,7 @@ const patchSchema = z
   .strict()
 
 async function loadFull(id: string) {
-  const db = getDb()
+  const db = await getDb()
   const u = await db
     .select()
     .from(users)
@@ -87,7 +87,7 @@ export async function PATCH(
     )
   }
 
-  const db = getDb()
+  const db = await getDb()
   const { festivals: fests, customDates: dates, ...userUpdates } = parsed.data
 
   if (Object.keys(userUpdates).length > 0) {
@@ -125,7 +125,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const db = getDb()
+  const db = await getDb()
   await db.update(users).set({ isDeleted: 1 }).where(eq(users.id, id))
   return NextResponse.json({ ok: true })
 }

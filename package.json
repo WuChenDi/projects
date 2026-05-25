@@ -59,5 +59,10 @@
     "@types/node": "catalog:dev",
     "turbo": "^2.9.14",
     "typescript": "catalog:dev"
+  },
+  "pnpm": {
+    "overrides": {
+      "esbuild": "^0.25.0"
+    }
   }
 }

@@ -14,7 +14,7 @@ const patchSchema = z
   .strict()
 
 async function loadOne(id: string) {
-  const db = getDb()
+  const db = await getDb()
   const rows = await db
     .select()
     .from(templates)
@@ -51,7 +51,7 @@ export async function PATCH(
     )
   }
 
-  const db = getDb()
+  const db = await getDb()
 
   if (parsed.data.code && parsed.data.code !== existing.code) {
     const dup = await db
@@ -83,7 +83,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const db = getDb()
+  const db = await getDb()
   await db.update(templates).set({ isDeleted: 1 }).where(eq(templates.id, id))
   return NextResponse.json({ ok: true })
 }

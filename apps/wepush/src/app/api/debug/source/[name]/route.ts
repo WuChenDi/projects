@@ -26,7 +26,7 @@ export async function GET(
   const sp = request.nextUrl.searchParams
   const cityCode = sp.get('cityCode') ?? ''
 
-  const db = getDb()
+  const db = await getDb()
   const [config] = await db
     .select()
     .from(globalConfig)
