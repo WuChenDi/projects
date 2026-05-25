@@ -36,7 +36,7 @@ const createSchema = z.object({
 })
 
 export async function GET() {
-  const db = getDb()
+  const db = await getDb()
   const rows = await db.select().from(users).where(eq(users.isDeleted, 0))
   return NextResponse.json(rows)
 }
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const db = getDb()
+  const db = await getDb()
   const id = String(genid.nextId())
   const { festivals: fests, customDates: dates, ...userValues } = parsed.data
 

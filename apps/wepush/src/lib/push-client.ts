@@ -16,26 +16,14 @@ export interface RunPushOptions {
   trigger?: 'manual' | 'api' | 'cron'
 }
 
-async function fetchPushApiToken(): Promise<string> {
-  const res = await fetch('/api/settings')
-  if (!res.ok) throw new Error('无法读取全局配置')
-  const data = await res.json()
-  if (!data?.pushApiToken) {
-    throw new Error('未配置 pushApiToken，请打开 /settings 生成')
-  }
-  return data.pushApiToken as string
-}
-
+// Same-origin calls from the UI: the server accepts these without Bearer
+// (see requireBearerOrSameOrigin). Bearer is only for external API consumers.
 export async function runPushFromUi(
   options: RunPushOptions,
 ): Promise<RunPushApiResult> {
-  const token = await fetchPushApiToken()
   const res = await fetch('/api/push/run', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       userIds: options.userIds,
       trigger: options.trigger ?? 'manual',
@@ -49,13 +37,9 @@ export async function runPushFromUi(
 }
 
 export async function retryLogFromUi(logId: string): Promise<RunPushApiResult> {
-  const token = await fetchPushApiToken()
   const res = await fetch('/api/push/retry', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ logId }),
   })
   if (!res.ok) {

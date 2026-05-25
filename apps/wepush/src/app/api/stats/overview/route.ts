@@ -4,7 +4,7 @@ import { pushBatches, pushLogs, templates, users } from '@/database/schema'
 import { getDb } from '@/lib/db'
 
 export async function GET() {
-  const db = getDb()
+  const db = await getDb()
   const now = new Date()
   const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 

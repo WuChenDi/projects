@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const db = getDb()
+  const db = await getDb()
 
   const [configRow] = await db
     .select()

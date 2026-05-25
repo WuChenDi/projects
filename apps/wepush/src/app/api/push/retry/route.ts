@@ -3,14 +3,14 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import * as z from 'zod'
 import { pushLogs, users } from '@/database/schema'
-import { requireBearer } from '@/lib/auth'
+import { requireBearerOrSameOrigin } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 import { runPush } from '@/services/push/runner'
 
 const bodySchema = z.object({ logId: z.string().min(1) }).strict()
 
 export async function POST(request: NextRequest) {
-  const auth = await requireBearer(request)
+  const auth = await requireBearerOrSameOrigin(request)
   if (!auth.ok) return auth.response
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null))
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const db = getDb()
+  const db = await getDb()
   const [log] = await db
     .select()
     .from(pushLogs)

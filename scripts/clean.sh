@@ -5,6 +5,8 @@ DIRS_TO_DELETE=(
   ".turbo"
   "apps/*/node_modules"
   "apps/*/.turbo"
+  "apps/*/.vercel"
+  "apps/*/.open-next"
   "apps/*/.next"
   "apps/*/out"
   "apps/*/dist"

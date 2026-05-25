@@ -113,7 +113,7 @@ async function loadTemplate(
 }
 
 export async function runPush(input: RunPushInput): Promise<RunPushResult> {
-  const db = getDb()
+  const db = await getDb()
   const config = await loadConfig(db)
   const targets = await loadTargetUsers(db, input.userIds)
 

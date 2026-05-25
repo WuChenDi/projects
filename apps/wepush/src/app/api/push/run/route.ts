@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import * as z from 'zod'
-import { requireBearer } from '@/lib/auth'
+import { requireBearerOrSameOrigin } from '@/lib/auth'
 import { runPush } from '@/services/push/runner'
 
 const bodySchema = z
@@ -12,7 +12,7 @@ const bodySchema = z
   .strict()
 
 export async function POST(request: NextRequest) {
-  const auth = await requireBearer(request)
+  const auth = await requireBearerOrSameOrigin(request)
   if (!auth.ok) return auth.response
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})))

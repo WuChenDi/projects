@@ -13,7 +13,7 @@ const createSchema = z.object({
 })
 
 export async function GET() {
-  const db = getDb()
+  const db = await getDb()
   const rows = await db
     .select()
     .from(templates)
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const db = getDb()
+  const db = await getDb()
 
   const dup = await db
     .select()

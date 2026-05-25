@@ -13,7 +13,7 @@ import { runPush } from './runner'
  */
 export async function runScheduledPush(): Promise<void> {
   try {
-    const db = getDb()
+    const db = await getDb()
     const [config] = await db
       .select()
       .from(globalConfig)

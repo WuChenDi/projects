@@ -4,8 +4,8 @@ packages:
 catalogs:
   dev:
     '@cloudflare/next-on-pages': ^1.13.16
-    '@cloudflare/workers-types': ^4.20260504.1
-    '@opennextjs/cloudflare': ^1.18.0
+    '@cloudflare/workers-types': ^4.20260525.1
+    '@opennextjs/cloudflare': ^1.19.11
     '@types/node': ^25
     '@types/react': ^19
     '@types/react-dom': ^19
@@ -15,7 +15,7 @@ catalogs:
     tsdown: ^0.22.0
     typescript: ^6
     vitest: ^4.1.5
-    wrangler: ^4.87.0
+    wrangler: ^4.94.0
   prod:
     '@base-ui/react': ^1.4.1
     '@cdlab996/genid': ^1.4.0

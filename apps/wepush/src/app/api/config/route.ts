@@ -2,8 +2,6 @@ import { verifyPasswordFn } from '@cdlab996/utils'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
-export const runtime = 'edge'
-
 function readAccessPassword(): string {
   return process.env.ACCESS_PASSWORD || ''
 }

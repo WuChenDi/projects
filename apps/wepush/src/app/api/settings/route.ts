@@ -30,7 +30,7 @@ const patchSchema = z
   .strict()
 
 async function loadOrCreate() {
-  const db = getDb()
+  const db = await getDb()
   const rows = await db
     .select()
     .from(globalConfig)
@@ -84,7 +84,7 @@ export async function PATCH(request: NextRequest) {
 
   await loadOrCreate()
 
-  const db = getDb()
+  const db = await getDb()
   const { regeneratePushApiToken, wechatAppSecret, ...rest } = parsed.data
   const updates: Record<string, unknown> = { ...rest }
   // Empty wechatAppSecret means "keep existing" — required because GET no
