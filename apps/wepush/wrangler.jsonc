@@ -1,0 +1,42 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wepush",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-05-04",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".open-next/assets"
+  },
+  "vars": {
+    // Database driver: "libsql" (default, dev file) or "d1" (prod binding)
+    "DB_TYPE": "libsql",
+    // LibSQL URL — only used when DB_TYPE=libsql. Default is a local SQLite file.
+    "LIBSQL_URL": "libsql://we-pu-sh-cdhj996.aws-ap-northeast-1.turso.io",
+    "LIBSQL_AUTH_TOKEN": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3Nzk1OTk1MzYsImlkIjoiMDE5ZTU4NDYtMTQwMS03NDdhLWExZTYtN2RkOWM1Mzc5NWM3IiwicmlkIjoiY2I1YjRmYzUtMTBiNy00M2ViLWFjMzYtMWRkYmU5OGNiZGI0In0.FSuDbsgXQuN07MNux-xq0B8hw2ZmoUrv3_PpEFtfOs1mw-tOq-S5KBUDaSolg66L-D5ZFZRkfVs3_nQsJ_k6Dg"
+    // ACCESS_PASSWORD is set via `wrangler secret put ACCESS_PASSWORD` — DO NOT commit.
+  },
+  // "d1_databases": [
+  //   {
+  //     "binding": "DB",
+  //     "database_name": "wepush",
+  //     "migrations_dir": "./src/database",
+  //     "database_id": "your-d1-database-id"
+  //   }
+  // ],
+  // Scheduled push trigger — handled by the `scheduled()` handler in src/worker/index.ts.
+  // Default: 23:30 UTC daily (≈ 07:30 Asia/Shanghai). Edit cron list to add more slots.
+  // Disable cron at runtime via the /settings page (cronEnabled = false) — keep the
+  // crontab here so re-enabling is a config-only toggle.
+  "triggers": {
+    "crons": ["30 23 * * *"]
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

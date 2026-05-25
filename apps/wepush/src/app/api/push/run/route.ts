@@ -1,0 +1,29 @@
+import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
+import * as z from 'zod'
+import { requireBearer } from '@/lib/auth'
+import { runPush } from '@/services/push/runner'
+
+const bodySchema = z
+  .object({
+    userIds: z.array(z.string().min(1)).optional(),
+    trigger: z.enum(['manual', 'api', 'cron']).optional(),
+  })
+  .strict()
+
+export async function POST(request: NextRequest) {
+  const auth = await requireBearer(request)
+  if (!auth.ok) return auth.response
+
+  const parsed = bodySchema.safeParse(await request.json().catch(() => ({})))
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Invalid payload', issues: parsed.error.issues },
+      { status: 400 },
+    )
+  }
+
+  const trigger = parsed.data.trigger ?? 'api'
+  const result = await runPush({ trigger, userIds: parsed.data.userIds })
+  return NextResponse.json(result)
+}
