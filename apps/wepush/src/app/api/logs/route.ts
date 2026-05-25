@@ -34,7 +34,12 @@ export async function GET(request: NextRequest) {
   }
   if (to) {
     const d = new Date(to)
-    if (!Number.isNaN(d.getTime())) filters.push(lte(pushLogs.sentAt, d))
+    if (!Number.isNaN(d.getTime())) {
+      // YYYY-MM-DD inputs parse to 00:00:00; treat as inclusive end-of-day so
+      // logs from the same date are not silently dropped.
+      if (/^\d{4}-\d{2}-\d{2}$/.test(to)) d.setHours(23, 59, 59, 999)
+      filters.push(lte(pushLogs.sentAt, d))
+    }
   }
 
   const db = getDb()

@@ -7,7 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@cdlab996/ui/components/popover'
-import { format, parse } from 'date-fns'
+import { format, isValid, parse } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { CalendarIcon } from 'lucide-react'
 import { useState } from 'react'
@@ -26,7 +26,8 @@ interface Props {
 
 function toDate(value: string): Date | undefined {
   if (!value || !/^\d{2}-\d{2}$/.test(value)) return undefined
-  return parse(`${REFERENCE_YEAR}-${value}`, 'yyyy-MM-dd', new Date())
+  const d = parse(`${REFERENCE_YEAR}-${value}`, 'yyyy-MM-dd', new Date())
+  return isValid(d) ? d : undefined
 }
 
 export function MonthDayPicker({

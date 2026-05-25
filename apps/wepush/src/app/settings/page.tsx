@@ -13,6 +13,13 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import type { GlobalConfig } from '@/database/schema'
 
+// GET /api/settings masks secrets and adds presence flags; PATCH on regenerate
+// returns the full row (so the new pushApiToken can be displayed once).
+type SettingsResponse = GlobalConfig & {
+  hasWechatAppSecret?: boolean
+  hasPushApiToken?: boolean
+}
+
 type SettingsPatch = Partial<{
   wechatAppId: string
   wechatAppSecret: string
@@ -27,13 +34,13 @@ type SettingsPatch = Partial<{
   regeneratePushApiToken: boolean
 }>
 
-async function fetchSettings(): Promise<GlobalConfig> {
+async function fetchSettings(): Promise<SettingsResponse> {
   const res = await fetch('/api/settings')
   if (!res.ok) throw new Error('Failed to load settings')
   return res.json()
 }
 
-async function patchSettings(patch: SettingsPatch): Promise<GlobalConfig> {
+async function patchSettings(patch: SettingsPatch): Promise<SettingsResponse> {
   const res = await fetch('/api/settings', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -56,7 +63,9 @@ export default function SettingsPage() {
     if (!data) return
     setForm({
       wechatAppId: data.wechatAppId,
-      wechatAppSecret: data.wechatAppSecret,
+      // wechatAppSecret is never returned cleartext; leave empty unless the
+      // user types a new value (server treats empty as "keep existing").
+      wechatAppSecret: '',
       defaultWechatTemplateId: data.defaultWechatTemplateId,
       maxPushOneMinute: data.maxPushOneMinute,
       sleepTime: data.sleepTime,
@@ -135,6 +144,9 @@ export default function SettingsPage() {
           value={form.wechatAppSecret ?? ''}
           onChange={set('wechatAppSecret')}
           type="password"
+          placeholder={
+            data.hasWechatAppSecret ? '已配置，留空保持不变' : '尚未配置'
+          }
         />
         <TextField
           label="默认模板 ID"
@@ -179,13 +191,21 @@ export default function SettingsPage() {
 
       <Section
         title="HTTP 触发 token"
-        desc="调用 POST /api/push/run 时通过 Authorization: Bearer <token> 鉴权。"
+        desc="调用 POST /api/push/run 时通过 Authorization: Bearer <token> 鉴权。生成后仅本次会话可见，刷新页面后将再次隐藏。"
       >
         <div className="flex items-center gap-2">
-          <Input value={data.pushApiToken} readOnly className="font-mono" />
+          <Input
+            value={data.pushApiToken}
+            readOnly
+            className="font-mono"
+            placeholder={
+              data.hasPushApiToken ? '已配置，点右侧按钮可重置' : '尚未配置'
+            }
+          />
           <Button
             variant="outline"
             size="icon"
+            disabled={!data.pushApiToken}
             onClick={() => void copyToken()}
             aria-label="复制 token"
           >
@@ -260,11 +280,13 @@ function TextField({
   value,
   onChange,
   type = 'text',
+  placeholder,
 }: {
   label: string
   value: string
   onChange: (v: string) => void
   type?: 'text' | 'password'
+  placeholder?: string
 }) {
   return (
     <div className="space-y-1.5">
@@ -273,6 +295,7 @@ function TextField({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
       />
     </div>
   )
