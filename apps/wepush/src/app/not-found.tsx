@@ -1,14 +1,31 @@
+'use client'
+
 import { Button } from '@cdlab996/ui/components/button'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function NotFound() {
+  const router = useRouter()
+
   return (
-    <main className="container mx-auto flex max-w-xl flex-col items-center justify-center px-6 py-24 text-center">
-      <h1 className="text-3xl font-bold tracking-tight">404</h1>
-      <p className="mt-2 text-sm text-muted-foreground">页面不存在</p>
-      <Link href="/" className="mt-6">
-        <Button>回首页</Button>
-      </Link>
-    </main>
+    <div className="absolute top-1/2 left-1/2 mb-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center text-center">
+      <span className="from-foreground bg-linear-to-b to-transparent bg-clip-text text-[10rem] leading-none font-extrabold text-transparent">
+        404
+      </span>
+      <h2 className="font-heading my-2 text-2xl font-bold">
+        Something&apos;s missing
+      </h2>
+      <p>
+        Sorry, the page you are looking for doesn&apos;t exist or has been
+        moved.
+      </p>
+      <div className="mt-8 flex justify-center gap-2">
+        <Button onClick={() => router.back()} variant="default" size="lg">
+          Go back
+        </Button>
+        <Button onClick={() => router.push('/')} variant="ghost" size="lg">
+          Back to Home
+        </Button>
+      </div>
+    </div>
   )
 }

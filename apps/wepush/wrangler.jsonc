@@ -13,22 +13,24 @@
     "directory": ".open-next/assets"
   },
   "vars": {
+    // A simple password to protect the /settings page. Set to empty string to disable.
+    "ACCESS_PASSWORD": "",
     // Database driver: "libsql" (default, dev file) or "d1" (prod binding)
-    "DB_TYPE": "libsql"
-    // Secrets — DO NOT commit. Set via `wrangler secret put <NAME>` for prod,
-    // or via `.dev.vars` for `wrangler dev`:
-    //   ACCESS_PASSWORD       — required, password gate
-    //   LIBSQL_URL            — required when DB_TYPE=libsql (e.g. Turso URL)
-    //   LIBSQL_AUTH_TOKEN     — required when DB_TYPE=libsql + remote (Turso)
+    "DB_TYPE": "d1",
+    // LibSQL Configuration
+    // The URL for connecting to the LibSQL database. Default is a local SQLite file.
+    "LIBSQL_URL": "file:./src/database/data.db",
+    // The authentication token for accessing the LibSQL
+    "LIBSQL_AUTH_TOKEN": "your_libsql_auth_token"
   },
-  // "d1_databases": [
-  //   {
-  //     "binding": "DB",
-  //     "database_name": "wepush",
-  //     "migrations_dir": "./src/database",
-  //     "database_id": "your-d1-database-id"
-  //   }
-  // ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "wepush",
+      "migrations_dir": "./src/database",
+      "database_id": "your-d1-database-id"
+    }
+  ],
   // Scheduled push trigger — handled by the `scheduled()` handler in src/worker/index.ts.
   // Default: 23:30 UTC daily (≈ 07:30 Asia/Shanghai). Edit cron list to add more slots.
   // Disable cron at runtime via the /settings page (cronEnabled = false) — keep the
