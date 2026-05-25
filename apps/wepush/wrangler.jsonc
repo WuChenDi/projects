@@ -19,16 +19,16 @@
     "DB_TYPE": "d1",
     // LibSQL Configuration
     // The URL for connecting to the LibSQL database. Default is a local SQLite file.
-    "LIBSQL_URL": "libsql://wepush-cdhj996.aws-ap-northeast-1.turso.io",
+    "LIBSQL_URL": "your-libsql-url",
     // The authentication token for accessing the LibSQL
-    "LIBSQL_AUTH_TOKEN": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3Nzk3MDUxMTMsImlkIjoiMDE5ZTVlYjAtZDcwMS03ZmQ2LWExYjMtNzM5ZGIzYzAxMGQwIiwicmlkIjoiYTVjNGNkYTMtOTFmNy00YTk0LTk4NWMtZjY4OTEzMDdmMWIyIn0.O-NUIpZvr_Tf4X4No0Q2CYALOoT3RTtBP4Bg2TO2Sr4HVoLiYCTNM4nKwFyikOrapkVjQ5qZRDgQT6Z5dHHWDg"
+    "LIBSQL_AUTH_TOKEN": "your-libsql-auth-token"
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "wepush",
       "migrations_dir": "./src/database",
-      "database_id": "c559bc4c-d173-49c0-8aa3-9b48765e1e2c"
+      "database_id": "your-d1-database-id"
     }
   ],
   // Scheduled push trigger — handled by the `scheduled()` handler in src/worker/index.ts.
