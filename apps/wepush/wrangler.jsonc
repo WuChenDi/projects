@@ -14,11 +14,12 @@
   },
   "vars": {
     // Database driver: "libsql" (default, dev file) or "d1" (prod binding)
-    "DB_TYPE": "libsql",
-    // LibSQL URL — only used when DB_TYPE=libsql. Default is a local SQLite file.
-    "LIBSQL_URL": "libsql://we-pu-sh-cdhj996.aws-ap-northeast-1.turso.io",
-    "LIBSQL_AUTH_TOKEN": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3Nzk1OTk1MzYsImlkIjoiMDE5ZTU4NDYtMTQwMS03NDdhLWExZTYtN2RkOWM1Mzc5NWM3IiwicmlkIjoiY2I1YjRmYzUtMTBiNy00M2ViLWFjMzYtMWRkYmU5OGNiZGI0In0.FSuDbsgXQuN07MNux-xq0B8hw2ZmoUrv3_PpEFtfOs1mw-tOq-S5KBUDaSolg66L-D5ZFZRkfVs3_nQsJ_k6Dg"
-    // ACCESS_PASSWORD is set via `wrangler secret put ACCESS_PASSWORD` — DO NOT commit.
+    "DB_TYPE": "libsql"
+    // Secrets — DO NOT commit. Set via `wrangler secret put <NAME>` for prod,
+    // or via `.dev.vars` for `wrangler dev`:
+    //   ACCESS_PASSWORD       — required, password gate
+    //   LIBSQL_URL            — required when DB_TYPE=libsql (e.g. Turso URL)
+    //   LIBSQL_AUTH_TOKEN     — required when DB_TYPE=libsql + remote (Turso)
   },
   // "d1_databases": [
   //   {

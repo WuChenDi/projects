@@ -85,6 +85,10 @@ web_modules/
 .env.production.local
 .env.local
 
+# cloudflare workers local secrets (wrangler dev)
+.dev.vars
+.dev.vars.*
+
 # vercel
 .vercel
 
