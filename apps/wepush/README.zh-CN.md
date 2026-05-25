@@ -95,9 +95,19 @@ pnpm cf:remotedb           # D1
 pnpm deploy
 ```
 
+## 安全模型
+
+**单租户、私有部署**，定位为一个使用者用的小工具。
+
+- `ACCESS_PASSWORD` 是 **客户端 UI 密码门**，只能拦浏览器访问，**不是服务端授权**。接收人 / 模板 / 日志 / 配置 API 本身不做密码校验，任何能直连到这些接口的请求都会被放行。
+- **推送相关接口**（`/api/push/run`、`/api/push/retry`）是 *唯一* 在服务端做 `Authorization: Bearer <pushApiToken>` 校验的路由。
+- `GET /api/settings` 已对 `wechatAppSecret` 和 `pushApiToken` 做掩码：明文只在写入或重置时一次性返回。
+
+**部署要求：** 公网部署必须套一层接入网关 —— Cloudflare Access / Zero Trust、边缘 basic-auth、IP 白名单或私有内网隧道。不要单靠 `ACCESS_PASSWORD` 对公网暴露。
+
 ## 推送 API
 
-接收人 / 模板 CRUD 没有单独鉴权（已在密码门后）。推送与重试要求 Bearer：
+接收人 / 模板 CRUD 在 API 层没有单独鉴权（详见上面的「安全模型」）。推送与重试要求 Bearer：
 
 ```bash
 # 全员推送

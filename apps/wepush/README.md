@@ -95,9 +95,19 @@ pnpm cf:remotedb           # for D1
 pnpm deploy
 ```
 
+## Security model
+
+This is a **single-tenant, private** console intended for one operator.
+
+- The **password gate** (`ACCESS_PASSWORD`) is a **client-side UI gate only** — it stops casual browser access but is *not* a server-side authorization check. Recipient / template / log / settings APIs accept any request that reaches them.
+- The **push endpoints** (`/api/push/run`, `/api/push/retry`) are the only routes protected by a server-side `Authorization: Bearer <pushApiToken>` check.
+- `GET /api/settings` masks `wechatAppSecret` and `pushApiToken` in its response. Secrets are only writable (PATCH) or revealed once on rotate.
+
+**Deployment requirement:** put the app behind an access layer before exposing it to the internet — Cloudflare Access / Zero Trust, basic-auth at the edge, an IP allow-list, or a private tunnel. Do not rely on `ACCESS_PASSWORD` alone for public deployments.
+
 ## Push API
 
-Recipient CRUD and template CRUD are unauthenticated (behind the password gate). The push and retry endpoints require a Bearer token:
+Recipient CRUD and template CRUD are unauthenticated at the API layer (see Security model above). The push and retry endpoints require a Bearer token:
 
 ```bash
 # Trigger a push for all enabled users

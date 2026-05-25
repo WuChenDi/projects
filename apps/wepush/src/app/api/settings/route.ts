@@ -52,9 +52,24 @@ async function loadOrCreate() {
   return fresh[0]!
 }
 
+// Strip sensitive fields from the GET response. The settings page no longer
+// needs the cleartext; secrets remain editable by sending a new non-empty
+// value via PATCH, and pushApiToken is only revealed in the PATCH response
+// when regenerated.
+function maskRow(row: typeof globalConfig.$inferSelect) {
+  const { wechatAppSecret, pushApiToken, ...rest } = row
+  return {
+    ...rest,
+    wechatAppSecret: '',
+    pushApiToken: '',
+    hasWechatAppSecret: Boolean(wechatAppSecret),
+    hasPushApiToken: Boolean(pushApiToken),
+  }
+}
+
 export async function GET() {
   const row = await loadOrCreate()
-  return NextResponse.json(row)
+  return NextResponse.json(maskRow(row))
 }
 
 export async function PATCH(request: NextRequest) {
@@ -70,16 +85,27 @@ export async function PATCH(request: NextRequest) {
   await loadOrCreate()
 
   const db = getDb()
-  const { regeneratePushApiToken, ...rest } = parsed.data
+  const { regeneratePushApiToken, wechatAppSecret, ...rest } = parsed.data
   const updates: Record<string, unknown> = { ...rest }
+  // Empty wechatAppSecret means "keep existing" — required because GET no
+  // longer returns the cleartext, so the form posts back an empty string when
+  // the user didn't touch the field.
+  if (typeof wechatAppSecret === 'string' && wechatAppSecret.length > 0) {
+    updates.wechatAppSecret = wechatAppSecret
+  }
   if (regeneratePushApiToken) updates.pushApiToken = randomToken()
 
-  await db.update(globalConfig).set(updates).where(eq(globalConfig.id, 1))
+  if (Object.keys(updates).length > 0) {
+    await db.update(globalConfig).set(updates).where(eq(globalConfig.id, 1))
+  }
 
   const fresh = await db
     .select()
     .from(globalConfig)
     .where(eq(globalConfig.id, 1))
     .limit(1)
-  return NextResponse.json(fresh[0])
+  // Reveal the new token only on the rotate response, so the UI can show /
+  // copy it once; subsequent GETs keep it masked.
+  if (regeneratePushApiToken) return NextResponse.json(fresh[0])
+  return NextResponse.json(maskRow(fresh[0]!))
 }

@@ -106,7 +106,7 @@ export const TEMPLATE_VARIABLES: TemplateVariable[] = [
   },
   ...Array.from({ length: 10 }, (_, i) => ({
     name: `birthday_${i}`,
-    label: `纪念日 #${i}`,
+    label: `纪念日 #${i + 1}`,
     desc: `按时间排序的第 ${i + 1} 条纪念日；越界为空`,
     source: '用户配置',
   })),
