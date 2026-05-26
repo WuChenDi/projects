@@ -11,8 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from '@cdlab996/ui/components/table'
+import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Pencil, Plus, Send, Trash2, Zap } from 'lucide-react'
+import { FileSearchCorner, Pencil, Plus, Send, Trash2, Zap } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -73,7 +74,7 @@ export default function UsersPage() {
   })
 
   return (
-    <main className="container mx-auto max-w-6xl px-6 py-12">
+    <IKPageContainer className="flex-col max-w-6xl mx-auto">
       <header className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">接收人</h1>
@@ -110,15 +111,19 @@ export default function UsersPage() {
           <Spinner className="size-6" />
         </div>
       ) : !data || data.length === 0 ? (
-        <div className="rounded-lg border bg-card py-16 text-center">
-          <p className="text-sm text-muted-foreground">还没有接收人</p>
+        <IKEmpty
+          icon={FileSearchCorner}
+          className="border border-dashed"
+          title="还没有接收人"
+          description="微信测试号订阅者，含城市、纪念日、累计日配置。"
+        >
           <Link href="/users/new" className="mt-4 inline-block">
             <Button size="sm">
               <Plus className="mr-1 size-4" />
               新建第一位接收人
             </Button>
           </Link>
-        </div>
+        </IKEmpty>
       ) : (
         <div className="rounded-lg border bg-card">
           <Table>
@@ -183,6 +188,6 @@ export default function UsersPage() {
           </Table>
         </div>
       )}
-    </main>
+    </IKPageContainer>
   )
 }

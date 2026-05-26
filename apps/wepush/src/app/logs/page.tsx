@@ -20,8 +20,14 @@ import {
   TableHeader,
   TableRow,
 } from '@cdlab996/ui/components/table'
+import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight, RotateCw } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  FileSearchCorner,
+  RotateCw,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { DatePicker } from '@/components/DatePicker'
@@ -108,7 +114,7 @@ export default function LogsPage() {
   }
 
   return (
-    <main className="container mx-auto max-w-6xl px-6 py-12">
+    <IKPageContainer className="flex-col max-w-6xl mx-auto">
       <header className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">推送日志</h1>
@@ -212,9 +218,12 @@ export default function LogsPage() {
           <Spinner className="size-6" />
         </div>
       ) : !data || data.rows.length === 0 ? (
-        <div className="rounded-lg border bg-card py-16 text-center">
-          <p className="text-sm text-muted-foreground">没有匹配的日志</p>
-        </div>
+        <IKEmpty
+          icon={FileSearchCorner}
+          className="border border-dashed"
+          title="没有匹配的日志"
+          description="请尝试重新筛选条件"
+        />
       ) : (
         <>
           <div className="rounded-lg border bg-card">
@@ -295,6 +304,6 @@ export default function LogsPage() {
       )}
 
       <LogDetailDrawer logId={openLogId} onClose={() => setOpenLogId(null)} />
-    </main>
+    </IKPageContainer>
   )
 }

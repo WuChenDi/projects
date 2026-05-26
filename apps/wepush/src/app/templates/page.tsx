@@ -10,8 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from '@cdlab996/ui/components/table'
+import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { FileSearchCorner, Pencil, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { ConfirmDeleteButton } from '@/components/ConfirmDeleteButton'
@@ -43,7 +44,7 @@ export default function TemplatesPage() {
   })
 
   return (
-    <main className="container mx-auto max-w-5xl px-6 py-12">
+    <IKPageContainer className="flex-col max-w-6xl mx-auto">
       <header className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">推送模板</h1>
@@ -71,15 +72,19 @@ export default function TemplatesPage() {
           <Spinner className="size-6" />
         </div>
       ) : !data || data.length === 0 ? (
-        <div className="rounded-lg border bg-card py-16 text-center">
-          <p className="text-sm text-muted-foreground">还没有模板</p>
+        <IKEmpty
+          icon={FileSearchCorner}
+          className="border border-dashed"
+          title="还没有模板"
+          description="每位用户通过 code 关联模板，支持 {{variable.DATA}} 模板变量。"
+        >
           <Link href="/templates/new" className="mt-4 inline-block">
             <Button size="sm">
               <Plus className="mr-1 size-4" />
               新建第一个模板
             </Button>
           </Link>
-        </div>
+        </IKEmpty>
       ) : (
         <div className="rounded-lg border bg-card">
           <Table>
@@ -122,6 +127,6 @@ export default function TemplatesPage() {
           </Table>
         </div>
       )}
-    </main>
+    </IKPageContainer>
   )
 }

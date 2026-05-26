@@ -3,7 +3,6 @@
 import '@cdlab996/ui/globals.css'
 
 import { Toaster } from '@cdlab996/ui/components/sonner'
-import { IKFooter } from '@cdlab996/ui/IK'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
@@ -14,7 +13,7 @@ const SITE_NAME = 'WePush'
 const SITE_TITLE = 'WePush - 微信公众号定时推送控制台'
 const SITE_DESCRIPTION =
   '微信公众号模板消息定时推送管理平台，支持多用户、多模板配置，可视化日志查看，轻松管理公众号消息推送任务。'
-const SITE_URL = 'https://wepush.pages.dev/'
+const SITE_URL = 'https://wepush.cdlab.workers.dev/'
 const SITE_IMAGE =
   'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/wepush/index.png'
 const AUTHOR = {
@@ -178,7 +177,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <PasswordGate hasEnvPassword={hasEnvPassword}>
             <Header />
             {children}
-            <IKFooter year={2026} />
+            {/* <IKFooter year={2026} /> */}
           </PasswordGate>
           <Toaster richColors position="top-right" />
         </ClientProviders>

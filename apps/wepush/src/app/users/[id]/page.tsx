@@ -2,6 +2,7 @@
 
 import { Button } from '@cdlab996/ui/components/button'
 import { Spinner } from '@cdlab996/ui/components/spinner'
+import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Eye, Send } from 'lucide-react'
 import Link from 'next/link'
@@ -121,7 +122,7 @@ export default function EditUserPage() {
   }
 
   return (
-    <main className="container mx-auto max-w-4xl px-6 py-12">
+    <IKPageContainer className="flex-col max-w-6xl mx-auto">
       <header className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">编辑接收人</h1>
@@ -174,6 +175,6 @@ export default function EditUserPage() {
         result={preview.data}
         error={preview.error?.message}
       />
-    </main>
+    </IKPageContainer>
   )
 }

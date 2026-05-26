@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@cdlab996/ui/components/table'
+import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -68,7 +69,7 @@ export default function BatchDetailPage() {
   })
 
   return (
-    <main className="container mx-auto max-w-6xl px-6 py-12">
+    <IKPageContainer className="flex-col max-w-6xl mx-auto">
       <header className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">推送批次</h1>
@@ -174,7 +175,7 @@ export default function BatchDetailPage() {
       )}
 
       <LogDetailDrawer logId={openLogId} onClose={() => setOpenLogId(null)} />
-    </main>
+    </IKPageContainer>
   )
 }
 

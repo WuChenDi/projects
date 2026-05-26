@@ -2,9 +2,31 @@
 
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@cdlab996/ui/components/card'
+import { Label } from '@cdlab996/ui/components/label'
 import { Spinner } from '@cdlab996/ui/components/spinner'
+import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { useQuery } from '@tanstack/react-query'
-import { Bug, FileText, ListChecks, Send, Settings, Users } from 'lucide-react'
+import {
+  ArrowRightIcon,
+  Bug,
+  FileSearchCorner,
+  FileText,
+  ListChecks,
+  Minus,
+  Send,
+  Settings,
+  TrendingDown,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
 import Link from 'next/link'
 
 interface Overview {
@@ -41,6 +63,91 @@ function statusBadge(status: Overview['recentBatches'][number]['status']) {
   return <Badge variant="outline">running</Badge>
 }
 
+interface MetricProps {
+  label: string
+  value: number | string
+  hint?: string
+  trend?: {
+    direction: 'up' | 'down' | 'flat'
+    label: string
+    value?: string
+  }
+}
+
+function Metric({ label, value, hint, trend }: MetricProps) {
+  const TrendIcon =
+    trend?.direction === 'up'
+      ? TrendingUp
+      : trend?.direction === 'down'
+        ? TrendingDown
+        : Minus
+
+  return (
+    <Card className="@container/card">
+      <CardHeader>
+        <CardDescription>{label}</CardDescription>
+        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+          {value}
+        </CardTitle>
+        {trend?.value && (
+          <CardAction>
+            <Badge variant="outline">
+              <TrendIcon className="size-3" />
+              {trend.value}
+            </Badge>
+          </CardAction>
+        )}
+      </CardHeader>
+      <CardContent>
+        {trend && (
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            {trend.label}
+            <TrendIcon className="size-4" />
+          </div>
+        )}
+        {hint && <div className="text-muted-foreground">{hint}</div>}
+      </CardContent>
+    </Card>
+  )
+}
+
+function NavCard({
+  icon,
+  title,
+  desc,
+  href,
+  cta,
+  disabled,
+}: {
+  icon?: React.ReactNode
+  title: string
+  desc: string
+  href?: string
+  cta?: string
+  disabled?: boolean
+}) {
+  return (
+    <Card>
+      <CardHeader className="flex items-center">
+        {icon}
+        {title}
+      </CardHeader>
+      <CardContent>
+        <p className="mb-6 text-muted-foreground">{desc}</p>
+        {disabled || !href ? (
+          <Button disabled variant="secondary">
+            待开发
+          </Button>
+        ) : (
+          <Link href={href}>
+            <Button className="w-full">{cta}</Button>
+          </Link>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 export default function HomePage() {
   const { data, isLoading } = useQuery({
     queryKey: ['overview'],
@@ -48,7 +155,7 @@ export default function HomePage() {
   })
 
   return (
-    <main className="container mx-auto max-w-6xl px-6 py-12">
+    <IKPageContainer className="flex-col max-w-6xl mx-auto">
       <header className="mb-10">
         <h1 className="text-3xl font-bold tracking-tight">wepush</h1>
         <p className="mt-2 text-muted-foreground">微信公众号定时推送控制台</p>
@@ -60,7 +167,7 @@ export default function HomePage() {
         </div>
       ) : (
         <>
-          <section className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <section className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs dark:*:data-[slot=card]:bg-card">
             <Metric
               label="接收人"
               value={data?.users.total ?? 0}
@@ -75,37 +182,62 @@ export default function HomePage() {
                   ? `${data.logs24h.success} 成功 · ${data.logs24h.failed} 失败`
                   : '暂无推送'
               }
+              trend={
+                data?.logs24h.total
+                  ? {
+                      direction: data.logs24h.failed > 0 ? 'down' : 'up',
+                      label:
+                        data.logs24h.failed > 0
+                          ? '存在失败推送'
+                          : '推送全部成功',
+                      value: `${data.logs24h.success}/${data.logs24h.total}`,
+                    }
+                  : undefined
+              }
             />
             <Metric
               label="近 24h 成功率"
               value={
-                data?.logs24h.successRate === null ||
-                data?.logs24h.successRate === undefined
+                data?.logs24h.successRate == null
                   ? '—'
                   : `${data.logs24h.successRate}%`
               }
               hint={
                 data?.logs24h.total ? `基于 ${data.logs24h.total} 条` : '无数据'
               }
+              trend={
+                data?.logs24h.successRate != null
+                  ? {
+                      direction: data.logs24h.successRate >= 90 ? 'up' : 'down',
+                      label:
+                        data.logs24h.successRate >= 90
+                          ? '成功率良好'
+                          : '成功率偏低',
+                      value: `${data.logs24h.successRate}%`,
+                    }
+                  : undefined
+              }
             />
           </section>
 
           <section className="mb-10">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">最近批次</h2>
+              <Label>最近批次</Label>
               <Link
                 href="/logs"
-                className="text-xs text-muted-foreground hover:text-foreground"
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
               >
-                查看全部日志 →
+                查看全部日志 <ArrowRightIcon className="size-3" />
               </Link>
             </div>
             {!data || data.recentBatches.length === 0 ? (
-              <div className="rounded-lg border bg-card py-10 text-center text-sm text-muted-foreground">
-                还没有推送批次
-              </div>
+              <IKEmpty
+                icon={FileSearchCorner}
+                className="border border-dashed"
+                title="暂无推送批次数据"
+              />
             ) : (
-              <ul className="divide-y rounded-lg border bg-card">
+              <ul className="divide-y rounded-xl border bg-card shadow-xs">
                 {data.recentBatches.map((b) => (
                   <li key={b.id}>
                     <Link
@@ -137,106 +269,49 @@ export default function HomePage() {
       )}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card
-          icon={<Users className="size-5" />}
+        <NavCard
+          icon={<Users className="size-4" />}
           title="接收人"
           desc="管理订阅用户、城市、纪念日、累计日"
           href="/users"
           cta="进入"
         />
-        <Card
-          icon={<FileText className="size-5" />}
+        <NavCard
+          icon={<FileText className="size-4" />}
           title="模板"
           desc="编辑推送模板，使用模板变量动态渲染"
           href="/templates"
           cta="进入"
         />
-        <Card
-          icon={<ListChecks className="size-5" />}
+        <NavCard
+          icon={<ListChecks className="size-4" />}
           title="推送日志"
           desc="查看推送结果、批次、失败重试"
           href="/logs"
           cta="进入"
         />
-        <Card
-          icon={<Send className="size-5" />}
+        <NavCard
+          icon={<Send className="size-4" />}
           title="立即推送"
           desc="跳转到接收人页面发起手动推送"
           href="/users"
           cta="去触发"
         />
-        <Card
-          icon={<Settings className="size-5" />}
+        <NavCard
+          icon={<Settings className="size-4" />}
           title="全局配置"
           desc="微信 APP_ID/SECRET、节流参数、API Token、定时推送"
           href="/settings"
           cta="打开设置"
         />
-        <Card
-          icon={<Bug className="size-5" />}
+        <NavCard
+          icon={<Bug className="size-4" />}
           title="数据源探测"
           desc="单独调用天气 / 一言 / 一句 等数据源查看原始返回"
           href="/debug"
           cta="打开"
         />
       </section>
-    </main>
-  )
-}
-
-function Metric({
-  label,
-  value,
-  hint,
-}: {
-  label: string
-  value: number | string
-  hint?: string
-}) {
-  return (
-    <div className="rounded-lg border bg-card p-5">
-      <p className="text-xs uppercase tracking-wide text-muted-foreground">
-        {label}
-      </p>
-      <p className="mt-2 text-2xl font-semibold tracking-tight">{value}</p>
-      {hint ? (
-        <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
-      ) : null}
-    </div>
-  )
-}
-
-function Card({
-  icon,
-  title,
-  desc,
-  href,
-  cta,
-  disabled,
-}: {
-  icon?: React.ReactNode
-  title: string
-  desc: string
-  href?: string
-  cta?: string
-  disabled?: boolean
-}) {
-  return (
-    <div className="flex flex-col rounded-lg border bg-card p-6">
-      <div className="mb-4 flex items-center gap-2">
-        {icon}
-        <h2 className="text-lg font-semibold">{title}</h2>
-      </div>
-      <p className="mb-6 flex-1 text-sm text-muted-foreground">{desc}</p>
-      {disabled || !href ? (
-        <Button disabled variant="secondary">
-          待开发
-        </Button>
-      ) : (
-        <Link href={href}>
-          <Button className="w-full">{cta}</Button>
-        </Link>
-      )}
-    </div>
+    </IKPageContainer>
   )
 }

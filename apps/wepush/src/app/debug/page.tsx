@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@cdlab996/ui/components/select'
 import { Spinner } from '@cdlab996/ui/components/spinner'
+import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation } from '@tanstack/react-query'
 import { Play } from 'lucide-react'
 import Link from 'next/link'
@@ -53,7 +54,7 @@ export default function DebugPage() {
   })
 
   return (
-    <main className="container mx-auto max-w-4xl px-6 py-12">
+    <IKPageContainer className="flex-col max-w-6xl mx-auto">
       <header className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">数据源探测</h1>
@@ -68,7 +69,7 @@ export default function DebugPage() {
         </Link>
       </header>
 
-      <div className="mb-6 space-y-4 rounded-lg border bg-card p-5">
+      <div className="mb-6 space-y-4 rounded-lg bg-card p-5">
         <div className="space-y-1.5">
           <Label className="text-xs">数据源</Label>
           <Select value={name} onValueChange={(v) => setName(v as SourceName)}>
@@ -114,7 +115,7 @@ export default function DebugPage() {
       ) : null}
 
       {call.data ? (
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-lg bg-card p-4">
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             响应
           </h3>
@@ -123,6 +124,6 @@ export default function DebugPage() {
           </pre>
         </div>
       ) : null}
-    </main>
+    </IKPageContainer>
   )
 }

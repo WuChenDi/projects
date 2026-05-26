@@ -24,8 +24,8 @@ const ITEMS = [
 export function Header() {
   const pathname = usePathname()
   return (
-    <header className="sticky top-0 z-30 w-full border-b bg-background/80 backdrop-blur">
-      <div className="flex h-16 items-center justify-between gap-2 px-4 md:px-6">
+    <header className="relative max-w-7xl mx-auto z-10">
+      <div className="flex h-20 px-4 md:px-6 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear">
         <Link href="/" className="flex shrink-0 items-center">
           <Image
             src="https://wcd.pages.dev/logo.png"
