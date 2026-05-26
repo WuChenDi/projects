@@ -135,6 +135,7 @@
       "!apps/shortener/src/database/**/*.sql",
       "!apps/wepush/src/database/**/*.json",
       "!apps/wepush/src/database/**/*.sql",
+      "!apps/**/cloudflare-env.d.ts",
       "!packages/ui/src/reactbits/**/*.tsx",
       "!packages/ui/src/components/**/*.tsx"
     ]
