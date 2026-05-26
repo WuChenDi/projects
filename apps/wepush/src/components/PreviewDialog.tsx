@@ -11,7 +11,7 @@ import {
 } from '@cdlab996/ui/components/dialog'
 import { Spinner } from '@cdlab996/ui/components/spinner'
 
-interface PreviewResult {
+export interface PreviewResult {
   templateCode: string
   title: string
   desc: string

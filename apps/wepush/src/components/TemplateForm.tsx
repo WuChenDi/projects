@@ -16,6 +16,7 @@ import { Textarea } from '@cdlab996/ui/components/textarea'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Eye, Send } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
+import type { PreviewResult } from '@/components/PreviewDialog'
 import { PreviewDialog } from '@/components/PreviewDialog'
 import type { Template, User } from '@/database/schema'
 import { TEMPLATE_VARIABLES } from '@/lib/template-variables'
@@ -47,7 +48,7 @@ function structurePreview(text: string): string {
 async function fetchUsers(): Promise<User[]> {
   const res = await fetch('/api/users')
   if (!res.ok) throw new Error('Failed to load users')
-  return res.json()
+  return res.json<User[]>()
 }
 
 export function TemplateForm({
@@ -73,7 +74,7 @@ export function TemplateForm({
   const descPreview = useMemo(() => structurePreview(desc), [desc])
 
   const renderMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (): Promise<PreviewResult> => {
       if (!previewUserId) throw new Error('请选择预览用户')
       const res = await fetch('/api/push/preview', {
         method: 'POST',
@@ -86,10 +87,12 @@ export function TemplateForm({
         }),
       })
       if (!res.ok) {
-        const d = await res.json().catch(() => ({}))
+        const d = await res
+          .json<{ error?: string }>()
+          .catch<{ error?: string }>(() => ({}))
         throw new Error(d.error || `请求失败 (${res.status})`)
       }
-      return res.json()
+      return res.json<PreviewResult>()
     },
   })
 

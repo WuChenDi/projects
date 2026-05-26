@@ -1,6 +1,8 @@
 'use client'
 
+import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
+import { Checkbox } from '@cdlab996/ui/components/checkbox'
 import { Input } from '@cdlab996/ui/components/input'
 import { Label } from '@cdlab996/ui/components/label'
 import { Separator } from '@cdlab996/ui/components/separator'
@@ -9,9 +11,9 @@ import { Switch } from '@cdlab996/ui/components/switch'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Copy, RefreshCcw } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import type { GlobalConfig } from '@/database/schema'
+import type { GlobalConfig, User } from '@/database/schema'
 
 // GET /api/settings masks secrets and adds presence flags; PATCH on regenerate
 // returns the full row (so the new pushApiToken can be displayed once).
@@ -40,6 +42,12 @@ async function fetchSettings(): Promise<SettingsResponse> {
   return res.json()
 }
 
+async function fetchUsers(): Promise<User[]> {
+  const res = await fetch('/api/users')
+  if (!res.ok) throw new Error('Failed to load users')
+  return res.json()
+}
+
 async function patchSettings(patch: SettingsPatch): Promise<SettingsResponse> {
   const res = await fetch('/api/settings', {
     method: 'PATCH',
@@ -55,6 +63,13 @@ export default function SettingsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['settings'],
     queryFn: fetchSettings,
+  })
+
+  // Same query key used by other pages (users list / template form) so this
+  // shares cache with /users and stays in sync when users are added/removed.
+  const { data: users = [] } = useQuery({
+    queryKey: ['users'],
+    queryFn: fetchUsers,
   })
 
   const [form, setForm] = useState<SettingsPatch>({})
@@ -101,6 +116,11 @@ export default function SettingsPage() {
     toast.success('已复制 token')
   }
 
+  const selectedCronUsers = useMemo(
+    () => new Set(form.cronUserIds ?? []),
+    [form.cronUserIds],
+  )
+
   if (isLoading || !data) {
     return (
       <main className="container mx-auto flex max-w-3xl items-center justify-center px-6 py-24">
@@ -113,6 +133,18 @@ export default function SettingsPage() {
     <K extends keyof SettingsPatch>(key: K) =>
     (value: SettingsPatch[K]) =>
       setForm((prev) => ({ ...prev, [key]: value }))
+
+  const toggleCronUser = (id: string, checked: boolean) => {
+    const next = new Set(selectedCronUsers)
+    if (checked) next.add(id)
+    else next.delete(id)
+    set('cronUserIds')([...next])
+  }
+
+  const selectAllEnabledUsers = () =>
+    set('cronUserIds')(users.filter((u) => u.enabled).map((u) => u.id))
+
+  const clearCronUsers = () => set('cronUserIds')([])
 
   return (
     <main className="container mx-auto max-w-3xl px-6 py-12">
@@ -227,7 +259,7 @@ export default function SettingsPage() {
 
       <Section
         title="定时触发"
-        desc="勾选后由 Worker scheduled() 触发；在 M5 完成接线。"
+        desc="由 Worker scheduled() 在 wrangler.jsonc 配置的 cron 时间触发。"
       >
         <div className="flex items-center gap-3">
           <Switch
@@ -236,6 +268,76 @@ export default function SettingsPage() {
             id="cron-enabled"
           />
           <Label htmlFor="cron-enabled">启用定时推送</Label>
+        </div>
+
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <Label>参与用户</Label>
+            <div className="flex gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={selectAllEnabledUsers}
+                disabled={users.length === 0}
+              >
+                全选已启用
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={clearCronUsers}
+                disabled={(form.cronUserIds ?? []).length === 0}
+              >
+                清空
+              </Button>
+            </div>
+          </div>
+
+          {users.length === 0 ? (
+            <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+              尚无接收人。先去{' '}
+              <Link href="/users" className="underline">
+                /users
+              </Link>{' '}
+              添加。
+            </p>
+          ) : (
+            <div className="max-h-64 space-y-2 overflow-y-auto rounded-md border p-3">
+              {users.map((u) => {
+                const checkboxId = `cron-user-${u.id}`
+                return (
+                  <div key={u.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={checkboxId}
+                      checked={selectedCronUsers.has(u.id)}
+                      onCheckedChange={(c) => toggleCronUser(u.id, c === true)}
+                    />
+                    <Label
+                      htmlFor={checkboxId}
+                      className="flex flex-1 cursor-pointer items-center gap-2 font-normal"
+                    >
+                      <span
+                        className={u.enabled ? '' : 'text-muted-foreground'}
+                      >
+                        {u.name || u.wechatOpenId || u.id}
+                      </span>
+                      {!u.enabled ? (
+                        <Badge variant="outline" className="text-[10px]">
+                          已禁用
+                        </Badge>
+                      ) : null}
+                    </Label>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          <p className="mt-2 text-xs text-muted-foreground">
+            未勾选的用户不会进入定时推送。被禁用的用户即便勾选也会在推送时跳过。
+          </p>
         </div>
       </Section>
 

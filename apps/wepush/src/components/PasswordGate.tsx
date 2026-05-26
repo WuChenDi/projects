@@ -38,7 +38,7 @@ interface AppConfig {
 async function fetchConfig(): Promise<AppConfig> {
   const res = await fetch('/api/config')
   if (!res.ok) throw new Error('Failed to fetch config')
-  return res.json()
+  return res.json<AppConfig>()
 }
 
 function LoadingScreen() {
@@ -88,7 +88,7 @@ export function PasswordGate({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ hash: envToken }),
     })
-      .then((r) => r.json())
+      .then((r) => r.json<{ valid: boolean }>())
       .then((d) => {
         if (d.valid) doUnlock()
         else clearEnvToken()
@@ -106,7 +106,7 @@ export function PasswordGate({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ hash: envHash }),
       })
-      const data = await res.json()
+      const data = await res.json<{ valid: boolean }>()
       return data.valid ? { valid: true, token: envHash } : { valid: false }
     },
     onSuccess: (result) => {

@@ -21,10 +21,12 @@ export default function NewTemplatePage() {
         body: JSON.stringify(value),
       })
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
+        const data = await res
+          .json<{ error?: string }>()
+          .catch<{ error?: string }>(() => ({}))
         throw new Error(data.error || 'Failed to create')
       }
-      return res.json()
+      return res.json<Template>()
     },
     onSuccess: (t) => {
       void qc.invalidateQueries({ queryKey: ['templates'] })

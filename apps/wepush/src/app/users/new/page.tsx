@@ -13,7 +13,7 @@ import type { Template } from '@/database/schema'
 async function fetchTemplates(): Promise<Template[]> {
   const res = await fetch('/api/templates')
   if (!res.ok) throw new Error('Failed to load templates')
-  return res.json()
+  return res.json<Template[]>()
 }
 
 export default function NewUserPage() {
@@ -33,10 +33,12 @@ export default function NewUserPage() {
         body: JSON.stringify(value),
       })
       if (!res.ok) {
-        const d = await res.json().catch(() => ({}))
+        const d = await res
+          .json<{ error?: string }>()
+          .catch<{ error?: string }>(() => ({}))
         throw new Error(d.error || 'Failed to create')
       }
-      return res.json()
+      return res.json<{ id: string }>()
     },
     onSuccess: ({ id }) => {
       void qc.invalidateQueries({ queryKey: ['users'] })

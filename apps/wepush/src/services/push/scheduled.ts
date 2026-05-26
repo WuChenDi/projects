@@ -10,10 +10,13 @@ import { runPush } from './runner'
  * Reads `global_config` to decide whether cron is enabled and which users
  * participate, then triggers a push with `trigger='cron'`. Errors are logged
  * but never thrown — the Worker scheduler retries on its own.
+ *
+ * `env` is forwarded explicitly because `getCloudflareContext()` is only set
+ * up by opennext's fetch wrapper, not in the `scheduled()` execution path.
  */
-export async function runScheduledPush(): Promise<void> {
+export async function runScheduledPush(env: CloudflareEnv): Promise<void> {
   try {
-    const db = await getDb()
+    const db = await getDb(env)
     const [config] = await db
       .select()
       .from(globalConfig)
@@ -33,7 +36,7 @@ export async function runScheduledPush(): Promise<void> {
       return
     }
 
-    const result = await runPush({ trigger: 'cron', userIds })
+    const result = await runPush({ trigger: 'cron', userIds, env })
     logger.info('cron 推送完成', {
       batchId: result.batchId,
       successCount: result.successCount,

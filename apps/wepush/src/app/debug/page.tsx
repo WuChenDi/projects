@@ -34,7 +34,7 @@ async function callSource(name: SourceName, params: { cityCode?: string }) {
   const sp = new URLSearchParams()
   if (params.cityCode) sp.set('cityCode', params.cityCode)
   const res = await fetch(`/api/debug/source/${name}?${sp.toString()}`)
-  const data = await res.json()
+  const data = await res.json<{ error?: string } & Record<string, unknown>>()
   if (!res.ok) throw new Error(data?.error || `请求失败 (${res.status})`)
   return data
 }

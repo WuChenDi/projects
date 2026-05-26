@@ -14,7 +14,7 @@ export function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { hash } = await request.json()
+    const { hash } = await request.json<{ hash: string }>()
     const pwd = readAccessPassword()
 
     if (!pwd) {

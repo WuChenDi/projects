@@ -12,14 +12,18 @@ export type DB = BaseSQLiteDatabase<'async', unknown, typeof schema>
 
 let cachedDb: DB | undefined
 
-export async function getDb(): Promise<DB> {
+// `env` lets callers (e.g. the `scheduled()` handler) inject the worker env
+// directly. The cron path can't use `getCloudflareContext()` because opennext
+// only installs the context inside its fetch wrapper, and `process.env` is
+// likewise only populated on first fetch — so a cron-first cold start would
+// otherwise see no bindings and no DB_TYPE.
+export async function getDb(env?: CloudflareEnv): Promise<DB> {
   if (cachedDb) return cachedDb
 
-  const dbType = process.env.DB_TYPE || 'libsql'
+  const dbType = env?.DB_TYPE || process.env.DB_TYPE || 'libsql'
 
   if (dbType === 'd1') {
-    const ctx = getCloudflareContext()
-    const binding = ctx.env.DB
+    const binding = env?.DB ?? getCloudflareContext().env.DB
     if (!binding) {
       throw new Error(
         'D1 binding "DB" not found — set d1_databases in wrangler.jsonc',

@@ -27,6 +27,10 @@ export type Trigger = 'manual' | 'api' | 'cron'
 export interface RunPushInput {
   trigger: Trigger
   userIds?: string[]
+  // Provided by the worker `scheduled()` handler so `getDb()` can resolve
+  // bindings without going through `getCloudflareContext()` (which is only
+  // populated by opennext's fetch wrapper).
+  env?: CloudflareEnv
 }
 
 export interface PerUserResult {
@@ -113,7 +117,7 @@ async function loadTemplate(
 }
 
 export async function runPush(input: RunPushInput): Promise<RunPushResult> {
-  const db = await getDb()
+  const db = await getDb(input.env)
   const config = await loadConfig(db)
   const targets = await loadTargetUsers(db, input.userIds)
 

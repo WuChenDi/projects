@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import type { PreviewResult } from '@/components/PreviewDialog'
 import { PreviewDialog } from '@/components/PreviewDialog'
 import type { UserFormValue } from '@/components/UserForm'
 import { UserForm } from '@/components/UserForm'
@@ -19,13 +20,13 @@ type UserFull = User & { festivals: Festival[]; customDates: CustomDate[] }
 async function fetchUser(id: string): Promise<UserFull> {
   const res = await fetch(`/api/users/${id}`)
   if (!res.ok) throw new Error('Failed to load')
-  return res.json()
+  return res.json<UserFull>()
 }
 
 async function fetchTemplates(): Promise<Template[]> {
   const res = await fetch('/api/templates')
   if (!res.ok) throw new Error('Failed to load templates')
-  return res.json()
+  return res.json<Template[]>()
 }
 
 export default function EditUserPage() {
@@ -53,10 +54,12 @@ export default function EditUserPage() {
         body: JSON.stringify(value),
       })
       if (!res.ok) {
-        const d = await res.json().catch(() => ({}))
+        const d = await res
+          .json<{ error?: string }>()
+          .catch<{ error?: string }>(() => ({}))
         throw new Error(d.error || 'Failed to save')
       }
-      return res.json()
+      return res.json<UserFull>()
     },
     onSuccess: (fresh) => {
       qc.setQueryData(['users', id], fresh)
@@ -68,17 +71,19 @@ export default function EditUserPage() {
 
   const [previewOpen, setPreviewOpen] = useState(false)
   const preview = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (): Promise<PreviewResult> => {
       const res = await fetch('/api/push/preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: id }),
       })
       if (!res.ok) {
-        const d = await res.json().catch(() => ({}))
+        const d = await res
+          .json<{ error?: string }>()
+          .catch<{ error?: string }>(() => ({}))
         throw new Error(d.error || 'Failed to preview')
       }
-      return res.json()
+      return res.json<PreviewResult>()
     },
   })
 

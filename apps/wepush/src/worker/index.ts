@@ -23,15 +23,6 @@ interface NextWorker {
   fetch: ExportedHandlerFetchHandler<CloudflareEnv>
 }
 
-const cloudflareContextSymbol = Symbol.for('__cloudflare-context__')
-
-function ensureCloudflareContext(env: CloudflareEnv, ctx: ExecutionContext) {
-  const g = globalThis as unknown as Record<symbol, unknown>
-  if (!g[cloudflareContextSymbol]) {
-    g[cloudflareContextSymbol] = { env, ctx, cf: undefined }
-  }
-}
-
 const worker = openNextWorker as NextWorker
 
 export default {
@@ -39,9 +30,12 @@ export default {
   async scheduled(
     _controller: ScheduledController,
     env: CloudflareEnv,
-    ctx: ExecutionContext,
+    _ctx: ExecutionContext,
   ): Promise<void> {
-    ensureCloudflareContext(env, ctx)
-    await runScheduledPush()
+    // Note: don't try to seed opennext's `__cloudflare-context__` symbol here.
+    // opennext defines it as a getter-only property backed by AsyncLocalStorage
+    // — assigning to it throws. Instead we forward `env` explicitly so the
+    // cron path doesn't depend on `getCloudflareContext()`.
+    await runScheduledPush(env)
   },
 } satisfies ExportedHandler<CloudflareEnv>

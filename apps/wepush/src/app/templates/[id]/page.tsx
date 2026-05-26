@@ -13,7 +13,7 @@ import type { Template } from '@/database/schema'
 async function fetchTemplate(id: string): Promise<Template> {
   const res = await fetch(`/api/templates/${id}`)
   if (!res.ok) throw new Error('Failed to load')
-  return res.json()
+  return res.json<Template>()
 }
 
 export default function EditTemplatePage() {
@@ -36,10 +36,12 @@ export default function EditTemplatePage() {
         body: JSON.stringify(value),
       })
       if (!res.ok) {
-        const d = await res.json().catch(() => ({}))
+        const d = await res
+          .json<{ error?: string }>()
+          .catch<{ error?: string }>(() => ({}))
         throw new Error(d.error || 'Failed to save')
       }
-      return res.json()
+      return res.json<Template>()
     },
     onSuccess: (fresh) => {
       qc.setQueryData(['templates', id], fresh)

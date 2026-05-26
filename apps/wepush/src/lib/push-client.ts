@@ -30,10 +30,12 @@ export async function runPushFromUi(
     }),
   })
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}))
+    const data = await res
+      .json<{ error?: string }>()
+      .catch<{ error?: string }>(() => ({}))
     throw new Error(data?.error || `请求失败 (${res.status})`)
   }
-  return res.json()
+  return res.json<RunPushApiResult>()
 }
 
 export async function retryLogFromUi(logId: string): Promise<RunPushApiResult> {
@@ -43,8 +45,10 @@ export async function retryLogFromUi(logId: string): Promise<RunPushApiResult> {
     body: JSON.stringify({ logId }),
   })
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}))
+    const data = await res
+      .json<{ error?: string }>()
+      .catch<{ error?: string }>(() => ({}))
     throw new Error(data?.error || `请求失败 (${res.status})`)
   }
-  return res.json()
+  return res.json<RunPushApiResult>()
 }
