@@ -15,7 +15,9 @@
   "vars": {
     // A simple password to protect the /settings page. Set to empty string to disable.
     "ACCESS_PASSWORD": "aa.2026",
-    // Database driver: "libsql" (default, dev file) or "d1" (prod binding)
+    // Driver selector — both run on Cloudflare Workers:
+    //   "d1"     → uses the `DB` binding below
+    //   "libsql" → uses LIBSQL_URL + LIBSQL_AUTH_TOKEN (Turso etc.)
     "DB_TYPE": "d1",
     // LibSQL Configuration
     // The URL for connecting to the LibSQL database. Default is a local SQLite file.
