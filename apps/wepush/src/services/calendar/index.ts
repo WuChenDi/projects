@@ -1,3 +1,5 @@
+import { TZDate } from '@date-fns/tz'
+import { differenceInCalendarDays, format, startOfDay } from 'date-fns'
 import { LunarDay } from 'tyme4ts'
 
 export interface FestivalInput {
@@ -18,19 +20,19 @@ export interface BirthdayInfo {
   isLunar: boolean
 }
 
-const MS_PER_DAY = 86_400_000
+// Cloudflare Workers run in UTC; all "today / current date" derivations must be
+// computed against Asia/Shanghai so cron pushes (UTC 23:30 ≈ CST 07:30 next
+// day) and on-demand pushes render the same Chinese-calendar date the user
+// expects. TZDate carries the time zone through date-fns helpers so the result
+// is independent of the worker's system clock.
+const TIMEZONE = 'Asia/Shanghai'
 
-function startOfDay(d: Date): Date {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+function dayInTz(year: number, month: number, day: number): TZDate {
+  return new TZDate(year, month - 1, day, TIMEZONE)
 }
 
-function ceilDiffDays(target: Date, base: Date): number {
-  const diff = target.getTime() - base.getTime()
-  return Math.ceil(diff / MS_PER_DAY)
-}
-
-function solarOccurrence(month: number, day: number, year: number): Date {
-  return startOfDay(new Date(year, month - 1, day))
+function solarOccurrence(month: number, day: number, year: number): TZDate {
+  return dayInTz(year, month, day)
 }
 
 /**
@@ -39,22 +41,21 @@ function solarOccurrence(month: number, day: number, year: number): Date {
  * January boundary). Returns `null` if conversion fails (invalid lunar
  * date — e.g. a 30th day in a 29-day lunar month).
  */
-function lunarOccurrence(month: number, day: number, today: Date): Date | null {
+function lunarOccurrence(
+  month: number,
+  day: number,
+  today: TZDate,
+): TZDate | null {
   // Lunar new year falls in Jan–Feb of the solar calendar, so we probe the
   // previous and next lunar year too — a "lunar 11月" may map to the current
   // solar year while a "lunar 1月" may fall into the next one.
-  const guesses = [
-    today.getFullYear() - 1,
-    today.getFullYear(),
-    today.getFullYear() + 1,
-  ]
+  const todayYear = today.getFullYear()
+  const guesses = [todayYear - 1, todayYear, todayYear + 1]
   for (const year of guesses) {
     try {
       const solar = LunarDay.fromYmd(year, month, day).getSolarDay()
-      const d = startOfDay(
-        new Date(solar.getYear(), solar.getMonth() - 1, solar.getDay()),
-      )
-      if (d.getTime() >= today.getTime()) return d
+      const d = dayInTz(solar.getYear(), solar.getMonth(), solar.getDay())
+      if (differenceInCalendarDays(d, today) >= 0) return d
     } catch {
       // skip invalid input (e.g. day=30 in a 29-day lunar month)
     }
@@ -64,7 +65,7 @@ function lunarOccurrence(month: number, day: number, today: Date): Date | null {
 
 export function sortBirthdayTime(list: FestivalInput[]): BirthdayInfo[] {
   if (!list.length) return []
-  const today = startOfDay(new Date())
+  const today = startOfDay(TZDate.tz(TIMEZONE))
   const year = today.getFullYear()
 
   return list
@@ -72,12 +73,12 @@ export function sortBirthdayTime(list: FestivalInput[]): BirthdayInfo[] {
       const [mm, dd] = item.date.split('-').map((s) => Number.parseInt(s, 10))
       if (!mm || !dd) return null
 
-      let target: Date | null
+      let target: TZDate | null
       if (item.isLunar) {
         target = lunarOccurrence(mm, dd, today)
       } else {
         target = solarOccurrence(mm, dd, year)
-        if (ceilDiffDays(target, today) < 0) {
+        if (differenceInCalendarDays(target, today) < 0) {
           target = solarOccurrence(mm, dd, year + 1)
         }
       }
@@ -85,7 +86,7 @@ export function sortBirthdayTime(list: FestivalInput[]): BirthdayInfo[] {
       return {
         name: item.name,
         date: item.date,
-        diffDay: ceilDiffDays(target, today),
+        diffDay: differenceInCalendarDays(target, today),
         isLunar: !!item.isLunar,
       }
     })
@@ -123,22 +124,18 @@ export function calculateSpecialDays(
 ): Record<string, number> {
   const out: Record<string, number> = {}
   if (!list.length) return out
-  const today = startOfDay(new Date())
+  const today = startOfDay(TZDate.tz(TIMEZONE))
   for (const item of list) {
     if (!item.date || !item.keyword) continue
     const [yyyy, mm, dd] = item.date
       .split('-')
       .map((s) => Number.parseInt(s, 10))
-    const target = startOfDay(new Date(yyyy, mm - 1, dd))
-    const days = Math.floor((today.getTime() - target.getTime()) / MS_PER_DAY)
-    out[item.keyword] = days
+    const target = dayInTz(yyyy, mm, dd)
+    out[item.keyword] = differenceInCalendarDays(today, target)
   }
   return out
 }
 
 export function formatDateCN(d: Date = new Date()): string {
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${year}年${month}月${day}日`
+  return format(new TZDate(d, TIMEZONE), 'yyyy年MM月dd日')
 }

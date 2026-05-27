@@ -52,6 +52,9 @@ catalogs:
     '@cdlab996/genid':
       specifier: ^1.4.0
       version: 1.4.0
+    '@date-fns/tz':
+      specifier: ^1.5.0
+      version: 1.5.0
     '@hono/zod-validator':
       specifier: ^0.7.6
       version: 0.7.6
@@ -545,7 +548,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -612,7 +615,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -706,7 +709,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -901,7 +904,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -1235,6 +1238,9 @@ importers:
       '@cdlab996/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@date-fns/tz':
+        specifier: catalog:prod
+        version: 1.5.0
       '@libsql/client':
         specifier: catalog:prod
         version: 0.17.3
@@ -1358,7 +1364,7 @@ importers:
     dependencies:
       '@base-ui/react':
         specifier: catalog:prod
-        version: 1.4.1(@date-fns/tz@1.4.1)(@types/react@19.2.14)(date-fns@4.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 1.4.1(@date-fns/tz@1.5.0)(@types/react@19.2.14)(date-fns@4.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       class-variance-authority:
         specifier: catalog:prod
         version: 0.7.1
@@ -2198,8 +2204,8 @@ packages:
   '@dabh/diagnostics@2.0.8':
     resolution: {integrity: sha512-R4MSXTVnuMzGD7bzHdW2ZhhdPC/igELENcq5IjEverBvq5hn1SXCWcsi6eSsdWP0/Ur+SItRRjAktmdoX/8R/Q==}
 
-  '@date-fns/tz@1.4.1':
-    resolution: {integrity: sha512-P5LUNhtbj6YfI3iJjw5EL9eUAG6OitD0W3fWQcpQjDRc/QIsL0tRNuO1PcDvPccWL1fSTXXdE1ds+l95DV/OFA==}
+  '@date-fns/tz@1.5.0':
+    resolution: {integrity: sha512-lwYN/vDPeNRULcepoE/LO2Pgx+7/RV+S9ARfbc9lr2DtGkOD7pAiruHvbR1RX3Qyf6ja47EWJDMsNK5vK08DJg==}
 
   '@dnd-kit/accessibility@3.1.1':
     resolution: {integrity: sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw==}
@@ -12453,7 +12459,7 @@ snapshots:
       '@babel/helper-string-parser': 8.0.0-rc.4
       '@babel/helper-validator-identifier': 8.0.0-rc.4
 
-  '@base-ui/react@1.4.1(@date-fns/tz@1.4.1)(@types/react@19.2.14)(date-fns@4.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@base-ui/react@1.4.1(@date-fns/tz@1.5.0)(@types/react@19.2.14)(date-fns@4.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@babel/runtime': 7.29.2
       '@base-ui/utils': 0.2.8(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -12463,7 +12469,7 @@ snapshots:
       react-dom: 19.2.4(react@19.2.4)
       use-sync-external-store: 1.6.0(react@19.2.4)
     optionalDependencies:
-      '@date-fns/tz': 1.4.1
+      '@date-fns/tz': 1.5.0
       '@types/react': 19.2.14
       date-fns: 4.1.0
 
@@ -12553,7 +12559,7 @@ snapshots:
 
   '@cloudflare/kv-asset-handler@0.5.0': {}
 
-  '@cloudflare/next-on-pages@1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))':
+  '@cloudflare/next-on-pages@1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))':
     dependencies:
       acorn: 8.16.0
       ast-types: 0.14.2
@@ -12651,7 +12657,7 @@ snapshots:
       enabled: 2.0.0
       kuler: 2.0.0
 
-  '@date-fns/tz@1.4.1': {}
+  '@date-fns/tz@1.5.0': {}
 
   '@dnd-kit/accessibility@3.1.1(react@19.2.4)':
     dependencies:
@@ -20958,7 +20964,7 @@ snapshots:
 
   react-day-picker@10.0.1(@types/react@19.2.14)(react@19.2.4):
     dependencies:
-      '@date-fns/tz': 1.4.1
+      '@date-fns/tz': 1.5.0
       date-fns: 4.3.0
       react: 19.2.4
     optionalDependencies:

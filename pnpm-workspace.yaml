@@ -19,6 +19,7 @@ catalogs:
   prod:
     '@base-ui/react': ^1.4.1
     '@cdlab996/genid': ^1.4.0
+    '@date-fns/tz': ^1.5.0
     '@hono/zod-validator': ^0.7.6
     '@libsql/client': ^0.17.3
     '@next/third-parties': 16.2.6

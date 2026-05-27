@@ -34,6 +34,7 @@
     "@cdlab996/genid": "catalog:prod",
     "@cdlab996/ui": "workspace:*",
     "@cdlab996/utils": "workspace:*",
+    "@date-fns/tz": "catalog:prod",
     "@libsql/client": "catalog:prod",
     "@tanstack/react-form": "catalog:prod",
     "@tanstack/react-query": "catalog:prod",
