@@ -14,7 +14,6 @@ import { Spinner } from '@cdlab996/ui/components/spinner'
 import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation } from '@tanstack/react-query'
 import { Play } from 'lucide-react'
-import Link from 'next/link'
 import { useState } from 'react'
 
 type SourceName = 'weather' | 'hitokoto' | 'iciba'
@@ -55,18 +54,11 @@ export default function DebugPage() {
 
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
-      <header className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">数据源探测</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            直接调用单个外部接口，查看原始返回。
-          </p>
-        </div>
-        <Link href="/">
-          <Button variant="ghost" size="sm">
-            返回
-          </Button>
-        </Link>
+      <header className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">数据源探测</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          直接调用单个外部接口，查看原始返回。
+        </p>
       </header>
 
       <div className="mb-6 space-y-4 rounded-lg bg-card p-5">

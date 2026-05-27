@@ -2,32 +2,12 @@
 
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Label } from '@cdlab996/ui/components/label'
-import { Spinner } from '@cdlab996/ui/components/spinner'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { useQuery } from '@tanstack/react-query'
-import {
-  ArrowRightIcon,
-  Bug,
-  FileSearchCorner,
-  FileText,
-  ListChecks,
-  Minus,
-  Send,
-  Settings,
-  TrendingDown,
-  TrendingUp,
-  Users,
-} from 'lucide-react'
+import { ArrowRight, FileSearchCorner, RotateCw } from 'lucide-react'
 import Link from 'next/link'
+import { TrendChart } from '@/components/TrendChart'
 
 interface Overview {
   users: { total: number; enabled: number }
@@ -56,261 +36,199 @@ async function fetchOverview(): Promise<Overview> {
   return res.json()
 }
 
-function statusBadge(status: Overview['recentBatches'][number]['status']) {
+function StatusBadge({
+  status,
+}: {
+  status: Overview['recentBatches'][number]['status']
+}) {
   if (status === 'success') return <Badge variant="secondary">success</Badge>
   if (status === 'partial') return <Badge variant="outline">partial</Badge>
   if (status === 'failed') return <Badge variant="destructive">failed</Badge>
   return <Badge variant="outline">running</Badge>
 }
 
-interface MetricProps {
-  label: string
-  value: number | string
-  hint?: string
-  trend?: {
-    direction: 'up' | 'down' | 'flat'
-    label: string
-    value?: string
-  }
-}
-
-function Metric({ label, value, hint, trend }: MetricProps) {
-  const TrendIcon =
-    trend?.direction === 'up'
-      ? TrendingUp
-      : trend?.direction === 'down'
-        ? TrendingDown
-        : Minus
-
+function StatsSkeleton() {
   return (
-    <Card className="@container/card">
-      <CardHeader>
-        <CardDescription>{label}</CardDescription>
-        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-          {value}
-        </CardTitle>
-        {trend?.value && (
-          <CardAction>
-            <Badge variant="outline">
-              <TrendIcon className="size-3" />
-              {trend.value}
-            </Badge>
-          </CardAction>
-        )}
-      </CardHeader>
-      <CardContent>
-        {trend && (
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            {trend.label}
-            <TrendIcon className="size-4" />
-          </div>
-        )}
-        {hint && <div className="text-muted-foreground">{hint}</div>}
-      </CardContent>
-    </Card>
+    <div className="mb-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-4">
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="space-y-2 bg-card px-5 py-5">
+          <Skeleton className="h-7 w-14" />
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-3 w-20" />
+        </div>
+      ))}
+    </div>
   )
 }
 
-function NavCard({
-  icon,
-  title,
-  desc,
-  href,
-  cta,
-  disabled,
-}: {
-  icon?: React.ReactNode
-  title: string
-  desc: string
-  href?: string
-  cta?: string
-  disabled?: boolean
-}) {
+function BatchesSkeleton() {
   return (
-    <Card>
-      <CardHeader className="flex items-center">
-        {icon}
-        {title}
-      </CardHeader>
-      <CardContent>
-        <p className="mb-6 text-muted-foreground">{desc}</p>
-        {disabled || !href ? (
-          <Button disabled variant="secondary">
-            待开发
-          </Button>
-        ) : (
-          <Link href={href}>
-            <Button className="w-full">{cta}</Button>
-          </Link>
-        )}
-      </CardContent>
-    </Card>
+    <ul className="divide-y rounded-xl border bg-card">
+      {[0, 1, 2, 3].map((i) => (
+        <li key={i} className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-5 w-14 rounded-full" />
+            <Skeleton className="h-3 w-10" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+          <Skeleton className="h-3 w-16" />
+        </li>
+      ))}
+    </ul>
   )
 }
 
 export default function HomePage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['overview'],
     queryFn: fetchOverview,
   })
 
+  const stats = [
+    {
+      label: '接收人',
+      value: data?.users.total ?? 0,
+      sub: data ? `${data.users.enabled} 已启用` : null,
+      alert: false,
+    },
+    {
+      label: '推送模板',
+      value: data?.templates.total ?? 0,
+      sub: null,
+      alert: false,
+    },
+    {
+      label: '近 24h 推送',
+      value: data?.logs24h.total ?? 0,
+      sub: data?.logs24h.total
+        ? `${data.logs24h.success} 成功 · ${data.logs24h.failed} 失败`
+        : null,
+      alert: (data?.logs24h.failed ?? 0) > 0,
+    },
+    {
+      label: '24h 成功率',
+      value:
+        data?.logs24h.successRate == null
+          ? '—'
+          : `${data.logs24h.successRate}%`,
+      sub:
+        data?.logs24h.successRate != null
+          ? data.logs24h.successRate >= 90
+            ? '成功率良好'
+            : '成功率偏低'
+          : null,
+      alert:
+        data?.logs24h.successRate != null && data.logs24h.successRate < 90,
+    },
+  ]
+
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
-      <header className="mb-10">
-        <h1 className="text-3xl font-bold tracking-tight">wepush</h1>
-        <p className="mt-2 text-muted-foreground">微信公众号定时推送控制台</p>
+      <header className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">wepush</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            微信公众号定时推送控制台
+          </p>
+        </div>
+        <div className="flex items-center gap-2 pt-1">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => void refetch()}
+            disabled={isFetching}
+            aria-label="刷新数据"
+          >
+            <RotateCw
+              className={`size-3.5 ${isFetching ? 'animate-spin' : ''}`}
+            />
+          </Button>
+          <Link href="/users">
+            <Button size="sm">立即推送</Button>
+          </Link>
+        </div>
       </header>
 
       {isLoading ? (
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" />
-        </div>
+        <StatsSkeleton />
       ) : (
-        <>
-          <section className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs dark:*:data-[slot=card]:bg-card">
-            <Metric
-              label="接收人"
-              value={data?.users.total ?? 0}
-              hint={`启用 ${data?.users.enabled ?? 0}`}
-            />
-            <Metric label="模板" value={data?.templates.total ?? 0} />
-            <Metric
-              label="近 24h 推送"
-              value={data?.logs24h.total ?? 0}
-              hint={
-                data?.logs24h.total
-                  ? `${data.logs24h.success} 成功 · ${data.logs24h.failed} 失败`
-                  : '暂无推送'
-              }
-              trend={
-                data?.logs24h.total
-                  ? {
-                      direction: data.logs24h.failed > 0 ? 'down' : 'up',
-                      label:
-                        data.logs24h.failed > 0
-                          ? '存在失败推送'
-                          : '推送全部成功',
-                      value: `${data.logs24h.success}/${data.logs24h.total}`,
-                    }
-                  : undefined
-              }
-            />
-            <Metric
-              label="近 24h 成功率"
-              value={
-                data?.logs24h.successRate == null
-                  ? '—'
-                  : `${data.logs24h.successRate}%`
-              }
-              hint={
-                data?.logs24h.total ? `基于 ${data.logs24h.total} 条` : '无数据'
-              }
-              trend={
-                data?.logs24h.successRate != null
-                  ? {
-                      direction: data.logs24h.successRate >= 90 ? 'up' : 'down',
-                      label:
-                        data.logs24h.successRate >= 90
-                          ? '成功率良好'
-                          : '成功率偏低',
-                      value: `${data.logs24h.successRate}%`,
-                    }
-                  : undefined
-              }
-            />
-          </section>
-
-          <section className="mb-10">
-            <div className="mb-3 flex items-center justify-between">
-              <Label>最近批次</Label>
-              <Link
-                href="/logs"
-                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        <div className="mb-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-4">
+          {stats.map((stat) => (
+            <div key={stat.label} className="bg-card px-5 py-5">
+              <div
+                className={`text-2xl font-bold tabular-nums tracking-tight ${
+                  stat.alert ? 'text-destructive' : ''
+                }`}
               >
-                查看全部日志 <ArrowRightIcon className="size-3" />
-              </Link>
+                {stat.value}
+              </div>
+              <div className="mt-1 text-sm font-medium">{stat.label}</div>
+              {stat.sub && (
+                <div
+                  className={`mt-0.5 text-xs ${
+                    stat.alert
+                      ? 'text-destructive/70'
+                      : 'text-muted-foreground'
+                  }`}
+                >
+                  {stat.sub}
+                </div>
+              )}
             </div>
-            {!data || data.recentBatches.length === 0 ? (
-              <IKEmpty
-                icon={FileSearchCorner}
-                className="border border-dashed"
-                title="暂无推送批次数据"
-              />
-            ) : (
-              <ul className="divide-y rounded-xl border bg-card shadow-xs">
-                {data.recentBatches.map((b) => (
-                  <li key={b.id}>
-                    <Link
-                      href={`/logs/batches/${b.id}`}
-                      className="flex items-center justify-between px-4 py-3 transition hover:bg-muted/40"
-                    >
-                      <div className="flex items-center gap-3">
-                        {statusBadge(b.status)}
-                        <span className="font-mono text-xs text-muted-foreground">
-                          {b.trigger}
-                        </span>
-                        <span className="text-sm">
-                          {new Date(b.startedAt).toLocaleString('zh-CN', {
-                            hour12: false,
-                          })}
-                        </span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {b.successCount}/{b.totalCount} 成功
-                        {b.failedCount > 0 ? ` · ${b.failedCount} 失败` : ''}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        </>
+          ))}
+        </div>
       )}
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <NavCard
-          icon={<Users className="size-4" />}
-          title="接收人"
-          desc="管理订阅用户、城市、纪念日、累计日"
-          href="/users"
-          cta="进入"
-        />
-        <NavCard
-          icon={<FileText className="size-4" />}
-          title="模板"
-          desc="编辑推送模板，使用模板变量动态渲染"
-          href="/templates"
-          cta="进入"
-        />
-        <NavCard
-          icon={<ListChecks className="size-4" />}
-          title="推送日志"
-          desc="查看推送结果、批次、失败重试"
-          href="/logs"
-          cta="进入"
-        />
-        <NavCard
-          icon={<Send className="size-4" />}
-          title="立即推送"
-          desc="跳转到接收人页面发起手动推送"
-          href="/users"
-          cta="去触发"
-        />
-        <NavCard
-          icon={<Settings className="size-4" />}
-          title="全局配置"
-          desc="微信 APP_ID/SECRET、节流参数、API Token、定时推送"
-          href="/settings"
-          cta="打开设置"
-        />
-        <NavCard
-          icon={<Bug className="size-4" />}
-          title="数据源探测"
-          desc="单独调用天气 / 一言 / 一句 等数据源查看原始返回"
-          href="/debug"
-          cta="打开"
-        />
+      <TrendChart />
+
+      <section className="mt-8">
+        <div className="mb-3 flex items-center justify-between">
+          <span className="text-sm font-medium">最近批次</span>
+          <Link
+            href="/logs"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          >
+            查看全部 <ArrowRight className="size-3" />
+          </Link>
+        </div>
+
+        {isLoading ? (
+          <BatchesSkeleton />
+        ) : !data || data.recentBatches.length === 0 ? (
+          <IKEmpty
+            icon={FileSearchCorner}
+            className="border border-dashed"
+            title="暂无推送批次"
+            description="前往接收人页面发起第一次推送"
+          />
+        ) : (
+          <ul className="divide-y rounded-xl border bg-card">
+            {data.recentBatches.map((b) => (
+              <li key={b.id}>
+                <Link
+                  href={`/logs/batches/${b.id}`}
+                  className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-muted/40"
+                >
+                  <div className="flex items-center gap-3">
+                    <StatusBadge status={b.status} />
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {b.trigger}
+                    </span>
+                    <span className="text-sm">
+                      {new Date(b.startedAt).toLocaleString('zh-CN', {
+                        hour12: false,
+                      })}
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {b.successCount}/{b.totalCount} 成功
+                    {b.failedCount > 0 ? ` · ${b.failedCount} 失败` : ''}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </IKPageContainer>
   )

@@ -2,7 +2,7 @@
 
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
-import { Spinner } from '@cdlab996/ui/components/spinner'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import {
   Table,
   TableBody,
@@ -12,11 +12,14 @@ import {
   TableRow,
 } from '@cdlab996/ui/components/table'
 import { IKPageContainer } from '@cdlab996/ui/IK'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { RotateCcw } from 'lucide-react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { LogDetailDrawer } from '@/components/LogDetailDrawer'
+import { retryBatchFromUi } from '@/lib/push-client'
 
 interface BatchSummary {
   id: string
@@ -61,11 +64,39 @@ function statusBadge(status: BatchSummary['status']) {
 export default function BatchDetailPage() {
   const params = useParams<{ id: string }>()
   const id = params.id
+  const router = useRouter()
+  const qc = useQueryClient()
   const [openLogId, setOpenLogId] = useState<string | null>(null)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['batch', id],
     queryFn: () => fetchBatch(id),
+  })
+
+  const retry = useMutation({
+    mutationFn: () => retryBatchFromUi(id),
+    onSuccess: (result) => {
+      void qc.invalidateQueries({ queryKey: ['batch', id] })
+      if (result.failedCount === 0) {
+        toast.success(`重推完成（${result.successCount} 成功）`, {
+          action: {
+            label: '查看批次',
+            onClick: () => router.push(`/logs/batches/${result.batchId}`),
+          },
+        })
+      } else {
+        toast.warning(
+          `重推部分失败（${result.successCount} 成功 / ${result.failedCount} 失败）`,
+          {
+            action: {
+              label: '查看新批次',
+              onClick: () => router.push(`/logs/batches/${result.batchId}`),
+            },
+          },
+        )
+      }
+    },
+    onError: (e: Error) => toast.error(e.message),
   })
 
   return (
@@ -76,6 +107,19 @@ export default function BatchDetailPage() {
           <p className="mt-1 font-mono text-xs text-muted-foreground">{id}</p>
         </div>
         <div className="flex gap-2">
+          {data?.batch.failedCount ? (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={retry.isPending}
+              onClick={() => retry.mutate()}
+            >
+              <RotateCcw className="mr-1 size-3.5" />
+              {retry.isPending
+                ? '重推中...'
+                : `重推失败（${data.batch.failedCount}）`}
+            </Button>
+          ) : null}
           <Link href="/logs">
             <Button variant="ghost" size="sm">
               返回日志
@@ -85,9 +129,29 @@ export default function BatchDetailPage() {
       </header>
 
       {isLoading ? (
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" />
-        </div>
+        <>
+          <div className="mb-6 grid gap-3 rounded-lg border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+              <div key={i} className="space-y-1.5">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-5 w-24" />
+              </div>
+            ))}
+          </div>
+          <div className="rounded-lg border bg-card">
+            <div className="divide-y">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-4 px-4 py-3">
+                  <Skeleton className="h-3 w-36" />
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-3 w-14" />
+                  <Skeleton className="h-3 flex-1" />
+                  <Skeleton className="h-5 w-14 rounded-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
       ) : isError || !data ? (
         <div className="rounded-lg border bg-card py-16 text-center text-sm text-muted-foreground">
           批次未找到
@@ -111,7 +175,13 @@ export default function BatchDetailPage() {
             </Cell>
             <Cell label="总数">{data.batch.totalCount}</Cell>
             <Cell label="成功">{data.batch.successCount}</Cell>
-            <Cell label="失败">{data.batch.failedCount}</Cell>
+            <Cell label="失败">
+              <span
+                className={data.batch.failedCount > 0 ? 'text-destructive' : ''}
+              >
+                {data.batch.failedCount}
+              </span>
+            </Cell>
             <Cell label="成功率">
               {data.batch.totalCount === 0
                 ? '—'

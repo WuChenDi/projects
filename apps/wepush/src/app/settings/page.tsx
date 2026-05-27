@@ -6,7 +6,7 @@ import { Checkbox } from '@cdlab996/ui/components/checkbox'
 import { Input } from '@cdlab996/ui/components/input'
 import { Label } from '@cdlab996/ui/components/label'
 import { Separator } from '@cdlab996/ui/components/separator'
-import { Spinner } from '@cdlab996/ui/components/spinner'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { Switch } from '@cdlab996/ui/components/switch'
 import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -124,9 +124,21 @@ export default function SettingsPage() {
 
   if (isLoading || !data) {
     return (
-      <main className="container mx-auto flex max-w-3xl items-center justify-center px-6 py-24">
-        <Spinner className="size-6" />
-      </main>
+      <IKPageContainer className="flex-col max-w-6xl mx-auto">
+        <div className="mb-8 space-y-2">
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-4 w-48" />
+        </div>
+        <div className="space-y-8">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="space-y-3">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-64" />
+              <Skeleton className="h-10 w-full max-w-sm" />
+            </div>
+          ))}
+        </div>
+      </IKPageContainer>
     )
   }
 
@@ -156,11 +168,6 @@ export default function SettingsPage() {
             微信 / 节流参数 / 推送触发 token
           </p>
         </div>
-        <Link href="/">
-          <Button variant="ghost" size="sm">
-            返回
-          </Button>
-        </Link>
       </header>
 
       <Section

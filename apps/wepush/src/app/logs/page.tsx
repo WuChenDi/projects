@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@cdlab996/ui/components/select'
-import { Spinner } from '@cdlab996/ui/components/spinner'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import {
   Table,
   TableBody,
@@ -28,7 +28,6 @@ import {
   FileSearchCorner,
   RotateCw,
 } from 'lucide-react'
-import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { DatePicker } from '@/components/DatePicker'
 import { LogDetailDrawer } from '@/components/LogDetailDrawer'
@@ -123,21 +122,16 @@ export default function LogsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Link href="/">
-            <Button variant="ghost" size="sm">
-              返回
-            </Button>
-          </Link>
           <Button
             variant="outline"
-            size="sm"
-            onClick={() => refetch()}
+            size="icon"
+            onClick={() => void refetch()}
             disabled={isFetching}
+            aria-label="刷新"
           >
             <RotateCw
-              className={`mr-1 size-4 ${isFetching ? 'animate-spin' : ''}`}
+              className={`size-3.5 ${isFetching ? 'animate-spin' : ''}`}
             />
-            刷新
           </Button>
         </div>
       </header>
@@ -214,8 +208,18 @@ export default function LogsPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" />
+        <div className="rounded-lg border bg-card">
+          <div className="divide-y">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center gap-4 px-4 py-3">
+                <Skeleton className="h-3 w-36" />
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-3 w-14" />
+                <Skeleton className="h-3 flex-1" />
+                <Skeleton className="h-5 w-14 rounded-full" />
+              </div>
+            ))}
+          </div>
         </div>
       ) : !data || data.rows.length === 0 ? (
         <IKEmpty

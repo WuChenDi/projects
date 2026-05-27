@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
-import { Spinner } from '@cdlab996/ui/components/spinner'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import {
   Table,
   TableBody,
@@ -12,7 +12,7 @@ import {
 } from '@cdlab996/ui/components/table'
 import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { FileSearchCorner, Pencil, Plus, Trash2 } from 'lucide-react'
+import { FileSearchCorner, Pencil, Plus, RotateCw, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { ConfirmDeleteButton } from '@/components/ConfirmDeleteButton'
@@ -53,11 +53,14 @@ export default function TemplatesPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Link href="/">
-            <Button variant="ghost" size="sm">
-              返回
-            </Button>
-          </Link>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="刷新"
+            onClick={() => void qc.invalidateQueries({ queryKey: ['templates'] })}
+          >
+            <RotateCw className="size-3.5" />
+          </Button>
           <Link href="/templates/new">
             <Button size="sm">
               <Plus className="mr-1 size-4" />
@@ -68,8 +71,22 @@ export default function TemplatesPage() {
       </header>
 
       {isLoading ? (
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" />
+        <div className="rounded-lg border bg-card">
+          <div className="divide-y">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
+                <div className="flex gap-1">
+                  <Skeleton className="h-7 w-7" />
+                  <Skeleton className="h-7 w-7" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : !data || data.length === 0 ? (
         <IKEmpty

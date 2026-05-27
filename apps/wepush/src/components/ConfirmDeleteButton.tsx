@@ -18,6 +18,8 @@ interface Props {
   message: string
   onConfirm: () => void
   disabled?: boolean
+  size?: 'default' | 'sm' | 'lg' | 'icon'
+  variant?: 'ghost' | 'outline' | 'destructive' | 'secondary' | 'default'
   children: React.ReactNode
 }
 
@@ -26,14 +28,16 @@ export function ConfirmDeleteButton({
   message,
   onConfirm,
   disabled,
+  size = 'icon',
+  variant = 'ghost',
   children,
 }: Props) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button
-          variant="ghost"
-          size="icon"
+          variant={variant}
+          size={size}
           aria-label="删除"
           disabled={disabled}
           className="text-destructive hover:text-destructive"
