@@ -107,8 +107,8 @@ catalogs:
       specifier: ^1.6.16
       version: 1.6.16
     hono:
-      specifier: ^4.12.16
-      version: 4.12.16
+      specifier: ^4.12.18
+      version: 4.12.23
     jszip:
       specifier: ^3.10.1
       version: 3.10.1
@@ -279,7 +279,7 @@ importers:
         version: 1.42.0
       hono:
         specifier: catalog:prod
-        version: 4.12.16
+        version: 4.12.23
     devDependencies:
       '@cdlab996/tsconfig':
         specifier: workspace:*
@@ -462,7 +462,7 @@ importers:
         version: link:../../packages/utils
       '@hono/zod-validator':
         specifier: catalog:prod
-        version: 0.7.6(hono@4.12.16)(zod@4.4.3)
+        version: 0.7.6(hono@4.12.23)(zod@4.4.3)
       '@libsql/client':
         specifier: catalog:prod
         version: 0.17.3
@@ -471,7 +471,7 @@ importers:
         version: 0.45.2(@cloudflare/workers-types@4.20260525.1)(@libsql/client@0.17.3)(@types/pg@8.18.0)(@upstash/redis@1.37.0)(kysely@0.28.13)(pg@8.20.0)(postgres@3.4.8)
       hono:
         specifier: catalog:prod
-        version: 4.12.16
+        version: 4.12.23
       winston:
         specifier: catalog:prod
         version: 3.19.0
@@ -548,7 +548,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -615,7 +615,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -709,7 +709,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -736,7 +736,7 @@ importers:
         version: link:../../packages/utils
       '@hono/zod-validator':
         specifier: catalog:prod
-        version: 0.7.6(hono@4.12.16)(zod@4.4.3)
+        version: 0.7.6(hono@4.12.23)(zod@4.4.3)
       '@libsql/client':
         specifier: catalog:prod
         version: 0.17.3
@@ -748,7 +748,7 @@ importers:
         version: 0.45.2(@cloudflare/workers-types@4.20260525.1)(@libsql/client@0.17.3)(@types/pg@8.18.0)(@upstash/redis@1.37.0)(kysely@0.28.13)(pg@8.20.0)(postgres@3.4.8)
       hono:
         specifier: catalog:prod
-        version: 4.12.16
+        version: 4.12.23
       resend:
         specifier: ^6.9.3
         version: 6.9.3(@react-email/render@2.0.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
@@ -904,7 +904,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -922,7 +922,7 @@ importers:
     dependencies:
       hono:
         specifier: catalog:prod
-        version: 4.12.16
+        version: 4.12.23
     devDependencies:
       '@cdlab996/tsconfig':
         specifier: workspace:*
@@ -993,7 +993,7 @@ importers:
     dependencies:
       '@hono/zod-validator':
         specifier: catalog:prod
-        version: 0.7.6(hono@4.12.16)(zod@4.4.3)
+        version: 0.7.6(hono@4.12.23)(zod@4.4.3)
       '@libsql/client':
         specifier: catalog:prod
         version: 0.17.3
@@ -1005,7 +1005,7 @@ importers:
         version: 0.45.2(@cloudflare/workers-types@4.20260525.1)(@libsql/client@0.17.3)(@types/pg@8.18.0)(@upstash/redis@1.37.0)(kysely@0.28.13)(pg@8.20.0)(postgres@3.4.8)
       hono:
         specifier: catalog:prod
-        version: 4.12.16
+        version: 4.12.23
       jose:
         specifier: ^6.2.3
         version: 6.2.3
@@ -4574,96 +4574,112 @@ packages:
   '@react-email/body@0.2.1':
     resolution: {integrity: sha512-ljDiQiJDu/Fq//vSIIP0z5Nuvt4+DX1RqGasstChDGJB/14ogd4VdNS9aacoede/ZjGy3o3Qb+cxyS+XgM6SwQ==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/button@0.2.1':
     resolution: {integrity: sha512-qXyj7RZLE7POy9BMKSoqQ00tOXThjOZSUnI2Yu9i29IHngPlmrNayIWBoVKtElES7OWwypUcpiajwi1mUWx6/A==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/code-block@0.2.1':
     resolution: {integrity: sha512-M3B7JpVH4ytgn83/ujRR1k1DQHvTeABiDM61OvAbjLRPhC/5KLHU5KkzIbbuGIrjWwxAbL1kSQzU8MhLEtSxyw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/code-inline@0.0.6':
     resolution: {integrity: sha512-jfhebvv3dVsp3OdPgKXnk8+e2pBiDVZejDOBFzBa/IblrAJ9cQDkN6rBD5IyEg8hTOxwbw3iaI/yZFmDmIguIA==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/column@0.0.14':
     resolution: {integrity: sha512-f+W+Bk2AjNO77zynE33rHuQhyqVICx4RYtGX9NKsGUg0wWjdGP0qAuIkhx9Rnmk4/hFMo1fUrtYNqca9fwJdHg==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/components@1.0.8':
     resolution: {integrity: sha512-zY81ED6o5MWMzBkr9uZFuT24lWarT+xIbOZxI6C9dsFmCWBczM8IE1BgOI8rhpUK4JcYVDy1uKxYAFqsx2Bc4w==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/container@0.0.16':
     resolution: {integrity: sha512-QWBB56RkkU0AJ9h+qy33gfT5iuZknPC7Un/IjZv9B0QmMIK+WWacc0cH6y2SV5Cv/b99hU94fjEMOOO4enpkbQ==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/font@0.0.10':
     resolution: {integrity: sha512-0urVSgCmQIfx5r7Xc586miBnQUVnGp3OTYUm8m5pwtQRdTRO5XrTtEfNJ3JhYhSOruV0nD8fd+dXtKXobum6tA==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/head@0.0.13':
     resolution: {integrity: sha512-AJg6le/08Gz4tm+6MtKXqtNNyKHzmooOCdmtqmWxD7FxoAdU1eVcizhtQ0gcnVaY6ethEyE/hnEzQxt1zu5Kog==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/heading@0.0.16':
     resolution: {integrity: sha512-jmsKnQm1ykpBzw4hCYHwBkt5pW2jScXffPeEH5ZRF5tZeF5b1pvlFTO9han7C0pCkZYo1kEvWiRtx69yfCIwuw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/hr@0.0.12':
     resolution: {integrity: sha512-TwmOmBDibavUQpXBxpmZYi2Iks/yeZOzFYh+di9EltMSnEabH8dMZXrl+pxNXzCgZ2XE8HY7VmUL65Lenfu5PA==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/html@0.0.12':
     resolution: {integrity: sha512-KTShZesan+UsreU7PDUV90afrZwU5TLwYlALuCSU0OT+/U8lULNNbAUekg+tGwCnOfIKYtpDPKkAMRdYlqUznw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/img@0.0.12':
     resolution: {integrity: sha512-sRCpEARNVTf3FQhZOC+JTvu5r6ubiYWkT0ucYXg8ctkyi4G8QG+jgYPiNUqVeTLA2STOfmPM/nrk1nb84y6CPQ==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/link@0.0.13':
     resolution: {integrity: sha512-lkWc/NjOcefRZMkQoSDDbuKBEBDES9aXnFEOuPH845wD3TxPwh+QTf0fStuzjoRLUZWpHnio4z7qGGRYusn/sw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/markdown@0.0.18':
     resolution: {integrity: sha512-gSuYK5fsMbGk87jDebqQ6fa2fKcWlkf2Dkva8kMONqLgGCq8/0d+ZQYMEJsdidIeBo3kmsnHZPrwdFB4HgjUXg==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/preview@0.0.14':
     resolution: {integrity: sha512-aYK8q0IPkBXyMsbpMXgxazwHxYJxTrXrV95GFuu2HbEiIToMwSyUgb8HDFYwPqqfV03/jbwqlsXmFxsOd+VNaw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
@@ -4677,18 +4693,21 @@ packages:
   '@react-email/row@0.0.13':
     resolution: {integrity: sha512-bYnOac40vIKCId7IkwuLAAsa3fKfSfqCvv6epJKmPE0JBuu5qI4FHFCl9o9dVpIIS08s/ub+Y/txoMt0dYziGw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/section@0.0.17':
     resolution: {integrity: sha512-qNl65ye3W0Rd5udhdORzTV9ezjb+GFqQQSae03NDzXtmJq6sqVXNWNiVolAjvJNypim+zGXmv6J9TcV5aNtE/w==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/tailwind@2.0.5':
     resolution: {integrity: sha512-7Ey+kiWliJdxPMCLYsdDts8ffp4idlP//w4Ui3q/A5kokVaLSNKG8DOg/8qAuzWmRiGwNQVOKBk7PXNlK5W+sg==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       '@react-email/body': 0.2.1
       '@react-email/button': 0.2.1
@@ -4727,6 +4746,7 @@ packages:
   '@react-email/text@0.1.6':
     resolution: {integrity: sha512-TYqkioRS45wTR5il3dYk/SbUjjEdhSwh9BtRNB99qNH1pXAwA45H7rAuxehiu8iJQJH0IyIr+6n62gBz9ezmsw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
@@ -8059,6 +8079,10 @@ packages:
     resolution: {integrity: sha512-jN0ZewiNAWSe5khM3EyCmBb250+b40wWbwNILNfEvq84VREWwOIkuUsFONk/3i3nqkz7Oe1PcpM2mwQEK2L9Kg==}
     engines: {node: '>=16.9.0'}
 
+  hono@4.12.23:
+    resolution: {integrity: sha512-eIaZ9qDgu7XV0pxOCrg7/WhnQ6Ivm22UcxhXx/A3dcbqbbYgBEkc6e/J/s7j2tS96zoB0S9VBdLwQNCWwUo4LA==}
+    engines: {node: '>=16.9.0'}
+
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
 
@@ -10975,6 +10999,7 @@ packages:
 
   uuid@10.0.0:
     resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   validate-npm-package-name@7.0.2:
@@ -12559,7 +12584,7 @@ snapshots:
 
   '@cloudflare/kv-asset-handler@0.5.0': {}
 
-  '@cloudflare/next-on-pages@1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))':
+  '@cloudflare/next-on-pages@1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))':
     dependencies:
       acorn: 8.16.0
       ast-types: 0.14.2
@@ -12987,9 +13012,9 @@ snapshots:
     dependencies:
       hono: 4.12.16
 
-  '@hono/zod-validator@0.7.6(hono@4.12.16)(zod@4.4.3)':
+  '@hono/zod-validator@0.7.6(hono@4.12.23)(zod@4.4.3)':
     dependencies:
-      hono: 4.12.16
+      hono: 4.12.23
       zod: 4.4.3
 
   '@huggingface/jinja@0.5.5': {}
@@ -18646,6 +18671,8 @@ snapshots:
   hls.js@1.6.16: {}
 
   hono@4.12.16: {}
+
+  hono@4.12.23: {}
 
   hookable@5.5.3: {}
 
