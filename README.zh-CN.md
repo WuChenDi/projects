@@ -249,6 +249,25 @@ https://shortener.cdlab.workers.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Shortener/index.png" alt="Shortener" />
 </details>
 
+### wepush
+
+**微信测试号模板消息推送控制台**
+
+https://wepush.cdlab.workers.dev/
+
+- 在 Web 控制台中管理收件人、模板、定时推送，并查看持久化推送日志，完全替代旧版 `ALL_CONFIG` + 青龙脚本方案
+- 收件人支持城市、节日、纪念日、农历日期；内置 CMA 气象站编码城市选择器（3240 条）
+- 模板编辑器支持结构实时预览，可针对任意收件人渲染真实数据预览，`{{var.DATA}}` 变量一键插入
+- 推送触发方式：界面手动（单条 / 批量）、HTTP API（`Bearer <pushApiToken>` 鉴权）、Worker `scheduled()` Cron —— Cron 可在设置页暂停，无需重新部署
+- 持久化推送日志，支持批次分组、状态过滤、请求载荷快照与一键重试
+- 核心技术：Next.js 16（App Router）+ React 19 + Drizzle（LibSQL / D1）+ TanStack Query/Form + Zustand + tyme4ts（公历/农历）+ @opennextjs/cloudflare → Cloudflare Workers（含 Cron 触发器）
+
+<details>
+  <summary>预览</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/wepush/og-image.png" alt="wepush" />
+</details>
+
 ### repo-changelog
 
 **开源项目 Release / Changelog 聚合面板**
@@ -300,6 +319,7 @@ pnpm --filter @cdlab996/dropply-web dev      # → http://dropply-web.localhost:
 pnpm --filter @cdlab996/flox dev             # → http://flox.localhost:3355
 pnpm --filter @cdlab996/live-user dev        # → http://live-user.localhost:3355
 pnpm --filter @cdlab996/shortener dev        # → http://shortener.localhost:3355
+pnpm --filter @cdlab996/wepush dev           # → http://wepush.localhost:3355
 pnpm --filter @cdlab996/repo-changelog dev   # → http://repo-changelog.localhost:3355
 pnpm build                                   # 构建所有应用
 pnpm --filter @cdlab996/clearify run build
@@ -315,6 +335,7 @@ pnpm --filter @cdlab996/byshot run build
 pnpm --filter @cdlab996/dropply-web run build
 pnpm --filter @cdlab996/flox run build
 pnpm --filter @cdlab996/shortener run build
+pnpm --filter @cdlab996/wepush run build
 pnpm --filter @cdlab996/repo-changelog run build
 pnpm lint                          # Biome 代码检查
 pnpm format                        # Biome 格式化全部代码
@@ -342,7 +363,8 @@ pnpm clean                         # 清理 node_modules / 缓存 / 构建产物
 │   ├── shortener/         # 短链服务（Cloudflare Workers）
 │   ├── text2img/          # 文生图前端
 │   ├── value-vision/      # 价值对比 / 可视化工具
-│   └── vidl/              # 视频下载工具（M3U8/HLS、MP4 等）
+│   ├── vidl/              # 视频下载工具（M3U8/HLS、MP4 等）
+│   └── wepush/            # 微信测试号模板消息推送控制台
 ├── packages/
 │   ├── cipher/            # 流式加解密库 (@cdlab996/cipher)
 │   ├── tsconfig/          # 共享 TypeScript 配置 (@cdlab996/tsconfig)

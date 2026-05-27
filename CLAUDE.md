@@ -8,14 +8,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Workspace layout:
 
-- `apps/*` — 16 deployable products (Next.js, Nuxt, Cloudflare Workers)
+- `apps/*` — 17 deployable products (Next.js, Nuxt, Cloudflare Workers)
 - `packages/*` — 5 shared libraries (`ui`, `utils`, `cipher`, `uncrypto`, `tsconfig`)
 
 Apps fall into three runtime families with different toolchains:
 
 | Family                        | Apps                                                                                                         | Build tool                      | Deploy target                                                                            |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------- | ---------------------------------------------------------------------------------------- |
-| **Next.js (App Router)**      | `bycut`, `byplay`, `byshot`, `bytts`, `clearify`, `dropply-web`, `flox`, `SecureC`, `text2img`, `value-vision`, `vidl` | `next build` (some `--webpack`) | Cloudflare Pages (`@cloudflare/next-on-pages`), `text2img` uses `@opennextjs/cloudflare` |
+| **Next.js (App Router)**      | `bycut`, `byplay`, `byshot`, `bytts`, `clearify`, `dropply-web`, `flox`, `SecureC`, `text2img`, `value-vision`, `vidl`, `wepush` | `next build` (some `--webpack`) | Cloudflare Pages (`@cloudflare/next-on-pages`); `text2img` and `wepush` use `@opennextjs/cloudflare` |
 | **Cloudflare Workers (Hono)** | `baccarat`, `byplay-log`, `dropply-api`, `live-user`, `shortener`                                            | `wrangler deploy --minify`      | Cloudflare Workers + Durable Objects / D1                                                |
 | **Nuxt 4 (Vue 3)**            | `repo-changelog`                                                                                             | `nuxt build`/`generate`         | Vercel                                                                                   |
 
@@ -45,12 +45,12 @@ pnpm --filter @cdlab996/<worker> dev         # nsl run wrangler dev
 pnpm --filter @cdlab996/<worker> deploy      # wrangler deploy --minify
 pnpm --filter @cdlab996/<worker> cf-typegen  # regenerate CloudflareBindings type
 
-# Drizzle (dropply-api, byplay-log, shortener)
+# Drizzle (dropply-api, byplay-log, shortener, wepush)
 pnpm --filter @cdlab996/<worker> db:gen      # generate migration from schema
 pnpm --filter @cdlab996/<worker> db:migrate  # apply (LibSQL)
 pnpm --filter @cdlab996/<worker> cf:localdb  # apply to local D1
 pnpm --filter @cdlab996/<worker> cf:remotedb # apply to remote D1
-pnpm --filter @cdlab996/<worker> db:studio   # drizzle-kit studio (port 3015 / 3018 / 3019)
+pnpm --filter @cdlab996/<worker> db:studio   # drizzle-kit studio (port 3015 / 3018 / 3019 / 3020)
 
 # Workspace package tests (vitest)
 pnpm --filter @cdlab996/utils  test          # one-shot
@@ -58,7 +58,7 @@ pnpm --filter @cdlab996/cipher test:watch
 pnpm --filter @cdlab996/utils  exec vitest run path/to.test.ts -t "name"
 
 # Explicit deploys (CI does NOT auto-deploy)
-pnpm deploy:baccarat | deploy:dropply-api | deploy:live-user | deploy:shortener | deploy:text2img
+pnpm deploy:baccarat | deploy:dropply-api | deploy:live-user | deploy:shortener | deploy:text2img | deploy:wepush
 ```
 
 Drizzle's `DB_TYPE` env var (`libsql` default, or `d1`) selects the dialect at config time — see `apps/dropply-api/drizzle.config.ts`. `LIBSQL_URL` defaults to `file:./src/database/data.db`.
@@ -184,6 +184,23 @@ Uses `@cdlab996/cipher` (XChaCha20-Poly1305 + Argon2id + ECIES) and runs all cry
 - TanStack Query for image history/cache.
 - Builds with **OpenNext for Cloudflare** (`@opennextjs/cloudflare`), not `next-on-pages`. Deploys with `pnpm --filter @cdlab996/text2img deploy` (which runs `opennextjs-cloudflare build && deploy`).
 
+#### `wepush` — WeChat test-account template-message console
+
+Single-tenant console for sending WeChat official-account template messages. Replaces the legacy `ALL_CONFIG` + Qinglong script setup — everything (recipients, templates, push logs, settings) lives in the DB and is editable from the UI.
+
+- `src/app/` — App Router pages (`/`, `/users`, `/templates`, `/logs`, `/settings`, `/debug`) + `/api/*` route handlers. `PasswordGate` (`src/components/`) is a **client-side UI gate only** — APIs other than `/api/push/run` and `/api/push/retry` are not server-authorized.
+- `src/database/schema.ts` — Drizzle schema with the shared `trackingFields` block (soft-delete via `isDeleted`). Dual driver: `libsql` (dev / Turso) or `d1` (Cloudflare). `DB_TYPE` switches the dialect (see `drizzle.config.ts`); `LIBSQL_URL` defaults to `file:./src/database/data.db`. Studio runs on port 3020.
+- `src/services/channels/wechat.ts` — Acquires the WeChat `access_token` and sends template messages.
+- `src/services/sources/{weather,hitokoto,iciba}.ts` — External data sources for template variables (basic weather via `t.weather.itboy.net`, Hitokoto quotes, iCIBA English notes).
+- `src/services/calendar/` — Solar + lunar diff math built on `tyme4ts`. Each festival/anniversary has an `isLunar` toggle; lunar `MM-DD` is converted to the next solar occurrence and rendered with a `(农历)` suffix.
+- `src/services/template/render.ts` — `{{var.DATA}}` substitution with color spans; empty values render as empty strings (never leak the raw placeholder).
+- `src/services/push/` — `aggregate` (per-recipient variable resolution) + `runner` (batch fan-out + log writes) + `scheduled` (cron entry).
+- `src/worker/index.ts` — Custom Worker entry that wraps `.open-next/worker.js` to add `scheduled()`. Cron expression lives in `wrangler.jsonc` (`triggers.crons: ["30 23 * * *"]` = 07:30 Asia/Shanghai); pause/resume at runtime via `globalConfig.cronEnabled` / `globalConfig.cronUserIds` without redeploying.
+- `src/stores/` — Zustand `unlockToken` store for the password gate.
+- `public/data/city-codes.json` — 3240 CMA station codes (9-digit) for the weather city picker; refresh with `pnpm gen:cities`. District-level codes that itboy doesn't index fall back to the city-level code (`xxxxxx01`).
+- **Auth model**: `ACCESS_PASSWORD` env var enables the client-side gate; `pushApiToken` (auto-generated on first `/settings` load, re-generable from Settings) gates `/api/push/run` + `/api/push/retry` via `Authorization: Bearer`. `GET /api/settings` masks `wechatAppSecret` and `pushApiToken` — they are only writable (PATCH) or revealed once on rotate. **Do not expose publicly without an additional access layer** (Cloudflare Access, edge basic-auth, IP allow-list, tunnel).
+- Builds with **OpenNext for Cloudflare** (`@opennextjs/cloudflare`). Deploys with `pnpm --filter @cdlab996/wepush deploy`.
+
 #### `vidl` — Video downloader
 
 Pure-browser stream download — `mux.js` + Streams API, near-zero memory footprint.
@@ -292,7 +309,7 @@ Pure-browser stream download — `mux.js` + Streams API, near-zero memory footpr
   - `useDateNow` — `Date.now()` not `new Date().getTime()`
   - `noRestrictedImports` for zod — **`import * as z from 'zod'`** is mandatory; `import { z } from 'zod'` will fail lint
 - Per-app linter "domains" are scoped via `biome.json` `overrides`: `next` + `react` for the Next apps listed in `overrides[1].includes`, `vue` for `repo-changelog`. Other apps get the recommended-off baseline.
-- `repo-changelog`, `byplay-log/src/database/**/*.{json,sql}`, `dropply-api/src/database/**/*.{json,sql}`, `shortener/src/database/**/*.{json,sql}`, and parts of `packages/ui/src/{components,reactbits}/**/*.tsx` are **excluded from Biome** entirely.
+- `repo-changelog`, `byplay-log/src/database/**/*.{json,sql}`, `dropply-api/src/database/**/*.{json,sql}`, `shortener/src/database/**/*.{json,sql}`, `wepush/src/database/**/*.{json,sql}`, and parts of `packages/ui/src/{components,reactbits}/**/*.tsx` are **excluded from Biome** entirely.
 
 ### Dependency versions live in pnpm catalogs
 
@@ -311,7 +328,7 @@ Pure-browser stream download — `mux.js` + Streams API, near-zero memory footpr
 ### IDs
 
 - `@cdlab996/genid` (catalog dep) is the standard ID generator across apps.
-- Database tables in `dropply-api` and `byplay-log` use UUID v4 (or auto-increment for `playerLogs`). `shortener.links` uses an internal sha256 `hash` (unique) plus a user-facing `shortCode`; `shortener.pages` uses a unique `hash`.
+- Database tables in `dropply-api`, `byplay-log`, and `wepush` use UUID v4 (or auto-increment for `playerLogs`). `shortener.links` uses an internal sha256 `hash` (unique) plus a user-facing `shortCode`; `shortener.pages` uses a unique `hash`.
 
 ### Soft delete
 

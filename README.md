@@ -249,6 +249,25 @@ https://shortener.cdlab.workers.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Shortener/index.png" alt="Shortener" />
 </details>
 
+### wepush
+
+**WeChat Test-Account Template Message Console**
+
+https://wepush.cdlab.workers.dev/
+
+- Web console for sending WeChat official-account template messages — recipients, templates, scheduled push, and a permanent push log
+- Recipient management with city, festivals, anniversaries, and lunar calendar dates; built-in CMA station-code city picker (3240 entries)
+- Template editor with live structure preview, real-data preview against any recipient, and `{{var.DATA}}` chip-insertion
+- Push triggers: UI manual (single / batch), authenticated HTTP API (`Bearer <pushApiToken>`), Worker `scheduled()` cron — pause from Settings without redeploying
+- Permanent push log with batch grouping, status filters, payload snapshots, and one-click retry
+- Tech: Next.js 16 (App Router) + React 19 + Drizzle (LibSQL / D1) + TanStack Query/Form + Zustand + tyme4ts (solar / lunar) + @opennextjs/cloudflare → Cloudflare Workers (with cron triggers)
+
+<details>
+  <summary>Preview</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/wepush/og-image.png" alt="wepush" />
+</details>
+
 ### repo-changelog
 
 **Open Source Release / Changelog Aggregation Dashboard**
@@ -300,6 +319,7 @@ pnpm --filter @cdlab996/dropply-web dev      # → http://dropply-web.localhost:
 pnpm --filter @cdlab996/flox dev             # → http://flox.localhost:3355
 pnpm --filter @cdlab996/live-user dev        # → http://live-user.localhost:3355
 pnpm --filter @cdlab996/shortener dev        # → http://shortener.localhost:3355
+pnpm --filter @cdlab996/wepush dev           # → http://wepush.localhost:3355
 pnpm --filter @cdlab996/repo-changelog dev   # → http://repo-changelog.localhost:3355
 pnpm build                                   # Build all apps
 pnpm --filter @cdlab996/clearify run build
@@ -316,6 +336,7 @@ pnpm --filter @cdlab996/dropply-web run build
 pnpm --filter @cdlab996/flox run build
 pnpm --filter @cdlab996/live-user run build
 pnpm --filter @cdlab996/shortener run build
+pnpm --filter @cdlab996/wepush run build
 pnpm --filter @cdlab996/repo-changelog run build
 pnpm lint                          # Biome lint
 pnpm format                        # Biome format all code
@@ -343,7 +364,8 @@ pnpm clean                         # Clean node_modules / cache / build artifact
 │   ├── shortener/         # URL Shortener Service (Cloudflare Workers)
 │   ├── text2img/          # Text-to-Image Frontend
 │   ├── value-vision/      # Value Comparison / Visualization
-│   └── vidl/              # Video Downloader (M3U8/HLS, MP4, etc.)
+│   ├── vidl/              # Video Downloader (M3U8/HLS, MP4, etc.)
+│   └── wepush/            # WeChat Test-Account Template Push Console
 ├── packages/
 │   ├── cipher/            # Stream Cipher Library (@cdlab996/cipher)
 │   ├── tsconfig/          # Shared TypeScript Config (@cdlab996/tsconfig)
