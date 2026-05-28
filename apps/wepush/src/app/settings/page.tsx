@@ -14,6 +14,7 @@ import { Copy, RefreshCcw } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { SubHeader } from '@/components/layout'
 import type { GlobalConfig, User } from '@/database/schema'
 
 // GET /api/settings masks secrets and adds presence flags; PATCH on regenerate
@@ -161,14 +162,10 @@ export default function SettingsPage() {
 
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
-      <header className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">全局配置</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            微信 / 节流参数 / 推送触发 token
-          </p>
-        </div>
-      </header>
+      <SubHeader
+        title="全局配置"
+        description="微信 / 节流参数 / 推送触发 token"
+      />
 
       <Section
         title="微信测试号"

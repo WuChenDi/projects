@@ -19,6 +19,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { LogDetailDrawer } from '@/components/LogDetailDrawer'
+import { SubHeader } from '@/components/layout'
 import { retryBatchFromUi } from '@/lib/push-client'
 
 interface BatchSummary {
@@ -101,12 +102,8 @@ export default function BatchDetailPage() {
 
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
-      <header className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">推送批次</h1>
-          <p className="mt-1 font-mono text-xs text-muted-foreground">{id}</p>
-        </div>
-        <div className="flex gap-2">
+      <SubHeader title="推送批次详情" description={`批次 ID: ${id}`}>
+        <>
           {data?.batch.failedCount ? (
             <Button
               variant="outline"
@@ -125,8 +122,8 @@ export default function BatchDetailPage() {
               返回日志
             </Button>
           </Link>
-        </div>
-      </header>
+        </>
+      </SubHeader>
 
       {isLoading ? (
         <>

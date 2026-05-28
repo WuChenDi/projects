@@ -30,6 +30,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { ConfirmDeleteButton } from '@/components/ConfirmDeleteButton'
 import { DryRunDialog } from '@/components/DryRunDialog'
+import { SubHeader } from '@/components/layout'
 import type { User } from '@/database/schema'
 import type { DryRunUserResult } from '@/lib/push-client'
 import { dryRunFromUi, runPushFromUi } from '@/lib/push-client'
@@ -172,48 +173,43 @@ export default function UsersPage() {
 
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
-      <header className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">接收人</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            微信测试号订阅者，含城市、纪念日、累计日配置。
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label="刷新"
-            onClick={() => void qc.invalidateQueries({ queryKey: ['users'] })}
-          >
-            <RotateCw className="size-3.5" />
+      <SubHeader
+        title="接收人"
+        description="微信测试号订阅者，含城市、纪念日、累计日配置。"
+      >
+        <Button
+          variant="outline"
+          size="icon-sm"
+          aria-label="刷新"
+          onClick={() => void qc.invalidateQueries({ queryKey: ['users'] })}
+        >
+          <RotateCw className="size-3.5" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={dryRun.isPending || !data || data.length === 0}
+          onClick={() => openDryRun(undefined)}
+        >
+          <Eye className="size-4" />
+          预览推送
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={push.isPending || !data || data.length === 0}
+          onClick={() => push.mutate(undefined)}
+        >
+          <Zap className="size-4" />
+          {push.isPending ? '推送中...' : '推送全部'}
+        </Button>
+        <Link href="/users/new">
+          <Button size="sm">
+            <Plus className="size-4" />
+            新建接收人
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={dryRun.isPending || !data || data.length === 0}
-            onClick={() => openDryRun(undefined)}
-          >
-            <Eye className="mr-1 size-4" />
-            预览推送
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            disabled={push.isPending || !data || data.length === 0}
-            onClick={() => push.mutate(undefined)}
-          >
-            <Zap className="mr-1 size-4" />
-            {push.isPending ? '推送中...' : '推送全部'}
-          </Button>
-          <Link href="/users/new">
-            <Button size="sm">
-              <Plus className="mr-1 size-4" />
-              新建接收人
-            </Button>
-          </Link>
-        </div>
-      </header>
+        </Link>
+      </SubHeader>
 
       {/* Bulk action bar */}
       {selectedIds.size > 0 ? (

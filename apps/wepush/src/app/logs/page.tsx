@@ -31,6 +31,7 @@ import {
 import { useMemo, useState } from 'react'
 import { DatePicker } from '@/components/DatePicker'
 import { LogDetailDrawer } from '@/components/LogDetailDrawer'
+import { SubHeader } from '@/components/layout'
 import type { User } from '@/database/schema'
 
 interface LogRow {
@@ -114,17 +115,14 @@ export default function LogsPage() {
 
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
-      <header className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">推送日志</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            按时间倒序，所有推送记录持久保留。
-          </p>
-        </div>
-        <div className="flex gap-2">
+      <SubHeader
+        title="推送日志"
+        description="按时间倒序，所有推送记录持久保留。"
+      >
+        <>
           <Button
             variant="outline"
-            size="icon"
+            size="icon-sm"
             onClick={() => void refetch()}
             disabled={isFetching}
             aria-label="刷新"
@@ -133,8 +131,8 @@ export default function LogsPage() {
               className={`size-3.5 ${isFetching ? 'animate-spin' : ''}`}
             />
           </Button>
-        </div>
-      </header>
+        </>
+      </SubHeader>
 
       <div className="mb-6 rounded-lg border bg-card p-4">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">

@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { SubHeader } from '@/components/layout'
 import type { TemplateFormValue } from '@/components/TemplateForm'
 import { TemplateForm } from '@/components/TemplateForm'
 import type { Template } from '@/database/schema'
@@ -39,16 +40,13 @@ export default function NewTemplatePage() {
 
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
-      <header className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">新建模板</h1>
-        </div>
+      <SubHeader title="新建模板">
         <Link href="/templates">
           <Button variant="ghost" size="sm">
             返回列表
           </Button>
         </Link>
-      </header>
+      </SubHeader>
 
       <TemplateForm
         submitting={create.isPending}

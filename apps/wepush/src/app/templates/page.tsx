@@ -16,6 +16,7 @@ import { FileSearchCorner, Pencil, Plus, RotateCw, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { ConfirmDeleteButton } from '@/components/ConfirmDeleteButton'
+import { SubHeader } from '@/components/layout'
 import type { Template } from '@/database/schema'
 
 async function fetchTemplates(): Promise<Template[]> {
@@ -45,36 +46,38 @@ export default function TemplatesPage() {
 
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
-      <header className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">推送模板</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            支持 {`{{variable.DATA}}`} 模板变量，每位用户通过 code 关联模板。
-          </p>
-        </div>
-        <div className="flex gap-2">
+      <SubHeader
+        title="推送模板"
+        description="支持 {{variable.DATA}} 模板变量，每位用户通过 code 关联模板。"
+      >
+        <>
           <Button
             variant="outline"
-            size="icon"
+            size="icon-sm"
             aria-label="刷新"
-            onClick={() => void qc.invalidateQueries({ queryKey: ['templates'] })}
+            onClick={() =>
+              void qc.invalidateQueries({ queryKey: ['templates'] })
+            }
           >
             <RotateCw className="size-3.5" />
           </Button>
           <Link href="/templates/new">
             <Button size="sm">
-              <Plus className="mr-1 size-4" />
+              <Plus className="size-4" />
               新建模板
             </Button>
           </Link>
-        </div>
-      </header>
+        </>
+      </SubHeader>
 
       {isLoading ? (
         <div className="rounded-lg border bg-card">
           <div className="divide-y">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="flex items-center justify-between px-4 py-3">
+              <div
+                key={i}
+                className="flex items-center justify-between px-4 py-3"
+              >
                 <div className="flex items-center gap-4">
                   <Skeleton className="h-4 w-16" />
                   <Skeleton className="h-4 w-24" />

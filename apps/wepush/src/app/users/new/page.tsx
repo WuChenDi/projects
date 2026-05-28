@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { SubHeader } from '@/components/layout'
 import type { UserFormValue } from '@/components/UserForm'
 import { UserForm } from '@/components/UserForm'
 import type { Template } from '@/database/schema'
@@ -59,14 +60,13 @@ export default function NewUserPage() {
 
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
-      <header className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">新建接收人</h1>
+      <SubHeader title="新建接收人">
         <Link href="/users">
           <Button variant="ghost" size="sm">
             返回列表
           </Button>
         </Link>
-      </header>
+      </SubHeader>
 
       <UserForm
         templates={templates ?? []}

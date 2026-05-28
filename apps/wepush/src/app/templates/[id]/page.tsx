@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { SubHeader } from '@/components/layout'
 import type { TemplateFormValue } from '@/components/TemplateForm'
 import { TemplateForm } from '@/components/TemplateForm'
 import type { Template } from '@/database/schema'
@@ -62,19 +63,13 @@ export default function EditTemplatePage() {
 
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
-      <header className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">编辑模板</h1>
-          <p className="mt-1 text-sm text-muted-foreground font-mono">
-            {data.code}
-          </p>
-        </div>
+      <SubHeader title="编辑模板" description={data.code}>
         <Link href="/templates">
           <Button variant="ghost" size="sm">
             返回列表
           </Button>
         </Link>
-      </header>
+      </SubHeader>
 
       <TemplateForm
         initial={data}

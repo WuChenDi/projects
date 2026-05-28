@@ -7,6 +7,7 @@ import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, FileSearchCorner, RotateCw } from 'lucide-react'
 import Link from 'next/link'
+import { SubHeader } from '@/components/layout/sub-header'
 import { TrendChart } from '@/components/TrendChart'
 
 interface Overview {
@@ -117,24 +118,17 @@ export default function HomePage() {
             ? '成功率良好'
             : '成功率偏低'
           : null,
-      alert:
-        data?.logs24h.successRate != null && data.logs24h.successRate < 90,
+      alert: data?.logs24h.successRate != null && data.logs24h.successRate < 90,
     },
   ]
 
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
-      <header className="mb-8 flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">wepush</h1>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            微信公众号定时推送控制台
-          </p>
-        </div>
+      <SubHeader title="wepush" description="微信公众号定时推送控制台">
         <div className="flex items-center gap-2 pt-1">
           <Button
             variant="outline"
-            size="icon"
+            size="icon-sm"
             onClick={() => void refetch()}
             disabled={isFetching}
             aria-label="刷新数据"
@@ -147,7 +141,7 @@ export default function HomePage() {
             <Button size="sm">立即推送</Button>
           </Link>
         </div>
-      </header>
+      </SubHeader>
 
       {isLoading ? (
         <StatsSkeleton />
@@ -166,9 +160,7 @@ export default function HomePage() {
               {stat.sub && (
                 <div
                   className={`mt-0.5 text-xs ${
-                    stat.alert
-                      ? 'text-destructive/70'
-                      : 'text-muted-foreground'
+                    stat.alert ? 'text-destructive/70' : 'text-muted-foreground'
                   }`}
                 >
                   {stat.sub}

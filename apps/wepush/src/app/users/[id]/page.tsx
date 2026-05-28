@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { SubHeader } from '@/components/layout'
 import type { PreviewResult } from '@/components/PreviewDialog'
 import { PreviewDialog } from '@/components/PreviewDialog'
 import type { UserFormValue } from '@/components/UserForm'
@@ -123,14 +124,11 @@ export default function EditUserPage() {
 
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
-      <header className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">编辑接收人</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {userQ.data.name || userQ.data.id}
-          </p>
-        </div>
-        <div className="flex gap-2">
+      <SubHeader
+        title="编辑接收人"
+        description={userQ.data.name || userQ.data.id}
+      >
+        <>
           <Button
             variant="outline"
             size="sm"
@@ -157,8 +155,8 @@ export default function EditUserPage() {
               返回列表
             </Button>
           </Link>
-        </div>
-      </header>
+        </>
+      </SubHeader>
 
       <UserForm
         initial={userQ.data}

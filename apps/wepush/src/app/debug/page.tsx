@@ -15,6 +15,7 @@ import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation } from '@tanstack/react-query'
 import { Play } from 'lucide-react'
 import { useState } from 'react'
+import { SubHeader } from '@/components/layout'
 
 type SourceName = 'weather' | 'hitokoto' | 'iciba'
 
@@ -54,12 +55,10 @@ export default function DebugPage() {
 
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
-      <header className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">数据源探测</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          直接调用单个外部接口，查看原始返回。
-        </p>
-      </header>
+      <SubHeader
+        title="数据源探测"
+        description="直接调用单个外部接口，查看原始返回。"
+      />
 
       <div className="mb-6 space-y-4 rounded-lg bg-card p-5">
         <div className="space-y-1.5">
