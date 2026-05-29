@@ -4,6 +4,10 @@
 
 Web console for sending WeChat test-account template messages — recipients, templates, scheduled push, and a permanent push log. Drop-in replacement for the old `ALL_CONFIG` + Qinglong script setup; everything is stored in the database and configurable through the UI.
 
+Preview: https://wepush.cdlab.workers.dev/
+
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/wepush/og-image.png)
+
 ## Features
 
 - Recipient management with city, festivals, anniversaries, lunar calendar dates

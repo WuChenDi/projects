@@ -4,6 +4,10 @@
 
 微信测试号模板消息推送的 Web 控制台 —— 收件人、模板、定时推送、永久推送日志。取代旧版 `ALL_CONFIG` 环境变量 + 青龙脚本的部署方式，所有配置入库、UI 可改。
 
+预览：https://wepush.cdlab.workers.dev/
+
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/wepush/og-image.png)
+
 ## 功能
 
 - 接收人管理：城市、纪念日、累计日，支持农历
