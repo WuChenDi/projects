@@ -1,0 +1,24 @@
+/**
+ * Cloudflare Pages config for next-on-pages.
+ * Build with `pnpm --filter @cdlab996/flox build:cf`, preview/deploy with
+ * `wrangler pages dev .vercel/output/static` / `wrangler pages deploy`.
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "flox",
+  "pages_build_output_dir": ".vercel/output/static",
+  "compatibility_date": "2026-05-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    // Driver selector: "d1" uses the binding below; "libsql" uses LIBSQL_URL.
+    "DB_TYPE": "d1"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "flox",
+      "migrations_dir": "./src/database",
+      "database_id": "your-d1-database-id"
+    }
+  ]
+}

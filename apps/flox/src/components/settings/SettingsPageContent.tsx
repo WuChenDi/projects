@@ -7,7 +7,6 @@ import { DataSettings } from '@/components/settings/DataSettings'
 import { DisplaySettings } from '@/components/settings/DisplaySettings'
 import { ExportModal } from '@/components/settings/ExportModal'
 import { ImportModal } from '@/components/settings/ImportModal'
-import { PasswordSettings } from '@/components/settings/PasswordSettings'
 import { PlayerSettings } from '@/components/settings/PlayerSettings'
 import { SortSettings } from '@/components/settings/SortSettings'
 import { SourceSettings } from '@/components/settings/SourceSettings'
@@ -22,7 +21,6 @@ export function SettingsPageContent({
   const {
     sources,
     sortBy,
-    envPasswordSet,
     realtimeLatency,
     searchDisplayMode,
     fullscreenType,
@@ -80,9 +78,6 @@ export function SettingsPageContent({
             onAdFilterModeChange={handleAdFilterModeChange}
             onAdKeywordsChange={handleAdKeywordsChange}
           />
-
-          {/* Password Settings (env-only info card) */}
-          {envPasswordSet && <PasswordSettings />}
 
           {/* Display Settings */}
           <DisplaySettings

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { useSourceSettings } from '@/lib/hooks/useSourceSettings'
 import { clearAppCaches, resetAllStores } from '@/lib/store/registry'
@@ -67,14 +67,6 @@ export function useSettingsPage({
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
-  const [envPasswordSet, setEnvPasswordSet] = useState(false)
-
-  useEffect(() => {
-    fetch('/api/config')
-      .then((res) => res.json())
-      .then((data) => setEnvPasswordSet(data.hasEnvPassword))
-      .catch(() => setEnvPasswordSet(false))
-  }, [])
 
   const handleExport = (
     includeSearchHistory: boolean,
@@ -166,7 +158,6 @@ export function useSettingsPage({
     sources,
     subscriptions,
     sortBy,
-    envPasswordSet,
     realtimeLatency,
     searchDisplayMode,
     fullscreenType,
