@@ -1,6 +1,13 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@cdlab996/ui/components/card'
 import type { ChartConfig } from '@cdlab996/ui/components/chart'
 import {
   ChartContainer,
@@ -9,8 +16,17 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@cdlab996/ui/components/chart'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@cdlab996/ui/components/select'
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
+import { IKEmpty } from '@cdlab996/ui/IK'
 import { useQuery } from '@tanstack/react-query'
+import { BarChart2 } from 'lucide-react'
 import { useState } from 'react'
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 
@@ -57,42 +73,48 @@ export function TrendChart() {
   const totalFailed = data?.days.reduce((s, d) => s + d.failed, 0) ?? 0
 
   return (
-    <section>
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">推送趋势</span>
+    <Card>
+      <CardHeader>
+        <CardTitle>推送趋势</CardTitle>
+        <CardDescription>
           {!isLoading && totalPushes > 0 ? (
-            <span className="text-xs text-muted-foreground">
+            <>
               近 {days} 天共 {totalPushes} 次
-              {totalFailed > 0 ? (
+              {totalFailed > 0 && (
                 <span className="ml-1 text-destructive/70">
                   · {totalFailed} 失败
                 </span>
-              ) : null}
-            </span>
-          ) : null}
-        </div>
-        <div className="flex gap-1">
-          {([7, 30] as const).map((d) => (
-            <Button
-              key={d}
-              variant={days === d ? 'secondary' : 'ghost'}
-              size="sm"
-              className="h-6 px-2 text-xs"
-              onClick={() => setDays(d)}
-            >
-              {d}天
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-xl border bg-card px-2 pb-2 pt-4 sm:px-4">
+              )}
+            </>
+          ) : (
+            `最近 ${days} 天的推送统计`
+          )}
+        </CardDescription>
+        <CardAction>
+          <Select
+            value={String(days)}
+            onValueChange={(v) => setDays(Number(v) as 7 | 30)}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">近 7 天</SelectItem>
+              <SelectItem value="30">近 30 天</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
         {isLoading ? (
           <Skeleton className="h-60 w-full rounded-lg" />
         ) : !data || data.days.every((d) => d.total === 0) ? (
-          <div className="flex h-60 items-center justify-center text-xs text-muted-foreground">
-            近 {days} 天暂无推送记录
+          <div className="flex h-60 items-center justify-center">
+            <IKEmpty
+              icon={BarChart2}
+              title="暂无推送记录"
+              description={`近 ${days} 天内没有推送数据`}
+            />
           </div>
         ) : (
           <ChartContainer
@@ -162,7 +184,7 @@ export function TrendChart() {
             </AreaChart>
           </ChartContainer>
         )}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   )
 }

@@ -2,6 +2,13 @@
 
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@cdlab996/ui/components/card'
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { useQuery } from '@tanstack/react-query'
@@ -42,7 +49,7 @@ function StatusBadge({
 }: {
   status: Overview['recentBatches'][number]['status']
 }) {
-  if (status === 'success') return <Badge variant="secondary">success</Badge>
+  if (status === 'success') return <Badge>success</Badge>
   if (status === 'partial') return <Badge variant="outline">partial</Badge>
   if (status === 'failed') return <Badge variant="destructive">failed</Badge>
   return <Badge variant="outline">running</Badge>
@@ -123,7 +130,7 @@ export default function HomePage() {
   ]
 
   return (
-    <IKPageContainer className="flex-col max-w-6xl mx-auto">
+    <IKPageContainer className="flex-col max-w-6xl mx-auto space-y-6">
       <SubHeader title="wepush" description="微信公众号定时推送控制台">
         <div className="flex items-center gap-2 pt-1">
           <Button
@@ -146,7 +153,7 @@ export default function HomePage() {
       {isLoading ? (
         <StatsSkeleton />
       ) : (
-        <div className="mb-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-border sm:grid-cols-4">
           {stats.map((stat) => (
             <div key={stat.label} className="bg-card px-5 py-5">
               <div
@@ -173,55 +180,57 @@ export default function HomePage() {
 
       <TrendChart />
 
-      <section className="mt-8">
-        <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-medium">最近批次</span>
-          <Link
-            href="/logs"
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            查看全部 <ArrowRight className="size-3" />
-          </Link>
-        </div>
-
-        {isLoading ? (
-          <BatchesSkeleton />
-        ) : !data || data.recentBatches.length === 0 ? (
-          <IKEmpty
-            icon={FileSearchCorner}
-            className="border border-dashed"
-            title="暂无推送批次"
-            description="前往接收人页面发起第一次推送"
-          />
-        ) : (
-          <ul className="divide-y rounded-xl border bg-card">
-            {data.recentBatches.map((b) => (
-              <li key={b.id}>
-                <Link
-                  href={`/logs/batches/${b.id}`}
-                  className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-muted/40"
-                >
-                  <div className="flex items-center gap-3">
-                    <StatusBadge status={b.status} />
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {b.trigger}
+      <Card>
+        <CardHeader>
+          <CardTitle>最近批次</CardTitle>
+          <CardAction>
+            <Link
+              href="/logs"
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              查看全部 <ArrowRight className="size-3" />
+            </Link>
+          </CardAction>
+        </CardHeader>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <BatchesSkeleton />
+          ) : !data || data.recentBatches.length === 0 ? (
+            <IKEmpty
+              icon={FileSearchCorner}
+              title="暂无推送批次"
+              description="前往接收人页面发起第一次推送"
+            />
+          ) : (
+            <ul className="divide-y">
+              {data.recentBatches.map((b) => (
+                <li key={b.id}>
+                  <Link
+                    href={`/logs/batches/${b.id}`}
+                    className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-muted/40"
+                  >
+                    <div className="flex items-center gap-3">
+                      <StatusBadge status={b.status} />
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {b.trigger}
+                      </span>
+                      <span className="text-sm">
+                        {new Date(b.startedAt).toLocaleString('zh-CN', {
+                          hour12: false,
+                        })}
+                      </span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {b.successCount}/{b.totalCount} 成功
+                      {b.failedCount > 0 ? ` · ${b.failedCount} 失败` : ''}
                     </span>
-                    <span className="text-sm">
-                      {new Date(b.startedAt).toLocaleString('zh-CN', {
-                        hour12: false,
-                      })}
-                    </span>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {b.successCount}/{b.totalCount} 成功
-                    {b.failedCount > 0 ? ` · ${b.failedCount} 失败` : ''}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
     </IKPageContainer>
   )
 }
