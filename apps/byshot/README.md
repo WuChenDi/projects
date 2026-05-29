@@ -6,7 +6,7 @@ A sleek, responsive personal photography collection powered by Cloudinary, with 
 
 Preview: https://byshot.pages.dev/
 
-![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/image-gallery/index.png)
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byshot/og-image.png)
 
 ## Features
 

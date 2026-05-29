@@ -6,7 +6,7 @@
 
 预览：https://byshot.pages.dev/
 
-![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/image-gallery/index.png)
+![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byshot/og-image.png)
 
 ## 功能特性
 
