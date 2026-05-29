@@ -1,9 +1,18 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
+import type { ChartConfig } from '@cdlab996/ui/components/chart'
+import {
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@cdlab996/ui/components/chart'
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 
 interface DayStats {
   date: string
@@ -18,65 +27,22 @@ async function fetchTrend(days: number): Promise<{ days: DayStats[] }> {
   return res.json()
 }
 
-function Bars({ data }: { data: DayStats[] }) {
-  const max = Math.max(...data.map((d) => d.total), 1)
+const chartConfig = {
+  success: {
+    label: '成功',
+    color: '#22c55e',
+  },
+  failed: {
+    label: '失败',
+    color: '#ef4444',
+  },
+} satisfies ChartConfig
 
-  return (
-    <div className="flex items-end gap-1" style={{ height: 72 }}>
-      {data.map((day) => {
-        const successH = Math.round((day.success / max) * 64)
-        const failedH = Math.round((day.failed / max) * 64)
-        const totalH = successH + failedH
-        const label = day.date.slice(5) // MM-DD
-
-        return (
-          <div
-            key={day.date}
-            className="group relative flex flex-1 flex-col items-center justify-end"
-            style={{ height: 72 }}
-          >
-            {/* Tooltip */}
-            {day.total > 0 ? (
-              <div className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 hidden -translate-x-1/2 whitespace-nowrap rounded-md border bg-popover px-2 py-1 text-xs shadow-md group-hover:block">
-                <span className="text-primary">{day.success} 成功</span>
-                {day.failed > 0 ? (
-                  <span className="ml-1.5 text-destructive">
-                    {day.failed} 失败
-                  </span>
-                ) : null}
-              </div>
-            ) : null}
-
-            {/* Bar stack */}
-            <div
-              className="w-full min-w-[6px] overflow-hidden rounded-sm"
-              style={{ height: totalH || 2 }}
-            >
-              {day.failed > 0 ? (
-                <div
-                  className="w-full bg-destructive/70"
-                  style={{
-                    height: `${Math.round((day.failed / (day.total || 1)) * 100)}%`,
-                  }}
-                />
-              ) : null}
-              <div
-                className="w-full bg-primary/70"
-                style={{
-                  height: `${Math.round((day.success / (day.total || 1)) * 100)}%`,
-                }}
-              />
-            </div>
-
-            {/* Date label */}
-            <span className="mt-1.5 font-mono text-[9px] text-muted-foreground">
-              {label}
-            </span>
-          </div>
-        )
-      })}
-    </div>
-  )
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString('zh-CN', {
+    month: 'short',
+    day: 'numeric',
+  })
 }
 
 export function TrendChart() {
@@ -121,58 +87,81 @@ export function TrendChart() {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card px-4 pb-2 pt-4">
+      <div className="rounded-xl border bg-card px-2 pb-2 pt-4 sm:px-4">
         {isLoading ? (
-          <div className="flex items-end gap-1" style={{ height: 72 }}>
-            {(days === 7
-              ? ['a', 'b', 'c', 'd', 'e', 'f', 'g']
-              : [
-                  'a',
-                  'b',
-                  'c',
-                  'd',
-                  'e',
-                  'f',
-                  'g',
-                  'h',
-                  'i',
-                  'j',
-                  'k',
-                  'l',
-                  'm',
-                  'n',
-                  'o',
-                ]
-            ).map((k, i) => (
-              <Skeleton
-                key={k}
-                className="flex-1"
-                style={{
-                  height: `${[55, 35, 70, 45, 60, 30, 50, 65, 40, 55, 45, 70, 35, 60, 50][i % 15]}%`,
-                }}
-              />
-            ))}
-          </div>
+          <Skeleton className="h-60 w-full rounded-lg" />
         ) : !data || data.days.every((d) => d.total === 0) ? (
-          <div
-            className="flex items-center justify-center text-xs text-muted-foreground"
-            style={{ height: 72 }}
-          >
+          <div className="flex h-60 items-center justify-center text-xs text-muted-foreground">
             近 {days} 天暂无推送记录
           </div>
         ) : (
-          <Bars data={data.days} />
+          <ChartContainer
+            config={chartConfig}
+            className="aspect-auto h-60 w-full"
+          >
+            <AreaChart data={data.days}>
+              <defs>
+                <linearGradient id="fillSuccess" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-success)"
+                    stopOpacity={0.8}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-success)"
+                    stopOpacity={0.1}
+                  />
+                </linearGradient>
+                <linearGradient id="fillFailed" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-failed)"
+                    stopOpacity={0.8}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-failed)"
+                    stopOpacity={0.1}
+                  />
+                </linearGradient>
+              </defs>
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                minTickGap={32}
+                tickFormatter={formatDate}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(value) => formatDate(value as string)}
+                    indicator="dot"
+                  />
+                }
+              />
+              <Area
+                dataKey="failed"
+                type="natural"
+                fill="url(#fillFailed)"
+                stroke="var(--color-failed)"
+                stackId="a"
+              />
+              <Area
+                dataKey="success"
+                type="natural"
+                fill="url(#fillSuccess)"
+                stroke="var(--color-success)"
+                stackId="a"
+              />
+              <ChartLegend content={<ChartLegendContent />} />
+            </AreaChart>
+          </ChartContainer>
         )}
-        <div className="mt-2 flex items-center gap-3 border-t pt-2">
-          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <span className="inline-block h-2 w-2 rounded-sm bg-primary/70" />
-            成功
-          </span>
-          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <span className="inline-block h-2 w-2 rounded-sm bg-destructive/70" />
-            失败
-          </span>
-        </div>
       </div>
     </section>
   )

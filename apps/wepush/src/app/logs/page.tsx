@@ -262,7 +262,7 @@ export default function LogsPage() {
                     </TableCell>
                     <TableCell>
                       {row.status === 'success' ? (
-                        <Badge variant="secondary">success</Badge>
+                        <Badge>success</Badge>
                       ) : (
                         <Badge variant="destructive">failed</Badge>
                       )}

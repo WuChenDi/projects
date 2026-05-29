@@ -78,7 +78,7 @@ export function LogDetailDrawer({ logId, onClose }: Props) {
           <DrawerTitle className="flex items-center gap-2">
             推送日志
             {log?.status === 'success' ? (
-              <Badge variant="secondary">success</Badge>
+              <Badge>success</Badge>
             ) : log?.status === 'failed' ? (
               <Badge variant="destructive">failed</Badge>
             ) : null}

@@ -56,7 +56,7 @@ async function fetchBatch(id: string): Promise<BatchResponse> {
 }
 
 function statusBadge(status: BatchSummary['status']) {
-  if (status === 'success') return <Badge variant="secondary">success</Badge>
+  if (status === 'success') return <Badge>success</Badge>
   if (status === 'partial') return <Badge variant="outline">partial</Badge>
   if (status === 'failed') return <Badge variant="destructive">failed</Badge>
   return <Badge variant="outline">running</Badge>
@@ -227,7 +227,7 @@ export default function BatchDetailPage() {
                       </TableCell>
                       <TableCell>
                         {row.status === 'success' ? (
-                          <Badge variant="secondary">success</Badge>
+                          <Badge>success</Badge>
                         ) : (
                           <Badge variant="destructive">failed</Badge>
                         )}
