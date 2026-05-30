@@ -69,7 +69,25 @@ export const usePremiumWatchLaterStore = createWatchLaterStore(
 )
 
 export function useWatchLater(isPremium = false) {
-  const normalStore = useWatchLaterStore()
-  const premiumStore = usePremiumWatchLaterStore()
-  return isPremium ? premiumStore : normalStore
+  const useStore = isPremium ? usePremiumWatchLaterStore : useWatchLaterStore
+  return useStore()
+}
+
+/** Subscribe to a single item's watch-later status — re-renders only when this item toggles. */
+export function useIsInWatchLater(
+  videoId: string | number,
+  source: string,
+  isPremium = false,
+) {
+  const useStore = isPremium ? usePremiumWatchLaterStore : useWatchLaterStore
+  const id = itemId(videoId, source)
+  return useStore((s) =>
+    s.items.some((i) => itemId(i.videoId, i.source) === id),
+  )
+}
+
+/** Stable `toggleWatchLater` action without subscribing to the items list. */
+export function useToggleWatchLater(isPremium = false) {
+  const useStore = isPremium ? usePremiumWatchLaterStore : useWatchLaterStore
+  return useStore((s) => s.toggleWatchLater)
 }

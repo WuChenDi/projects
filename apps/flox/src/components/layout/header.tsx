@@ -58,7 +58,6 @@ function HeaderInner() {
   const homeHref = isPremiumMode ? '/premium' : '/'
   const settingsHref = isPremiumMode ? '/premium/settings' : '/settings'
 
-  const onReset = useHeaderResetStore((s) => s.onReset)
   const { setFavoritesOpen, setHistoryOpen, setWatchLaterOpen } =
     useSidebarStore()
 
@@ -233,7 +232,7 @@ function HeaderInner() {
           <div ref={leftRef} className="flex items-center gap-2 min-w-0">
             <Link
               href={homeHref}
-              onClick={() => onReset?.()}
+              onClick={() => useHeaderResetStore.getState().onReset?.()}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0"
             >
               <Image

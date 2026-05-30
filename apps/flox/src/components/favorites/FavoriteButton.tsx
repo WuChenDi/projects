@@ -14,8 +14,8 @@ import {
 } from '@cdlab996/ui/components/tooltip'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { HeartIcon } from 'lucide-react'
-import { memo, useCallback, useEffect, useState } from 'react'
-import { useFavorites } from '@/lib/store/favorites-store'
+import { memo, useCallback, useState } from 'react'
+import { useIsFavorite, useToggleFavorite } from '@/lib/store/favorites-store'
 
 interface FavoriteButtonProps {
   videoId: string | number
@@ -50,13 +50,9 @@ export const FavoriteButton = memo<FavoriteButtonProps>(
     isPremium = false,
     plain = false,
   }) => {
-    const { isFavorite, toggleFavorite } = useFavorites(isPremium)
+    const isFav = useIsFavorite(videoId, source, isPremium)
+    const toggleFavorite = useToggleFavorite(isPremium)
     const [isAnimating, setIsAnimating] = useState(false)
-    const [isFav, setIsFav] = useState(false)
-
-    useEffect(() => {
-      setIsFav(isFavorite(videoId, source))
-    }, [videoId, source, isFavorite])
 
     const handleClick = useCallback(
       (e: React.MouseEvent) => {
@@ -64,7 +60,7 @@ export const FavoriteButton = memo<FavoriteButtonProps>(
         e.stopPropagation()
 
         setIsAnimating(true)
-        const newState = toggleFavorite({
+        toggleFavorite({
           videoId,
           source,
           title,
@@ -74,7 +70,6 @@ export const FavoriteButton = memo<FavoriteButtonProps>(
           year,
           remarks,
         })
-        setIsFav(newState)
 
         setTimeout(() => setIsAnimating(false), 300)
       },

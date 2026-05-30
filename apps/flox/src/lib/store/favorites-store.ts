@@ -84,7 +84,25 @@ export const usePremiumFavoritesStore = createFavoritesStore(
 )
 
 export function useFavorites(isPremium = false) {
-  const normalStore = useFavoritesStore()
-  const premiumStore = usePremiumFavoritesStore()
-  return isPremium ? premiumStore : normalStore
+  const useStore = isPremium ? usePremiumFavoritesStore : useFavoritesStore
+  return useStore()
+}
+
+/** Subscribe to a single item's favorite status — re-renders only when this item toggles. */
+export function useIsFavorite(
+  videoId: string | number,
+  source: string,
+  isPremium = false,
+) {
+  const useStore = isPremium ? usePremiumFavoritesStore : useFavoritesStore
+  const id = favoriteId(videoId, source)
+  return useStore((s) =>
+    s.favorites.some((f) => favoriteId(f.videoId, f.source) === id),
+  )
+}
+
+/** Stable `toggleFavorite` action without subscribing to the favorites list. */
+export function useToggleFavorite(isPremium = false) {
+  const useStore = isPremium ? usePremiumFavoritesStore : useFavoritesStore
+  return useStore((s) => s.toggleFavorite)
 }

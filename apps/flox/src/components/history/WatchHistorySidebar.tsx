@@ -13,7 +13,7 @@ import { IKConfirmDialog } from '@cdlab996/ui/IK'
 import { TrashIcon, XIcon } from 'lucide-react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
-import { useHistoryStore, usePremiumHistoryStore } from '@/lib/store/history-store'
+import { useHistory } from '@/lib/store/history-store'
 import { useSidebarStore } from '@/lib/store/sidebar-store'
 import { HistoryList } from './HistoryList'
 
@@ -23,9 +23,8 @@ export function WatchHistorySidebar() {
   const isPremium = pathname === '/premium' || searchParams.get('premium') === '1'
 
   const { historyOpen, setHistoryOpen } = useSidebarStore()
-  const normalStore = useHistoryStore()
-  const premiumStore = usePremiumHistoryStore()
-  const { viewingHistory, removeFromHistory, clearHistory } = isPremium ? premiumStore : normalStore
+  const { viewingHistory, removeFromHistory, clearHistory } =
+    useHistory(isPremium)
 
   const [deleteConfirm, setDeleteConfirm] = useState<{
     isOpen: boolean

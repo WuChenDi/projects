@@ -13,7 +13,7 @@ import { IKConfirmDialog } from '@cdlab996/ui/IK'
 import { TrashIcon, XIcon } from 'lucide-react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
-import { usePremiumWatchLaterStore, useWatchLaterStore } from '@/lib/store/watch-later-store'
+import { useWatchLater } from '@/lib/store/watch-later-store'
 import { useSidebarStore } from '@/lib/store/sidebar-store'
 import { WatchLaterList } from './WatchLaterList'
 
@@ -23,9 +23,8 @@ export function WatchLaterSidebar() {
   const isPremium = pathname === '/premium' || searchParams.get('premium') === '1'
 
   const { watchLaterOpen, setWatchLaterOpen } = useSidebarStore()
-  const normalStore = useWatchLaterStore()
-  const premiumStore = usePremiumWatchLaterStore()
-  const { items, removeFromWatchLater, clearWatchLater } = isPremium ? premiumStore : normalStore
+  const { items, removeFromWatchLater, clearWatchLater } =
+    useWatchLater(isPremium)
 
   const [deleteConfirm, setDeleteConfirm] = useState<{
     isOpen: boolean
