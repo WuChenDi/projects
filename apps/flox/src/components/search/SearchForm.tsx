@@ -18,7 +18,7 @@ import { Progress } from '@cdlab996/ui/components/progress'
 import { Spinner } from '@cdlab996/ui/components/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
 import { FilmIcon, HistoryIcon, SearchIcon, XIcon } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchSuggestions } from '@/lib/hooks/useSearchSuggestions'
 import { useSearchHistory } from '@/lib/store/search-history-store'
 
@@ -105,7 +105,7 @@ export function SearchForm({
   const [query, setQuery] = useState(initialQuery)
 
   const {
-    getRecentSearches,
+    searchHistory: allSearches,
     addToSearchHistory,
     removeFromSearchHistory,
     clearSearchHistory,
@@ -114,7 +114,7 @@ export function SearchForm({
   const { suggestions, fetchSuggestions, clearSuggestions } =
     useSearchSuggestions()
 
-  const searchHistory = getRecentSearches(10)
+  const searchHistory = useMemo(() => allSearches.slice(0, 10), [allSearches])
   const historyItems = searchHistory.map((item) => item.query)
 
   // Merge: if we have suggestions use suggestion titles, otherwise use history

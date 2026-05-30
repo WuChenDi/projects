@@ -20,7 +20,6 @@ interface SearchHistoryActions {
   addToSearchHistory: (query: string, resultCount?: number) => void
   removeFromSearchHistory: (query: string) => void
   clearSearchHistory: () => void
-  getRecentSearches: (limit?: number) => SearchHistoryItem[]
 }
 
 const normalizeQuery = (q: string) => q.trim().toLowerCase()
@@ -29,7 +28,7 @@ const createSearchHistoryStore = (key: string) =>
   createPersistedStore<SearchHistoryState, SearchHistoryActions>({
     key,
     defaultState: () => ({ searchHistory: [] }),
-    actions: (set, get) => ({
+    actions: (set) => ({
       addToSearchHistory: (query, resultCount) => {
         const trimmed = query.trim()
         if (!trimmed) return
@@ -76,8 +75,6 @@ const createSearchHistoryStore = (key: string) =>
       },
 
       clearSearchHistory: () => set({ searchHistory: [] }),
-
-      getRecentSearches: (limit = 10) => get().searchHistory.slice(0, limit),
     }),
   })
 
@@ -89,7 +86,8 @@ export const usePremiumSearchHistoryStore = createSearchHistoryStore(
 )
 
 export function useSearchHistory(isPremium = false) {
-  const normalStore = useSearchHistoryStore()
-  const premiumStore = usePremiumSearchHistoryStore()
-  return isPremium ? premiumStore : normalStore
+  const useStore = isPremium
+    ? usePremiumSearchHistoryStore
+    : useSearchHistoryStore
+  return useStore()
 }

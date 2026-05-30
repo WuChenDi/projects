@@ -9,8 +9,11 @@ import {
 } from '@cdlab996/ui/components/tooltip'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { BookmarkIcon } from 'lucide-react'
-import { memo, useCallback, useEffect, useState } from 'react'
-import { useWatchLater } from '@/lib/store/watch-later-store'
+import { memo, useCallback, useState } from 'react'
+import {
+  useIsInWatchLater,
+  useToggleWatchLater,
+} from '@/lib/store/watch-later-store'
 
 interface WatchLaterButtonProps {
   videoId: string | number
@@ -45,13 +48,9 @@ export const WatchLaterButton = memo<WatchLaterButtonProps>(
     isPremium = false,
     plain = false,
   }) => {
-    const { isInWatchLater, toggleWatchLater } = useWatchLater(isPremium)
+    const inQueue = useIsInWatchLater(videoId, source, isPremium)
+    const toggleWatchLater = useToggleWatchLater(isPremium)
     const [isAnimating, setIsAnimating] = useState(false)
-    const [inQueue, setInQueue] = useState(false)
-
-    useEffect(() => {
-      setInQueue(isInWatchLater(videoId, source))
-    }, [videoId, source, isInWatchLater])
 
     const handleClick = useCallback(
       (e: React.MouseEvent) => {
@@ -59,7 +58,7 @@ export const WatchLaterButton = memo<WatchLaterButtonProps>(
         e.stopPropagation()
 
         setIsAnimating(true)
-        const newState = toggleWatchLater({
+        toggleWatchLater({
           videoId,
           source,
           title,
@@ -69,7 +68,6 @@ export const WatchLaterButton = memo<WatchLaterButtonProps>(
           year,
           remarks,
         })
-        setInQueue(newState)
         setTimeout(() => setIsAnimating(false), 300)
       },
       [

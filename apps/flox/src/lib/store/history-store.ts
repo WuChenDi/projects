@@ -132,7 +132,6 @@ export const useHistoryStore = createHistoryStore('flox:history')
 export const usePremiumHistoryStore = createHistoryStore('flox:history:premium')
 
 export function useHistory(isPremium = false) {
-  const normalStore = useHistoryStore()
-  const premiumStore = usePremiumHistoryStore()
-  return isPremium ? premiumStore : normalStore
+  const useStore = isPremium ? usePremiumHistoryStore : useHistoryStore
+  return useStore()
 }

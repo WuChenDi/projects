@@ -13,7 +13,7 @@ import { IKConfirmDialog } from '@cdlab996/ui/IK'
 import { TrashIcon, XIcon } from 'lucide-react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
-import { useFavoritesStore, usePremiumFavoritesStore } from '@/lib/store/favorites-store'
+import { useFavorites } from '@/lib/store/favorites-store'
 import { useSidebarStore } from '@/lib/store/sidebar-store'
 import { FavoritesList } from './FavoritesList'
 
@@ -23,9 +23,7 @@ export function FavoritesSidebar() {
   const isPremium = pathname === '/premium' || searchParams.get('premium') === '1'
 
   const { favoritesOpen, setFavoritesOpen } = useSidebarStore()
-  const normalStore = useFavoritesStore()
-  const premiumStore = usePremiumFavoritesStore()
-  const { favorites, removeFavorite, clearFavorites } = isPremium ? premiumStore : normalStore
+  const { favorites, removeFavorite, clearFavorites } = useFavorites(isPremium)
 
   const [deleteConfirm, setDeleteConfirm] = useState<{
     isOpen: boolean
