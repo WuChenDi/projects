@@ -102,9 +102,9 @@ export function useHlsPlayer({
           lowLatencyMode: false,
 
           // Buffer Settings
-          maxBufferLength: 60,
-          maxMaxBufferLength: 120,
-          maxBufferSize: 60 * 1000 * 1000,
+          maxBufferLength: 120,
+          maxMaxBufferLength: 240,
+          maxBufferSize: 120 * 1000 * 1000,
           maxBufferHole: 0.5,
 
           // Start with more buffer
@@ -136,7 +136,7 @@ export function useHlsPlayer({
           levelLoadingTimeOut: 10000,
 
           // Backbuffer
-          backBufferLength: 30,
+          backBufferLength: 90,
         }
 
         // Use custom loader if ad filtering is enabled

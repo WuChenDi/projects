@@ -151,6 +151,7 @@ export function SearchForm({
             <TabsList className="shrink-0">
               <TabsTrigger value="movie">电影</TabsTrigger>
               <TabsTrigger value="tv">电视剧</TabsTrigger>
+              {/* <TabsTrigger value="show">综艺</TabsTrigger> */}
             </TabsList>
           </Tabs>
         )}
@@ -268,11 +269,7 @@ export function SearchForm({
                     <ComboboxList>
                       <ComboboxEmpty>暂无搜索历史</ComboboxEmpty>
                       {historyItems.map((q) => (
-                        <ComboboxItem
-                          key={q}
-                          value={q}
-                          className="group/item"
-                        >
+                        <ComboboxItem key={q} value={q} className="group/item">
                           <HistoryIcon className="size-3.5 text-muted-foreground shrink-0" />
                           <span className="flex-1 truncate">{q}</span>
                           <button
