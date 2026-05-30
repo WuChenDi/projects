@@ -18,7 +18,11 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:gen": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "cf:localdb": "wrangler d1 migrations apply flox",
+    "cf:remotedb": "wrangler d1 migrations apply flox --remote"
   },
   "dependencies": {
     "@cdlab996/genid": "catalog:prod",
@@ -27,8 +31,11 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@libsql/client": "catalog:prod",
     "@tanstack/react-form": "catalog:prod",
     "@tanstack/react-query": "catalog:prod",
+    "better-auth": "catalog:prod",
+    "drizzle-orm": "catalog:prod",
     "hls.js": "catalog:prod",
     "date-fns": "catalog:prod",
     "lucide-react": "catalog:prod",
@@ -43,7 +50,9 @@
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",
     "@cloudflare/next-on-pages": "catalog:dev",
+    "@cloudflare/workers-types": "catalog:dev",
     "@types/node": "catalog:dev",
+    "drizzle-kit": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
     "typescript": "catalog:dev"

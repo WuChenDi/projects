@@ -10,10 +10,10 @@ import { Suspense } from 'react'
 
 import '@cdlab996/ui/globals.css'
 import { AdKeywordsInjector } from '@/components/AdKeywordsInjector'
+import { AuthGate } from '@/components/AuthGate'
 import { FavoritesSidebar } from '@/components/favorites/FavoritesSidebar'
 import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar'
 import { ClientProviders, Header } from '@/components/layout'
-import { PasswordGate } from '@/components/PasswordGate'
 import { ScrollPositionManager } from '@/components/ScrollPositionManager'
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
 import { BackToTop } from '@/components/ui/BackToTop'
@@ -242,7 +242,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ClientProviders>
-          <PasswordGate hasEnvPassword={!!process.env.ACCESS_PASSWORD}>
+          <AuthGate>
             <AdKeywordsWrapper />
             <Header />
             {children}
@@ -254,7 +254,7 @@ export default function RootLayout({
               <WatchLaterSidebar />
               <WatchHistorySidebar />
             </Suspense>
-          </PasswordGate>
+          </AuthGate>
           <ServiceWorkerRegister />
           <Toaster richColors position="top-center" duration={3000} />
         </ClientProviders>
