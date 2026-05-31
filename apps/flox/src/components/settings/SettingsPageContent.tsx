@@ -63,6 +63,8 @@ export function SettingsPageContent({
     adKeywords,
     handleAdFilterModeChange,
     handleAdKeywordsChange,
+    vConsole,
+    handleVConsoleChange,
   } = useSettingsPage({ isPremium })
 
   return (
@@ -89,9 +91,11 @@ export function SettingsPageContent({
             realtimeLatency={realtimeLatency}
             searchDisplayMode={searchDisplayMode}
             rememberScrollPosition={rememberScrollPosition}
+            vConsole={vConsole}
             onRealtimeLatencyChange={handleRealtimeLatencyChange}
             onSearchDisplayModeChange={handleSearchDisplayModeChange}
             onRememberScrollPositionChange={handleRememberScrollPositionChange}
+            onVConsoleChange={handleVConsoleChange}
           />
 
           {/* Source Management */}

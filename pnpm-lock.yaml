@@ -548,7 +548,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -615,7 +615,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -709,7 +709,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -892,6 +892,9 @@ importers:
       sonner:
         specifier: catalog:prod
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      vconsole:
+        specifier: ^3.15.1
+        version: 3.15.1
       zod:
         specifier: catalog:prod
         version: 4.4.3
@@ -904,7 +907,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -7097,6 +7100,13 @@ packages:
     resolution: {integrity: sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==}
     engines: {node: '>=18'}
 
+  copy-text-to-clipboard@3.2.2:
+    resolution: {integrity: sha512-T6SqyLd1iLuqPA90J5N4cTalrtovCySh58iiZDGJ6FGznbclKh4UI+FGacQSgFzwKG77W7XT5gwbVEbd9cIH1A==}
+    engines: {node: '>=12'}
+
+  core-js@3.49.0:
+    resolution: {integrity: sha512-es1U2+YTtzpwkxVLwAFdSpaIMyQaq0PBgm3YD1W3Qpsn1NAmO3KSgZfu+oGSWVu6NvLHoHCV/aYcsE5wiB7ALg==}
+
   core-util-is@1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
 
@@ -9086,6 +9096,9 @@ packages:
   mustache@4.2.0:
     resolution: {integrity: sha512-71ippSywq5Yb7/tVYyGbkBggbU8H3u5Rz56fH60jGFgr8uHwxs+aSKeqmluIVzM0m0kB7xQjKS6qPfd0b2ZoqQ==}
     hasBin: true
+
+  mutation-observer@1.0.3:
+    resolution: {integrity: sha512-M/O/4rF2h776hV7qGMZUH3utZLO/jK7p8rnNgGkjKUw8zCGjRQPxB8z6+5l8+VjRUQ3dNYu4vjqXYLr+U8ZVNA==}
 
   mute-stream@2.0.0:
     resolution: {integrity: sha512-WWdIxpyjEn+FhQJQQv9aQAYlHoNVdzIzUySNV1gHUPDSdZJ3yZn7pAAbQcV7B56Mvu881q9FZV+0Vx2xC44VWA==}
@@ -11135,6 +11148,9 @@ packages:
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc
 
+  vconsole@3.15.1:
+    resolution: {integrity: sha512-KH8XLdrq9T5YHJO/ixrjivHfmF2PC2CdVoK6RWZB4yftMykYIaXY1mxZYAic70vADM54kpMQF+dYmvl5NRNy1g==}
+
   vfile-location@5.0.3:
     resolution: {integrity: sha512-5yXvWDEgqeiYiBe1lbxYF7UMAIm/IcopxMHrMQDq3nvKcjPKIhZklUKL+AE7J7uApI4kwe2snsK+eI6UTj9EHg==}
 
@@ -12700,7 +12716,7 @@ snapshots:
 
   '@cloudflare/kv-asset-handler@0.5.0': {}
 
-  '@cloudflare/next-on-pages@1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))':
+  '@cloudflare/next-on-pages@1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))':
     dependencies:
       acorn: 8.16.0
       ast-types: 0.14.2
@@ -17720,6 +17736,10 @@ snapshots:
 
   cookie@1.1.1: {}
 
+  copy-text-to-clipboard@3.2.2: {}
+
+  core-js@3.49.0: {}
+
   core-util-is@1.0.3: {}
 
   cors@2.8.6:
@@ -19923,6 +19943,8 @@ snapshots:
   muggle-string@0.4.1: {}
 
   mustache@4.2.0: {}
+
+  mutation-observer@1.0.3: {}
 
   mute-stream@2.0.0: {}
 
@@ -22604,6 +22626,13 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
       - '@types/react-dom'
+
+  vconsole@3.15.1:
+    dependencies:
+      '@babel/runtime': 7.29.2
+      copy-text-to-clipboard: 3.2.2
+      core-js: 3.49.0
+      mutation-observer: 1.0.3
 
   vfile-location@5.0.3:
     dependencies:

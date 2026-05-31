@@ -22,9 +22,11 @@ interface DisplaySettingsProps {
   realtimeLatency: boolean
   searchDisplayMode: SearchDisplayMode
   rememberScrollPosition: boolean
+  vConsole: boolean
   onRealtimeLatencyChange: (enabled: boolean) => void
   onSearchDisplayModeChange: (mode: SearchDisplayMode) => void
   onRememberScrollPositionChange: (enabled: boolean) => void
+  onVConsoleChange: (enabled: boolean) => void
 }
 
 const DISPLAY_MODES: {
@@ -48,9 +50,11 @@ export function DisplaySettings({
   realtimeLatency,
   searchDisplayMode,
   rememberScrollPosition,
+  vConsole,
   onRealtimeLatencyChange,
   onSearchDisplayModeChange,
   onRememberScrollPositionChange,
+  onVConsoleChange,
 }: DisplaySettingsProps) {
   return (
     <Card>
@@ -127,6 +131,23 @@ export function DisplaySettings({
                 )
               })}
             </div>
+          </Field>
+
+          <Separator />
+
+          <Field className="flex flex-row items-center justify-between gap-4">
+            <div>
+              <FieldTitle>VConsole 调试控制台</FieldTitle>
+              <FieldDescription>
+                在页面内嵌入移动端调试控制台，便于排查问题
+              </FieldDescription>
+            </div>
+            <Switch
+              id="vconsole"
+              checked={vConsole}
+              onCheckedChange={onVConsoleChange}
+              aria-label="VConsole 调试控制台开关"
+            />
           </Field>
         </FieldGroup>
       </CardContent>

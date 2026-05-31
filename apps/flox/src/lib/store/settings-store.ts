@@ -50,6 +50,7 @@ export interface SettingsState {
   fullscreenType: 'native' | 'window'
   proxyMode: ProxyMode
   rememberScrollPosition: boolean
+  vConsole: boolean
 }
 
 export interface SettingsActions {
@@ -63,6 +64,7 @@ export interface SettingsActions {
   setFullscreenType: (v: 'native' | 'window') => void
   setProxyMode: (v: ProxyMode) => void
   setEpisodeReverseOrder: (v: boolean) => void
+  setVConsole: (v: boolean) => void
 
   setAutoNextEpisode: (v: boolean) => void
   setAutoSkipIntro: (v: boolean) => void
@@ -162,6 +164,7 @@ function getDefaultSettingsState(): SettingsState {
     fullscreenType: 'native',
     proxyMode: 'retry',
     rememberScrollPosition: true,
+    vConsole: false,
   }
 }
 
@@ -242,6 +245,7 @@ function mergePersistedSettings(
         : defaults.proxyMode,
     rememberScrollPosition:
       data.rememberScrollPosition ?? defaults.rememberScrollPosition,
+    vConsole: data.vConsole ?? defaults.vConsole,
   }
 }
 
@@ -265,6 +269,7 @@ export const useSettingsStore = createPersistedStore<
     setFullscreenType: (v) => set({ fullscreenType: v }),
     setProxyMode: (v) => set({ proxyMode: v }),
     setEpisodeReverseOrder: (v) => set({ episodeReverseOrder: v }),
+    setVConsole: (v) => set({ vConsole: v }),
 
     setAutoNextEpisode: (v) => set({ autoNextEpisode: v }),
     setAutoSkipIntro: (v) => set({ autoSkipIntro: v }),

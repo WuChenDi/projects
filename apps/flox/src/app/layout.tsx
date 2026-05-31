@@ -17,6 +17,7 @@ import { PasswordGate } from '@/components/PasswordGate'
 import { ScrollPositionManager } from '@/components/ScrollPositionManager'
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
 import { BackToTop } from '@/components/ui/BackToTop'
+import { VConsoleManager } from '@/components/VConsoleManager'
 import { WatchLaterSidebar } from '@/components/watch-later/WatchLaterSidebar'
 import { siteConfig } from '@/lib/config/site-config'
 // Side-effect: register every persisted store with the registry so that
@@ -256,6 +257,7 @@ export default function RootLayout({
             </Suspense>
           </PasswordGate>
           <ServiceWorkerRegister />
+          <VConsoleManager />
           <Toaster richColors position="top-center" duration={3000} />
         </ClientProviders>
       </body>

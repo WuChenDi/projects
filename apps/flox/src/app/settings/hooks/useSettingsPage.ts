@@ -43,6 +43,7 @@ export function useSettingsPage({
   )
   const adFilterMode = useSettingsStore((s) => s.adFilterMode)
   const adKeywords = useSettingsStore((s) => s.adKeywords)
+  const vConsole = useSettingsStore((s) => s.vConsole)
 
   const setSortBy = useSettingsStore((s) => s.setSortBy)
   const setRealtimeLatency = useSettingsStore((s) => s.setRealtimeLatency)
@@ -54,6 +55,7 @@ export function useSettingsPage({
   )
   const setAdFilterMode = useSettingsStore((s) => s.setAdFilterMode)
   const setAdKeywords = useSettingsStore((s) => s.setAdKeywords)
+  const setVConsole = useSettingsStore((s) => s.setVConsole)
   const addSubscription = useSettingsStore((s) => s.addSubscription)
   const removeSubscription = useSettingsStore((s) => s.removeSubscription)
   const markSubscriptionRefreshed = useSettingsStore(
@@ -174,6 +176,7 @@ export function useSettingsPage({
     rememberScrollPosition,
     adFilterMode,
     adKeywords,
+    vConsole,
 
     isAddModalOpen,
     isExportModalOpen,
@@ -202,6 +205,7 @@ export function useSettingsPage({
     handleRememberScrollPositionChange: setRememberScrollPosition,
     handleAdFilterModeChange: setAdFilterMode,
     handleAdKeywordsChange: setAdKeywords,
+    handleVConsoleChange: setVConsole,
 
     handleExport,
     handleImportFile,

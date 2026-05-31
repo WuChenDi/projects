@@ -37,6 +37,7 @@
     "react": "catalog:prod",
     "react-dom": "catalog:prod",
     "sonner": "catalog:prod",
+    "vconsole": "^3.15.1",
     "zod": "catalog:prod",
     "zustand": "catalog:prod"
   },
