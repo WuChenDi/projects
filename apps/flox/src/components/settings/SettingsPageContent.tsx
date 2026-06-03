@@ -144,6 +144,7 @@ export function SettingsPageContent({
 
       <ImportModal
         isOpen={isImportModalOpen}
+        vConsole={vConsole}
         onClose={() => setIsImportModalOpen(false)}
         onImportFile={handleImportFile}
         onImportLink={handleImportLink}

@@ -38,6 +38,7 @@ import {
 
 interface ImportModalProps {
   isOpen: boolean
+  vConsole: boolean
   onClose: () => void
   onImportFile: (jsonString: string) => Promise<boolean> | boolean
   onImportLink: (result: ImportResult) => Promise<boolean> | boolean
@@ -48,8 +49,6 @@ interface ImportModalProps {
   onRefreshSubscription: (sub: SourceSubscription) => Promise<void>
   onToggleAutoRefresh: (id: string) => void
 }
-
-// ─── File Import ──────────────────────────────────────────────────────────────
 
 function FileImportTab({
   onImport,
@@ -131,8 +130,6 @@ function FileImportTab({
   )
 }
 
-// ─── Built-in Source One-click Import ─────────────────────────────────────────
-
 function BuiltinImportCard({
   onImport,
 }: {
@@ -191,13 +188,13 @@ function BuiltinImportCard({
   )
 }
 
-// ─── Link Import ──────────────────────────────────────────────────────────────
-
 function LinkImportTab({
   onImport,
+  vConsole,
   onImportBuiltin,
 }: {
   onImport: (result: ImportResult) => Promise<boolean> | boolean
+  vConsole: boolean
   onImportBuiltin: () => Promise<ImportResult>
 }) {
   const [url, setUrl] = useState('')
@@ -247,18 +244,22 @@ function LinkImportTab({
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <BuiltinImportCard onImport={onImportBuiltin} />
+      {vConsole && (
+        <>
+          <BuiltinImportCard onImport={onImportBuiltin} />
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-background px-2 text-muted-foreground">
-            或从链接导入
-          </span>
-        </div>
-      </div>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-background px-2 text-muted-foreground">
+                或从链接导入
+              </span>
+            </div>
+          </div>
+        </>
+      )}
 
       <div>
         <label className="text-sm font-medium mb-2 block">源配置链接</label>
@@ -331,8 +332,6 @@ function LinkImportTab({
     </div>
   )
 }
-
-// ─── Subscription Import ──────────────────────────────────────────────────────
 
 function SubscriptionImportTab({
   subscriptions,
@@ -460,8 +459,14 @@ function SubscriptionImportTab({
                   variant="ghost"
                   size="icon-sm"
                   onClick={() => onToggleAutoRefresh(sub.id)}
-                  title={sub.autoRefresh ? '自动更新已开启，点击关闭' : '自动更新已关闭，点击开启'}
-                  className={sub.autoRefresh ? 'text-primary' : 'text-muted-foreground'}
+                  title={
+                    sub.autoRefresh
+                      ? '自动更新已开启，点击关闭'
+                      : '自动更新已关闭，点击开启'
+                  }
+                  className={
+                    sub.autoRefresh ? 'text-primary' : 'text-muted-foreground'
+                  }
                 >
                   {sub.autoRefresh ? (
                     <BellIcon className="size-4" />
@@ -500,10 +505,9 @@ function SubscriptionImportTab({
   )
 }
 
-// ─── Import Modal ─────────────────────────────────────────────────────────────
-
 export function ImportModal({
   isOpen,
+  vConsole,
   onClose,
   onImportFile,
   onImportLink,
@@ -551,6 +555,7 @@ export function ImportModal({
 
             <TabsContent value="link">
               <LinkImportTab
+                vConsole={vConsole}
                 onImport={onImportLink}
                 onImportBuiltin={onImportBuiltin}
               />
