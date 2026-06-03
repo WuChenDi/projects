@@ -42,6 +42,7 @@ export function SettingsPageContent({
     handleExport,
     handleImportFile,
     handleImportLink,
+    handleImportBuiltin,
     subscriptions,
     handleAddSubscription,
     handleRemoveSubscription,
@@ -146,6 +147,7 @@ export function SettingsPageContent({
         onClose={() => setIsImportModalOpen(false)}
         onImportFile={handleImportFile}
         onImportLink={handleImportLink}
+        onImportBuiltin={handleImportBuiltin}
         subscriptions={subscriptions}
         onAddSubscription={handleAddSubscription}
         onRemoveSubscription={handleRemoveSubscription}

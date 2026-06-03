@@ -21,12 +21,14 @@ import {
   BellIcon,
   BellOffIcon,
   CheckCircle2Icon,
+  PackageIcon,
   RefreshCwIcon,
   Trash2Icon,
   UploadIcon,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
+import { BUILTIN_SOURCES_NAME } from '@/lib/api/builtin-sources'
 import type { SourceSubscription } from '@/lib/types'
 import type { ImportResult } from '@/lib/utils/source-import-utils'
 import {
@@ -39,6 +41,7 @@ interface ImportModalProps {
   onClose: () => void
   onImportFile: (jsonString: string) => Promise<boolean> | boolean
   onImportLink: (result: ImportResult) => Promise<boolean> | boolean
+  onImportBuiltin: () => Promise<ImportResult>
   subscriptions: SourceSubscription[]
   onAddSubscription: (sub: SourceSubscription) => Promise<boolean> | boolean
   onRemoveSubscription: (id: string) => void
@@ -128,12 +131,74 @@ function FileImportTab({
   )
 }
 
+// ─── Built-in Source One-click Import ─────────────────────────────────────────
+
+function BuiltinImportCard({
+  onImport,
+}: {
+  onImport: () => Promise<ImportResult>
+}) {
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<ImportResult | null>(null)
+  const [error, setError] = useState('')
+
+  const handleClick = async () => {
+    setLoading(true)
+    setError('')
+    setResult(null)
+    try {
+      const r = await onImport()
+      setResult(r)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '导入内置源失败')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="border rounded-lg p-4 space-y-3 bg-muted/40">
+      <div className="flex items-start gap-3">
+        <PackageIcon className="size-5 text-primary mt-0.5 shrink-0" />
+        <div className="min-w-0">
+          <p className="font-semibold text-sm">{BUILTIN_SOURCES_NAME}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            一键导入完整源列表，无需填写链接，合并到现有源中。
+          </p>
+        </div>
+      </div>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {result ? (
+        <Alert>
+          <CheckCircle2Icon className="size-4 text-green-500" />
+          <AlertDescription className="text-green-600">
+            导入成功（普通源 {result.normalSources.length}，成人源{' '}
+            {result.premiumSources.length}），正在刷新...
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <Button onClick={handleClick} disabled={loading} className="w-full">
+          {loading ? <Spinner /> : '一键导入完整源'}
+        </Button>
+      )}
+    </div>
+  )
+}
+
 // ─── Link Import ──────────────────────────────────────────────────────────────
 
 function LinkImportTab({
   onImport,
+  onImportBuiltin,
 }: {
   onImport: (result: ImportResult) => Promise<boolean> | boolean
+  onImportBuiltin: () => Promise<ImportResult>
 }) {
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
@@ -182,6 +247,19 @@ function LinkImportTab({
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <BuiltinImportCard onImport={onImportBuiltin} />
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-background px-2 text-muted-foreground">
+            或从链接导入
+          </span>
+        </div>
+      </div>
+
       <div>
         <label className="text-sm font-medium mb-2 block">源配置链接</label>
         <div className="flex gap-2">
@@ -429,6 +507,7 @@ export function ImportModal({
   onClose,
   onImportFile,
   onImportLink,
+  onImportBuiltin,
   subscriptions,
   onAddSubscription,
   onRemoveSubscription,
@@ -471,7 +550,10 @@ export function ImportModal({
             </TabsContent>
 
             <TabsContent value="link">
-              <LinkImportTab onImport={onImportLink} />
+              <LinkImportTab
+                onImport={onImportLink}
+                onImportBuiltin={onImportBuiltin}
+              />
             </TabsContent>
 
             <TabsContent value="subscription">

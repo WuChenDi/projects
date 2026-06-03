@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { BUILTIN_SOURCES_URL } from '@/lib/api/builtin-sources'
 import { useSourceSettings } from '@/lib/hooks/useSourceSettings'
 import { clearAppCaches, resetAllStores } from '@/lib/store/registry'
 import { exportSettings, importSettings } from '@/lib/store/settings-helpers'
@@ -146,6 +147,12 @@ export function useSettingsPage({
     }
   }
 
+  const handleImportBuiltin = async (): Promise<ImportResult> => {
+    const result = await fetchSourcesFromUrl(BUILTIN_SOURCES_URL)
+    handleImportLink(result, false)
+    return result
+  }
+
   const handleRefreshSubscription = async (sub: SourceSubscription) => {
     try {
       const result = await fetchSourcesFromUrl(sub.url)
@@ -210,6 +217,7 @@ export function useSettingsPage({
     handleExport,
     handleImportFile,
     handleImportLink,
+    handleImportBuiltin,
     handleAddSubscription,
     handleRemoveSubscription: removeSubscription,
     handleRefreshSubscription,
