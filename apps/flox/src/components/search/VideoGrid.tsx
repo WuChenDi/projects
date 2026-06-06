@@ -72,7 +72,7 @@ export const VideoGrid = memo(function VideoGrid({
     const groups = new Map<string, Video[]>()
 
     videos.forEach((video) => {
-      const name = video.vod_name.toLowerCase().trim()
+      const name = video.vod_name && video.vod_name.toLowerCase().trim()
       if (!groups.has(name)) groups.set(name, [])
       groups.get(name)!.push(video)
     })
