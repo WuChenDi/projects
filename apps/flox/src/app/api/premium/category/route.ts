@@ -76,7 +76,7 @@ async function handleCategoryRequest(
         const data = await response.json()
         return (data.list || []).map((item: any) => ({
           vod_id: item.vod_id,
-          vod_name: item.vod_name,
+          vod_name: item.vod_name || '未知标题',
           vod_pic: item.vod_pic,
           vod_remarks: item.vod_remarks,
           type_name: item.type_name,
