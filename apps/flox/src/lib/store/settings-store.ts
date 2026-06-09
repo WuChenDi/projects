@@ -252,12 +252,17 @@ function mergePersistedSettings(
         ? data.skipOutroSeconds
         : defaults.skipOutroSeconds,
     seekStepSeconds: normalizeSeekStepSeconds(data.seekStepSeconds),
-    playbackRate: typeof data.playbackRate === 'number' ? data.playbackRate : 1,
+    playbackRate:
+      typeof data.playbackRate === 'number' &&
+      Number.isFinite(data.playbackRate) &&
+      data.playbackRate > 0
+        ? data.playbackRate
+        : 1,
     volume:
       typeof data.volume === 'number'
         ? Math.min(1, Math.max(0, data.volume))
         : 1,
-    muted: data.muted ?? defaults.muted,
+    muted: typeof data.muted === 'boolean' ? data.muted : defaults.muted,
     showModeIndicator: data.showModeIndicator ?? defaults.showModeIndicator,
     adFilter: data.adFilter ?? defaults.adFilter,
     adFilterMode: data.adFilterMode || defaults.adFilterMode,
