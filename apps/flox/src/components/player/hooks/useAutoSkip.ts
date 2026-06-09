@@ -56,6 +56,7 @@ export function useAutoSkip({
     useState(false)
 
   // Reset flags when video source changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: must re-run on src change
   useEffect(() => {
     hasSkippedIntroRef.current = false
     hasTriggeredOutroSkipRef.current = false
@@ -63,7 +64,7 @@ export function useAutoSkip({
     // Note: isTransitioningToNextEpisode is NOT reset here immediately
     // because we want it to persist while the next episode is loading.
     // It will be reset via the 'canplay' event below.
-  }, [])
+  }, [src])
 
   // Handle resetting transition state when video is ready
   useEffect(() => {

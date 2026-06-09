@@ -128,9 +128,11 @@ export function usePlaybackControls({
     videoRef.current.volume = isMuted ? 0 : volume
     videoRef.current.muted = isMuted
 
-    videoRef.current.play().catch((err: Error) => {
-      console.warn('Autoplay was prevented:', err)
-    })
+    if (shouldAutoPlay) {
+      videoRef.current.play().catch((err: Error) => {
+        console.warn('Autoplay was prevented:', err)
+      })
+    }
   }, [
     videoRef,
     setDuration,
@@ -139,6 +141,7 @@ export function usePlaybackControls({
     playbackRate,
     volume,
     isMuted,
+    shouldAutoPlay,
   ])
 
   // Handle late initialization of initialTime (e.g. from async storage hydration)
