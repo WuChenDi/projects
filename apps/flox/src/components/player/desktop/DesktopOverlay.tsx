@@ -163,7 +163,7 @@ export function DesktopOverlay({
             className="pointer-events-auto size-12 md:size-20 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer"
             aria-label="播放"
           >
-            <Play className="size-6 md:size-10 text-white ml-1" />
+            <Play className="size-6 md:size-10 text-white" />
           </Button>
         </div>
       )}
