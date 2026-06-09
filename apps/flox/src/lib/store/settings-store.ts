@@ -28,6 +28,20 @@ export type SearchDisplayMode = 'normal' | 'grouped'
 export type AdFilterMode = 'off' | 'keyword' | 'heuristic' | 'aggressive'
 export type ProxyMode = 'retry' | 'none' | 'always'
 
+export const DEFAULT_SEEK_STEP_SECONDS = 10
+export const MIN_SEEK_STEP_SECONDS = 1
+export const MAX_SEEK_STEP_SECONDS = 120
+
+export function normalizeSeekStepSeconds(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return DEFAULT_SEEK_STEP_SECONDS
+  }
+  return Math.min(
+    MAX_SEEK_STEP_SECONDS,
+    Math.max(MIN_SEEK_STEP_SECONDS, Math.round(value)),
+  )
+}
+
 export interface SettingsState {
   sources: VideoSource[]
   premiumSources: VideoSource[]
@@ -40,6 +54,10 @@ export interface SettingsState {
   skipIntroSeconds: number
   autoSkipOutro: boolean
   skipOutroSeconds: number
+  seekStepSeconds: number
+  playbackRate: number
+  volume: number
+  muted: boolean
   showModeIndicator: boolean
   adFilter: boolean
   adFilterMode: AdFilterMode
@@ -71,6 +89,10 @@ export interface SettingsActions {
   setSkipIntroSeconds: (v: number) => void
   setAutoSkipOutro: (v: boolean) => void
   setSkipOutroSeconds: (v: number) => void
+  setSeekStepSeconds: (v: number) => void
+  setPlaybackRate: (v: number) => void
+  setVolume: (v: number) => void
+  setMuted: (v: boolean) => void
   setShowModeIndicator: (v: boolean) => void
 
   setAdFilter: (v: boolean) => void
@@ -154,6 +176,10 @@ function getDefaultSettingsState(): SettingsState {
     skipIntroSeconds: 30,
     autoSkipOutro: false,
     skipOutroSeconds: 60,
+    seekStepSeconds: DEFAULT_SEEK_STEP_SECONDS,
+    playbackRate: 1,
+    volume: 1,
+    muted: false,
     showModeIndicator: false,
     adFilter: false,
     adFilterMode: 'heuristic',
@@ -225,6 +251,13 @@ function mergePersistedSettings(
       typeof data.skipOutroSeconds === 'number'
         ? data.skipOutroSeconds
         : defaults.skipOutroSeconds,
+    seekStepSeconds: normalizeSeekStepSeconds(data.seekStepSeconds),
+    playbackRate: typeof data.playbackRate === 'number' ? data.playbackRate : 1,
+    volume:
+      typeof data.volume === 'number'
+        ? Math.min(1, Math.max(0, data.volume))
+        : 1,
+    muted: data.muted ?? defaults.muted,
     showModeIndicator: data.showModeIndicator ?? defaults.showModeIndicator,
     adFilter: data.adFilter ?? defaults.adFilter,
     adFilterMode: data.adFilterMode || defaults.adFilterMode,
@@ -276,6 +309,11 @@ export const useSettingsStore = createPersistedStore<
     setSkipIntroSeconds: (v) => set({ skipIntroSeconds: Math.max(0, v) }),
     setAutoSkipOutro: (v) => set({ autoSkipOutro: v }),
     setSkipOutroSeconds: (v) => set({ skipOutroSeconds: Math.max(0, v) }),
+    setSeekStepSeconds: (v) =>
+      set({ seekStepSeconds: normalizeSeekStepSeconds(v) }),
+    setPlaybackRate: (v) => set({ playbackRate: v }),
+    setVolume: (v) => set({ volume: Math.min(1, Math.max(0, v)) }),
+    setMuted: (v) => set({ muted: v }),
     setShowModeIndicator: (v) => set({ showModeIndicator: v }),
 
     setAdFilter: (v) => set({ adFilter: v }),

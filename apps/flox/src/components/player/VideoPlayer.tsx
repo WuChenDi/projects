@@ -18,27 +18,15 @@ import { cn } from '@cdlab996/ui/lib/utils'
 import { SettingsIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { useHistory } from '@/lib/store/history-store'
 import type { AdFilterMode } from '@/lib/store/settings-store'
+import { CustomVideoPlayer } from './CustomVideoPlayer'
 import { usePlayerSettings } from './hooks/usePlayerSettings'
-import { NativePlayer } from './NativePlayer'
+import type { VideoResolutionInfo } from './hooks/useVideoResolution'
+import { getCopyUrl } from './utils/urlUtils'
 import { VideoPlayerEmpty } from './VideoPlayerEmpty'
 import { VideoPlayerError } from './VideoPlayerError'
-
-interface VideoPlayerProps {
-  playUrl: string
-  poster?: string
-  videoId?: string
-  currentEpisode: number
-  onBack: () => void
-  totalEpisodes?: number
-  onNextEpisode?: () => void
-  isPremium?: boolean
-  externalTimeRef?: React.RefObject<number>
-  onResolutionDetected?: (
-    info: import('./hooks/useVideoResolution').VideoResolutionInfo,
-  ) => void
-}
 
 const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const
 
@@ -50,6 +38,20 @@ const AD_FILTER_OPTIONS: { value: AdFilterMode; label: string }[] = [
 
 const SKIP_PRESETS = [15, 30, 45, 60, 90, 120]
 
+interface VideoPlayerProps {
+  playUrl: string
+  poster?: string
+  videoId?: string
+  currentEpisode: number
+  onBack: () => void
+  totalEpisodes?: number
+  onNextEpisode?: () => void
+  isReversed?: boolean
+  isPremium?: boolean
+  externalTimeRef?: React.RefObject<number>
+  onResolutionDetected?: (info: VideoResolutionInfo) => void
+}
+
 export function VideoPlayer({
   playUrl,
   poster,
@@ -58,6 +60,7 @@ export function VideoPlayer({
   onBack,
   totalEpisodes,
   onNextEpisode,
+  isReversed = false,
   isPremium = false,
   externalTimeRef,
   onResolutionDetected,
@@ -66,10 +69,7 @@ export function VideoPlayer({
   const [useProxy, setUseProxy] = useState(false)
   const [shouldAutoPlay, setShouldAutoPlay] = useState(true)
   const [retryCount, setRetryCount] = useState(0)
-  const [playbackRate, setPlaybackRate] = useState(1)
-  const [resolution, setResolution] = useState<
-    import('./hooks/useVideoResolution').VideoResolutionInfo | null
-  >(null)
+  const [resolution, setResolution] = useState<VideoResolutionInfo | null>(null)
   const MAX_MANUAL_RETRIES = 20
   const lastSaveTimeRef = useRef(0)
   const currentTimeRef = useRef(0)
@@ -78,6 +78,12 @@ export function VideoPlayer({
 
   const {
     proxyMode,
+    showModeIndicator,
+    setShowModeIndicator,
+    playbackRate,
+    setPlaybackRate,
+    adFilterMode,
+    setAdFilterMode,
     autoNextEpisode,
     setAutoNextEpisode,
     autoSkipIntro,
@@ -88,9 +94,12 @@ export function VideoPlayer({
     setAutoSkipOutro,
     skipOutroSeconds,
     setSkipOutroSeconds,
-    adFilterMode,
-    setAdFilterMode,
+    fullscreenType,
+    setFullscreenType,
   } = usePlayerSettings()
+
+  const effectiveUseProxy =
+    proxyMode === 'always' ? true : proxyMode === 'none' ? false : useProxy
 
   // Sync useProxy with global proxyMode setting
   useEffect(() => {
@@ -172,7 +181,7 @@ export function VideoPlayer({
   }, [saveProgress])
 
   const handleVideoError = (error: string) => {
-    if (!useProxy && proxyMode === 'retry') {
+    if (!effectiveUseProxy && proxyMode === 'retry') {
       setUseProxy(true)
       setShouldAutoPlay(true)
       setVideoError('')
@@ -186,7 +195,7 @@ export function VideoPlayer({
     setRetryCount((prev) => prev + 1)
     setVideoError('')
     setShouldAutoPlay(true)
-    setUseProxy((prev) => !prev)
+    setUseProxy((prev) => (proxyMode === 'none' ? false : !prev))
   }
 
   const toggleProxy = () => {
@@ -201,10 +210,18 @@ export function VideoPlayer({
     setter(next ?? 30)
   }
 
-  const finalPlayUrl =
-    useProxy || proxyMode === 'always'
-      ? `/api/proxy?url=${encodeURIComponent(playUrl)}&retry=${retryCount}`
-      : playUrl
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(getCopyUrl(playUrl, 'original'))
+      toast.success('链接已复制到剪贴板')
+    } catch {
+      toast.error('复制失败，请重试')
+    }
+  }
+
+  const finalPlayUrl = effectiveUseProxy
+    ? `/api/proxy?url=${encodeURIComponent(playUrl)}&retry=${retryCount}`
+    : playUrl
 
   if (!playUrl) return <VideoPlayerEmpty />
 
@@ -213,38 +230,36 @@ export function VideoPlayer({
 
   return (
     <div className="space-y-4">
-      <Card className="p-0 overflow-hidden">
-        <div className="relative aspect-video bg-black overflow-hidden">
-          {videoError ? (
-            <VideoPlayerError
-              error={videoError}
-              onBack={onBack}
-              onRetry={handleRetry}
-              retryCount={retryCount}
-              maxRetries={MAX_MANUAL_RETRIES}
-            />
-          ) : (
-            <NativePlayer
-              key={`${finalPlayUrl}-${retryCount}`}
-              src={finalPlayUrl}
-              poster={poster}
-              autoPlay={shouldAutoPlay}
-              initialTime={getSavedProgress()}
-              playbackRate={playbackRate}
-              skipIntroSeconds={autoSkipIntro ? skipIntroSeconds : 0}
-              skipOutroSeconds={autoSkipOutro ? skipOutroSeconds : 0}
-              onError={handleVideoError}
-              onTimeUpdate={handleTimeUpdate}
-              onEnded={autoNextEpisode ? onNextEpisode : undefined}
-              onResolutionDetected={(info) => {
-                setResolution(info)
-                onResolutionDetected?.(info)
-              }}
-              className="w-full h-full object-contain"
-            />
-          )}
-        </div>
-      </Card>
+      <div data-no-spatial className="relative">
+        {videoError ? (
+          <VideoPlayerError
+            error={videoError}
+            onBack={onBack}
+            onRetry={handleRetry}
+            retryCount={retryCount}
+            maxRetries={MAX_MANUAL_RETRIES}
+          />
+        ) : (
+          <CustomVideoPlayer
+            key={`${effectiveUseProxy ? 'proxy' : 'direct'}-${retryCount}-${source}`}
+            src={finalPlayUrl}
+            poster={poster}
+            onError={handleVideoError}
+            onTimeUpdate={handleTimeUpdate}
+            initialTime={getSavedProgress()}
+            shouldAutoPlay={shouldAutoPlay}
+            totalEpisodes={totalEpisodes}
+            currentEpisodeIndex={currentEpisode}
+            onNextEpisode={onNextEpisode}
+            isReversed={isReversed}
+            isPremium={isPremium}
+            onResolutionDetected={(info) => {
+              setResolution(info)
+              onResolutionDetected?.(info)
+            }}
+          />
+        )}
+      </div>
 
       <Card className="px-3 sm:px-4">
         <div className="flex items-center gap-2 flex-wrap">
@@ -270,13 +285,16 @@ export function VideoPlayer({
                 {resolution.label}
               </Badge>
             )}
-            {canToggleProxy && (
+            {showModeIndicator && (
               <Badge
-                variant={useProxy ? 'destructive' : 'secondary'}
-                onClick={toggleProxy}
-                className="cursor-pointer select-none"
+                variant={effectiveUseProxy ? 'destructive' : 'secondary'}
+                onClick={canToggleProxy ? toggleProxy : undefined}
+                className={cn(
+                  'select-none',
+                  canToggleProxy && 'cursor-pointer',
+                )}
               >
-                {useProxy ? '代理' : '直连'}
+                {effectiveUseProxy ? '代理' : '直连'}
               </Badge>
             )}
 
@@ -315,22 +333,51 @@ export function VideoPlayer({
                     </ToggleGroup>
                   </div>
 
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-xs">全屏方式</Label>
+                    <ToggleGroup
+                      type="single"
+                      size="sm"
+                      variant="outline"
+                      value={fullscreenType}
+                      onValueChange={(v) =>
+                        v && setFullscreenType(v as 'native' | 'window')
+                      }
+                      aria-label="全屏方式"
+                    >
+                      <ToggleGroupItem value="native">系统</ToggleGroupItem>
+                      <ToggleGroupItem value="window">网页</ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2">
+                    <Label
+                      htmlFor="mode-indicator"
+                      className="text-xs cursor-pointer"
+                    >
+                      模式指示器
+                    </Label>
+                    <Switch
+                      id="mode-indicator"
+                      checked={showModeIndicator}
+                      onCheckedChange={setShowModeIndicator}
+                    />
+                  </div>
+
                   {hasMultipleEpisodes && (
-                    <>
-                      <div className="flex items-center justify-between gap-2">
-                        <Label
-                          htmlFor="autoplay-next"
-                          className="text-xs cursor-pointer"
-                        >
-                          自动播放下一集
-                        </Label>
-                        <Switch
-                          id="autoplay-next"
-                          checked={autoNextEpisode}
-                          onCheckedChange={setAutoNextEpisode}
-                        />
-                      </div>
-                    </>
+                    <div className="flex items-center justify-between gap-2">
+                      <Label
+                        htmlFor="autoplay-next"
+                        className="text-xs cursor-pointer"
+                      >
+                        自动播放下一集
+                      </Label>
+                      <Switch
+                        id="autoplay-next"
+                        checked={autoNextEpisode}
+                        onCheckedChange={setAutoNextEpisode}
+                      />
+                    </div>
                   )}
 
                   <div className="flex items-center justify-between gap-2">
@@ -390,6 +437,15 @@ export function VideoPlayer({
                       onCheckedChange={setAutoSkipOutro}
                     />
                   </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={handleCopyLink}
+                  >
+                    复制链接
+                  </Button>
                 </div>
               </PopoverContent>
             </Popover>

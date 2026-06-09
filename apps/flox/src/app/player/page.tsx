@@ -229,6 +229,7 @@ function PlayerContent() {
               onBack={() => router.back()}
               totalEpisodes={videoData?.episodes?.length || 0}
               onNextEpisode={handleNextEpisode}
+              isReversed={isReversed}
               isPremium={isPremium}
               externalTimeRef={playerTimeRef}
               onResolutionDetected={setDetectedResolution}
