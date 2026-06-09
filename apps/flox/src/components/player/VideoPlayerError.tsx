@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@cdlab996/ui/components/button'
 import { ChevronLeftIcon, CircleAlertIcon, RefreshCwIcon } from 'lucide-react'
 
 interface VideoPlayerErrorProps {
@@ -38,23 +39,17 @@ export function VideoPlayerError({
 
         {/* Action Buttons */}
         <div className="flex gap-3 justify-center flex-wrap">
-          <button
-            onClick={onBack}
-            className="btn-glass px-4 py-2 flex items-center gap-2"
-          >
-            <ChevronLeftIcon size={18} />
+          <Button type="button" variant="secondary" onClick={onBack}>
+            <ChevronLeftIcon />
             <span>返回</span>
-          </button>
+          </Button>
           {retryCount < maxRetries && (
-            <button
-              onClick={onRetry}
-              className="btn-glass px-4 py-2 flex items-center gap-2 bg-primary/80 hover:bg-primary"
-            >
-              <RefreshCwIcon size={18} />
+            <Button type="button" onClick={onRetry}>
+              <RefreshCwIcon />
               <span>
                 重试 ({retryCount}/{maxRetries})
               </span>
-            </button>
+            </Button>
           )}
         </div>
       </div>

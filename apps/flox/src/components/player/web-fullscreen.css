@@ -1,0 +1,77 @@
+/* Web Fullscreen (Window Fullscreen) Styles */
+.flox-container.is-web-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: var(--flox-viewport-width, 100vw) !important;
+  height: var(--flox-viewport-height, 100vh) !important;
+  height: var(--flox-viewport-height, 100dvh) !important;
+  /* Fallback for browsers supporting dvh */
+  z-index: 2147483647 !important;
+  background: black !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  --flox-web-scale: 1;
+}
+
+.flox-container.is-web-fullscreen.top-align-stage {
+  align-items: flex-start !important;
+  padding-top: calc(
+    env(safe-area-inset-top, 0px) +
+    clamp(0px, 1.5vh, 16px)
+  ) !important;
+}
+
+.flox-container.is-web-fullscreen .flox-web-fullscreen-stage {
+  position: relative !important;
+  width: min(
+    calc(
+      var(--flox-stage-viewport-width, var(--flox-viewport-width, 100vw)) *
+      var(--flox-web-scale)
+    ),
+    calc(
+      var(--flox-stage-viewport-height, var(--flox-viewport-height, 100vh)) *
+      var(--flox-web-scale) *
+      16 / 9
+    )
+  ) !important;
+  height: min(
+    calc(
+      var(--flox-stage-viewport-height, var(--flox-viewport-height, 100vh)) *
+      var(--flox-web-scale)
+    ),
+    calc(
+      var(--flox-stage-viewport-width, var(--flox-viewport-width, 100vw)) *
+      var(--flox-web-scale) *
+      9 / 16
+    )
+  ) !important;
+  max-width: var(
+    --flox-stage-viewport-width,
+    var(--flox-viewport-width, 100vw)
+  ) !important;
+  max-height: var(
+    --flox-stage-viewport-height,
+    var(--flox-viewport-height, 100vh)
+  ) !important;
+}
+
+/* Ensure video takes up full space in web fullscreen */
+.flox-container.is-web-fullscreen video {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+}
+
+/* Force Landscape Mode for Mobile (iOS mainly) */
+.flox-container.is-web-fullscreen.force-landscape {
+  width: var(--flox-viewport-height, 100vh) !important;
+  width: var(--flox-viewport-height, 100dvh) !important;
+  height: var(--flox-viewport-width, 100vw) !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) rotate(90deg) !important;
+  border-radius: 0 !important;
+}

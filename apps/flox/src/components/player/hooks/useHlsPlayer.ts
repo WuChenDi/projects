@@ -34,7 +34,6 @@ export function useHlsPlayer({
   const onAutoPlayPreventedRef = useRef(onAutoPlayPrevented)
   onAutoPlayPreventedRef.current = onAutoPlayPrevented
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   useEffect(() => {
     const video = videoRef.current
     if (!video || !src) return
@@ -53,7 +52,10 @@ export function useHlsPlayer({
       'application/vnd.apple.mpegurl',
     )
 
-    if (Hls.isSupported()) {
+    // Check if MSE is available (required by hls.js)
+    const isMSESupported = Hls.isSupported()
+
+    if (isMSESupported) {
       // Define custom loader class to intercept manifest loading
       // We use 'any' cast because default loader type might not be strictly exposed in all typings
       const DefaultLoader = (Hls as any).DefaultConfig.loader
@@ -92,8 +94,7 @@ export function useHlsPlayer({
       }
 
       if (!isNativeHlsSupported || isAdFilterEnabled) {
-        // If ad filtering is on, we force Hls.js even on native-supported desktop browsers
-        // Exceptions might exist for iOS where MSE is strictly not available, check Hls.isSupported() result carefully.
+        // If ad filtering is on, we force hls.js even on native-supported desktop browsers.
         // Hls.isSupported() is false on iOS Safari usually, so this block won't run there.
 
         const config: any = {
@@ -169,20 +170,39 @@ export function useHlsPlayer({
 
         // Manifest Parsed Handler
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          // Check for HEVC
+          // Prefer H.264 levels for compatibility: if HEVC and H.264 coexist,
+          // lock to the first H.264 level instead of failing the whole stream.
           if (hls) {
             const levels = hls.levels
             if (levels && levels.length > 0) {
-              const hasHEVC = levels.some(
-                (level) =>
-                  level.videoCodec?.toLowerCase().includes('hev') ||
-                  level.videoCodec?.toLowerCase().includes('h265'),
-              )
+              const h264Indices: number[] = []
+              let hasHEVC = false
+              levels.forEach((level, index) => {
+                const codec = level.videoCodec?.toLowerCase() || ''
+                if (
+                  codec.includes('hev') ||
+                  codec.includes('h265') ||
+                  codec.includes('hvc')
+                ) {
+                  hasHEVC = true
+                } else {
+                  h264Indices.push(index)
+                }
+              })
               if (hasHEVC) {
-                console.warn('[HLS] ⚠️ HEVC detected')
-                onErrorRef.current?.(
-                  '检测到 HEVC/H.265 编码，当前浏览器可能不支持',
-                )
+                if (h264Indices.length > 0) {
+                  console.info(
+                    '[HLS] HEVC detected, using H.264 level for compatibility',
+                  )
+                  hls.currentLevel = h264Indices[0]
+                } else {
+                  console.warn(
+                    '[HLS] ⚠️ All levels are HEVC, browser may not support',
+                  )
+                  onErrorRef.current?.(
+                    '检测到 HEVC/H.265 编码，当前浏览器可能不支持',
+                  )
+                }
               }
             }
           }
@@ -234,13 +254,32 @@ export function useHlsPlayer({
       // Native HLS (iOS, Mobile Safari)
       // Limitations: Native HLS cannot easily intercept sub-playlist requests.
       // We use fetch+blob for the master playlist as a best 'first-level' filter.
-      // If the ad discontinuity is in the master playlist (rare for ads, common for periods), it works.
-      // If it's in sub-playlists, it might fail unless we parse and blob those too (complex).
 
       if (isAdFilterEnabled) {
+        // Fetch with proxy fallback (CORS-blocked sources still resolve via /api/proxy)
+        const fetchWithFallback = async (url: string): Promise<string> => {
+          try {
+            const res = await fetch(url)
+            if (!res.ok) throw new Error(`HTTP ${res.status}`)
+            return await res.text()
+          } catch (e) {
+            console.warn(
+              `[HLS Native] Fetch failed for ${url}, trying proxy...`,
+              e,
+            )
+            const proxiedUrl = `/api/proxy?url=${encodeURIComponent(url)}`
+            const res = await fetch(proxiedUrl)
+            if (!res.ok)
+              throw new Error(`Proxy fetch failed: HTTP ${res.status}`)
+            return await res.text()
+          }
+        }
+
         const processMasterPlaylist = async (masterSrc: string) => {
           // Move blob tracking outside try to ensure cleanup on error
           const createdBlobs: string[] = []
+          const mode = adFilterModeRef.current
+          const keywords = adKeywordsRef.current
 
           // Safely resolve relative URLs to absolute (handles iOS Safari scenarios)
           let absoluteMasterSrc: string
@@ -254,16 +293,15 @@ export function useHlsPlayer({
           }
 
           try {
-            const response = await fetch(absoluteMasterSrc)
-            const masterContent = await response.text()
+            const masterContent = await fetchWithFallback(absoluteMasterSrc)
 
             // If it's a simple playlist (no variants), just filter and play
             if (!masterContent.includes('#EXT-X-STREAM-INF')) {
               const filtered = filterM3u8Ad(
                 masterContent,
                 absoluteMasterSrc,
-                adFilterMode,
-                adKeywords,
+                mode,
+                keywords,
               )
               const blob = new Blob([filtered], {
                 type: 'application/vnd.apple.mpegurl',
@@ -288,21 +326,18 @@ export function useHlsPlayer({
                 const uriMatch = trimmedLine.match(/URI="([^"]+)"/)
                 const uri = uriMatch?.[1]
                 if (uri) {
-                  // Process if relative or absolute URL; fetch will handle CORS
                   const isRelative = !uri.startsWith('http')
-
                   if (isRelative || uri.startsWith('http')) {
                     try {
                       const absoluteUrl = isRelative
                         ? new URL(uri, absoluteMasterSrc).toString()
                         : uri
-                      const subRes = await fetch(absoluteUrl)
-                      const subContent = await subRes.text()
+                      const subContent = await fetchWithFallback(absoluteUrl)
                       const filteredSub = filterM3u8Ad(
                         subContent,
                         absoluteUrl,
-                        adFilterMode,
-                        adKeywords,
+                        mode,
+                        keywords,
                       )
                       const subBlob = new Blob([filteredSub], {
                         type: 'application/vnd.apple.mpegurl',
@@ -328,21 +363,18 @@ export function useHlsPlayer({
                 trimmedLine &&
                 !trimmedLine.startsWith('#')
               ) {
-                // Process if relative or absolute URL; fetch will handle CORS
                 const isRelative = !trimmedLine.startsWith('http')
-
                 if (isRelative || trimmedLine.startsWith('http')) {
                   try {
                     const absoluteUrl = isRelative
                       ? new URL(trimmedLine, absoluteMasterSrc).toString()
                       : trimmedLine
-                    const subRes = await fetch(absoluteUrl)
-                    const subContent = await subRes.text()
+                    const subContent = await fetchWithFallback(absoluteUrl)
                     const filteredSub = filterM3u8Ad(
                       subContent,
                       absoluteUrl,
-                      adFilterMode,
-                      adKeywords,
+                      mode,
+                      keywords,
                     )
                     const subBlob = new Blob([filteredSub], {
                       type: 'application/vnd.apple.mpegurl',
@@ -393,6 +425,45 @@ export function useHlsPlayer({
           .then((result) => {
             video.src = result.masterBlobUrl
             extraBlobs = result.allBlobs
+
+            // Some WebView-based browsers cannot play from blob: URLs.
+            // Detect playback failure and fall back to the original source.
+            let blobPlaybackFailed = false
+
+            const onBlobError = () => {
+              if (blobPlaybackFailed) return
+              blobPlaybackFailed = true
+              console.warn(
+                '[HLS Native] Blob URL playback failed, falling back to original source.',
+              )
+              video.removeEventListener('error', onBlobError)
+              onErrorRef.current?.(
+                '当前浏览器不支持广告过滤，已回退到原始视频流',
+              )
+              extraBlobs.forEach((url) => URL.revokeObjectURL(url))
+              extraBlobs = []
+              video.src = src
+            }
+
+            video.addEventListener('error', onBlobError)
+
+            // If video hasn't started loading within 8s, fall back
+            const fallbackTimer = setTimeout(() => {
+              if (video.readyState === 0 && !blobPlaybackFailed) {
+                console.warn(
+                  '[HLS Native] Blob URL playback timed out, falling back to original source.',
+                )
+                onBlobError()
+              }
+            }, 8000)
+
+            // Clear the timeout once video starts loading
+            const onLoadedData = () => {
+              clearTimeout(fallbackTimer)
+              video.removeEventListener('error', onBlobError)
+              video.removeEventListener('loadeddata', onLoadedData)
+            }
+            video.addEventListener('loadeddata', onLoadedData)
           })
           .catch((e) => {
             console.warn(
@@ -406,8 +477,35 @@ export function useHlsPlayer({
         video.src = src
       }
     } else {
-      console.error('[HLS] HLS not supported')
-      onErrorRef.current?.('当前浏览器不支持 HLS 视频播放')
+      // Neither MSE nor native HLS supported.
+      // Try direct playback as last resort, then proxy as a final attempt.
+      console.warn(
+        '[HLS] No MSE or native HLS support. Trying direct playback...',
+      )
+      video.src = src
+
+      let directFailed = false
+      const handleCanPlay = () => {
+        directFailed = false
+      }
+      const handleError = () => {
+        if (directFailed) return
+        directFailed = true
+        const proxiedUrl = `/api/proxy?url=${encodeURIComponent(src)}`
+        video.src = proxiedUrl
+        video.addEventListener(
+          'error',
+          () => {
+            onErrorRef.current?.(
+              '当前浏览器不支持 HLS 视频播放。建议使用 Chrome、Edge 或 Safari 浏览器。',
+            )
+          },
+          { once: true },
+        )
+      }
+
+      video.addEventListener('canplay', handleCanPlay, { once: true })
+      video.addEventListener('error', handleError, { once: true })
     }
 
     return () => {
