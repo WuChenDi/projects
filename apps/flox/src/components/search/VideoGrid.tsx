@@ -160,6 +160,7 @@ export const VideoGrid = memo(function VideoGrid({
             }))
             params.set('groupedSources', JSON.stringify(groupData))
           }
+          if (isPremium) params.set('premium', '1')
           videoData = g.representative
         } else {
           const v = item as Video
