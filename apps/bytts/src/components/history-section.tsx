@@ -29,12 +29,12 @@ import {
   DialogTitle,
 } from '@cdlab996/ui/components/dialog'
 import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
+import { WaveformPlayer } from '@cdlab996/ui/components/waveform-player'
 import {
   IKAssetFailed,
   IKAssetLoading,
   IKAssetRenderer,
   IKAudioAssetPlayer,
-  IKAudioPlayer,
   IKEmpty,
   StatusEnum,
 } from '@cdlab996/ui/IK'
@@ -144,7 +144,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
             <div className="flex flex-col gap-4 pr-3">
               <div className="w-full p-2 border rounded">
                 {item.audioBlob ? (
-                  <IKAudioPlayer blob={item.audioBlob} />
+                  <WaveformPlayer blob={item.audioBlob} />
                 ) : (
                   <div className="flex items-center justify-center h-20">
                     <Loader2 className="size-6 animate-spin text-muted-foreground" />
