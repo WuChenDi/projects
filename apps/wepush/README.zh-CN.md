@@ -78,7 +78,7 @@ pnpm cf:remotedb           # 远程 D1
 pnpm dev
 ```
 
-访问 <http://wepush.localhost:3355>（通过 `@nsio/nsl` 路由）。用 `ACCESS_PASSWORD` 解锁，到 `/settings` 配置微信 APP_ID / APP_SECRET。
+访问 <http://wepush.localhost:3355>。用 `ACCESS_PASSWORD` 解锁，到 `/settings` 配置微信 APP_ID / APP_SECRET。
 
 ### 部署到 Cloudflare Workers
 

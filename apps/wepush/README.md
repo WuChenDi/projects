@@ -78,7 +78,7 @@ pnpm cf:remotedb           # remote D1
 pnpm dev
 ```
 
-Open <http://wepush.localhost:3355> (routed via `@nsio/nsl`). Unlock with `ACCESS_PASSWORD`, then configure WeChat APP_ID / APP_SECRET on `/settings`.
+Open <http://wepush.localhost:3355>. Unlock with `ACCESS_PASSWORD`, then configure WeChat APP_ID / APP_SECRET on `/settings`.
 
 ### Deploy to Cloudflare Workers
 

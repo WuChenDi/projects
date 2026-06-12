@@ -13,15 +13,15 @@ Workspace layout:
 
 Apps fall into three runtime families with different toolchains:
 
-| Family                        | Apps                                                                                                         | Build tool                      | Deploy target                                                                            |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------- | ---------------------------------------------------------------------------------------- |
+| Family                        | Apps                                                                                                                             | Build tool                      | Deploy target                                                                                        |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | **Next.js (App Router)**      | `bycut`, `byplay`, `byshot`, `bytts`, `clearify`, `dropply-web`, `flox`, `SecureC`, `text2img`, `value-vision`, `vidl`, `wepush` | `next build` (some `--webpack`) | Cloudflare Pages (`@cloudflare/next-on-pages`); `text2img` and `wepush` use `@opennextjs/cloudflare` |
-| **Cloudflare Workers (Hono)** | `baccarat`, `byplay-log`, `dropply-api`, `live-user`, `shortener`                                            | `wrangler deploy --minify`      | Cloudflare Workers + Durable Objects / D1                                                |
-| **Nuxt 4 (Vue 3)**            | `repo-changelog`                                                                                             | `nuxt build`/`generate`         | Vercel                                                                                   |
+| **Cloudflare Workers (Hono)** | `baccarat`, `byplay-log`, `dropply-api`, `live-user`, `shortener`                                                                | `wrangler deploy --minify`      | Cloudflare Workers + Durable Objects / D1                                                            |
+| **Nuxt 4 (Vue 3)**            | `repo-changelog`                                                                                                                 | `nuxt build`/`generate`         | Vercel                                                                                               |
 
 ## Commands
 
-Dev servers are routed through `@nsio/nsl` (`nsl run …`) — each app is reachable at **`http://<name>.localhost:3355`** (no port hunting).
+Dev servers are routed through `@dotns/nsl` (`nsl run …`) — each app is reachable at **`http://<name>.localhost:3355`** (no port hunting).
 
 ```bash
 # Workspace-wide

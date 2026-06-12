@@ -4,11 +4,11 @@
 [![Node](https://img.shields.io/badge/node-%E2%89%A5%2020-brightgreen.svg)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-%E2%89%A5%2010-f69220.svg)](https://pnpm.io/)
 [![Turborepo](https://img.shields.io/badge/built%20with-Turborepo-cc00ff.svg)](https://turbo.build/)
-[![NSL](https://img.shields.io/badge/dev%20proxy-%40nsio%2Fnsl-4a9eff.svg)](https://github.com/nsiod/nsl)
+[![NSL](https://img.shields.io/badge/dev%20proxy-%40nsio%2Fnsl-4a9eff.svg)](https://github.com/dotns/nsl)
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
-现代 Web 工具集合 monorepo —— 基于 **Turborepo + pnpm**，涵盖 Next.js、Nuxt、Hono 等多技术栈。本地开发通过 [@nsio/nsl](https://github.com/nsiod/nsl) 反向代理，每个应用都有固定的访问地址 `http://<name>.localhost:3355`，无需记忆端口号。
+现代 Web 工具集合 monorepo —— 基于 **Turborepo + pnpm**，涵盖 Next.js、Nuxt、Hono 等多技术栈。本地开发通过 [@dotns/nsl](https://github.com/dotns/nsl) 反向代理，每个应用都有固定的访问地址 `http://<name>.localhost:3355`，无需记忆端口号。
 
 > [!IMPORTANT]
 > 大多数应用**完全在浏览器端运行**，**零服务器上传**，数据永不离开你的设备。
@@ -300,7 +300,7 @@ pnpm install
 
 ### 常用命令
 
-开发服务器通过 [@nsio/nsl](https://github.com/nsiod/nsl) 代理，每个应用均可通过 `http://<name>.localhost:3355` 访问（name 为去掉 scope 后的包名）。
+开发服务器通过 [@dotns/nsl](https://github.com/dotns/nsl) 代理，每个应用均可通过 `http://<name>.localhost:3355` 访问（name 为去掉 scope 后的包名）。
 
 ```bash
 pnpm dev                                     # 启动所有应用（并行开发）
@@ -380,15 +380,15 @@ pnpm clean                         # 清理 node_modules / 缓存 / 构建产物
 
 ## 技术栈
 
-| 层级           | 技术                                                                                   |
-| -------------- | -------------------------------------------------------------------------------------- |
-| **前端框架**   | React + Next.js 16+（App Router） / Vue 3 + Nuxt 4                                     |
-| **类型系统**   | TypeScript 5                                                                           |
-| **UI**         | shadcn/ui · Tailwind CSS v4 · Nuxt UI                                                  |
-| **浏览器能力** | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API                         |
-| **后端 / API** | Cloudflare Workers · Hono + Zod Validator                                              |
-| **数据库**     | Drizzle ORM + LibSQL / Cloudflare D1                                                   |
-| **工程**       | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format) · @nsio/nsl（本地开发代理） |
+| 层级           | 技术                                                                                    |
+| -------------- | --------------------------------------------------------------------------------------- |
+| **前端框架**   | React + Next.js 16+（App Router） / Vue 3 + Nuxt 4                                      |
+| **类型系统**   | TypeScript 5                                                                            |
+| **UI**         | shadcn/ui · Tailwind CSS v4 · Nuxt UI                                                   |
+| **浏览器能力** | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API                          |
+| **后端 / API** | Cloudflare Workers · Hono + Zod Validator                                               |
+| **数据库**     | Drizzle ORM + LibSQL / Cloudflare D1                                                    |
+| **工程**       | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format) · @dotns/nsl（本地开发代理） |
 
 ## 许可证
 

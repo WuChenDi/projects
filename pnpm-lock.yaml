@@ -183,9 +183,9 @@ importers:
       '@cdlab996/tsconfig':
         specifier: workspace:*
         version: link:packages/tsconfig
-      '@nsio/nsl':
-        specifier: ^0.1.7
-        version: 0.1.7
+      '@dotns/nsl':
+        specifier: ^0.1.9
+        version: 0.1.9
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -548,7 +548,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.7(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -615,7 +615,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.7(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -709,7 +709,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.7(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -910,7 +910,7 @@ importers:
         version: link:../../packages/tsconfig
       '@cloudflare/next-on-pages':
         specifier: catalog:dev
-        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.7(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
+        version: 1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -2249,6 +2249,36 @@ packages:
     resolution: {integrity: sha512-CaQcc8JvtzQhUSm9877b6V4Tb7HCotkcyud9X2YwdqtQKwgljkMRwU96fVYKnzN3V0Hj74oP7Es+vZ0mS+Aa1w==}
     hasBin: true
 
+  '@dotns/nsl-darwin-arm64@0.1.9':
+    resolution: {integrity: sha512-udjryAzTm6NNCH3+v291sa1F5kXILUiAihwKSAIeDzvmZXjrSJ8Giyqhy9AXnInLKC4uuORSKvDHiFx3lhuP1A==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@dotns/nsl-darwin-x64@0.1.9':
+    resolution: {integrity: sha512-tsuPF5d983CJ6wwnucbm9Hnu3D+5kKihZVB71dSbC0iSJuXhrooRWwlh8nvCR7rRS5ZN0tyLc80YUM8Ie7G9QA==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@dotns/nsl-linux-arm64@0.1.9':
+    resolution: {integrity: sha512-qGuoj58r3MkSTow8nGj8EL7SAMIqHvEfv8LXLuneYYjQ+xYeo0lpUceR82IYOB92IxN6Fd5D1nnd+XefVCyVIg==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@dotns/nsl-linux-x64@0.1.9':
+    resolution: {integrity: sha512-iZT3gq8DTSaKtn6btQgntE0wMjp2XDKnRzoWN1nus3Rr/iGyxBfk7kaJw1xPh5gLUVdVckiXc3uklvtF9pylWg==}
+    cpu: [x64]
+    os: [linux]
+
+  '@dotns/nsl-win32-x64@0.1.9':
+    resolution: {integrity: sha512-/1jv9G1tJuQtpPCSRIMBlf6/5RUO2l00DEJSRStsEzLV6eW7b5ByaWXiGm8EQqWdO9PQFcKzOPk6Dmuu/IFVoA==}
+    cpu: [x64]
+    os: [win32]
+
+  '@dotns/nsl@0.1.9':
+    resolution: {integrity: sha512-9LPTSPNMDQqEVwZJOD9HZ2ZoyzmG+tbUXiYS8hKVrLJ8UoyqI9QQ2m/nnv4nmpubjrKMFap5kxZazM0fYgXp/g==}
+    engines: {node: '>=16'}
+    hasBin: true
+
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
 
@@ -3144,36 +3174,6 @@ packages:
   '@nodelib/fs.walk@1.2.8':
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
-
-  '@nsio/nsl-darwin-arm64@0.1.7':
-    resolution: {integrity: sha512-422GusrlWwO5oyHlpeAm5dlg5Hti8S6in5oJGmwtZxr9sG16o8ytKPGHofGWv6cf7XZXdPHFDG8ZJSLj07bBwg==}
-    cpu: [arm64]
-    os: [darwin]
-
-  '@nsio/nsl-darwin-x64@0.1.7':
-    resolution: {integrity: sha512-GswSfQofn9U+TSGtf6meG3rxg5fZ0KAdbQ5kiutOCsTwc3jeLslsXmZy12s5aAAcaUzEWw69K2n6RxzCtQmDvA==}
-    cpu: [x64]
-    os: [darwin]
-
-  '@nsio/nsl-linux-arm64@0.1.7':
-    resolution: {integrity: sha512-QOPFaqvntp7CaOK1xD+7vKB3OyVpaWrZAU61FFnSniphh0+lpP/4QHtU9TkkTPf/GSAHH2xPI7OysFxJP3Q9Ww==}
-    cpu: [arm64]
-    os: [linux]
-
-  '@nsio/nsl-linux-x64@0.1.7':
-    resolution: {integrity: sha512-yYJWb1xUkJJhGB91CQPdXjcQ8GCBdjqlOZ9Hl+YVcS7kN9nPVyicq2gyJuAipqXcNV+Ultf4F6W7p73ezYg7iw==}
-    cpu: [x64]
-    os: [linux]
-
-  '@nsio/nsl-win32-x64@0.1.7':
-    resolution: {integrity: sha512-fqUfi48GqIdJeYXi0JpbqC6mGH4amugQ5blRtd2SODikXULiWfjy2uvixXaUvnGCvBnXUhkoWimt3NvjDkyoYA==}
-    cpu: [x64]
-    os: [win32]
-
-  '@nsio/nsl@0.1.7':
-    resolution: {integrity: sha512-mC+0Ft/AdIWbW+oW+4pVX96QvbjZV88hiSETh/z6wAa5C8s1TeUTTETvVkeNhBacm2WxWexH69fDqdB2Lgh13A==}
-    engines: {node: '>=16'}
-    hasBin: true
 
   '@nuxt/cli@3.35.2':
     resolution: {integrity: sha512-sCxNnFuYamqippdj+Cj4Nue55yaUvasaneyf2mnowK5/F1TKln/WVqTH18McxQ4baLlIlVapIFovKjJx1L8XMQ==}
@@ -12716,7 +12716,7 @@ snapshots:
 
   '@cloudflare/kv-asset-handler@0.5.0': {}
 
-  '@cloudflare/next-on-pages@1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.7(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))':
+  '@cloudflare/next-on-pages@1.13.16(@cloudflare/workers-types@4.20260525.1)(next@16.2.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.94.0(@cloudflare/workers-types@4.20260525.1))':
     dependencies:
       acorn: 8.16.0
       ast-types: 0.14.2
@@ -12864,6 +12864,29 @@ snapshots:
       object-treeify: 1.1.33
       picomatch: 4.0.4
       which: 4.0.0
+
+  '@dotns/nsl-darwin-arm64@0.1.9':
+    optional: true
+
+  '@dotns/nsl-darwin-x64@0.1.9':
+    optional: true
+
+  '@dotns/nsl-linux-arm64@0.1.9':
+    optional: true
+
+  '@dotns/nsl-linux-x64@0.1.9':
+    optional: true
+
+  '@dotns/nsl-win32-x64@0.1.9':
+    optional: true
+
+  '@dotns/nsl@0.1.9':
+    optionalDependencies:
+      '@dotns/nsl-darwin-arm64': 0.1.9
+      '@dotns/nsl-darwin-x64': 0.1.9
+      '@dotns/nsl-linux-arm64': 0.1.9
+      '@dotns/nsl-linux-x64': 0.1.9
+      '@dotns/nsl-win32-x64': 0.1.9
 
   '@drizzle-team/brocli@0.10.2': {}
 
@@ -13570,29 +13593,6 @@ snapshots:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.1
-
-  '@nsio/nsl-darwin-arm64@0.1.7':
-    optional: true
-
-  '@nsio/nsl-darwin-x64@0.1.7':
-    optional: true
-
-  '@nsio/nsl-linux-arm64@0.1.7':
-    optional: true
-
-  '@nsio/nsl-linux-x64@0.1.7':
-    optional: true
-
-  '@nsio/nsl-win32-x64@0.1.7':
-    optional: true
-
-  '@nsio/nsl@0.1.7':
-    optionalDependencies:
-      '@nsio/nsl-darwin-arm64': 0.1.7
-      '@nsio/nsl-darwin-x64': 0.1.7
-      '@nsio/nsl-linux-arm64': 0.1.7
-      '@nsio/nsl-linux-x64': 0.1.7
-      '@nsio/nsl-win32-x64': 0.1.7
 
   '@nuxt/cli@3.35.2(@nuxt/schema@4.4.6)(cac@6.7.14)(magicast@0.5.2)':
     dependencies:

@@ -4,11 +4,11 @@
 [![Node](https://img.shields.io/badge/node-%E2%89%A5%2020-brightgreen.svg)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-%E2%89%A5%2010-f69220.svg)](https://pnpm.io/)
 [![Turborepo](https://img.shields.io/badge/built%20with-Turborepo-cc00ff.svg)](https://turbo.build/)
-[![NSL](https://img.shields.io/badge/dev%20proxy-%40nsio%2Fnsl-4a9eff.svg)](https://github.com/nsiod/nsl)
+[![NSL](https://img.shields.io/badge/dev%20proxy-%40nsio%2Fnsl-4a9eff.svg)](https://github.com/dotns/nsl)
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
-A modern web tools monorepo built with **Turborepo + pnpm**, spanning Next.js, Nuxt, Hono, and more. Local dev is proxied by [@nsio/nsl](https://github.com/nsiod/nsl) — every app gets a stable URL at `http://<name>.localhost:3355`, no port hunting needed.
+A modern web tools monorepo built with **Turborepo + pnpm**, spanning Next.js, Nuxt, Hono, and more. Local dev is proxied by [@dotns/nsl](https://github.com/dotns/nsl) — every app gets a stable URL at `http://<name>.localhost:3355`, no port hunting needed.
 
 > [!IMPORTANT]
 > Most apps run **entirely in the browser** with **zero server uploads** — your data never leaves your device.
@@ -300,7 +300,7 @@ pnpm install
 
 ### Common Commands
 
-Dev servers are proxied by [@nsio/nsl](https://github.com/nsiod/nsl) — each app is accessible at `http://<name>.localhost:3355` (name = package name with scope stripped).
+Dev servers are proxied by [@dotns/nsl](https://github.com/dotns/nsl) — each app is accessible at `http://<name>.localhost:3355` (name = package name with scope stripped).
 
 ```bash
 pnpm dev                                     # Start all apps (parallel dev)
@@ -381,15 +381,15 @@ pnpm clean                         # Clean node_modules / cache / build artifact
 
 ## Tech Stack
 
-| Layer             | Technology                                                                         |
-| ----------------- | ---------------------------------------------------------------------------------- |
-| **Frontend**      | React + Next.js 16+ (App Router) / Vue 3 + Nuxt 4                                  |
-| **Type System**   | TypeScript 5                                                                       |
-| **UI**            | shadcn/ui · Tailwind CSS v4 · Nuxt UI                                              |
-| **Browser APIs**  | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API                     |
-| **Backend / API** | Cloudflare Workers · Hono + Zod Validator                                          |
-| **Database**      | Drizzle ORM + LibSQL / Cloudflare D1                                               |
-| **Engineering**   | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format) · @nsio/nsl (dev proxy) |
+| Layer             | Technology                                                                          |
+| ----------------- | ----------------------------------------------------------------------------------- |
+| **Frontend**      | React + Next.js 16+ (App Router) / Vue 3 + Nuxt 4                                   |
+| **Type System**   | TypeScript 5                                                                        |
+| **UI**            | shadcn/ui · Tailwind CSS v4 · Nuxt UI                                               |
+| **Browser APIs**  | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API                      |
+| **Backend / API** | Cloudflare Workers · Hono + Zod Validator                                           |
+| **Database**      | Drizzle ORM + LibSQL / Cloudflare D1                                                |
+| **Engineering**   | Turborepo 2.x · pnpm 10 workspaces · Biome (Lint + Format) · @dotns/nsl (dev proxy) |
 
 ## License
 
