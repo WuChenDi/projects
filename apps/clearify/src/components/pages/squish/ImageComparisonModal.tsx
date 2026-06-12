@@ -1,13 +1,10 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
+import { ImageCompare } from '@cdlab996/ui/components/image-compare'
 import { formatFileSize } from '@cdlab996/utils'
 import { X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import {
-  ReactCompareSlider,
-  ReactCompareSliderImage,
-} from 'react-compare-slider'
 import type { ImageFile } from '@/types'
 
 interface ImageComparisonModalProps {
@@ -27,7 +24,10 @@ export const ImageComparisonModal = ({
   } | null>(null)
 
   const sources = useMemo(
-    () => (isOpen && image.file && image.blob ? { file: image.file, blob: image.blob } : null),
+    () =>
+      isOpen && image.file && image.blob
+        ? { file: image.file, blob: image.blob }
+        : null,
     [isOpen, image.file, image.blob],
   )
 
@@ -93,23 +93,13 @@ export const ImageComparisonModal = ({
           </div>
 
           <div className="relative aspect-video w-full max-h-[60vh] overflow-hidden rounded-lg bg-background border border-border/30">
-            <ReactCompareSlider
-              itemOne={
-                <ReactCompareSliderImage
-                  src={urls.original}
-                  alt="Original image"
-                  style={{ objectFit: 'contain' }}
-                />
-              }
-              itemTwo={
-                <ReactCompareSliderImage
-                  src={urls.compressed}
-                  alt="Compressed image"
-                  style={{ objectFit: 'contain' }}
-                />
-              }
-              position={50}
-              style={{ height: '100%' }}
+            <ImageCompare
+              leftImage={urls.original}
+              leftImageAlt="Original image"
+              rightImage={urls.compressed}
+              rightImageAlt="Compressed image"
+              fill
+              objectFit="contain"
             />
           </div>
 

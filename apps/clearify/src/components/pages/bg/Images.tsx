@@ -1,14 +1,11 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
+import { ImageCompare } from '@cdlab996/ui/components/image-compare'
 import { IKEmpty } from '@cdlab996/ui/IK'
 import { cn } from '@cdlab996/ui/lib/utils'
 import { CloudUpload, Download, Edit2, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
-import {
-  ReactCompareSlider,
-  ReactCompareSliderImage,
-} from 'react-compare-slider'
 import {
   IKAssetFailed,
   IKAssetLoading,
@@ -89,24 +86,13 @@ function ImageItem({ image, onDelete }: ImageItemProps) {
             backgroundRepeat: 'repeat',
           }}
         >
-          <ReactCompareSlider
-            itemOne={
-              <ReactCompareSliderImage
-                src={image.preview || ''}
-                alt="Original"
-              />
-            }
-            itemTwo={
-              <ReactCompareSliderImage
-                src={editedImageUrl || image.processedUrl || ''}
-                alt="Processed"
-                style={{
-                  background: transparentBg,
-                  backgroundRepeat: 'repeat',
-                }}
-              />
-            }
-            style={{ width: '100%', height: '100%' }}
+          <ImageCompare
+            leftImage={image.preview || ''}
+            leftImageAlt="Original"
+            rightImage={editedImageUrl || image.processedUrl || ''}
+            rightImageAlt="Processed"
+            fill
+            objectFit="contain"
           />
         </div>
         <div className="absolute top-2 right-2 z-10 flex gap-1">

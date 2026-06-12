@@ -18,6 +18,7 @@
     "ui": "@cdlab996/ui/components"
   },
   "registries": {
-    "@react-bits": "https://reactbits.dev/r/{name}.json"
+    "@react-bits": "https://reactbits.dev/r/{name}.json",
+    "@ikui": "https://ik-ui.pages.dev/r/{name}.json"
   }
 }
