@@ -134,7 +134,7 @@ export function LogDetailDrawer({ logId, onClose }: Props) {
               <div className="text-xs text-muted-foreground">
                 批次：
                 <Link
-                  href={`/logs/batches/${log.batchId}`}
+                  href={`/dashboard/logs/batches/${log.batchId}`}
                   className="font-mono underline-offset-2 hover:underline"
                 >
                   {log.batchId}

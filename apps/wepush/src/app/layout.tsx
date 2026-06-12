@@ -6,8 +6,7 @@ import { Toaster } from '@cdlab996/ui/components/sonner'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
-import { ClientProviders, Header } from '@/components/layout'
-import { PasswordGate } from '@/components/PasswordGate'
+import { ClientProviders } from '@/components/layout'
 
 const SITE_NAME = 'WePush'
 const SITE_TITLE = 'WePush - 微信公众号定时推送控制台'
@@ -155,8 +154,6 @@ function jsonLdScript(data: unknown) {
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  const hasEnvPassword = (process.env.ACCESS_PASSWORD || '').length > 0
-
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <head>
@@ -174,11 +171,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         suppressHydrationWarning
       >
         <ClientProviders>
-          <PasswordGate hasEnvPassword={hasEnvPassword}>
-            <Header />
-            {children}
-            {/* <IKFooter year={2026} /> */}
-          </PasswordGate>
+          {children}
           <Toaster richColors position="top-right" />
         </ClientProviders>
       </body>

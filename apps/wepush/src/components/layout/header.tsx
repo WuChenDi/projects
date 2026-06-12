@@ -13,12 +13,12 @@ const BRAND = 'wepush'
 const GITHUB_HREF = 'https://github.com/WuChenDi/projects/tree/main/apps/wepush'
 
 const ITEMS = [
-  { href: '/', label: '首页', icon: Home, exact: true },
-  { href: '/users', label: '接收人', icon: Users },
-  { href: '/templates', label: '模板', icon: FileText },
-  { href: '/logs', label: '日志', icon: ListChecks },
-  { href: '/debug', label: '探测', icon: Bug },
-  { href: '/settings', label: '设置', icon: Settings },
+  { href: '/dashboard', label: '概览', icon: Home, exact: true },
+  { href: '/dashboard/users', label: '接收人', icon: Users },
+  { href: '/dashboard/templates', label: '模板', icon: FileText },
+  { href: '/dashboard/logs', label: '日志', icon: ListChecks },
+  { href: '/dashboard/debug', label: '探测', icon: Bug },
+  { href: '/dashboard/settings', label: '设置', icon: Settings },
 ]
 
 export function Header() {
@@ -26,7 +26,7 @@ export function Header() {
   return (
     <header className="relative max-w-7xl mx-auto z-10">
       <div className="flex h-20 px-4 md:px-6 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear">
-        <Link href="/" className="flex shrink-0 items-center">
+        <Link href="/dashboard" className="flex shrink-0 items-center">
           <Image
             src="https://wcd.pages.dev/logo.png"
             alt="Chendi Wu Logo"
