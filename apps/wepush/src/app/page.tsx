@@ -436,13 +436,9 @@ export default function LandingPage() {
                   spotlightColor="rgba(255, 255, 255, 0.18)"
                   className="border-border bg-card"
                 >
-                  <GradientText
-                    className="text-3xl font-bold tabular-nums"
-                    colors={['#6366F1', '#EC4899', '#22D3EE']}
-                    animationSpeed={8}
-                  >
+                  <div className="mb-3 inline-flex items-center justify-center text-primary">
                     {String(i + 1).padStart(2, '0')}
-                  </GradientText>
+                  </div>
                   <h3 className="mt-2 font-semibold">{s.title}</h3>
                   <p className="mt-1.5 text-sm text-muted-foreground">
                     {s.desc}
