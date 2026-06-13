@@ -7,12 +7,14 @@ import { Bug, FileText, Home, ListChecks, Settings, Users } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import type { NavItem } from '@/components/layout/mobile-nav'
+import { MobileNav } from '@/components/layout/mobile-nav'
 import { ThemeToggle } from '@/components/layout/theme-toggle'
 
 const BRAND = 'wepush'
 const GITHUB_HREF = 'https://github.com/WuChenDi/projects/tree/main/apps/wepush'
 
-const ITEMS = [
+const ITEMS: NavItem[] = [
   { href: '/dashboard', label: '概览', icon: Home, exact: true },
   { href: '/dashboard/users', label: '接收人', icon: Users },
   { href: '/dashboard/templates', label: '模板', icon: FileText },
@@ -24,51 +26,55 @@ const ITEMS = [
 export function Header() {
   const pathname = usePathname()
   return (
-    <header className="relative max-w-7xl mx-auto z-10">
-      <div className="flex h-20 px-4 md:px-6 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear">
-        <Link href="/dashboard" className="flex shrink-0 items-center">
-          <Image
-            src="https://wcd.pages.dev/logo.png"
-            alt="Chendi Wu Logo"
-            width={32}
-            height={32}
-            className="mr-2 rounded-full"
-            unoptimized
-          />
-          {BRAND.split('').map((letter, index) => (
-            <span
-              // biome-ignore lint/suspicious/noArrayIndexKey: static brand string, order is stable
-              key={index}
-              className="transition-all duration-500 hover:-mt-2 hover:text-primary hover:duration-100"
-            >
-              {letter}
-            </span>
-          ))}
-        </Link>
+    <header className="sticky top-0 z-40">
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-2 px-4 md:px-6">
+        <div className="flex items-center gap-1 md:gap-6">
+          <MobileNav items={ITEMS} className="md:hidden" />
 
-        <nav className="flex flex-1 items-center gap-1 overflow-x-auto">
-          {ITEMS.map((item) => {
-            const Icon = item.icon
-            const active = item.exact
-              ? pathname === item.href
-              : pathname === item.href || pathname.startsWith(`${item.href}/`)
-            return (
-              <Link key={item.href} href={item.href}>
-                <Button
-                  variant={active ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className={cn(
-                    'h-8 shrink-0',
-                    active && 'pointer-events-none',
-                  )}
-                >
-                  <Icon className="size-3.5 sm:mr-1" />
-                  <span className="hidden sm:inline">{item.label}</span>
-                </Button>
-              </Link>
-            )
-          })}
-        </nav>
+          <Link href="/dashboard" className="flex shrink-0 items-center">
+            <Image
+              src="https://wcd.pages.dev/logo.png"
+              alt="Chendi Wu Logo"
+              width={32}
+              height={32}
+              className="mr-2 rounded-full"
+              unoptimized
+            />
+            {BRAND.split('').map((letter, index) => (
+              <span
+                // biome-ignore lint/suspicious/noArrayIndexKey: static brand string, order is stable
+                key={index}
+                className="transition-all duration-500 hover:-mt-2 hover:text-primary hover:duration-100"
+              >
+                {letter}
+              </span>
+            ))}
+          </Link>
+
+          <nav className="hidden items-center gap-1 md:flex">
+            {ITEMS.map((item) => {
+              const Icon = item.icon
+              const active = item.exact
+                ? pathname === item.href
+                : pathname === item.href || pathname.startsWith(`${item.href}/`)
+              return (
+                <Link key={item.href} href={item.href}>
+                  <Button
+                    variant={active ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className={cn(
+                      'h-8 shrink-0',
+                      active && 'pointer-events-none',
+                    )}
+                  >
+                    <Icon className="mr-1 size-3.5" />
+                    {item.label}
+                  </Button>
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
 
         <div className="flex shrink-0 items-center gap-2">
           <ThemeToggle />
