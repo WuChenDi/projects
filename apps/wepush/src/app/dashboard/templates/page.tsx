@@ -61,7 +61,7 @@ export default function TemplatesPage() {
           >
             <RotateCw className="size-3.5" />
           </Button>
-          <Link href="/templates/new">
+          <Link href="/dashboard/templates/new">
             <Button size="sm">
               <Plus className="size-4" />
               新建模板
@@ -98,7 +98,7 @@ export default function TemplatesPage() {
           title="还没有模板"
           description="每位用户通过 code 关联模板，支持 {{variable.DATA}} 模板变量。"
         >
-          <Link href="/templates/new" className="mt-4 inline-block">
+          <Link href="/dashboard/templates/new" className="mt-4 inline-block">
             <Button size="sm">
               <Plus className="mr-1 size-4" />
               新建第一个模板

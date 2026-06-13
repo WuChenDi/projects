@@ -303,7 +303,7 @@ export default function SettingsPage() {
           {users.length === 0 ? (
             <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
               尚无接收人。先去{' '}
-              <Link href="/users" className="underline">
+              <Link href="/dashboard/users" className="underline">
                 /users
               </Link>{' '}
               添加。

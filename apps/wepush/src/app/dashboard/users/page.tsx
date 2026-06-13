@@ -203,7 +203,7 @@ export default function UsersPage() {
           <Zap className="size-4" />
           {push.isPending ? '推送中...' : '推送全部'}
         </Button>
-        <Link href="/users/new">
+        <Link href="/dashboard/users/new">
           <Button size="sm">
             <Plus className="size-4" />
             新建接收人
@@ -302,7 +302,7 @@ export default function UsersPage() {
           title="还没有接收人"
           description="微信测试号订阅者，含城市、纪念日、累计日配置。"
         >
-          <Link href="/users/new" className="mt-4 inline-block">
+          <Link href="/dashboard/users/new" className="mt-4 inline-block">
             <Button size="sm">
               <Plus className="mr-1 size-4" />
               新建第一位接收人

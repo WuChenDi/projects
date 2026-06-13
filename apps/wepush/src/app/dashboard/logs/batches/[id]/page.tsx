@@ -117,7 +117,7 @@ export default function BatchDetailPage() {
                 : `重推失败（${data.batch.failedCount}）`}
             </Button>
           ) : null}
-          <Link href="/logs">
+          <Link href="/dashboard/logs">
             <Button variant="ghost" size="sm">
               返回日志
             </Button>

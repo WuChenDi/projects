@@ -144,7 +144,7 @@ export default function HomePage() {
               className={`size-3.5 ${isFetching ? 'animate-spin' : ''}`}
             />
           </Button>
-          <Link href="/users">
+          <Link href="/dashboard/users">
             <Button size="sm">立即推送</Button>
           </Link>
         </div>
@@ -185,7 +185,7 @@ export default function HomePage() {
           <CardTitle>最近批次</CardTitle>
           <CardAction>
             <Link
-              href="/logs"
+              href="/dashboard/logs"
               className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               查看全部 <ArrowRight className="size-3" />
@@ -206,7 +206,7 @@ export default function HomePage() {
               {data.recentBatches.map((b) => (
                 <li key={b.id}>
                   <Link
-                    href={`/logs/batches/${b.id}`}
+                    href={`/dashboard/logs/batches/${b.id}`}
                     className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-muted/40"
                   >
                     <div className="flex items-center gap-3">

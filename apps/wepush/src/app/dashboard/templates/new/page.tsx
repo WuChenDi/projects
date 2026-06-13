@@ -41,7 +41,7 @@ export default function NewTemplatePage() {
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
       <SubHeader title="新建模板">
-        <Link href="/templates">
+        <Link href="/dashboard/templates">
           <Button variant="ghost" size="sm">
             返回列表
           </Button>

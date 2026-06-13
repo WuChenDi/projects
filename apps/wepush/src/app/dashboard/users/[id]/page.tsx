@@ -150,7 +150,7 @@ export default function EditUserPage() {
             <Send className="mr-1 size-4" />
             {push.isPending ? '推送中...' : '立即推送'}
           </Button>
-          <Link href="/users">
+          <Link href="/dashboard/users">
             <Button variant="ghost" size="sm">
               返回列表
             </Button>

@@ -61,7 +61,7 @@ export default function NewUserPage() {
   return (
     <IKPageContainer className="flex-col max-w-6xl mx-auto">
       <SubHeader title="新建接收人">
-        <Link href="/users">
+        <Link href="/dashboard/users">
           <Button variant="ghost" size="sm">
             返回列表
           </Button>
