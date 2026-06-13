@@ -6,6 +6,7 @@ import {
 } from '@cdlab996/ui/components/accordion'
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
+import { IKPageContainer } from '@cdlab996/ui/IK'
 import { GitHubIcon as Github } from '@cdlab996/ui/icon'
 import GradientText from '@cdlab996/ui/reactbits/GradientText'
 import ShinyText from '@cdlab996/ui/reactbits/ShinyText'
@@ -250,7 +251,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="flex-1">
+      <IKPageContainer className="flex-col p-0 md:px-0">
         {/* Hero */}
         <section className="mx-auto w-full max-w-6xl px-4 py-16 text-center md:px-6 md:py-24">
           <Badge variant="outline" className="mb-6">
@@ -559,84 +560,84 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-      </main>
 
-      <footer className="border-t">
-        <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
-          <div className="flex flex-col justify-between gap-12 py-12 md:flex-row md:py-16">
-            <div className="flex max-w-sm flex-col gap-4">
-              <Link href="/" className="flex items-center gap-2">
-                <Image
-                  src="https://wcd.pages.dev/logo.png"
-                  alt="wepush logo"
-                  width={28}
-                  height={28}
-                  className="rounded-full"
-                  unoptimized
-                />
-                <span className="text-2xl font-semibold tracking-tight">
-                  wepush
-                </span>
-              </Link>
-              <p className="text-pretty text-sm leading-relaxed text-muted-foreground/75">
-                微信公众号模板消息定时推送控制台 —
-                多接收人、多模板、农历纪念日，到点自动发送。
-              </p>
-              <p className="text-xs text-muted-foreground/60">
-                Cloudflare Workers powered · 零运维部署
-              </p>
-            </div>
-
-            <div className="flex gap-12 sm:gap-16 md:gap-20">
-              {FOOTER_COLUMNS.map((column) => (
-                <div key={column.title} className="flex flex-col gap-3">
-                  <span className="text-sm font-medium text-muted-foreground/60">
-                    {column.title}
+        <footer className="border-t">
+          <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
+            <div className="flex flex-col justify-between gap-12 py-12 md:flex-row md:py-16">
+              <div className="flex max-w-sm flex-col gap-4">
+                <Link href="/" className="flex items-center gap-2">
+                  <Image
+                    src="https://wcd.pages.dev/logo.png"
+                    alt="wepush logo"
+                    width={28}
+                    height={28}
+                    className="rounded-full"
+                    unoptimized
+                  />
+                  <span className="text-2xl font-semibold tracking-tight">
+                    wepush
                   </span>
-                  <ul className="flex flex-col gap-3">
-                    {column.links.map((link) => {
-                      const Icon = link.icon
-                      return (
-                        <li key={link.href}>
-                          <Link
-                            href={link.href}
-                            className="flex items-center gap-2 text-sm text-muted-foreground/75 transition-colors hover:text-foreground"
-                            {...(link.external
-                              ? {
-                                  target: '_blank',
-                                  rel: 'noopener noreferrer',
-                                }
-                              : {})}
-                          >
-                            <Icon className="size-4" />
-                            {link.label}
-                          </Link>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </div>
-              ))}
+                </Link>
+                <p className="text-pretty text-sm leading-relaxed text-muted-foreground/75">
+                  微信公众号模板消息定时推送控制台 —
+                  多接收人、多模板、农历纪念日，到点自动发送。
+                </p>
+                <p className="text-xs text-muted-foreground/60">
+                  Cloudflare Workers powered · 零运维部署
+                </p>
+              </div>
+
+              <div className="flex gap-12 sm:gap-16 md:gap-20">
+                {FOOTER_COLUMNS.map((column) => (
+                  <div key={column.title} className="flex flex-col gap-3">
+                    <span className="text-sm font-medium text-muted-foreground/60">
+                      {column.title}
+                    </span>
+                    <ul className="flex flex-col gap-3">
+                      {column.links.map((link) => {
+                        const Icon = link.icon
+                        return (
+                          <li key={link.href}>
+                            <Link
+                              href={link.href}
+                              className="flex items-center gap-2 text-sm text-muted-foreground/75 transition-colors hover:text-foreground"
+                              {...(link.external
+                                ? {
+                                    target: '_blank',
+                                    rel: 'noopener noreferrer',
+                                  }
+                                : {})}
+                            >
+                              <Icon className="size-4" />
+                              {link.label}
+                            </Link>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 border-t py-6 text-xs text-muted-foreground/60 sm:flex-row sm:items-center sm:justify-between">
+              <p>
+                © Copyright 2026-PRESENT,{' '}
+                <Link
+                  href="https://github.com/WuChenDi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-colors hover:text-foreground"
+                >
+                  wudi
+                </Link>
+                . All Rights Reserved.
+              </p>
+              <span>Built with Next.js · Cloudflare Workers</span>
             </div>
           </div>
-
-          <div className="flex flex-col gap-3 border-t py-6 text-xs text-muted-foreground/60 sm:flex-row sm:items-center sm:justify-between">
-            <p>
-              © Copyright 2026-PRESENT,{' '}
-              <Link
-                href="https://github.com/WuChenDi"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-foreground"
-              >
-                wudi
-              </Link>
-              . All Rights Reserved.
-            </p>
-            <span>Built with Next.js · Cloudflare Workers</span>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      </IKPageContainer>
     </div>
   )
 }
