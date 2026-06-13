@@ -20,7 +20,7 @@ function ThemedBackground({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen w-full relative">
       {!mounted ? null : resolvedTheme === 'dark' ? (
         <div
-          className="absolute inset-0 z-[-1]"
+          className="fixed inset-0 z-[-1]"
           style={{
             background: `
               radial-gradient(ellipse 120% 80% at 70% 20%, rgba(255, 20, 147, 0.15), transparent 50%),
@@ -33,7 +33,7 @@ function ThemedBackground({ children }: { children: React.ReactNode }) {
         />
       ) : (
         <div
-          className="absolute inset-0 z-[-1]"
+          className="fixed inset-0 z-[-1]"
           style={{
             background: `linear-gradient(225deg, #FFB3D9 0%, #FFD1DC 20%, #FFF0F5 40%, #E6F3FF 60%, #D1E7FF 80%, #C7E9F1 100%)`,
           }}
