@@ -5,7 +5,18 @@
     "enterDashboard": "Open dashboard",
     "viewSource": "View source",
     "signOut": "Sign out",
-    "language": "Language"
+    "language": "Language",
+    "copy": "Copy",
+    "copied": "Copied to clipboard",
+    "copyFailed": "Failed to copy",
+    "open": "Open",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "prev": "Previous",
+    "next": "Next"
   },
   "landing": {
     "badge": "Cloudflare Workers · Edge redirects",
@@ -50,6 +61,72 @@
       "totalLinks": "Total links",
       "comingSoon": "Link management and analytics arrive in the next phase.",
       "signedIn": "You are signed in."
+    }
+  },
+  "links": {
+    "title": "Links",
+    "subtitle": "Create and manage your short links.",
+    "new": "New link",
+    "searchPlaceholder": "Search by slug, URL or comment…",
+    "empty": "No links yet. Create your first one.",
+    "pageOf": "Page {page} of {total}",
+    "sort": {
+      "createdAt": "Newest",
+      "updatedAt": "Recently updated",
+      "expiresAt": "Expiration"
+    },
+    "table": {
+      "slug": "Slug",
+      "destination": "Destination",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "qr": {
+      "title": "QR code",
+      "download": "Download PNG"
+    },
+    "delete": {
+      "title": "Delete link?",
+      "description": "This will remove “{slug}”. This action cannot be undone.",
+      "confirm": "Delete",
+      "success": "Link deleted"
+    },
+    "form": {
+      "createTitle": "New link",
+      "editTitle": "Edit link",
+      "subtitle": "Configure the destination and advanced routing.",
+      "url": "Destination URL",
+      "slug": "Slug",
+      "slugPlaceholder": "Leave empty to auto-generate",
+      "random": "Random",
+      "aiSlug": "AI slug",
+      "comment": "Comment",
+      "commentPlaceholder": "Optional note",
+      "section": {
+        "settings": "Link settings",
+        "og": "Open Graph",
+        "device": "Device redirect",
+        "geo": "Geo routing"
+      },
+      "redirectWithQuery": "Forward query string",
+      "cloaking": "Cloaking",
+      "unsafe": "Unsafe warning",
+      "expiration": "Expiration",
+      "pickDate": "Pick a date",
+      "clearDate": "Clear",
+      "password": "Password",
+      "passwordPlaceholder": "Protect with a password",
+      "passwordKeep": "Leave blank to keep current",
+      "ogTitle": "Title",
+      "ogDescription": "Description",
+      "ogImage": "Image URL",
+      "googlePlay": "Google Play URL",
+      "appStore": "App Store URL",
+      "addGeo": "Add country route",
+      "urlRequired": "A destination URL is required",
+      "aiFailed": "Failed to generate slug",
+      "created": "Link created",
+      "updated": "Link updated"
     }
   }
 }

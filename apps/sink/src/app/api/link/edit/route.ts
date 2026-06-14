@@ -1,0 +1,27 @@
+import { getCloudflareContext } from '@opennextjs/cloudflare'
+import { NextResponse } from 'next/server'
+import { requireSiteToken } from '@/lib/auth'
+import { updateLink } from '@/lib/links'
+import { EditLinkSchema } from '@/schemas/link'
+
+export async function PUT(request: Request): Promise<NextResponse> {
+  const auth = requireSiteToken(request)
+  if (!auth.ok) return auth.response
+
+  const parsed = EditLinkSchema.safeParse(
+    await request.json().catch(() => null),
+  )
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Invalid payload', issues: parsed.error.issues },
+      { status: 400 },
+    )
+  }
+
+  const { env } = getCloudflareContext()
+  const result = await updateLink(env, parsed.data)
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: result.status })
+  }
+  return NextResponse.json({ link: result.link })
+}
