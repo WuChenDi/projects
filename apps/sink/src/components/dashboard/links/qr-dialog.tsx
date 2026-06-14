@@ -36,7 +36,18 @@ export function QrDialog({
           <DialogDescription className="break-all">{url}</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center gap-4">
-          <QRCode ref={qrRef} value={url} type="canvas" size={224} bordered />
+          {/* Fixed black-on-white + quiet zone so the code scans regardless of
+              theme and the downloaded PNG looks right. */}
+          <QRCode
+            ref={qrRef}
+            value={url}
+            type="canvas"
+            size={224}
+            fgColor="#0f172a"
+            bgColor="#ffffff"
+            marginSize={2}
+            bordered
+          />
           <Button
             variant="outline"
             className="w-full"
