@@ -41,7 +41,7 @@
   "devDependencies": {
     "@cdlab996/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
-    "happy-dom": "^20.9.0",
+    "happy-dom": "^20",
     "jsdom": "catalog:dev",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",

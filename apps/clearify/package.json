@@ -1,6 +1,6 @@
 {
   "name": "@cdlab996/clearify",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "description": "Powerful web-based tools for your image editing needs",
   "author": "wudi <wuchendi96@gmail.com>",
@@ -34,7 +34,7 @@
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",
     "lucide-react": "catalog:prod",
-    "mediabunny": "^1.43.1",
+    "mediabunny": "catalog:prod",
     "next": "catalog:prod",
     "next-themes": "catalog:prod",
     "react": "catalog:prod",
@@ -49,7 +49,7 @@
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
-    "@webgpu/types": "^0.1.69",
+    "@webgpu/types": "^0.1.70",
     "typescript": "catalog:dev"
   }
 }

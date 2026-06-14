@@ -45,7 +45,7 @@
     "deploy:live-user": "turbo deploy --filter=./apps/live-user",
     "deploy:shortener": "turbo deploy --filter=./apps/shortener",
     "deploy:text2img": "turbo deploy --filter=./apps/text2img",
-    "deploy:wepush": "turbo deploy --filter=./apps/wepush",
+    "deploy:wepush": "pnpm --filter ./apps/wepush run deploy",
     "clean": "bash ./scripts/clean.sh",
     "lint": "turbo lint",
     "lint:biome": "biome check .",
@@ -53,11 +53,11 @@
     "prepare": "turbo run build --filter=./packages/*"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.16",
+    "@biomejs/biome": "^2.5.0",
     "@cdlab996/tsconfig": "workspace:*",
     "@dotns/nsl": "^0.1.9",
     "@types/node": "catalog:dev",
-    "turbo": "^2.9.16",
+    "turbo": "^2.9.18",
     "typescript": "catalog:dev"
   },
   "pnpm": {

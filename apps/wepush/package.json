@@ -46,9 +46,9 @@
     "react": "catalog:prod",
     "react-day-picker": "catalog:prod",
     "react-dom": "catalog:prod",
-    "recharts": "3.8.0",
+    "recharts": "catalog:prod",
     "sonner": "catalog:prod",
-    "tyme4ts": "^1.5.0",
+    "tyme4ts": "^1.5.2",
     "zod": "catalog:prod",
     "zustand": "catalog:prod"
   },
