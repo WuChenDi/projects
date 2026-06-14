@@ -27,23 +27,26 @@ export function CompressionSettings({
 }: CompressionSettingsProps) {
   const renderCompressionControl = () => {
     switch (settings.compressionMethod) {
-      case 'percentage':
+      case 'quality':
         return (
           <Field>
-            <Label>Target Quality Percentage</Label>
-            <Input
-              type="range"
-              min="1"
-              max="100"
-              value={settings.targetPercentage || '100'}
-              onChange={(e) =>
-                onSettingChange('targetPercentage', e.target.value)
-              }
-              className="w-full"
-            />
-            <div className="text-sm text-muted-foreground text-center">
-              {settings.targetPercentage || '100'}% quality
-            </div>
+            <Label>Quality</Label>
+            <Select
+              value={settings.quality}
+              onValueChange={(value) => onSettingChange('quality', value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select quality" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low (Smallest Size)</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="very_high">
+                  Very High (Best Quality)
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </Field>
         )
       case 'filesize':
@@ -60,32 +63,6 @@ export function CompressionSettings({
               }
               className="w-full"
             />
-          </Field>
-        )
-      case 'crf':
-        return (
-          <Field>
-            <Label>Video Quality (CRF)</Label>
-            <Select
-              value={settings.crfValue || '23'}
-              onValueChange={(value) => onSettingChange('crfValue', value)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select quality" />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 34 }, (_, i) => i + 18).map((value) => (
-                  <SelectItem key={value} value={value.toString()}>
-                    {value}{' '}
-                    {value === 18
-                      ? '(Best Quality)'
-                      : value === 51
-                        ? '(Smallest Size)'
-                        : ''}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </Field>
         )
       case 'bitrate':
@@ -131,11 +108,8 @@ export function CompressionSettings({
                 <SelectValue placeholder="Select method" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="percentage">
-                  Target quality percentage
-                </SelectItem>
+                <SelectItem value="quality">Quality preset</SelectItem>
                 <SelectItem value="filesize">Target file size (MB)</SelectItem>
-                <SelectItem value="crf">Target video quality (CRF)</SelectItem>
                 <SelectItem value="bitrate">Target bitrate</SelectItem>
               </SelectContent>
             </Select>
@@ -148,60 +122,22 @@ export function CompressionSettings({
               <Label>Video Codec</Label>
               <Select
                 value={settings.videoCodec}
-                onValueChange={(value) =>
-                  onSettingChange('videoCodec', value)
-                }
+                onValueChange={(value) => onSettingChange('videoCodec', value)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="libx264">H.264</SelectItem>
-                  <SelectItem value="libx265">H.265 (Slow)</SelectItem>
+                  <SelectItem value="avc">H.264</SelectItem>
+                  <SelectItem value="hevc">H.265</SelectItem>
                 </SelectContent>
               </Select>
-              {settings.videoCodec === 'libx265' && (
+              {settings.videoCodec === 'hevc' && (
                 <p className="text-xs text-amber-500">
-                  H.265 is significantly slower in browser. Use H.264 for faster compression.
+                  H.265 needs hardware encoder support; falls back to H.264 if
+                  unavailable.
                 </p>
               )}
-            </Field>
-
-            <Field>
-              <Label>Encoding Speed</Label>
-              <Select
-                value={settings.preset}
-                onValueChange={(value) => onSettingChange('preset', value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ultrafast">Ultra Fast</SelectItem>
-                  <SelectItem value="veryfast">Very Fast</SelectItem>
-                  <SelectItem value="fast">Fast</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="slow">Slow (Best Quality)</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <Field>
-              <Label>Audio Codec</Label>
-              <Select
-                value={settings.audioCodec}
-                onValueChange={(value) =>
-                  onSettingChange('audioCodec', value)
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="aac">AAC</SelectItem>
-                  <SelectItem value="mp3">MP3</SelectItem>
-                </SelectContent>
-              </Select>
             </Field>
 
             <Field>
@@ -235,6 +171,7 @@ export function CompressionSettings({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="original">Original</SelectItem>
                   <SelectItem value="24">24 fps</SelectItem>
                   <SelectItem value="30">30 fps</SelectItem>
                   <SelectItem value="60">60 fps</SelectItem>
@@ -253,9 +190,10 @@ export function CompressionSettings({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1920x1080">Original / 1080p</SelectItem>
-                <SelectItem value="1280x720">720p (Faster)</SelectItem>
-                <SelectItem value="854x480">480p (Fastest)</SelectItem>
+                <SelectItem value="original">Original</SelectItem>
+                <SelectItem value="1080">1080p</SelectItem>
+                <SelectItem value="720">720p</SelectItem>
+                <SelectItem value="480">480p</SelectItem>
               </SelectContent>
             </Select>
           </Field>

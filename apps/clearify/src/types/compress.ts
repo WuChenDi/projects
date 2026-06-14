@@ -1,24 +1,23 @@
+export type CompressionMethod = 'quality' | 'bitrate' | 'filesize'
+export type VideoQuality = 'low' | 'medium' | 'high' | 'very_high'
+
 export interface ConversionSettings {
-  compressionMethod: 'bitrate' | 'percentage' | 'filesize' | 'crf'
-  targetPercentage?: string
-  targetFilesize?: string
-  crfValue?: string
+  compressionMethod: CompressionMethod
+  quality: VideoQuality
   videoBitrate: string
-  videoCodec: string
-  audioCodec: string
+  targetFilesize?: string
+  videoCodec: 'avc' | 'hevc'
   audioBitrate: string
   frameRate: string
   resolution: string
-  preset: string
 }
 
 export const defaultSettings: ConversionSettings = {
-  compressionMethod: 'bitrate',
+  compressionMethod: 'quality',
+  quality: 'medium',
   videoBitrate: '2500k',
-  videoCodec: 'libx264',
-  audioCodec: 'aac',
+  videoCodec: 'avc',
   audioBitrate: '128k',
-  frameRate: '30',
-  resolution: '1920x1080',
-  preset: 'veryfast',
+  frameRate: 'original',
+  resolution: 'original',
 }

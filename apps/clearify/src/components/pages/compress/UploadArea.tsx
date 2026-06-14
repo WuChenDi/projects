@@ -1,23 +1,19 @@
 import { Button } from '@cdlab996/ui/components/button'
 import { formatFileSize } from '@cdlab996/utils'
-import { FileVideo, Loader2, Upload, X } from 'lucide-react'
+import { FileVideo, Upload, X } from 'lucide-react'
 import type { DropzoneInputProps, DropzoneRootProps } from 'react-dropzone'
 import { IKMediaUpload } from '@/components/IK'
 
 interface UploadAreaProps {
   video: File | null
   previewUrl: string
-  isLoading: boolean
   isProcessing: boolean
-  isReady: boolean
-  error: string | null
   outputUrl: string
   getRootProps: () => DropzoneRootProps
   getInputProps: () => DropzoneInputProps
   isDragActive: boolean
   isDragAccept: boolean
   isDragReject: boolean
-  onRetryLoad: () => void
   onReset: () => void
   onCompress: () => void
 }
@@ -25,17 +21,13 @@ interface UploadAreaProps {
 export function UploadArea({
   video,
   previewUrl,
-  isLoading,
   isProcessing,
-  isReady,
-  error,
   outputUrl,
   getRootProps,
   getInputProps,
   isDragActive,
   isDragAccept,
   isDragReject,
-  onRetryLoad,
   onReset,
   onCompress,
 }: UploadAreaProps) {
@@ -49,23 +41,6 @@ export function UploadArea({
           isDragActive={isDragActive}
           isDragAccept={isDragAccept}
           isDragReject={isDragReject}
-          isDisabled={isLoading}
-          isLoading={isLoading}
-          loadingText="Loading video processor..."
-          errorText={error || undefined}
-          errorActions={
-            error ? (
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onRetryLoad()
-                }}
-                size="sm"
-              >
-                Retry Loading
-              </Button>
-            ) : undefined
-          }
           acceptedFormats="MP4, MOV, AVI, etc."
           title="Upload Video"
           description="Drag & drop or click to select"
@@ -102,22 +77,9 @@ export function UploadArea({
 
       {/* Compress Button */}
       {video && !isProcessing && !outputUrl && (
-        <Button
-          onClick={onCompress}
-          className="w-full"
-          disabled={!isReady || isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="size-4 animate-spin" />
-              <span>Loading...</span>
-            </>
-          ) : (
-            <>
-              <Upload className="size-4" />
-              <span>Compress Video</span>
-            </>
-          )}
+        <Button onClick={onCompress} className="w-full">
+          <Upload className="size-4" />
+          <span>Compress Video</span>
         </Button>
       )}
     </div>
