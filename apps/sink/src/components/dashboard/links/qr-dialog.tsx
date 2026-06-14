@@ -8,10 +8,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@cdlab996/ui/components/dialog'
+import type { QRCodeHandle } from '@cdlab996/ui/components/qr-code'
+import { QRCode } from '@cdlab996/ui/components/qr-code'
 import { Download } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import QRCode from 'qrcode'
-import { useEffect, useState } from 'react'
+import { useRef } from 'react'
 
 export function QrDialog({
   url,
@@ -25,14 +26,7 @@ export function QrDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const t = useTranslations('links')
-  const [dataUrl, setDataUrl] = useState('')
-
-  useEffect(() => {
-    if (!open) return
-    QRCode.toDataURL(url, { width: 320, margin: 1 })
-      .then(setDataUrl)
-      .catch(() => setDataUrl(''))
-  }, [open, url])
+  const qrRef = useRef<QRCodeHandle>(null)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -42,22 +36,15 @@ export function QrDialog({
           <DialogDescription className="break-all">{url}</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center gap-4">
-          {dataUrl ? (
-            // biome-ignore lint/performance/noImgElement: QR is a local data URL; next/image adds no value
-            <img
-              src={dataUrl}
-              alt={`QR code for ${slug}`}
-              className="size-56 rounded-md border bg-white p-2"
-            />
-          ) : (
-            <div className="size-56 animate-pulse rounded-md border bg-muted" />
-          )}
-          <a href={dataUrl} download={`${slug}.png`} className="w-full">
-            <Button variant="outline" className="w-full" disabled={!dataUrl}>
-              <Download className="mr-2 size-4" />
-              {t('qr.download')}
-            </Button>
-          </a>
+          <QRCode ref={qrRef} value={url} type="canvas" size={224} bordered />
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => qrRef.current?.download(`${slug}.png`)}
+          >
+            <Download className="mr-2 size-4" />
+            {t('qr.download')}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -1061,9 +1061,6 @@ importers:
       next-themes:
         specifier: catalog:prod
         version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      qrcode:
-        specifier: ^1.5.4
-        version: 1.5.4
       react:
         specifier: catalog:prod
         version: 19.2.4
@@ -1098,9 +1095,6 @@ importers:
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
-      '@types/qrcode':
-        specifier: ^1.5.6
-        version: 1.5.6
       '@types/react':
         specifier: catalog:dev
         version: 19.2.14
@@ -1450,6 +1444,9 @@ importers:
       '@base-ui/react':
         specifier: catalog:prod
         version: 1.5.0(@date-fns/tz@1.5.0)(@types/react@19.2.14)(date-fns@4.4.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@types/qrcode':
+        specifier: ^1.5.6
+        version: 1.5.6
       class-variance-authority:
         specifier: catalog:prod
         version: 0.7.1
@@ -1474,6 +1471,9 @@ importers:
       ogl:
         specifier: catalog:prod
         version: 1.0.11
+      qrcode:
+        specifier: ^1.5.4
+        version: 1.5.4
       radix-ui:
         specifier: catalog:prod
         version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)

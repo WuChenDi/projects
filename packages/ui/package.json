@@ -25,6 +25,7 @@
   "scripts": {},
   "dependencies": {
     "@base-ui/react": "catalog:prod",
+    "@types/qrcode": "^1.5.6",
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",
     "date-fns": "catalog:prod",
@@ -33,6 +34,7 @@
     "motion": "catalog:prod",
     "next-themes": "catalog:prod",
     "ogl": "catalog:prod",
+    "qrcode": "^1.5.4",
     "radix-ui": "catalog:prod",
     "react": "catalog:prod",
     "react-day-picker": "catalog:prod",
