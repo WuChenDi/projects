@@ -360,9 +360,42 @@ Starting **P1a**.
 P1 sliced into BKD issues (project `projects` / `68ll1mkh`, tags
 `sink`,`FEAT-001`, status `todo`, not yet dispatched):
 
-- `wt3cdi2y` — Sink P1a: scaffold + schema + auth + redirect engine
-- `u3wuz8f7` — Sink P1b: link management + AI slug
-- `l0huhojt` — Sink P1c: analytics dashboard
+- `hd2zbarw` — Sink P1a: scaffold + schema + auth + redirect engine
+  (worktree; **dispatched** claude-code / claude-opus-4-8[1m], status `working`)
+- `u3wuz8f7` — Sink P1b: link management + AI slug (`todo`)
+- `l0huhojt` — Sink P1c: analytics dashboard (`todo`)
 
 Each carries a full scope/acceptance follow-up. Dependency chain P1a → P1b →
-P1c. Execution dispatch awaits user go-ahead.
+P1c.
+
+### 2026-06-14 — P1a complete, reviewed, merged
+
+P1a delivered and merged into `feat/sink-app` (subtask `hd2zbarw` → done).
+Coordinator independently verified build + biome, ran /pma-cr, and fixed 3
+findings (commit `7a846d9`): apple-UA over-match (desktop macOS), relative
+`notFoundRedirect` throwing in `Response.redirect`, non-constant-time
+site-token compare. Subtask had already fixed a password-link OG leak.
+
+Carried into P1b: geo config keys must be stored UPPERCASE (resolveDestination
+indexes `config.geo[cf.country]`, CF country is uppercase); password+unsafe
+combo skips the unsafe interstitial after a correct password (low-pri edge).
+
+**Sections done (P1a):** A (login + middleware gate), B (schema + migration),
+C (full redirect engine), D (AE ingestion util), L (cron cleanup), M (bindings,
+config flags, worker wrapper, theme/providers, i18n baseline, landing/dashboard
+shell). Remaining P1 work: P1b (G + H), P1c (D queries + E).
+
+**Orchestration constraint:** BKD worktrees branch from `origin/main` (which
+lacks P1a — it is on `feat/sink-app`), so P1b/P1c cannot be cleanly
+BKD-dispatched into a fresh worktree yet. Options: run in-session on
+`feat/sink-app`, or land P1 on `main` first. Pending user decision.
+
+### 2026-06-14 — P1a dispatched to BKD (worktree)
+
+P1a runs in an isolated worktree based on `main`, so PMA docs are NOT in its
+workspace — it builds from the self-contained inline spec + reference apps
+(wepush) + tmp/Sink. The subtask owns code + self-review (/pma-cr); the
+coordinator (this session) owns docs/tracking and the post-completion merge.
+On completion the subtask moves itself to `review` and posts a summary
+follow-up. (The original simple-mode issue `wt3cdi2y` was deleted and recreated
+as worktree issue `hd2zbarw`.)
