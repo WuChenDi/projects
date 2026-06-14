@@ -68,14 +68,19 @@ export class AnalyticsNotConfiguredError extends Error {
   }
 }
 
-// Escape a value for a single-quoted SQL literal; strip control chars.
+// Escape a value for a single-quoted Analytics Engine (ClickHouse) SQL literal.
+// ClickHouse treats BOTH backslash and single-quote as escapes inside a string
+// literal, so a trailing/embedded backslash can escape the closing quote and
+// break out — escape the backslash first, then the quote. Control chars are
+// also dropped. Filter values are second-order untrusted (analytics dimensions
+// like referer/slug are visitor-controlled), so this must be backslash-safe.
 function sanitize(input: string): string {
   let out = ''
   for (const ch of input) {
     const code = ch.charCodeAt(0)
     if (code >= 32 && code !== 127) out += ch
   }
-  return out.replace(/'/g, "''")
+  return out.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
 }
 
 export function isConfigured(env: CloudflareEnv): boolean {
