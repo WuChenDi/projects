@@ -1,0 +1,74 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sink",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-05-25",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".open-next/assets"
+  },
+  "vars": {
+    // Single shared token that gates the dashboard + every /api/* route.
+    // Set to empty string to disable the gate (NOT recommended in production).
+    "SITE_TOKEN": "SinkSecretToken",
+    // Driver selector — both run on Cloudflare Workers:
+    //   "d1"     → uses the `DB` binding below
+    //   "libsql" → uses LIBSQL_URL + LIBSQL_AUTH_TOKEN (Turso etc.)
+    "DB_TYPE": "d1",
+    // LibSQL Configuration (dev / Turso). Default is a local SQLite file.
+    "LIBSQL_URL": "your-libsql-url",
+    "LIBSQL_AUTH_TOKEN": "your-libsql-auth-token",
+    // Redirect engine knobs (all optional — defaults shown).
+    "REDIRECT_STATUS_CODE": "308",
+    "LINK_CACHE_TTL": "60",
+    "REDIRECT_WITH_QUERY": "false",
+    "HOME_URL": "",
+    "NOT_FOUND_REDIRECT": "",
+    "CASE_SENSITIVE": "false",
+    "SLUG_DEFAULT_LENGTH": "6",
+    "LIST_QUERY_LIMIT": "500",
+    // Analytics Engine knobs.
+    "DATASET": "sink_analytics",
+    "DISABLE_BOT_ACCESS_LOG": "false",
+    // AI slug generation knobs.
+    "AI_MODEL": "@cf/meta/llama-3.1-8b-instruct",
+    "AI_PROMPT": ""
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sink",
+      "migrations_dir": "./src/database",
+      "database_id": "your-d1-database-id"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "your-kv-namespace-id"
+    }
+  ],
+  "ai": {
+    "binding": "AI"
+  },
+  "analytics_engine_datasets": [
+    {
+      "binding": "ANALYTICS",
+      "dataset": "sink_analytics"
+    }
+  ],
+  // Scheduled cleanup — handled by the `scheduled()` handler in src/worker/index.ts.
+  // Default: daily at 00:00 UTC. Soft-deletes expired links + purges their KV cache.
+  "triggers": {
+    "crons": ["0 0 * * *"]
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}
