@@ -42,3 +42,37 @@ implementing; FEAT-001 → in_progress. P1 sliced into BKD issues under project
 schema + auth + redirect), `u3wuz8f7` P1b (link mgmt + AI slug), `l0huhojt`
 P1c (analytics). Dependency P1a→P1b→P1c. Not yet dispatched — awaiting
 go-ahead.
+
+## 2026-06-14 06:05 [progress]
+
+Committed PMA docs to `feat/sink-app`. Dispatched **P1a** to BKD for autonomous
+execution: recreated as worktree issue `hd2zbarw` (worktree off `main`),
+engine claude-code / claude-opus-4-8[1m], now `working`. Subtask builds
+apps/sink from the self-contained spec + reference apps, self-reviews
+(/pma-cr), then moves to `review` and reports back. Coordinator (this session)
+handles tracking + merge. P1b `u3wuz8f7` / P1c `l0huhojt` remain `todo`.
+
+## 2026-06-14 07:05 [progress]
+
+**P1a complete and merged** into `feat/sink-app`. New app `apps/sink` (51
+files): Next/OpenNext scaffold, Drizzle `links` schema (config JSON,
+`UNIQUE(slug, domain)`) + baseline migration, dual-driver `getDb`, site-token
+auth + login + `/api/verify`, redirect engine (`app/[slug]` GET/POST + `/og`:
+KV cache, geo/device routing, password gate, unsafe interstitial, social-bot
+OG, AE access log, reserveSlug), analytics util, cron cleanup, cookie-based
+i18n (en/zh), dashboard shell, landing. Build + biome pass; dev + redirect
+e2e verified by the subtask.
+
+Coordinator independently re-ran build/biome and a /pma-cr pass; fixed 3
+findings (commit 7a846d9): apple-UA over-match (desktop macOS → App Store),
+relative `notFoundRedirect` throwing in `Response.redirect`, non-constant-time
+site-token compare. The subtask's own /pma-cr had already caught and fixed a
+password-link OG destination leak. BKD issue `hd2zbarw` → done.
+
+## 2026-06-14 07:05 [pitfall]
+
+**Orchestration constraint**: BKD worktrees branch from `origin/main` (priority
+over local `main`), which does NOT contain P1a (it lives on `feat/sink-app`).
+So dependent phases P1b/P1c cannot be BKD-dispatched into a fresh worktree
+without P1a present — they must either run in-session on `feat/sink-app`, or
+wait until P1 lands on `main`. Decision pending with user.

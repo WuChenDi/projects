@@ -54,4 +54,8 @@ Rebuilding shortener into a Sink-like Next.js dashboard app.
   wepush frontend stack, genid, Sink AE layout, **i18n in P1**, globe/map/
   OpenAPI not built.
 - One interpretation flagged for confirmation: multi-domain via composite
-  `(slug, domain)` vs the original sha256 hash mechanism.
+  `(slug, domain)` vs the original sha256 hash mechanism. → resolved: composite.
+- **P1a done** (2026-06-14): `apps/sink` scaffold + redirect engine merged into
+  `feat/sink-app` (BKD `hd2zbarw` → done; coordinator /pma-cr fixes in 7a846d9).
+  P1b (`u3wuz8f7`) / P1c (`l0huhojt`) remain — dispatch blocked by the BKD
+  base-branch constraint (see PLAN-001); decide in-session vs land-on-main.
