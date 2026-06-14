@@ -1,0 +1,461 @@
+'use client'
+
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@cdlab996/ui/components/accordion'
+import { Button } from '@cdlab996/ui/components/button'
+import { Calendar } from '@cdlab996/ui/components/calendar'
+import { Input } from '@cdlab996/ui/components/input'
+import { Label } from '@cdlab996/ui/components/label'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@cdlab996/ui/components/popover'
+import { Switch } from '@cdlab996/ui/components/switch'
+import { Textarea } from '@cdlab996/ui/components/textarea'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { CalendarIcon, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useLocale, useTranslations } from 'next-intl'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import type { LinkRow } from '@/lib/api'
+import { linkApi } from '@/lib/api'
+import type { CreateLinkInput } from '@/schemas/link'
+
+const SLUG_ALPHABET = '23456789abcdefghjkmnpqrstuvwxyz'
+function randomSlug(length = 6): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(length))
+  let out = ''
+  for (let i = 0; i < length; i++)
+    out += SLUG_ALPHABET[bytes[i]! % SLUG_ALPHABET.length]
+  return out
+}
+
+interface GeoRow {
+  id: string
+  country: string
+  url: string
+}
+
+function geoRow(country = '', url = ''): GeoRow {
+  return { id: crypto.randomUUID(), country, url }
+}
+
+interface FormState {
+  url: string
+  slug: string
+  comment: string
+  expiresAt: number | null
+  password: string
+  apple: string
+  google: string
+  title: string
+  description: string
+  image: string
+  cloaking: boolean
+  redirectWithQuery: boolean
+  unsafe: boolean
+  geo: GeoRow[]
+}
+
+function initialState(existing?: LinkRow): FormState {
+  const c = existing?.config ?? {}
+  return {
+    url: existing?.url ?? '',
+    slug: existing?.slug ?? '',
+    comment: existing?.comment ?? '',
+    expiresAt: existing?.expiresAt
+      ? new Date(existing.expiresAt).getTime()
+      : null,
+    password: '',
+    apple: c.apple ?? '',
+    google: c.google ?? '',
+    title: c.title ?? '',
+    description: c.description ?? '',
+    image: c.image ?? '',
+    cloaking: c.cloaking ?? false,
+    redirectWithQuery: c.redirectWithQuery ?? false,
+    unsafe: c.unsafe ?? false,
+    geo: c.geo
+      ? Object.entries(c.geo).map(([country, url]) => geoRow(country, url))
+      : [],
+  }
+}
+
+function buildPayload(f: FormState): CreateLinkInput {
+  const config: CreateLinkInput['config'] = {}
+  if (f.apple) config.apple = f.apple
+  if (f.google) config.google = f.google
+  if (f.title) config.title = f.title
+  if (f.description) config.description = f.description
+  if (f.image) config.image = f.image
+  if (f.cloaking) config.cloaking = true
+  if (f.redirectWithQuery) config.redirectWithQuery = true
+  if (f.unsafe) config.unsafe = true
+  const geo = f.geo
+    .filter((g) => g.country.trim() && g.url.trim())
+    .reduce<Record<string, string>>((acc, g) => {
+      acc[g.country.trim().toUpperCase()] = g.url.trim()
+      return acc
+    }, {})
+  if (Object.keys(geo).length) config.geo = geo
+
+  return {
+    url: f.url.trim(),
+    slug: f.slug.trim() || undefined,
+    comment: f.comment.trim() || undefined,
+    expiresAt: f.expiresAt ?? null,
+    config,
+    password: f.password.trim() || undefined,
+  }
+}
+
+export function LinkEditor({ existing }: { existing?: LinkRow }) {
+  const t = useTranslations('links.form')
+  const tc = useTranslations('common')
+  const locale = useLocale()
+  const router = useRouter()
+  const queryClient = useQueryClient()
+  const isEdit = !!existing
+
+  const [form, setForm] = useState<FormState>(() => initialState(existing))
+  const [aiPending, setAiPending] = useState(false)
+  const [dateOpen, setDateOpen] = useState(false)
+
+  function set<K extends keyof FormState>(key: K, value: FormState[K]) {
+    setForm((s) => ({ ...s, [key]: value }))
+  }
+
+  const save = useMutation({
+    mutationFn: () => {
+      const payload = buildPayload(form)
+      return isEdit
+        ? linkApi.edit({ ...payload, id: existing!.id })
+        : linkApi.create(payload)
+    },
+    onSuccess: () => {
+      toast.success(isEdit ? t('updated') : t('created'))
+      void queryClient.invalidateQueries({ queryKey: ['links'] })
+      router.push('/dashboard/links')
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+
+  async function generateSlug() {
+    if (!form.url.trim()) {
+      toast.error(t('urlRequired'))
+      return
+    }
+    setAiPending(true)
+    try {
+      const { slug } = await linkApi.aiSlug(form.url.trim())
+      set('slug', slug)
+    } catch {
+      toast.error(t('aiFailed'))
+    } finally {
+      setAiPending(false)
+    }
+  }
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!form.url.trim()) {
+      toast.error(t('urlRequired'))
+      return
+    }
+    save.mutate()
+  }
+
+  const expiryDate = form.expiresAt ? new Date(form.expiresAt) : undefined
+
+  return (
+    <form onSubmit={onSubmit} className="mx-auto max-w-2xl space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold">
+          {isEdit ? t('editTitle') : t('createTitle')}
+        </h1>
+        <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="url">{t('url')}</Label>
+        <Input
+          id="url"
+          value={form.url}
+          onChange={(e) => set('url', e.target.value)}
+          placeholder="https://example.com/very/long/url"
+          autoComplete="off"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="slug">{t('slug')}</Label>
+          <div className="flex gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => set('slug', randomSlug())}
+            >
+              {t('random')}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={aiPending}
+              onClick={generateSlug}
+            >
+              <Sparkles
+                className={`mr-1 size-3.5 ${aiPending ? 'animate-pulse' : ''}`}
+              />
+              {t('aiSlug')}
+            </Button>
+          </div>
+        </div>
+        <Input
+          id="slug"
+          value={form.slug}
+          onChange={(e) => set('slug', e.target.value)}
+          placeholder={t('slugPlaceholder')}
+          autoComplete="off"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="comment">{t('comment')}</Label>
+        <Input
+          id="comment"
+          value={form.comment}
+          onChange={(e) => set('comment', e.target.value)}
+          placeholder={t('commentPlaceholder')}
+        />
+      </div>
+
+      <Accordion type="multiple" className="w-full">
+        <AccordionItem value="link_settings">
+          <AccordionTrigger>{t('section.settings')}</AccordionTrigger>
+          <AccordionContent className="space-y-4 px-1">
+            <SwitchField
+              label={t('redirectWithQuery')}
+              checked={form.redirectWithQuery}
+              onChange={(v) => set('redirectWithQuery', v)}
+            />
+            <SwitchField
+              label={t('cloaking')}
+              checked={form.cloaking}
+              onChange={(v) => set('cloaking', v)}
+            />
+            <SwitchField
+              label={t('unsafe')}
+              checked={form.unsafe}
+              onChange={(v) => set('unsafe', v)}
+            />
+            <div className="space-y-2">
+              <Label>{t('expiration')}</Label>
+              <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={`w-full justify-start font-normal ${expiryDate ? '' : 'text-muted-foreground'}`}
+                  >
+                    <CalendarIcon className="mr-2 size-4" />
+                    {expiryDate
+                      ? expiryDate.toLocaleDateString(locale)
+                      : t('pickDate')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={expiryDate}
+                    defaultMonth={expiryDate}
+                    disabled={{ before: new Date() }}
+                    onSelect={(d?: Date) => {
+                      set('expiresAt', d ? d.getTime() : null)
+                      if (d) setDateOpen(false)
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+              {expiryDate && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => set('expiresAt', null)}
+                >
+                  {t('clearDate')}
+                </Button>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">{t('password')}</Label>
+              <Input
+                id="password"
+                type="password"
+                value={form.password}
+                onChange={(e) => set('password', e.target.value)}
+                placeholder={
+                  isEdit ? t('passwordKeep') : t('passwordPlaceholder')
+                }
+                autoComplete="new-password"
+              />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="og">
+          <AccordionTrigger>{t('section.og')}</AccordionTrigger>
+          <AccordionContent className="space-y-4 px-1">
+            <div className="space-y-2">
+              <Label htmlFor="title">{t('ogTitle')}</Label>
+              <Input
+                id="title"
+                value={form.title}
+                onChange={(e) => set('title', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">{t('ogDescription')}</Label>
+              <Textarea
+                id="description"
+                value={form.description}
+                onChange={(e) => set('description', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="image">{t('ogImage')}</Label>
+              <Input
+                id="image"
+                value={form.image}
+                onChange={(e) => set('image', e.target.value)}
+                placeholder="https://…"
+              />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="device">
+          <AccordionTrigger>{t('section.device')}</AccordionTrigger>
+          <AccordionContent className="space-y-4 px-1">
+            <div className="space-y-2">
+              <Label htmlFor="google">{t('googlePlay')}</Label>
+              <Input
+                id="google"
+                value={form.google}
+                onChange={(e) => set('google', e.target.value)}
+                placeholder="https://play.google.com/store/apps/…"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="apple">{t('appStore')}</Label>
+              <Input
+                id="apple"
+                value={form.apple}
+                onChange={(e) => set('apple', e.target.value)}
+                placeholder="https://apps.apple.com/app/…"
+              />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="geo">
+          <AccordionTrigger>{t('section.geo')}</AccordionTrigger>
+          <AccordionContent className="space-y-2 px-1">
+            {form.geo.map((row) => (
+              <div key={row.id} className="flex gap-2">
+                <Input
+                  value={row.country}
+                  maxLength={2}
+                  placeholder="US"
+                  className="w-20 uppercase"
+                  onChange={(e) =>
+                    set(
+                      'geo',
+                      form.geo.map((g) =>
+                        g.id === row.id ? { ...g, country: e.target.value } : g,
+                      ),
+                    )
+                  }
+                />
+                <Input
+                  value={row.url}
+                  placeholder="https://…"
+                  className="flex-1"
+                  onChange={(e) =>
+                    set(
+                      'geo',
+                      form.geo.map((g) =>
+                        g.id === row.id ? { ...g, url: e.target.value } : g,
+                      ),
+                    )
+                  }
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() =>
+                    set(
+                      'geo',
+                      form.geo.filter((g) => g.id !== row.id),
+                    )
+                  }
+                >
+                  <Trash2 className="size-4 text-muted-foreground" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => set('geo', [...form.geo, geoRow()])}
+            >
+              <Plus className="mr-1 size-4" />
+              {t('addGeo')}
+            </Button>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+
+      <div className="flex justify-end gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.push('/dashboard/links')}
+        >
+          {tc('cancel')}
+        </Button>
+        <Button type="submit" disabled={save.isPending}>
+          {save.isPending ? tc('saving') : tc('save')}
+        </Button>
+      </div>
+    </form>
+  )
+}
+
+function SwitchField({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string
+  checked: boolean
+  onChange: (v: boolean) => void
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <Label className="font-normal">{label}</Label>
+      <Switch checked={checked} onCheckedChange={onChange} />
+    </div>
+  )
+}
