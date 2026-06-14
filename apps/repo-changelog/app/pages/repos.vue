@@ -136,9 +136,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-4 sm:px-6 lg:grid lg:grid-cols-[340px_1fr] lg:gap-8">
-    <!-- Left rail -->
-    <aside class="lg:sticky lg:top-[calc(56px+1rem)] lg:max-h-[calc(100vh-56px-2rem)] lg:overflow-y-auto py-4 lg:py-8">
+  <div class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-4 sm:px-6 lg:grid lg:grid-cols-[320px_1fr] lg:grid-rows-[1fr] lg:gap-10">
+    <!-- Left rail — full-height column (divider) with an independently scrolling inner pane -->
+    <aside class="lg:col-start-1 lg:border-r lg:border-[var(--rule)]">
+      <div class="py-4 lg:sticky lg:top-[58px] lg:max-h-[calc(100vh-58px)] lg:overflow-y-auto lg:py-8 lg:pr-10">
       <!-- Mobile header bar -->
       <div class="flex items-center justify-between gap-3 lg:hidden">
         <UButton
@@ -151,7 +152,7 @@ onMounted(() => {
           Back
         </UButton>
         <div class="min-w-0 flex-1 text-right">
-          <div class="rc-mono truncate text-xs text-[var(--ui-text-muted)]">
+          <div class="rc-serif truncate text-sm font-semibold tracking-tight">
             {{ sidebarTitle }}
           </div>
         </div>
@@ -167,85 +168,72 @@ onMounted(() => {
 
       <div
         v-show="mobileMetaExpanded"
-        class="mt-3 space-y-4 lg:!block lg:mt-0"
+        class="mt-3 space-y-6 lg:!block lg:mt-0"
       >
         <!-- Desktop header -->
         <div class="hidden lg:block">
-          <div class="rc-mono mb-2 flex items-center gap-2 text-[10px] uppercase tracking-widest text-[var(--ui-text-muted)]">
-            <UIcon
-              name="i-lucide-git-commit-horizontal"
-              class="size-3"
-            />
-            Changelog
+          <div class="rc-kicker text-[var(--press)]">
+            Today's edition
           </div>
-          <h1 class="text-2xl font-semibold tracking-tight">
+          <h1 class="rc-serif mt-2 text-3xl font-semibold leading-tight tracking-tight">
             {{ sidebarTitle }}
           </h1>
-          <p class="mt-1 text-xs text-[var(--ui-text-muted)]">
-            {{ selectedRepos.length === 1 ? 'Latest releases' : `Merged feed across ${selectedRepos.length} repositories` }}
+          <p class="mt-1.5 text-xs text-[var(--ink-soft)]">
+            {{ selectedRepos.length === 1 ? 'Latest releases, set in print' : `A merged dispatch across ${selectedRepos.length} repositories` }}
           </p>
+          <div class="rc-rule-double mt-4" />
           <UButton
-            variant="ghost"
+            variant="link"
             icon="i-lucide-arrow-left"
             size="sm"
             color="neutral"
-            class="-ml-2 mt-3"
+            class="-ml-1 mt-3 rc-mono text-[11px] uppercase tracking-wider"
             @click="goBackToSelection"
           >
-            Back to selection
+            Back to the newsstand
           </UButton>
         </div>
 
-        <!-- Tracked repos -->
-        <div class="rc-surface rounded-lg p-4">
-          <div class="rc-mono mb-2.5 flex items-center justify-between text-[10px] uppercase tracking-widest text-[var(--ui-text-muted)]">
+        <!-- In this edition -->
+        <div>
+          <div class="rc-kicker mb-2.5 flex items-center justify-between border-b border-[var(--rule)] pb-2">
             <span class="flex items-center gap-2">
               <UIcon
-                name="i-lucide-layers"
-                class="size-3"
+                name="i-lucide-list"
+                class="size-3.5 text-[var(--press)]"
               />
-              Tracking
+              In this edition
             </span>
-            <span class="opacity-60">
-              {{ selectedRepos.length }}
-            </span>
+            <span class="rc-mono text-[10px] text-[var(--ink-faint)]">[{{ selectedRepos.length }}]</span>
           </div>
-          <div class="flex flex-wrap gap-1">
+          <div class="flex flex-wrap gap-1.5">
             <ULink
               v-for="repo in selectedRepos.slice(0, 12)"
               :key="repo"
               :to="getRepoUrl(repo)"
               target="_blank"
+              class="rc-mono border border-[var(--rule)] px-2 py-0.5 text-[11px] text-[var(--ink-soft)] transition-colors hover:border-[var(--press)] hover:text-[var(--press)]"
             >
-              <UBadge
-                variant="outline"
-                size="xs"
-                color="neutral"
-                class="rc-mono hover:border-[var(--ui-color-primary-500)] hover:text-[var(--ui-color-primary-400)]"
-              >
-                {{ repo }}
-              </UBadge>
+              {{ repo }}
             </ULink>
-            <UBadge
+            <span
               v-if="selectedRepos.length > 12"
-              variant="soft"
-              size="xs"
-              color="neutral"
+              class="rc-mono px-1 py-0.5 text-[11px] text-[var(--ink-faint)]"
             >
               +{{ selectedRepos.length - 12 }} more
-            </UBadge>
+            </span>
           </div>
         </div>
 
         <!-- Filter -->
-        <div class="rc-surface rounded-lg p-4">
-          <label class="rc-mono mb-2 block text-[10px] uppercase tracking-widest text-[var(--ui-text-muted)]">
-            Filter
+        <div>
+          <label class="rc-kicker mb-2 block border-b border-[var(--rule)] pb-2">
+            Search the columns
           </label>
           <UInput
             v-model="keyword"
-            placeholder="Search release notes..."
-            icon="i-lucide-filter"
+            placeholder="Filter release notes..."
+            icon="i-lucide-search"
             size="sm"
             class="w-full"
           >
@@ -265,155 +253,189 @@ onMounted(() => {
           </UInput>
           <p
             v-if="keyword"
-            class="rc-mono mt-2 text-[11px] text-[var(--ui-text-muted)]"
+            class="rc-mono mt-2 text-[11px] text-[var(--ink-faint)]"
           >
-            {{ filteredReleases.length }} / {{ releases?.length ?? 0 }} matched
+            {{ filteredReleases.length }} / {{ releases?.length ?? 0 }} columns matched
           </p>
         </div>
       </div>
+      </div>
     </aside>
 
-    <!-- Timeline -->
+    <!-- Broadsheet -->
     <section class="flex flex-1 flex-col py-4 lg:py-8">
-      <UChangelogVersions
-        as="div"
-        :indicator-motion="false"
-        :ui="{
-          root: 'py-4 sm:py-6',
-          indicator: 'inset-y-0'
-        }"
+      <!-- Loading -->
+      <div
+        v-if="releasesLoading"
+        class="flex flex-col items-center py-24"
       >
-        <div
-          v-if="releasesLoading"
-          class="flex flex-col items-center py-16"
-        >
-          <UIcon
-            name="i-lucide-loader-2"
-            class="mb-3 size-6 animate-spin text-[var(--ui-color-primary-500)]"
-          />
-          <p class="text-xs text-[var(--ui-text-muted)]">
-            Loading releases...
-          </p>
-        </div>
+        <UIcon
+          name="i-lucide-loader-2"
+          class="mb-3 size-6 animate-spin text-[var(--press)]"
+        />
+        <p class="rc-kicker">
+          Setting the type…
+        </p>
+      </div>
 
-        <div
-          v-else-if="releasesError"
-          class="flex flex-col items-center py-16"
+      <!-- Error -->
+      <div
+        v-else-if="releasesError"
+        class="flex flex-col items-center py-24 text-center"
+      >
+        <UIcon
+          name="i-lucide-alert-octagon"
+          class="mb-3 size-8 text-[var(--press)]"
+        />
+        <p class="rc-serif mb-1 text-lg font-semibold">
+          Stop the presses
+        </p>
+        <p class="mb-4 text-sm text-[var(--ink-soft)]">
+          {{ releasesError.message || 'Failed to fetch releases' }}
+        </p>
+        <UButton
+          variant="outline"
+          color="neutral"
+          @click="() => refresh()"
         >
-          <UIcon
-            name="i-lucide-alert-circle"
-            class="mb-3 size-8 text-red-500"
-          />
-          <p class="mb-4 text-sm text-red-500">
-            {{ releasesError.message || 'Failed to fetch releases' }}
-          </p>
-          <UButton
-            variant="outline"
-            color="neutral"
-            @click="() => refresh()"
-          >
-            Retry
-          </UButton>
-        </div>
+          Run it again
+        </UButton>
+      </div>
 
-        <div
-          v-else-if="!releases || releases.length === 0"
-          class="flex flex-col items-center py-16"
+      <!-- Empty -->
+      <div
+        v-else-if="!releases || releases.length === 0"
+        class="flex flex-col items-center py-24 text-center"
+      >
+        <UIcon
+          name="i-lucide-package-x"
+          class="mb-3 size-10 text-[var(--ink-faint)]"
+        />
+        <p class="rc-serif mb-1 text-lg font-semibold">
+          Nothing to print
+        </p>
+        <p class="mb-4 text-sm text-[var(--ink-soft)]">
+          No releases found for the selected repositories.
+        </p>
+        <UButton
+          variant="outline"
+          color="neutral"
+          @click="goBackToSelection"
         >
-          <UIcon
-            name="i-lucide-package-x"
-            class="mb-3 size-10 text-[var(--ui-text-muted)] opacity-60"
-          />
-          <p class="mb-4 text-sm text-[var(--ui-text-muted)]">
-            No releases found for the selected repositories
-          </p>
-          <UButton
-            variant="outline"
-            color="neutral"
-            @click="goBackToSelection"
-          >
-            Pick different repositories
-          </UButton>
-        </div>
+          Pick different titles
+        </UButton>
+      </div>
 
-        <div
-          v-if="keyword && filteredReleases.length === 0 && releases && releases.length > 0"
-          class="flex flex-col items-center py-12"
-        >
-          <UIcon
-            name="i-lucide-search-x"
-            class="mb-2 size-6 text-[var(--ui-text-muted)] opacity-60"
-          />
-          <p class="text-xs text-[var(--ui-text-muted)]">
-            No releases match "<span class="rc-mono">{{ keyword }}</span>"
-          </p>
-        </div>
+      <!-- No filter match -->
+      <div
+        v-else-if="keyword && filteredReleases.length === 0"
+        class="flex flex-col items-center py-20 text-center"
+      >
+        <UIcon
+          name="i-lucide-search-x"
+          class="mb-2 size-6 text-[var(--ink-faint)]"
+        />
+        <p class="text-sm text-[var(--ink-soft)]">
+          No columns match “<span class="rc-mono text-[var(--ink)]">{{ keyword }}</span>”
+        </p>
+      </div>
 
-        <UChangelogVersion
-          v-for="release in filteredReleases"
+      <!-- The dispatch -->
+      <div
+        v-else
+        class="mx-auto w-full max-w-2xl"
+      >
+        <article
+          v-for="(release, index) in filteredReleases"
           :key="`${release.repo}-${release.tag}`"
-          :to="release.url"
-          target="_blank"
-          :title="release.title"
-          :date="formatTimeAgo(new Date(release.date))"
-          :ui="{
-            root: 'flex items-start',
-            container: 'max-w-2xl',
-            header: 'border-b border-[var(--rc-border)] pb-3',
-            title: 'text-xl sm:text-2xl tracking-tight',
-            date: 'rc-mono text-[11px] text-[var(--ui-text-muted)]',
-            indicator: 'sticky top-0 pt-8 -mt-8 sm:pt-12 sm:-mt-12'
-          }"
+          class="rc-rise"
+          :style="{ animationDelay: `${Math.min(index, 8) * 45}ms` }"
         >
-          <template #badge>
+          <div
+            v-if="index > 0"
+            class="rc-rule-double my-8"
+          />
+
+          <!-- Byline -->
+          <div class="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
             <ULink
               :to="getRepoUrl(release.repo)"
               target="_blank"
+              class="rc-mono text-xs font-medium text-[var(--press)] hover:underline"
               @click.stop
             >
-              <UBadge
-                :label="release.repo"
-                variant="outline"
-                color="neutral"
-                size="xs"
-                class="rc-mono hover:border-[var(--ui-color-primary-500)] hover:text-[var(--ui-color-primary-400)]"
-              />
+              {{ release.repo }}
             </ULink>
-          </template>
+            <span class="text-[var(--rule-strong)]">·</span>
+            <span class="rc-mono text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">
+              {{ formatTimeAgo(new Date(release.date)) }}
+            </span>
+            <span class="rc-stamp ml-auto">{{ release.tag }}</span>
+          </div>
 
-          <template #body>
-            <div
-              class="relative"
-              :class="{
-                'h-auto min-h-[150px] sm:min-h-[200px]': isReleaseExpanded(release.repo, release.tag),
-                'h-[150px] sm:h-[200px] overflow-y-hidden': !isReleaseExpanded(release.repo, release.tag) && release.body.children.length > 4
-              }"
+          <!-- Headline -->
+          <ULink
+            :to="release.url"
+            target="_blank"
+            class="group/headline block"
+          >
+            <h2
+              class="rc-serif font-semibold tracking-tight text-[var(--ink)] transition-colors group-hover/headline:text-[var(--press)]"
+              :class="index === 0
+                ? 'text-3xl leading-[1.05] sm:text-[2.6rem]'
+                : 'text-2xl leading-tight sm:text-[1.9rem]'"
             >
-              <MDCRenderer
-                v-if="release.body"
-                :body="release.body"
-                style="zoom: 0.85"
+              {{ release.title }}
+            </h2>
+          </ULink>
+
+          <!-- Article body -->
+          <div
+            class="rc-article relative mt-4"
+            :class="{
+              'h-auto': isReleaseExpanded(release.repo, release.tag),
+              'max-h-[180px] overflow-hidden sm:max-h-[220px]': !isReleaseExpanded(release.repo, release.tag) && release.body.children.length > 4
+            }"
+          >
+            <MDCRenderer
+              v-if="release.body"
+              :body="release.body"
+              :class="index === 0 ? 'rc-dropcap' : ''"
+              style="zoom: 0.9"
+            />
+            <div
+              v-if="!isReleaseExpanded(release.repo, release.tag) && release.body.children.length > 4"
+              class="absolute inset-x-0 bottom-0 flex h-16 items-end justify-center bg-gradient-to-t from-[var(--paper)] to-transparent"
+            >
+              <UButton
+                size="xs"
+                icon="i-lucide-chevron-down"
+                color="neutral"
+                variant="outline"
+                :data-state="isReleaseExpanded(release.repo, release.tag) ? 'open' : 'closed'"
+                label="Continued"
+                class="group rc-mono text-[11px] uppercase tracking-wider"
+                :ui="{ leadingIcon: 'group-data-[state=open]:rotate-180' }"
+                @click="toggleRelease(release.repo, release.tag)"
               />
-              <div
-                v-if="!isReleaseExpanded(release.repo, release.tag) && release.body.children.length > 4"
-                class="absolute inset-x-0 bottom-0 flex h-14 items-end justify-center bg-gradient-to-t from-[var(--ui-bg)] to-transparent"
-              >
-                <UButton
-                  size="xs"
-                  icon="i-lucide-chevron-down"
-                  color="neutral"
-                  variant="outline"
-                  :data-state="isReleaseExpanded(release.repo, release.tag) ? 'open' : 'closed'"
-                  :label="isReleaseExpanded(release.repo, release.tag) ? 'Collapse' : 'Expand'"
-                  class="group text-xs"
-                  :ui="{ leadingIcon: 'group-data-[state=open]:rotate-180' }"
-                  @click="toggleRelease(release.repo, release.tag)"
-                />
-              </div>
             </div>
-          </template>
-        </UChangelogVersion>
-      </UChangelogVersions>
+          </div>
+          <div
+            v-if="isReleaseExpanded(release.repo, release.tag) && release.body.children.length > 4"
+            class="mt-3"
+          >
+            <UButton
+              size="xs"
+              icon="i-lucide-chevron-up"
+              color="neutral"
+              variant="link"
+              label="Fold back"
+              class="rc-mono -ml-1 text-[11px] uppercase tracking-wider"
+              @click="toggleRelease(release.repo, release.tag)"
+            />
+          </div>
+        </article>
+      </div>
     </section>
   </div>
 </template>

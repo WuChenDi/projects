@@ -13,17 +13,20 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
-    <div class="grid size-14 place-items-center rounded-xl border border-[var(--rc-border)]">
+  <div class="flex flex-1 flex-col items-center justify-center px-6 py-20 text-center">
+    <div class="grid size-16 place-items-center border border-[var(--rule-strong)] text-[var(--press)]">
       <UIcon
         :name="icon"
-        class="size-6 text-[var(--ui-text-muted)]"
+        class="size-6"
       />
     </div>
-    <p class="mt-4 text-sm font-medium text-[var(--ui-text)]">
+    <p class="rc-kicker mt-6">
+      Off the press
+    </p>
+    <p class="rc-serif mt-1.5 text-xl font-semibold tracking-tight text-[var(--ink)]">
       {{ title }}
     </p>
-    <p class="mt-1 max-w-sm text-xs text-[var(--ui-text-muted)]">
+    <p class="mt-2 max-w-sm text-sm leading-relaxed text-[var(--ink-soft)]">
       {{ description }}
     </p>
   </div>

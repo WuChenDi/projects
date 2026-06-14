@@ -1,36 +1,67 @@
 <script setup lang="ts">
 interface Props {
   brand: string
+  tagline?: string
   githubHref: string
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  tagline: ''
+})
 
 const { public: { version } } = useRuntimeConfig()
+
+// Filled after mount so the date is computed in the visitor's timezone,
+// avoiding an SSR/client hydration mismatch around midnight.
+const today = ref('')
+
+onMounted(() => {
+  today.value = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+})
 </script>
 
 <template>
-  <header class="sticky top-0 z-30 w-full bg-transparent">
-    <div class="mx-auto flex h-14 max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6">
+  <header class="sticky top-0 z-30 w-full border-b border-[var(--rule)] bg-[color-mix(in_oklab,var(--paper)_85%,transparent)] backdrop-blur-md">
+    <div class="mx-auto flex h-[58px] max-w-[1600px] items-center gap-4 px-4 sm:px-6">
+      <!-- Nameplate -->
       <NuxtLink
         to="/"
-        class="group flex items-center gap-2.5"
+        class="group flex min-w-0 items-center gap-3"
       >
-        <div class="relative grid size-7 place-items-center rounded-md border border-[var(--rc-border)]">
+        <div class="grid size-8 shrink-0 place-items-center border border-[var(--rule-strong)] text-[var(--press)]">
           <UIcon
-            name="i-lucide-git-pull-request-arrow"
-            class="size-4 text-[var(--ui-color-primary-500)]"
+            name="i-lucide-newspaper"
+            class="size-4"
           />
         </div>
-        <div class="flex items-baseline gap-1.5">
-          <span class="text-sm font-semibold tracking-tight">{{ brand }}</span>
-          <span class="rc-mono hidden text-[10px] uppercase tracking-widest text-[var(--ui-text-muted)] sm:inline">
-            v{{ version }}
+        <div class="flex min-w-0 flex-col leading-none">
+          <span class="rc-serif truncate text-[17px] font-semibold tracking-tight text-[var(--ink)] transition-colors group-hover:text-[var(--press)]">
+            {{ brand }}
+          </span>
+          <span
+            v-if="tagline"
+            class="rc-kicker mt-1 hidden truncate sm:block"
+          >
+            {{ tagline }}
           </span>
         </div>
       </NuxtLink>
 
-      <div class="flex items-center gap-1.5">
+      <!-- Edition line, centred like a broadsheet folio -->
+      <div class="hidden flex-1 items-center justify-center gap-3 lg:flex">
+        <span class="h-px flex-1 max-w-16 bg-[var(--rule)]" />
+        <span class="rc-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-faint)]">
+          <template v-if="today">{{ today }} · </template>No. {{ version }}
+        </span>
+        <span class="h-px flex-1 max-w-16 bg-[var(--rule)]" />
+      </div>
+
+      <div class="ml-auto flex items-center gap-1.5 lg:ml-0">
         <slot />
         <UButton
           variant="ghost"

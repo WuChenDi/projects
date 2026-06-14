@@ -50,52 +50,48 @@ function handleClearAll() {
 <template>
   <section
     v-if="repos.length > 0"
-    class="space-y-2"
+    class="space-y-2.5"
   >
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--ui-text-muted)]">
+    <div class="flex items-center justify-between border-b border-[var(--rule)] pb-2">
+      <div class="rc-kicker flex items-center gap-2">
         <UIcon
           :name="icon"
-          class="size-3.5"
+          class="size-3.5 text-[var(--press)]"
         />
         {{ title }}
-        <span class="rc-mono text-[10px] opacity-60">{{ repos.length }}</span>
+        <span class="rc-mono text-[10px] text-[var(--ink-faint)]">[{{ repos.length }}]</span>
       </div>
 
       <UButton
         v-if="showClearAll"
-        variant="ghost"
+        variant="link"
         size="xs"
         color="neutral"
-        class="-mr-1 text-[11px]"
+        class="-mr-1 rc-mono text-[10px] uppercase tracking-wider"
         @click="handleClearAll"
       >
         Clear
       </UButton>
     </div>
 
-    <ul class="space-y-0.5">
+    <ul class="divide-y divide-[var(--rule-soft)]">
       <li
         v-for="repo in repos"
         :key="repo"
         :class="[
-          'group/repo flex items-center gap-2 rounded-md border border-transparent px-2 py-1.5 transition',
-          'hover:border-[var(--rc-border)] hover:bg-[var(--ui-bg-muted)]',
-          clickable && 'cursor-pointer'
+          'group/repo flex items-center gap-2.5 py-1.5 transition-colors',
+          clickable && 'cursor-pointer hover:text-[var(--press)]'
         ]"
         :role="clickable ? 'button' : undefined"
         :tabindex="clickable ? 0 : undefined"
         @click="handleRepoClick(repo)"
         @keydown="handleRepoKeydown(repo, $event)"
       >
-        <UIcon
-          name="i-lucide-github"
-          class="size-3.5 shrink-0 text-[var(--ui-text-muted)]"
-        />
+        <span class="text-[var(--press)] opacity-60 transition-opacity group-hover/repo:opacity-100">›</span>
         <ULink
           :to="getRepoUrl(repo)"
           target="_blank"
-          class="rc-mono min-w-0 flex-1 truncate text-xs text-[var(--ui-text)] hover:text-[var(--ui-color-primary-400)]"
+          class="rc-mono min-w-0 flex-1 truncate text-xs text-[var(--ink)] hover:text-[var(--press)]"
           @click.stop
         >
           {{ repo }}

@@ -48,28 +48,28 @@ function handleGroupKeydown(repos: string[], event: KeyboardEvent) {
 
 <template>
   <section class="space-y-2.5">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--ui-text-muted)]">
+    <div class="flex items-center justify-between border-b border-[var(--rule)] pb-2">
+      <div class="rc-kicker flex items-center gap-2">
         <UIcon
           name="i-lucide-bookmark"
-          class="size-3.5"
+          class="size-3.5 text-[var(--press)]"
         />
-        Groups
+        Saved editions
         <span
           v-if="groups.length > 0"
-          class="rc-mono text-[10px] opacity-60"
+          class="rc-mono text-[10px] text-[var(--ink-faint)]"
         >
-          {{ groups.length }}
+          [{{ groups.length }}]
         </span>
       </div>
 
       <UButton
         v-if="selectedRepos.length > 0"
-        variant="ghost"
+        variant="link"
         size="xs"
         icon="i-lucide-plus"
         color="primary"
-        class="-mr-1 text-[11px]"
+        class="-mr-1 rc-mono text-[10px] uppercase tracking-wider"
         @click="openCreate"
       >
         Save
@@ -78,14 +78,14 @@ function handleGroupKeydown(repos: string[], event: KeyboardEvent) {
 
     <p
       v-if="groups.length === 0"
-      class="text-xs leading-relaxed text-[var(--ui-text-muted)]"
+      class="text-xs leading-relaxed text-[var(--ink-soft)]"
     >
-      Save the repos you're tracking as a group for one-click access.
+      Bundle the repos you follow into a named edition for one-click reading.
     </p>
 
     <ul
       v-else
-      class="space-y-1"
+      class="divide-y divide-[var(--rule-soft)]"
     >
       <li
         v-for="group in groups"
@@ -93,16 +93,16 @@ function handleGroupKeydown(repos: string[], event: KeyboardEvent) {
         role="button"
         tabindex="0"
         :aria-label="`Open group ${group.name}`"
-        class="group/item flex items-center justify-between gap-2 rounded-md border border-transparent px-2 py-1.5 transition hover:border-[var(--rc-border)] hover:bg-[var(--ui-bg-muted)] focus-visible:border-[var(--rc-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-color-primary-500)] cursor-pointer"
+        class="group/item flex cursor-pointer items-center justify-between gap-2 py-2 transition-colors hover:text-[var(--press)] focus-visible:outline-none"
         @click="openGroup(group.repos)"
         @keydown="handleGroupKeydown(group.repos, $event)"
       >
         <div class="min-w-0 flex-1">
-          <div class="truncate text-sm font-medium">
+          <div class="rc-serif truncate text-[15px] font-semibold tracking-tight text-[var(--ink)] group-hover/item:text-[var(--press)]">
             {{ group.name }}
           </div>
-          <div class="rc-mono mt-0.5 truncate text-[10px] text-[var(--ui-text-muted)]">
-            {{ group.repos.length }} {{ group.repos.length === 1 ? 'repo' : 'repos' }} · {{ group.repos.slice(0, 2).join(', ') }}{{ group.repos.length > 2 ? '…' : '' }}
+          <div class="rc-mono mt-0.5 truncate text-[10px] text-[var(--ink-faint)]">
+            {{ group.repos.length }} {{ group.repos.length === 1 ? 'title' : 'titles' }} · {{ group.repos.slice(0, 2).join(', ') }}{{ group.repos.length > 2 ? '…' : '' }}
           </div>
         </div>
         <UButton
