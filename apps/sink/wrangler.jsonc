@@ -35,6 +35,11 @@
     // Analytics Engine knobs.
     "DATASET": "sink_analytics",
     "DISABLE_BOT_ACCESS_LOG": "false",
+    // Analytics Engine SQL API credentials — required for the dashboard stats
+    // queries (the AE binding writes data points, but reading uses the REST SQL
+    // API which needs an account id + a token with Account Analytics:Read).
+    "CLOUDFLARE_ACCOUNT_ID": "",
+    "CLOUDFLARE_API_TOKEN": "",
     // AI slug generation knobs.
     "AI_MODEL": "@cf/meta/llama-3.1-8b-instruct",
     "AI_PROMPT": ""

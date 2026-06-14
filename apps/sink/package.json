@@ -35,6 +35,7 @@
     "next-themes": "catalog:prod",
     "qrcode": "^1.5.4",
     "react": "catalog:prod",
+    "recharts": "catalog:prod",
     "react-dom": "catalog:prod",
     "sonner": "catalog:prod",
     "ua-parser-js": "^2.0.9",

@@ -16,6 +16,9 @@ export interface SinkConfig {
   disableBotAccessLog: boolean
   aiModel: string
   aiPrompt: string
+  // Analytics Engine SQL API credentials (required only for the stats endpoints).
+  cfAccountId: string
+  cfApiToken: string
 }
 
 function num(value: string | undefined, fallback: number): number {
@@ -44,6 +47,9 @@ export function getConfig(env?: CloudflareEnv): SinkConfig {
     }
   }
 
+  // CF API creds aren't part of the generated CloudflareEnv type — read loosely.
+  const loose = raw as Record<string, string | undefined>
+
   return {
     siteToken: raw.SITE_TOKEN ?? process.env.SITE_TOKEN ?? '',
     redirectStatusCode: num(raw.REDIRECT_STATUS_CODE, 308),
@@ -58,5 +64,7 @@ export function getConfig(env?: CloudflareEnv): SinkConfig {
     disableBotAccessLog: bool(raw.DISABLE_BOT_ACCESS_LOG),
     aiModel: raw.AI_MODEL ?? '@cf/meta/llama-3.1-8b-instruct',
     aiPrompt: raw.AI_PROMPT ?? '',
+    cfAccountId: loose.CLOUDFLARE_ACCOUNT_ID ?? '',
+    cfApiToken: loose.CLOUDFLARE_API_TOKEN ?? '',
   }
 }
