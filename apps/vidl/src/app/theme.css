@@ -1,0 +1,300 @@
+/*
+ * vidl — "SIGNAL DECK" theme overlay.
+ * App-scoped overrides loaded AFTER @cdlab996/ui globals.css.
+ * Aesthetic: broadcast signal-capture console — warm iron / phosphor / signal amber.
+ * Only affects the vidl app; shared UI tokens are untouched.
+ */
+
+/* ---- Typography ---------------------------------------------------------- */
+:root:root {
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display:
+    var(--font-bricolage), var(--font-plex-sans), ui-sans-serif, sans-serif;
+  /* font-mono utility resolves through --font-geist-mono (set on <body>) */
+}
+
+/* ---- Palette: light (paper deck) ----------------------------------------
+ * `:root:root` raises specificity so these tokens win over the shared
+ * globals.css regardless of CSS chunk load order (Turbopack splits them). */
+:root:root {
+  --background: oklch(0.965 0.008 85);
+  --foreground: oklch(0.2 0.012 60);
+  --card: oklch(0.992 0.005 85);
+  --card-foreground: oklch(0.2 0.012 60);
+  --popover: oklch(0.992 0.005 85);
+  --popover-foreground: oklch(0.2 0.012 60);
+  --primary: oklch(0.62 0.17 48);
+  --primary-foreground: oklch(0.99 0.01 85);
+  --secondary: oklch(0.93 0.012 80);
+  --secondary-foreground: oklch(0.26 0.012 60);
+  --muted: oklch(0.93 0.01 80);
+  --muted-foreground: oklch(0.46 0.018 62);
+  --accent: oklch(0.91 0.018 75);
+  --accent-foreground: oklch(0.24 0.012 60);
+  --destructive: oklch(0.55 0.22 27);
+  --border: oklch(0.86 0.014 75);
+  --input: oklch(0.86 0.014 75);
+  --ring: oklch(0.62 0.17 48);
+  --radius: 0.25rem;
+
+  /* signal status colors (custom) */
+  --signal-go: oklch(0.58 0.15 152);
+  --signal-go-fg: oklch(0.98 0.02 152);
+  --signal-no: oklch(0.55 0.22 27);
+  --signal-live: oklch(0.62 0.2 30);
+  --deck-line: oklch(0.86 0.014 75);
+  --deck-grain: 0.025;
+}
+
+/* ---- Palette: dark (iron deck — primary experience) -------------------- */
+html.dark {
+  --background: oklch(0.165 0.008 60);
+  --foreground: oklch(0.92 0.012 82);
+  --card: oklch(0.21 0.009 60);
+  --card-foreground: oklch(0.92 0.012 82);
+  --popover: oklch(0.21 0.009 60);
+  --popover-foreground: oklch(0.92 0.012 82);
+  --primary: oklch(0.76 0.16 62);
+  --primary-foreground: oklch(0.18 0.02 60);
+  --secondary: oklch(0.27 0.009 60);
+  --secondary-foreground: oklch(0.92 0.012 82);
+  --muted: oklch(0.255 0.008 60);
+  --muted-foreground: oklch(0.68 0.018 72);
+  --accent: oklch(0.31 0.012 62);
+  --accent-foreground: oklch(0.93 0.012 82);
+  --destructive: oklch(0.64 0.22 28);
+  --border: oklch(0.31 0.012 62);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.76 0.16 62);
+
+  --signal-go: oklch(0.8 0.17 150);
+  --signal-go-fg: oklch(0.16 0.04 150);
+  --signal-no: oklch(0.66 0.22 27);
+  --signal-live: oklch(0.72 0.2 32);
+  --deck-line: oklch(1 0 0 / 9%);
+  --deck-grain: 0.04;
+}
+
+/* ---- Deck atmosphere: scanlines + grain + horizon glow ------------------ */
+body {
+  font-family: var(--font-sans);
+  position: relative;
+  background-color: var(--background);
+  background-image: radial-gradient(
+    100% 60% at 50% 16%,
+    color-mix(in oklch, var(--primary) 9%, transparent),
+    transparent 55%
+  );
+  background-attachment: fixed;
+}
+
+/* fine horizontal scanlines — CRT signal texture */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    color-mix(in oklch, var(--foreground) 4%, transparent) 0,
+    color-mix(in oklch, var(--foreground) 4%, transparent) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+}
+
+.dark body::before {
+  mix-blend-mode: screen;
+  opacity: 0.35;
+}
+
+/* film grain */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: var(--deck-grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* keep real content above atmosphere layers */
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+::selection {
+  background: color-mix(in oklch, var(--primary) 35%, transparent);
+  color: var(--foreground);
+}
+
+/* ---- Console panel treatment for every card --------------------------- */
+[data-slot="card"] {
+  position: relative;
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in oklch, var(--primary) 6%, transparent),
+    transparent 92px
+  );
+  box-shadow:
+    0 1px 0 0 color-mix(in oklch, var(--foreground) 6%, transparent) inset,
+    0 18px 40px -28px color-mix(in oklch, var(--foreground) 40%, transparent);
+}
+
+/* top accent hairline */
+[data-slot="card"]::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--primary),
+    color-mix(in oklch, var(--primary) 20%, transparent) 60%,
+    transparent
+  );
+  opacity: 0.7;
+}
+
+/* engineering corner ticks (top-right + bottom-left) */
+[data-slot="card"]::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 12px;
+  height: 12px;
+  border-top: 1.5px solid color-mix(in oklch, var(--primary) 60%, transparent);
+  border-right: 1.5px solid color-mix(in oklch, var(--primary) 60%, transparent);
+  pointer-events: none;
+}
+
+/* ---- Tabs as a channel selector --------------------------------------- */
+[data-slot="tabs-list"] {
+  border: 1px solid var(--border);
+  background: color-mix(in oklch, var(--card) 70%, transparent);
+}
+
+/* ---- Segment grid: the tape transport --------------------------------- */
+.seg-block {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  border-radius: 3px;
+  border: 1px solid;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.seg-idle {
+  background: color-mix(in oklch, var(--muted) 80%, transparent);
+  border-color: var(--border);
+  color: var(--muted-foreground);
+}
+
+.seg-active {
+  background: color-mix(in oklch, var(--primary) 28%, var(--card));
+  border-color: var(--primary);
+  color: var(--foreground);
+  animation: seg-scan 1s ease-in-out infinite;
+}
+
+.seg-finish {
+  background: color-mix(in oklch, var(--signal-go) 90%, transparent);
+  border-color: var(--signal-go);
+  color: var(--signal-go-fg);
+  box-shadow: 0 0 10px -2px
+    color-mix(in oklch, var(--signal-go) 70%, transparent);
+}
+
+.seg-error {
+  background: color-mix(in oklch, var(--signal-no) 90%, transparent);
+  border-color: var(--signal-no);
+  color: oklch(0.98 0.02 27);
+  cursor: pointer;
+}
+
+.seg-error:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 12px -1px
+    color-mix(in oklch, var(--signal-no) 75%, transparent);
+}
+
+@keyframes seg-scan {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 12px 1px
+      color-mix(in oklch, var(--primary) 55%, transparent);
+  }
+}
+
+/* ---- Live REC dot ------------------------------------------------------ */
+.rec-dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--signal-live);
+  box-shadow: 0 0 0 0 color-mix(in oklch, var(--signal-live) 60%, transparent);
+  animation: rec-pulse 1.6s ease-out infinite;
+}
+
+@keyframes rec-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--signal-live) 55%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* hairline label used across the deck chrome */
+.deck-label {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.66rem;
+  color: var(--muted-foreground);
+}
+
+/* ---- Staggered entrance for the console on load ----------------------- */
+@keyframes deck-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.deck-rise {
+  animation: deck-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* ---- Scrollbar --------------------------------------------------------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--primary) 40%, transparent)
+    transparent;
+}
