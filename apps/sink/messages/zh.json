@@ -128,5 +128,52 @@
       "created": "链接已创建",
       "updated": "链接已更新"
     }
+  },
+  "analytics": {
+    "title": "数据分析",
+    "subtitle": "查看链接的访问与互动数据。",
+    "notConfigured": "尚未配置分析。设置 CLOUDFLARE_ACCOUNT_ID 与 CLOUDFLARE_API_TOKEN 以启用统计。",
+    "clearFilters": "清除筛选",
+    "comingSoon": "敬请期待",
+    "noData": "该时间范围内暂无数据",
+    "range": {
+      "1d": "最近 24 小时",
+      "7d": "最近 7 天",
+      "30d": "最近 30 天",
+      "90d": "最近 90 天"
+    },
+    "counters": {
+      "visits": "访问量",
+      "visitors": "访客数",
+      "referers": "来源数"
+    },
+    "views": {
+      "title": "访问趋势"
+    },
+    "groups": {
+      "location": "地域",
+      "referer": "来源",
+      "time": "区域设置",
+      "device": "设备",
+      "browser": "浏览器"
+    },
+    "metrics": {
+      "country": "国家",
+      "region": "地区",
+      "city": "城市",
+      "referer": "来源",
+      "slug": "短码",
+      "language": "语言",
+      "timezone": "时区",
+      "device": "设备",
+      "deviceType": "设备类型",
+      "os": "操作系统",
+      "browser": "浏览器",
+      "browserType": "浏览器类型"
+    },
+    "placeholders": {
+      "map": "世界地图与热力图",
+      "realtime": "实时"
+    }
   }
 }

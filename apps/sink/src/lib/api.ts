@@ -87,3 +87,52 @@ export const linkApi = {
       `/api/link/ai?url=${encodeURIComponent(url)}`,
     ),
 }
+
+export interface StatsParams {
+  startAt?: number
+  endAt?: number
+  filters?: Record<string, string>
+}
+
+export interface Counters {
+  configured: boolean
+  visits: number
+  visitors: number
+  referers: number
+}
+export interface ViewPoint {
+  time: string
+  visits: number
+  visitors: number
+}
+export interface MetricItem {
+  name: string
+  count: number
+}
+
+function statsQuery(params: StatsParams): string {
+  const sp = new URLSearchParams()
+  if (params.startAt) sp.set('startAt', String(params.startAt))
+  if (params.endAt) sp.set('endAt', String(params.endAt))
+  for (const [k, v] of Object.entries(params.filters ?? {})) {
+    if (v) sp.set(k, v)
+  }
+  const s = sp.toString()
+  return s ? `?${s}` : ''
+}
+
+export const statsApi = {
+  counters: (params: StatsParams) =>
+    request<Counters>(`/api/stats/counters${statsQuery(params)}`),
+  views: (params: StatsParams) =>
+    request<{ configured: boolean; interval: string; views: ViewPoint[] }>(
+      `/api/stats/views${statsQuery(params)}`,
+    ),
+  metrics: (type: string, params: StatsParams) => {
+    const q = statsQuery(params)
+    const sep = q ? '&' : '?'
+    return request<{ configured: boolean; metrics: MetricItem[] }>(
+      `/api/stats/metrics${q}${sep}type=${type}`,
+    )
+  },
+}

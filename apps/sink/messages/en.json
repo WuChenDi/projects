@@ -128,5 +128,52 @@
       "created": "Link created",
       "updated": "Link updated"
     }
+  },
+  "analytics": {
+    "title": "Analytics",
+    "subtitle": "Traffic and engagement for your links.",
+    "notConfigured": "Analytics is not configured. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN to enable stats.",
+    "clearFilters": "Clear filters",
+    "comingSoon": "Coming soon",
+    "noData": "No data for this range",
+    "range": {
+      "1d": "Last 24 hours",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "90d": "Last 90 days"
+    },
+    "counters": {
+      "visits": "Visits",
+      "visitors": "Visitors",
+      "referers": "Referrers"
+    },
+    "views": {
+      "title": "Views over time"
+    },
+    "groups": {
+      "location": "Location",
+      "referer": "Sources",
+      "time": "Locale",
+      "device": "Device",
+      "browser": "Browser"
+    },
+    "metrics": {
+      "country": "Country",
+      "region": "Region",
+      "city": "City",
+      "referer": "Referrer",
+      "slug": "Slug",
+      "language": "Language",
+      "timezone": "Timezone",
+      "device": "Device",
+      "deviceType": "Device type",
+      "os": "OS",
+      "browser": "Browser",
+      "browserType": "Browser type"
+    },
+    "placeholders": {
+      "map": "World map & heatmap",
+      "realtime": "Realtime"
+    }
   }
 }

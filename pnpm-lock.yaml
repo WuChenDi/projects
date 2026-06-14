@@ -1070,6 +1070,9 @@ importers:
       react-dom:
         specifier: catalog:prod
         version: 19.2.4(react@19.2.4)
+      recharts:
+        specifier: catalog:prod
+        version: 3.8.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react-is@16.13.1)(react@19.2.4)(redux@5.0.1)
       sonner:
         specifier: catalog:prod
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
