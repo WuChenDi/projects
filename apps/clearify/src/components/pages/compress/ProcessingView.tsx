@@ -109,7 +109,13 @@ export function ProcessingView({
       {/* Result Video */}
       {outputUrl && (
         <div className="space-y-4">
-          <video src={outputUrl} controls className="w-full rounded-lg" />
+          <div className="aspect-video bg-black rounded-lg overflow-hidden">
+            <video
+              src={outputUrl}
+              controls
+              className="w-full h-full object-contain"
+            />
+          </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
               Saved{' '}

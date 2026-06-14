@@ -9,8 +9,22 @@ import {
 } from '@cdlab996/ui/components/card'
 import { IKPageContainer } from '@cdlab996/ui/IK'
 import { logger } from '@cdlab996/utils'
-import { FFmpeg } from '@ffmpeg/ffmpeg'
-import { fetchFile, toBlobURL } from '@ffmpeg/util'
+import type { Quality, VideoCodec } from 'mediabunny'
+import {
+  ALL_FORMATS,
+  BlobSource,
+  BufferTarget,
+  Conversion,
+  canEncodeAudio,
+  canEncodeVideo,
+  Input,
+  Mp4OutputFormat,
+  Output,
+  QUALITY_HIGH,
+  QUALITY_LOW,
+  QUALITY_MEDIUM,
+  QUALITY_VERY_HIGH,
+} from 'mediabunny'
 import { useEffect, useRef, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
@@ -22,14 +36,19 @@ import {
 import type { ConversionSettings } from '@/types'
 import { defaultSettings } from '@/types'
 
-// Use multi-threaded FFmpeg core for better performance
-const baseURL = 'https://unpkg.com/@ffmpeg/core-mt@0.12.10/dist/umd'
-const fallbackBaseURL = 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd'
+const qualityMap: Record<ConversionSettings['quality'], Quality> = {
+  low: QUALITY_LOW,
+  medium: QUALITY_MEDIUM,
+  high: QUALITY_HIGH,
+  very_high: QUALITY_VERY_HIGH,
+}
+
+// Parse a bitrate string like '2500k' into bits per second
+function parseBitrate(value: string): number {
+  return Math.round(parseFloat(value) * 1000)
+}
 
 export default function Compress() {
-  const ffmpegRef = useRef<FFmpeg | null>(null)
-  const [isReady, setIsReady] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [video, setVideo] = useState<File | null>(null)
   const [progress, setProgress] = useState(0)
   const [outputUrl, setOutputUrl] = useState('')
@@ -40,91 +59,6 @@ export default function Compress() {
   const [error, setError] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const previewRef = useRef<HTMLVideoElement>(null)
-
-  // Load FFmpeg — try multi-threaded first, fall back to single-threaded
-  const loadFFmpeg = async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-
-      if (!ffmpegRef.current) {
-        ffmpegRef.current = new FFmpeg()
-      }
-
-      const ffmpeg = ffmpegRef.current
-      if (!ffmpeg.loaded) {
-        ffmpeg.on('log', ({ type, message }) => {
-          logger.log(`[FFmpeg Log] [${type}]`, message)
-        })
-
-        // Try multi-threaded version first (requires SharedArrayBuffer)
-        const useMultiThread =
-          typeof SharedArrayBuffer !== 'undefined' &&
-          typeof crossOriginIsolated !== 'undefined' &&
-          crossOriginIsolated
-
-        const url = useMultiThread ? baseURL : fallbackBaseURL
-
-        try {
-          const loadConfig: Parameters<typeof ffmpeg.load>[0] = {
-            coreURL: await toBlobURL(
-              `${url}/ffmpeg-core.js`,
-              'text/javascript',
-            ),
-            wasmURL: await toBlobURL(
-              `${url}/ffmpeg-core.wasm`,
-              'application/wasm',
-            ),
-          }
-          if (useMultiThread) {
-            loadConfig.workerURL = await toBlobURL(
-              `${url}/ffmpeg-core.worker.js`,
-              'text/javascript',
-            )
-          }
-          await ffmpeg.load(loadConfig)
-          logger.log(
-            `FFmpeg loaded (${useMultiThread ? 'multi-threaded' : 'single-threaded'})`,
-          )
-        } catch {
-          // Fallback to single-threaded if multi-threaded fails
-          if (useMultiThread) {
-            logger.warn(
-              'Multi-threaded FFmpeg failed, falling back to single-threaded',
-            )
-            ffmpegRef.current = new FFmpeg()
-            const fallbackFfmpeg = ffmpegRef.current
-            fallbackFfmpeg.on('log', ({ type, message }) => {
-              logger.log(`[FFmpeg Log] [${type}]`, message)
-            })
-            await fallbackFfmpeg.load({
-              coreURL: await toBlobURL(
-                `${fallbackBaseURL}/ffmpeg-core.js`,
-                'text/javascript',
-              ),
-              wasmURL: await toBlobURL(
-                `${fallbackBaseURL}/ffmpeg-core.wasm`,
-                'application/wasm',
-              ),
-            })
-            logger.log('FFmpeg loaded (single-threaded fallback)')
-          } else {
-            throw new Error('Failed to load video processor')
-          }
-        }
-
-        setIsReady(true)
-        toast.success('Video processor loaded successfully')
-      }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to load video processor'
-      setError(errorMessage)
-      toast.error(errorMessage)
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   // Reset component state
   const resetState = () => {
@@ -169,87 +103,144 @@ export default function Compress() {
     }
   }, [progress, isProcessing])
 
-  // Compress video using FFmpeg
+  // Compress video using mediabunny (WebCodecs)
   const compressVideo = async () => {
-    if (!video || !isReady || !ffmpegRef.current) return
+    if (!video) return
 
     setIsProcessing(true)
     setProgress(0)
     setProcessedSize(0)
     setError(null)
 
-    const ffmpeg = ffmpegRef.current
-
     try {
-      await ffmpeg.writeFile('input.mp4', await fetchFile(video))
-      ffmpeg.on('progress', ({ progress: ratio }) => {
-        const percent = Math.round(ratio * 100)
-        setProgress(percent)
-        setProcessedSize(Math.min(video.size * ratio * 0.4, video.size * 0.4))
+      logger.log('[Compress] start', {
+        name: video.name,
+        size: video.size,
+        type: video.type,
+        settings,
       })
 
-      const args = ['-i', 'input.mp4', '-c:v', settings.videoCodec]
+      const input = new Input({
+        source: new BlobSource(video),
+        formats: ALL_FORMATS,
+      })
 
-      // Encoding speed preset (ultrafast > veryfast > fast > medium > slow)
-      if (settings.videoCodec === 'libx264' || settings.videoCodec === 'libx265') {
-        args.push('-preset', settings.preset)
+      const videoTrack = await input.getPrimaryVideoTrack()
+      logger.log('[Compress] input', {
+        duration: await input.computeDuration(),
+        codec: videoTrack?.codec ?? null,
+        width: videoTrack?.displayWidth ?? null,
+        height: videoTrack?.displayHeight ?? null,
+      })
+
+      // Resolve video codec, falling back to H.264 when the browser can't
+      // hardware-encode the selected one.
+      let codec: VideoCodec = settings.videoCodec
+      if (!(await canEncodeVideo(codec))) {
+        if (codec === 'hevc' && (await canEncodeVideo('avc'))) {
+          codec = 'avc'
+          toast.warning(
+            'H.265 encoding is not supported here, using H.264 instead',
+          )
+        } else {
+          throw new Error('This browser cannot encode the selected video codec')
+        }
       }
+      logger.log('[Compress] video codec resolved', codec)
 
+      // Determine the target video bitrate (bits/sec) or quality preset
+      let videoBitrate: number | Quality
       switch (settings.compressionMethod) {
         case 'bitrate':
-          args.push('-b:v', settings.videoBitrate)
+          videoBitrate = parseBitrate(settings.videoBitrate)
           break
-        case 'crf':
-          args.push('-crf', settings.crfValue || '23')
-          break
-        case 'percentage': {
-          const crf = Math.round(
-            51 - (parseInt(settings.targetPercentage || '100') / 100) * 33,
-          )
-          args.push('-crf', crf.toString())
-          break
-        }
         case 'filesize': {
-          const targetBitrate = Math.round(
-            (parseInt(settings.targetFilesize || '100') * 8192) /
-              (videoRef.current?.duration || 60),
+          const duration = await input.computeDuration()
+          const targetBits =
+            parseFloat(settings.targetFilesize || '100') * 8 * 1024 * 1024
+          const audioBits = parseBitrate(settings.audioBitrate)
+          videoBitrate = Math.max(
+            100_000,
+            Math.round(targetBits / Math.max(duration, 1)) - audioBits,
           )
-          args.push('-b:v', `${targetBitrate}k`)
           break
+        }
+        default:
+          videoBitrate = qualityMap[settings.quality]
+      }
+
+      const videoOptions: {
+        codec: VideoCodec
+        bitrate: number | Quality
+        height?: number
+        frameRate?: number
+      } = { codec, bitrate: videoBitrate }
+      if (settings.resolution !== 'original') {
+        videoOptions.height = Number(settings.resolution)
+      }
+      if (settings.frameRate !== 'original') {
+        videoOptions.frameRate = Number(settings.frameRate)
+      }
+      logger.log('[Compress] video options', videoOptions)
+
+      const canAac = await canEncodeAudio('aac')
+      logger.log('[Compress] canEncodeAudio(aac)', canAac)
+      if (!canAac) {
+        toast.warning('Audio encoding is not supported here, output is muted')
+      }
+
+      const output = new Output({
+        format: new Mp4OutputFormat(),
+        target: new BufferTarget(),
+      })
+
+      const conversion = await Conversion.init({
+        input,
+        output,
+        tracks: 'primary',
+        video: videoOptions,
+        audio: canAac
+          ? { codec: 'aac', bitrate: parseBitrate(settings.audioBitrate) }
+          : { discard: true },
+      })
+      logger.log('[Compress] conversion init', {
+        discardedTracks: conversion.discardedTracks,
+      })
+
+      let lastLogged = -1
+      conversion.onProgress = (ratio) => {
+        const percent = Math.round(ratio * 100)
+        setProgress(percent)
+        // Throttle log output to once per percent
+        if (percent !== lastLogged) {
+          lastLogged = percent
+          logger.log(`[Compress] progress ${percent}%`)
         }
       }
 
-      // Apply resolution scale filter if not original
-      if (settings.resolution && settings.resolution !== '1920x1080') {
-        const [w, h] = settings.resolution.split('x')
-        args.push('-vf', `scale=${w}:${h}:force_original_aspect_ratio=decrease,pad=${w}:${h}:(ow-iw)/2:(oh-ih)/2`)
+      logger.log('[Compress] execute start')
+      await conversion.execute()
+      logger.log('[Compress] execute done')
+
+      const buffer = output.target.buffer
+      if (!buffer) {
+        throw new Error('Compression produced no output')
       }
 
-      args.push(
-        '-c:a',
-        settings.audioCodec,
-        '-b:a',
-        settings.audioBitrate,
-        '-r',
-        settings.frameRate,
-        '-movflags',
-        '+faststart',
-        'output.mp4',
-      )
-
-      await ffmpeg.exec(args)
-      const outputData = await ffmpeg.readFile('output.mp4')
-      const blob = new Blob([outputData as BlobPart], { type: 'video/mp4' })
+      const blob = new Blob([buffer], { type: 'video/mp4' })
       const url = URL.createObjectURL(blob)
 
       setOutputUrl(url)
       setProgress(100)
-      setProcessedSize((outputData as Uint8Array).length)
+      setProcessedSize(buffer.byteLength)
+      logger.log('[Compress] complete', {
+        originalSize: video.size,
+        compressedSize: buffer.byteLength,
+        ratio: (buffer.byteLength / video.size).toFixed(3),
+      })
       toast.success('Video compressed successfully')
-
-      await ffmpeg.deleteFile('input.mp4')
-      await ffmpeg.deleteFile('output.mp4')
     } catch (err) {
+      logger.error('[Compress] failed', err)
       const errorMessage =
         err instanceof Error ? err.message : 'Compression failed'
       setError(errorMessage)
@@ -281,10 +272,9 @@ export default function Compress() {
       'video/*': [],
     },
     maxFiles: 1,
-    onDrop: async (acceptedFiles) => {
+    onDrop: (acceptedFiles) => {
       resetState()
       setVideo(acceptedFiles[0])
-      if (!isReady) await loadFFmpeg()
       toast.info('Video file selected')
     },
   })
@@ -306,17 +296,13 @@ export default function Compress() {
               <UploadArea
                 video={video}
                 previewUrl={previewUrl}
-                isLoading={isLoading}
                 isProcessing={isProcessing}
-                isReady={isReady}
-                error={error}
                 outputUrl={outputUrl}
                 getRootProps={getRootProps}
                 getInputProps={getInputProps}
                 isDragActive={isDragActive}
                 isDragAccept={isDragAccept}
                 isDragReject={isDragReject}
-                onRetryLoad={loadFFmpeg}
                 onReset={resetState}
                 onCompress={compressVideo}
               />
