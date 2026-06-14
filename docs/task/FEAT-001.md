@@ -59,4 +59,8 @@ Rebuilding shortener into a Sink-like Next.js dashboard app.
   `feat/sink-app` (BKD `hd2zbarw` → done; coordinator /pma-cr fixes in 7a846d9).
 - **P1b done** (2026-06-14): link API + dashboard (links list/editor) + AI slug
   on `feat/sink-app` (commit `7114375`, BKD `u3wuz8f7` → done). Run in-session.
-  Verified e2e against local D1. P1c (`l0huhojt`) remains.
+  Verified e2e against local D1.
+- **P1c done** (2026-06-14): analytics dashboard (AE query helper + stats API +
+  /dashboard/analytics) on `feat/sink-app` (commit `886a3c3`, BKD `l0huhojt` →
+  done). Security review fix `edfdd20` (AE SQL backslash escaping). **P1
+  complete.** P2/P3 remain (not scheduled).

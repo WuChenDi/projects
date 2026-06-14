@@ -368,6 +368,23 @@ P1 sliced into BKD issues (project `projects` / `68ll1mkh`, tags
 Each carries a full scope/acceptance follow-up. Dependency chain P1a → P1b →
 P1c.
 
+### 2026-06-14 — P1c complete → P1 done (in-session)
+
+P1c delivered on `feat/sink-app` (commit `886a3c3`). **Sections done:** D
+(AE SQL query helper) and E (analytics dashboard: counters / views chart /
+metric groups with drill-down / range + filters). Map/heatmap + realtime are
+placeholders per decisions #10/#11. Stats endpoints degrade gracefully when AE
+creds are absent. Added CLOUDFLARE_ACCOUNT_ID/API_TOKEN env + recharts dep.
+Verified locally (graceful no-creds, 400 invalid type, 401 auth, page renders).
+
+Post-commit security fix `edfdd20`: AE SQL `sanitize()` now escapes backslash
+(ClickHouse escape char) in addition to quotes — drill-down filter values are
+second-order untrusted (visitor-controlled analytics dimensions).
+
+**P1 (P1a + P1b + P1c) is complete.** Remaining: P2 (realtime, heatmap, health
+check) and P3 (migrate/backup + R2, image upload, cloaking polish, UTM builder,
+country picker) — not yet scheduled.
+
 ### 2026-06-14 — P1b complete (in-session)
 
 P1b delivered on `feat/sink-app` (commit `7114375`), run in-session (not BKD

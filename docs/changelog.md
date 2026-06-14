@@ -93,3 +93,31 @@ Verified end-to-end against local D1 (dev server): create (custom + auto slug),
 duplicate-slug 409, list, search, edit, delete; password-gate redirect (200
 form); **edit/delete invalidate the redirect cache** (308 reflects new url,
 404 after delete); AI fallback slug. Build + biome clean. BKD `u3wuz8f7` → done.
+
+## 2026-06-14 09:30 [progress]
+
+**P1c complete — P1 done.** Analytics dashboard on `feat/sink-app` (commit
+`886a3c3`). Delivered: AE SQL query helper (field map matching ingestion,
+sampling-weighted visitors, range + drill-down filters, sanitized literals);
+stats API (counters/views/metrics, site-token gated, graceful `configured:false`
+without AE creds); `/dashboard/analytics` (range selector, counters cards,
+recharts views chart, metric groups with tabs + click-to-filter drill-down,
+removable filter bar, map/realtime placeholders); CLOUDFLARE_ACCOUNT_ID/
+API_TOKEN wiring; en/zh i18n; recharts dep.
+
+Verified locally: stats degrade gracefully without AE creds, invalid type 400,
+auth 401, analytics page 200. Build + biome clean. BKD `l0huhojt` → done.
+
+**P1 (P1a + P1b + P1c) complete** on `feat/sink-app`. Remaining: P2/P3
+(realtime, map/heatmap, health check, migrate/backup, image upload, UTM,
+country picker) — not yet scheduled.
+
+## 2026-06-14 09:35 [BUG-P1]
+
+Automated commit security review flagged a SQL-injection in
+`analytics-query.ts` `sanitize()`: it doubled single quotes but left backslash
+unescaped, and Analytics Engine SQL (ClickHouse) treats backslash as a
+string-literal escape — a value ending in `\` could escape the closing quote
+and break out. **Second-order exploitable**: drill-down filter values are
+visitor-controlled analytics dimensions (referer/slug). Fixed (commit
+`edfdd20`) to escape backslash then quote. Build + biome clean.
