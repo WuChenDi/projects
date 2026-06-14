@@ -121,3 +121,11 @@ string-literal escape — a value ending in `\` could escape the closing quote
 and break out. **Second-order exploitable**: drill-down filter values are
 visitor-controlled analytics dimensions (referer/slug). Fixed (commit
 `edfdd20`) to escape backslash then quote. Build + biome clean.
+
+## 2026-06-14 09:50 [progress]
+
+Refactored the QR dialog to reuse the shared `@cdlab996/ui/components/qr-code`
+component (canvas + `ref.download`) instead of a bespoke `qrcode`/`<img>`
+implementation; removed `qrcode` + `@types/qrcode` from `apps/sink`. Declared
+`@types/qrcode` in `@cdlab996/ui` dependencies so the raw-source component
+typechecks for consumers. Build + biome clean (commit `635db96`).
