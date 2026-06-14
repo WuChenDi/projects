@@ -8,13 +8,22 @@ export function extractBearer(request: Request): string | null {
   return match ? match[1].trim() : null
 }
 
+// Constant-time string comparison — avoids leaking match progress via timing,
+// consistent with the link-password path (lib/hash.ts).
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  return diff === 0
+}
+
 // Compare against the configured SITE_TOKEN. Fails CLOSED in production when no
 // token is configured (a missing token must never open the gate in a deploy);
 // in non-production the gate stays open as a single-tenant local-dev convenience.
 export function isValidSiteToken(token: string | null): boolean {
   const siteToken = getConfig().siteToken
   if (!siteToken) return process.env.NODE_ENV !== 'production'
-  return token !== null && token === siteToken
+  return token !== null && safeEqual(token, siteToken)
 }
 
 type AuthResult = { ok: true } | { ok: false; response: NextResponse }
