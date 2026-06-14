@@ -97,7 +97,8 @@
         "apps/value-vision/**/*",
         "apps/flox/**/*",
         "apps/byshot/**/*",
-        "apps/wepush/**/*"
+        "apps/wepush/**/*",
+        "apps/sink/**/*"
       ],
       "linter": {
         "domains": {
@@ -135,6 +136,8 @@
       "!apps/shortener/src/database/**/*.sql",
       "!apps/wepush/src/database/**/*.json",
       "!apps/wepush/src/database/**/*.sql",
+      "!apps/sink/src/database/**/*.json",
+      "!apps/sink/src/database/**/*.sql",
       "!apps/**/cloudflare-env.d.ts",
       "!packages/ui/src/reactbits/**/*.tsx",
       "!packages/ui/src/components/**/*.tsx"

@@ -1,0 +1,55 @@
+{
+  "common": {
+    "appName": "Sink",
+    "tagline": "运行在边缘的隐私优先短链接服务",
+    "enterDashboard": "进入控制台",
+    "viewSource": "查看源码",
+    "signOut": "退出登录",
+    "language": "语言"
+  },
+  "landing": {
+    "badge": "Cloudflare Workers · 边缘跳转",
+    "title": "内置地域、设备路由与数据分析的短链接",
+    "subtitle": "创建可按国家与设备分流、支持密码保护的短链接，并将每一次点击实时写入 Analytics Engine —— 全部在边缘完成，无冷启动查询。",
+    "getStarted": "立即开始",
+    "featuresTitle": "核心能力",
+    "features": {
+      "geo": {
+        "title": "地域与设备路由",
+        "desc": "按国家或 Apple / Android 设备将访客分流到不同目标地址。"
+      },
+      "analytics": {
+        "title": "边缘数据分析",
+        "desc": "每次跳转都会带上地域、UA、来源等维度写入 Analytics Engine。"
+      },
+      "privacy": {
+        "title": "密码与安全拦截",
+        "desc": "为链接设置访问密码，或为不安全目标展示风险提示页。"
+      }
+    }
+  },
+  "login": {
+    "title": "登录 Sink",
+    "description": "输入站点令牌以访问控制台。",
+    "tokenLabel": "站点令牌",
+    "tokenPlaceholder": "请输入站点令牌",
+    "submit": "继续",
+    "verifying": "验证中…",
+    "invalid": "站点令牌无效"
+  },
+  "dashboard": {
+    "title": "控制台",
+    "description": "管理短链接并查看数据分析。",
+    "nav": {
+      "overview": "概览",
+      "links": "链接",
+      "analytics": "分析",
+      "settings": "设置"
+    },
+    "overview": {
+      "totalLinks": "链接总数",
+      "comingSoon": "链接管理与数据分析将在下个阶段上线。",
+      "signedIn": "你已登录。"
+    }
+  }
+}

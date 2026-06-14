@@ -1,0 +1,55 @@
+{
+  "common": {
+    "appName": "Sink",
+    "tagline": "Privacy-first link shortener on the edge",
+    "enterDashboard": "Open dashboard",
+    "viewSource": "View source",
+    "signOut": "Sign out",
+    "language": "Language"
+  },
+  "landing": {
+    "badge": "Cloudflare Workers · Edge redirects",
+    "title": "Short links with geo, device & analytics built in",
+    "subtitle": "Create short links that route by country and device, gate behind a password, and stream every click into Analytics Engine — all on the edge with zero cold-start lookups.",
+    "getStarted": "Get started",
+    "featuresTitle": "What's inside",
+    "features": {
+      "geo": {
+        "title": "Geo & device routing",
+        "desc": "Send visitors to different destinations by country or by Apple / Android device."
+      },
+      "analytics": {
+        "title": "Edge analytics",
+        "desc": "Every redirect is logged to Analytics Engine with geo, UA and referer dimensions."
+      },
+      "privacy": {
+        "title": "Password & safety gates",
+        "desc": "Protect links with a password or show an interstitial warning for unsafe destinations."
+      }
+    }
+  },
+  "login": {
+    "title": "Sign in to Sink",
+    "description": "Enter the site token to access the dashboard.",
+    "tokenLabel": "Site token",
+    "tokenPlaceholder": "Enter your site token",
+    "submit": "Continue",
+    "verifying": "Verifying…",
+    "invalid": "Invalid site token"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "description": "Manage your short links and view analytics.",
+    "nav": {
+      "overview": "Overview",
+      "links": "Links",
+      "analytics": "Analytics",
+      "settings": "Settings"
+    },
+    "overview": {
+      "totalLinks": "Total links",
+      "comingSoon": "Link management and analytics arrive in the next phase.",
+      "signedIn": "You are signed in."
+    }
+  }
+}
