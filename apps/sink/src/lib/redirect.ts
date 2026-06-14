@@ -1,7 +1,9 @@
 import type { Link } from '@/database/schema'
 import { getConfig } from '@/lib/env'
 
-const APPLE_UA = /iphone|ipad|ipod|macintosh|mac os/i
+// iOS devices only — desktop macOS must NOT match, or a Mac visitor would be
+// sent to a link's App Store URL. `crios` covers Chrome on iOS.
+const APPLE_UA = /iphone|ipad|ipod|crios/i
 const ANDROID_UA = /android/i
 
 export function isAppleDevice(ua: string): boolean {

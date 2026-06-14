@@ -14,10 +14,15 @@ const NO_STORE = { 'cache-control': 'no-store' } as const
 
 type RouteContext = { params: Promise<{ slug: string }> }
 
-function notFound(env: CloudflareEnv): Response {
+function notFound(request: Request, env: CloudflareEnv): Response {
   const { notFoundRedirect } = getConfig(env)
   if (notFoundRedirect) {
-    return Response.redirect(notFoundRedirect, 302)
+    // Resolve against the request origin so a relative path (e.g. `/404`) is
+    // accepted — Response.redirect() requires an absolute URL and would throw.
+    return Response.redirect(
+      new URL(notFoundRedirect, request.url).toString(),
+      302,
+    )
   }
   return new Response('Not found', { status: 404, headers: NO_STORE })
 }
@@ -66,20 +71,20 @@ export async function GET(
   const { slug } = await params
   const { env, cf, ctx } = getCloudflareContext()
 
-  if (isReservedSlug(slug)) return notFound(env)
+  if (isReservedSlug(slug)) return notFound(request, env)
 
   const domain = new URL(request.url).hostname
   const link = await resolveLink(env, domain, slug)
 
   if (!link) {
     logger.info(`Slug not found: ${slug} (domain=${domain})`)
-    return notFound(env)
+    return notFound(request, env)
   }
 
   if (isExpired(link.expiresAt)) {
     logger.info(`Slug expired: ${slug}`)
     await purgeLink(env, domain, slug)
-    return notFound(env)
+    return notFound(request, env)
   }
 
   const ua = request.headers.get('user-agent') || ''
@@ -113,12 +118,12 @@ export async function POST(
   const { slug } = await params
   const { env, cf, ctx } = getCloudflareContext()
 
-  if (isReservedSlug(slug)) return notFound(env)
+  if (isReservedSlug(slug)) return notFound(request, env)
 
   const domain = new URL(request.url).hostname
   const link = await resolveLink(env, domain, slug)
 
-  if (!link || isExpired(link.expiresAt)) return notFound(env)
+  if (!link || isExpired(link.expiresAt)) return notFound(request, env)
 
   // Only the password flow uses POST.
   if (!link.config.passwordHash) {
