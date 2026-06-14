@@ -57,5 +57,6 @@ Rebuilding shortener into a Sink-like Next.js dashboard app.
   `(slug, domain)` vs the original sha256 hash mechanism. → resolved: composite.
 - **P1a done** (2026-06-14): `apps/sink` scaffold + redirect engine merged into
   `feat/sink-app` (BKD `hd2zbarw` → done; coordinator /pma-cr fixes in 7a846d9).
-  P1b (`u3wuz8f7`) / P1c (`l0huhojt`) remain — dispatch blocked by the BKD
-  base-branch constraint (see PLAN-001); decide in-session vs land-on-main.
+- **P1b done** (2026-06-14): link API + dashboard (links list/editor) + AI slug
+  on `feat/sink-app` (commit `7114375`, BKD `u3wuz8f7` → done). Run in-session.
+  Verified e2e against local D1. P1c (`l0huhojt`) remains.

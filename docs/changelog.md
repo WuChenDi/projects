@@ -76,3 +76,20 @@ over local `main`), which does NOT contain P1a (it lives on `feat/sink-app`).
 So dependent phases P1b/P1c cannot be BKD-dispatched into a fresh worktree
 without P1a present — they must either run in-session on `feat/sink-app`, or
 wait until P1 lands on `main`. Decision pending with user.
+
+## 2026-06-14 08:45 [progress]
+
+**P1b complete** (in-session on `feat/sink-app`, commit `7114375`). User chose
+to run dependent phases in-session rather than push WIP to main. Delivered:
+link API (list/query/search/create/edit/upsert/delete/ai-slug, all site-token
+gated, KV cache invalidation on mutate), repository CRUD (slug validation,
+per-domain uniqueness with soft-delete revive, PBKDF2 password hashing, geo
+keys uppercased), `/dashboard/links` (table, debounced server search, sort,
+pagination, copy, QR, delete) and `/dashboard/link` editor (basic + advanced
+accordion: settings/OG/device/geo, random + AI slug), AI slug with random
+fallback + KV cache, en/zh i18n, `qrcode` dep.
+
+Verified end-to-end against local D1 (dev server): create (custom + auto slug),
+duplicate-slug 409, list, search, edit, delete; password-gate redirect (200
+form); **edit/delete invalidate the redirect cache** (308 reflects new url,
+404 after delete); AI fallback slug. Build + biome clean. BKD `u3wuz8f7` → done.
