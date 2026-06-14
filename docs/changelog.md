@@ -129,3 +129,11 @@ component (canvas + `ref.download`) instead of a bespoke `qrcode`/`<img>`
 implementation; removed `qrcode` + `@types/qrcode` from `apps/sink`. Declared
 `@types/qrcode` in `@cdlab996/ui` dependencies so the raw-source component
 typechecks for consumers. Build + biome clean (commit `635db96`).
+
+## 2026-06-14 10:00 [progress]
+
+Pushed `feat/sink-app` and opened **PR #38**
+(https://github.com/WuChenDi/projects/pull/38) — "feat(sink): rebuild shortener
+as a Sink-like Next.js app (P1)". Includes the untracked `@cdlab996/ui` QRCode
+component (`b3bb20c`) and a QR scannability fix (`68152d5`: fixed black/white +
+quiet zone). 89 files. P1 (P1a+P1b+P1c) complete; P2/P3 not included.
