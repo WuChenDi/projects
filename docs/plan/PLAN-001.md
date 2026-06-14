@@ -368,6 +368,21 @@ P1 sliced into BKD issues (project `projects` / `68ll1mkh`, tags
 Each carries a full scope/acceptance follow-up. Dependency chain P1a → P1b →
 P1c.
 
+### 2026-06-14 — P1b complete (in-session)
+
+P1b delivered on `feat/sink-app` (commit `7114375`), run in-session (not BKD
+worktree, per the orchestration constraint). **Sections done:** G (link
+list/search/sort/pagination/CRUD/upsert/editor basic+advanced/QR) and H (AI
+slug + fallback + KV cache). Edits/deletes invalidate the redirect KV cache.
+Verified end-to-end against local D1 (create/list/search/edit/delete, 409
+dup-slug, password-gate redirect, cache invalidation, AI fallback); build +
+biome clean. BKD `u3wuz8f7` → done.
+
+Known P1b limitations (acceptable, noted for later): no UI affordance to CLEAR
+an existing link password (empty field keeps current); editing a slug onto one
+held by a *soft-deleted* row would hit the DB unique constraint (rare); full
+ISO+flag country picker and UTM builder remain P3.
+
 ### 2026-06-14 — P1a complete, reviewed, merged
 
 P1a delivered and merged into `feat/sink-app` (subtask `hd2zbarw` → done).
