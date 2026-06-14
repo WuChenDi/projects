@@ -93,7 +93,14 @@ useHead({
     { rel: 'canonical', href: siteConfig.url },
     // Preconnect for Performance
     { rel: 'preconnect', href: 'https://cdn.jsdelivr.net' },
-    { rel: 'dns-prefetch', href: 'https://cdn.jsdelivr.net' }
+    { rel: 'dns-prefetch', href: 'https://cdn.jsdelivr.net' },
+    // Editorial typeface trio: Fraunces (display) · Hanken Grotesk (body) · JetBrains Mono (data)
+    { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap'
+    }
   ],
   htmlAttrs: {
     lang: siteConfig.meta.lang
@@ -227,6 +234,7 @@ useSeoMeta({
     <ThemedBackground>
       <IKHeader
         brand="Repo Changelog"
+        tagline="The open-source release gazette"
         github-href="https://github.com/WuChenDi/repo-changelog"
       >
         <UColorModeButton

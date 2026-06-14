@@ -1,48 +1,168 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
+/*
+ * The Release Gazette — editorial / technical-broadsheet theme.
+ * Display: Fraunces (high-contrast serif) · Body: Hanken Grotesk · Data: JetBrains Mono
+ */
 @theme static {
-  --font-sans: 'Inter', 'Public Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
+/* ---- Day edition (light) ---------------------------------------------- */
 :root {
-  --rc-grid-color: rgba(0, 0, 0, 0.05);
-  --rc-dot-color: rgba(0, 0, 0, 0.08);
-  --rc-surface: rgba(255, 255, 255, 0.72);
-  --rc-border: rgba(0, 0, 0, 0.08);
+  --paper: #f4eee1;
+  --paper-2: #ede5d3;
+  --paper-card: #fbf7ee;
+  --ink: #1d1812;
+  --ink-soft: #5b5246;
+  --ink-faint: #8b8072;
+  --press: #bb3a22;
+  --press-deep: #932914;
+  --rule: rgba(29, 24, 18, 0.2);
+  --rule-soft: rgba(29, 24, 18, 0.1);
+  --rule-strong: rgba(29, 24, 18, 0.46);
+  --grain-opacity: 0.5;
+
+  /* Map Nuxt UI tokens onto the editorial palette */
+  --ui-text: var(--ink);
+  --ui-text-highlighted: var(--ink);
+  --ui-text-toned: var(--ink-soft);
+  --ui-text-muted: var(--ink-soft);
+  --ui-text-dimmed: var(--ink-faint);
+  --ui-bg: var(--paper);
+  --ui-bg-muted: var(--paper-2);
+  --ui-bg-elevated: var(--paper-card);
+  --ui-bg-accented: var(--paper-2);
+  --ui-border: var(--rule);
+  --ui-border-muted: var(--rule-soft);
+  --ui-border-accented: var(--rule);
+  --ui-primary: var(--press);
+  --ui-color-primary-400: var(--press);
+  --ui-color-primary-500: var(--press);
+  --ui-color-primary-600: var(--press-deep);
 }
 
+/* ---- Night edition (dark) --------------------------------------------- */
 .dark {
-  --ui-bg: var(--ui-color-neutral-950);
-  --ui-bg-muted: var(--ui-color-neutral-900);
-  --ui-bg-elevated: var(--ui-color-neutral-900);
-  --ui-bg-accented: var(--ui-color-neutral-800);
+  --paper: #14120c;
+  --paper-2: #1c190f;
+  --paper-card: #1a170f;
+  --ink: #ece2cd;
+  --ink-soft: #a79a82;
+  --ink-faint: #756b58;
+  --press: #e0603f;
+  --press-deep: #c64a2c;
+  --rule: rgba(236, 226, 205, 0.18);
+  --rule-soft: rgba(236, 226, 205, 0.09);
+  --rule-strong: rgba(236, 226, 205, 0.42);
+  --grain-opacity: 0.55;
 
-  --rc-grid-color: rgba(255, 255, 255, 0.04);
-  --rc-dot-color: rgba(255, 255, 255, 0.06);
-  --rc-surface: rgba(10, 10, 10, 0.55);
-  --rc-border: rgba(255, 255, 255, 0.08);
+  --ui-bg: var(--paper);
+  --ui-bg-muted: var(--paper-2);
+  --ui-bg-elevated: var(--paper-card);
+  --ui-bg-accented: var(--paper-2);
+  --ui-color-primary-400: var(--press);
+  --ui-color-primary-500: var(--press);
+  --ui-color-primary-600: var(--press-deep);
 }
 
-.rc-grid-bg {
-  background-image:
-    linear-gradient(var(--rc-grid-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--rc-grid-color) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-
-.rc-dot-bg {
-  background-image: radial-gradient(var(--rc-dot-color) 1px, transparent 1px);
-  background-size: 18px 18px;
-}
-
-.rc-surface {
-  background: transparent;
-  border: 1px solid var(--rc-border);
-}
-
+/* ---- Type helpers ----------------------------------------------------- */
 .rc-mono {
   font-family: var(--font-mono);
   letter-spacing: -0.01em;
+}
+
+.rc-serif {
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+}
+
+/* Editorial eyebrow / kicker */
+.rc-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* Double rule — the classic broadsheet divider */
+.rc-rule-double {
+  border-top: 3px double var(--rule-strong);
+}
+
+/* ---- Rubber-stamp version tag ----------------------------------------- */
+.rc-stamp {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--press);
+  border: 1.5px solid color-mix(in oklab, var(--press) 70%, transparent);
+  border-radius: 2px;
+  padding: 0.05rem 0.4rem;
+  background: color-mix(in oklab, var(--press) 7%, transparent);
+}
+
+/* ---- Drop cap for the lead article ------------------------------------ */
+.rc-dropcap::first-letter {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 3.1em;
+  line-height: 0.8;
+  float: left;
+  margin: 0.06em 0.08em -0.04em 0;
+  color: var(--press);
+}
+
+/* ---- Newsprint grain + paper backdrop --------------------------------- */
+.rc-grain::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+.dark .rc-grain::before {
+  mix-blend-mode: screen;
+}
+
+/* ---- Prose tuning for release bodies ---------------------------------- */
+.rc-article :where(h1, h2, h3, h4) {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
+}
+
+/* Focus ring in press red */
+*:focus-visible {
+  outline-color: var(--press);
+}
+
+/* ---- Staggered front-page reveal -------------------------------------- */
+@keyframes rc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rc-rise {
+  animation: rc-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rc-rise {
+    animation: none;
+  }
 }

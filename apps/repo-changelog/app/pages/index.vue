@@ -314,15 +314,16 @@ function formatCount(n: number): string {
 
 <template>
   <div class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-4 sm:px-6">
-    <div class="flex flex-1 flex-col lg:grid lg:grid-cols-[340px_1fr] lg:grid-rows-[auto_1fr] lg:gap-x-8">
-      <!-- Primary rail: Search + Selected -->
-      <aside class="py-6 lg:py-8 lg:col-start-1 lg:row-start-1 lg:self-start lg:sticky lg:top-[calc(56px+1rem)]">
-        <div class="space-y-6">
+    <div class="flex flex-1 flex-col lg:grid lg:grid-cols-[340px_1fr] lg:grid-rows-[1fr] lg:gap-x-10">
+      <!-- Left rail — full-height column (divider) with an independently scrolling inner pane -->
+      <aside class="lg:col-start-1 lg:border-r lg:border-[var(--rule)]">
+        <div class="py-6 lg:sticky lg:top-[58px] lg:max-h-[calc(100vh-58px)] lg:overflow-y-auto lg:py-8 lg:pr-10">
+          <div class="space-y-7">
           <!-- Search panel -->
-          <section class="rc-surface rounded-lg p-4">
-            <label class="rc-mono mb-2 block text-[10px] uppercase tracking-widest text-[var(--ui-text-muted)]">
-              Search
-            </label>
+          <section>
+            <div class="mb-2.5 flex items-center gap-2 border-b border-[var(--rule)] pb-2">
+              <span class="rc-kicker text-[var(--press)]">The wire desk</span>
+            </div>
             <div class="flex items-center gap-2">
               <UInput
                 v-model="searchQuery"
@@ -371,18 +372,18 @@ function formatCount(n: number): string {
             </p>
             <p
               v-else
-              class="mt-2 text-[11px] text-[var(--ui-text-muted)]"
+              class="mt-2 text-[11px] text-[var(--ink-soft)]"
             >
               Try
               <button
-                class="rc-mono underline-offset-2 hover:underline"
+                class="rc-mono text-[var(--press)] underline-offset-2 hover:underline"
                 @click="searchQuery = 'vuejs/core'; searchRepositories()"
               >
                 vuejs/core
               </button>
               or
               <button
-                class="rc-mono underline-offset-2 hover:underline"
+                class="rc-mono text-[var(--press)] underline-offset-2 hover:underline"
                 @click="searchQuery = 'nuxt'; searchRepositories()"
               >
                 nuxt
@@ -393,7 +394,6 @@ function formatCount(n: number): string {
           <!-- Selected -->
           <section
             v-if="selectedRepos.length > 0"
-            class="rc-surface rounded-lg p-4"
           >
             <RepoList
               title="Selected"
@@ -415,50 +415,65 @@ function formatCount(n: number): string {
               class="mt-3"
               @click="viewReleases"
             >
-              View changelog · {{ selectedRepos.length }}
+              Print the changelog · {{ selectedRepos.length }}
             </UButton>
           </section>
 
+          <!-- Groups -->
+          <section>
+            <FavoriteGroups
+              :selected-repos="selectedRepos"
+              @open="openGroup"
+            />
+          </section>
+
+          <!-- Recent -->
+          <section v-if="repoHistory.length > 0">
+            <RepoList
+              title="Recent"
+              :repos="repoHistory"
+              icon="i-lucide-history"
+              :clickable="true"
+              @click="navigateToRepo"
+              @remove="removeFromHistory"
+              @clear-all="() => repoHistory = []"
+            />
+          </section>
+          </div>
         </div>
       </aside>
 
       <!-- Right pane -->
-      <section class="flex flex-1 flex-col py-6 lg:col-start-2 lg:row-span-2 lg:py-8">
-        <!-- Hero header -->
-        <header class="mb-6 flex flex-col gap-2">
-          <div class="rc-mono flex items-center gap-2 text-[10px] uppercase tracking-widest text-[var(--ui-text-muted)]">
-            <UIcon
-              name="i-lucide-sparkles"
-              class="size-3"
-            />
-            Open-source release tracker
+      <section class="flex flex-1 flex-col py-6 lg:col-start-2 lg:py-8">
+        <!-- Masthead hero -->
+        <header class="mb-8">
+          <div class="flex items-center gap-3">
+            <span class="rc-kicker text-[var(--press)]">Vol. II</span>
+            <span class="h-px flex-1 bg-[var(--rule)]" />
+            <span class="rc-kicker">Open-source release tracker</span>
           </div>
-          <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Track GitHub releases like a feed.
+          <h1 class="rc-serif mt-4 text-balance text-[2.5rem] font-semibold leading-[0.98] tracking-tight sm:text-6xl">
+            Read every release<br>
+            <span class="italic text-[var(--press)]">like the morning paper.</span>
           </h1>
-          <p class="max-w-xl text-sm text-[var(--ui-text-muted)]">
-            Search any owner or repo, select what you want to follow, and read a merged changelog timeline.
+          <div class="rc-rule-double mt-5" />
+          <p class="rc-dropcap mt-4 max-w-2xl text-[15px] leading-relaxed text-[var(--ink-soft)]">
+            Subscribe to any GitHub owner or repository, pick the projects worth following, and we set them in one continuous, type-set changelog — every tag, every release note, printed in chronological order.
           </p>
         </header>
 
         <!-- Results state -->
         <div v-if="showResults">
-          <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex items-center gap-2.5">
-              <div class="rc-mono flex items-center gap-2 rounded-md border border-[var(--rc-border)] px-2.5 py-1 text-xs">
-                <UIcon
-                  name="i-lucide-package-2"
-                  class="size-3.5"
-                />
-                <span>{{ searchResults.length }} results</span>
-              </div>
-              <span class="text-xs text-[var(--ui-text-muted)]">
-                Click to add / remove
+          <div class="mb-5 flex flex-col gap-3 border-b border-[var(--rule)] pb-3 sm:flex-row sm:items-end sm:justify-between">
+            <div class="flex items-baseline gap-2.5">
+              <span class="rc-serif text-2xl font-semibold tracking-tight">Classifieds</span>
+              <span class="rc-mono text-xs text-[var(--ink-faint)]">
+                {{ searchResults.length }} listings · tap to clip
               </span>
             </div>
 
             <div class="flex items-center gap-1.5">
-              <div class="flex items-center gap-0.5 rounded-md border border-[var(--rc-border)] p-0.5">
+              <div class="flex items-center gap-0.5 rounded-md border border-[var(--rule)] p-0.5">
                 <UButton
                   v-for="option in sortOptions"
                   :key="option.value"
@@ -484,42 +499,35 @@ function formatCount(n: number): string {
             </div>
           </div>
 
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-3">
+          <div class="grid grid-cols-1 gap-px overflow-hidden border border-[var(--rule)] bg-[var(--rule-soft)] sm:grid-cols-2 2xl:grid-cols-3">
             <button
               v-for="repo in sortedSearchResults"
               :key="repo.id"
               type="button"
-              class="group/card relative overflow-hidden rounded-lg border p-3.5 text-left transition-all duration-200"
+              class="group/card relative flex flex-col p-4 text-left transition-colors duration-150"
               :class="selectedRepos.includes(repo.repo)
-                ? 'border-[var(--ui-color-primary-500)] bg-[color-mix(in_oklab,var(--ui-color-primary-500)_8%,transparent)]'
-                : 'border-[var(--rc-border)] hover:border-[var(--ui-color-primary-500)]/60 hover:bg-[color-mix(in_oklab,var(--ui-color-primary-500)_4%,transparent)]'"
+                ? 'bg-[color-mix(in_oklab,var(--press)_9%,var(--paper-card))]'
+                : 'bg-[var(--paper-card)] hover:bg-[color-mix(in_oklab,var(--press)_4%,var(--paper-card))]'"
               @click="toggleRepository(repo.repo)"
             >
-              <div class="mb-2 flex items-start justify-between gap-2">
-                <div class="flex min-w-0 flex-1 items-center gap-2">
-                  <UIcon
-                    :name="selectedRepos.includes(repo.repo) ? 'i-lucide-check-circle-2' : 'i-lucide-github'"
-                    class="size-4 shrink-0"
-                    :class="selectedRepos.includes(repo.repo) ? 'text-[var(--ui-color-primary-500)]' : 'text-[var(--ui-text-muted)]'"
-                  />
-                  <span class="rc-mono truncate text-sm font-medium">
-                    {{ repo.repo }}
-                  </span>
-                </div>
-                <UButton
-                  icon="i-lucide-external-link"
-                  variant="ghost"
-                  size="xs"
-                  color="neutral"
-                  square
-                  class="shrink-0 opacity-0 transition-opacity group-hover/card:opacity-100"
-                  @click="(e) => openRepoLink(e, repo.repo)"
-                />
+              <!-- Clipped corner mark when selected -->
+              <span
+                v-if="selectedRepos.includes(repo.repo)"
+                class="rc-stamp absolute right-3 top-3 rotate-3"
+              >
+                Clipped
+              </span>
+
+              <div class="mb-2 flex items-start gap-2 pr-16">
+                <span class="rc-mono shrink-0 text-[var(--press)]">{{ selectedRepos.includes(repo.repo) ? '■' : '□' }}</span>
+                <span class="rc-mono truncate text-sm font-medium text-[var(--ink)]">
+                  {{ repo.repo }}
+                </span>
               </div>
-              <p class="mb-3 line-clamp-2 text-xs text-[var(--ui-text-muted)]">
+              <p class="mb-4 line-clamp-2 flex-1 text-[13px] leading-relaxed text-[var(--ink-soft)]">
                 {{ repo.description }}
               </p>
-              <div class="rc-mono flex items-center gap-3 text-[11px] text-[var(--ui-text-muted)]">
+              <div class="rc-mono flex items-center gap-3 border-t border-[var(--rule-soft)] pt-2.5 text-[11px] text-[var(--ink-faint)]">
                 <span class="flex items-center gap-1">
                   <UIcon
                     name="i-lucide-star"
@@ -541,6 +549,15 @@ function formatCount(n: number): string {
                   />
                   {{ formatTimeAgo(new Date(repo.updatedAt)) }}
                 </span>
+                <UButton
+                  icon="i-lucide-external-link"
+                  variant="ghost"
+                  size="xs"
+                  color="neutral"
+                  square
+                  class="ml-auto -my-1 shrink-0 opacity-0 transition-opacity group-hover/card:opacity-100"
+                  @click="(e) => openRepoLink(e, repo.repo)"
+                />
               </div>
             </button>
           </div>
@@ -549,40 +566,11 @@ function formatCount(n: number): string {
         <!-- Onboarding state -->
         <EmptyState
           v-else
-          icon="i-lucide-radar"
-          title="Ready when you are"
-          description="Use the search on the left to pull in repositories. Selected ones gather into a single timeline."
+          icon="i-lucide-newspaper"
+          title="The presses are warm"
+          description="Look up an owner or repository at the wire desk. Clip the projects you care about and we'll set them into one continuous changelog."
         />
       </section>
-
-      <!-- Secondary rail: Groups + Recent (below results on mobile, below sticky search on xl) -->
-      <aside class="pb-6 lg:col-start-1 lg:row-start-2 lg:self-start lg:pb-8">
-        <div class="space-y-6">
-          <!-- Groups -->
-          <section class="rc-surface rounded-lg p-4">
-            <FavoriteGroups
-              :selected-repos="selectedRepos"
-              @open="openGroup"
-            />
-          </section>
-
-          <!-- Recent -->
-          <section
-            v-if="repoHistory.length > 0"
-            class="rc-surface rounded-lg p-4"
-          >
-            <RepoList
-              title="Recent"
-              :repos="repoHistory"
-              icon="i-lucide-history"
-              :clickable="true"
-              @click="navigateToRepo"
-              @remove="removeFromHistory"
-              @clear-all="() => repoHistory = []"
-            />
-          </section>
-        </div>
-      </aside>
     </div>
   </div>
 </template>
