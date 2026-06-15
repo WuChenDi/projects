@@ -46,7 +46,8 @@
     "tokenPlaceholder": "请输入站点令牌",
     "submit": "继续",
     "verifying": "验证中…",
-    "invalid": "站点令牌无效"
+    "invalid": "站点令牌无效",
+    "required": "请输入站点令牌"
   },
   "dashboard": {
     "title": "控制台",

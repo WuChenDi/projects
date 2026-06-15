@@ -46,7 +46,8 @@
     "tokenPlaceholder": "Enter your site token",
     "submit": "Continue",
     "verifying": "Verifying…",
-    "invalid": "Invalid site token"
+    "invalid": "Invalid site token",
+    "required": "Please enter the site token"
   },
   "dashboard": {
     "title": "Dashboard",
