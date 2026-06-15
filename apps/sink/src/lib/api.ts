@@ -109,6 +109,26 @@ export interface MetricItem {
   name: string
   count: number
 }
+export interface HeatmapCell {
+  weekday: number
+  hour: number
+  visits: number
+  visitors: number
+}
+export interface GeoPoint {
+  lat: number
+  lng: number
+  count: number
+}
+export interface LogEvent {
+  slug: string
+  country: string
+  city: string
+  os: string
+  browser: string
+  deviceType: string
+  timestamp: string
+}
 
 function statsQuery(params: StatsParams): string {
   const sp = new URLSearchParams()
@@ -135,4 +155,34 @@ export const statsApi = {
       `/api/stats/metrics${q}${sep}type=${type}`,
     )
   },
+  heatmap: (params: StatsParams) =>
+    request<{ configured: boolean; heatmap: HeatmapCell[] }>(
+      `/api/stats/heatmap${statsQuery(params)}`,
+    ),
+  location: (params: StatsParams) =>
+    request<{ configured: boolean; points: GeoPoint[] }>(
+      `/api/location${statsQuery(params)}`,
+    ),
+  events: (params: StatsParams) =>
+    request<{ configured: boolean; events: LogEvent[] }>(
+      `/api/logs/events${statsQuery(params)}`,
+    ),
+}
+
+export interface CheckResult {
+  id: string
+  slug: string
+  url: string
+  status: number | null
+  ok: boolean
+  error?: string
+  unsafe: boolean | null
+}
+
+export const checkApi = {
+  run: (ids?: string[]) =>
+    request<{ results: CheckResult[] }>('/api/link/check', {
+      method: 'POST',
+      body: JSON.stringify(ids ? { ids } : {}),
+    }),
 }

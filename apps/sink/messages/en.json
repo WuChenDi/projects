@@ -56,6 +56,8 @@
       "overview": "Overview",
       "links": "Links",
       "analytics": "Analytics",
+      "realtime": "Realtime",
+      "check": "Health",
       "settings": "Settings"
     },
     "overview": {
@@ -151,6 +153,12 @@
     "views": {
       "title": "Views over time"
     },
+    "map": {
+      "title": "Visitor locations"
+    },
+    "heatmap": {
+      "title": "Activity by hour"
+    },
     "groups": {
       "location": "Location",
       "referer": "Sources",
@@ -175,6 +183,47 @@
     "placeholders": {
       "map": "World map & heatmap",
       "realtime": "Realtime"
+    }
+  },
+  "realtime": {
+    "title": "Realtime",
+    "subtitle": "Live clicks as they happen.",
+    "notConfigured": "Analytics is not configured. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN to enable stats.",
+    "window": {
+      "1h": "Last hour",
+      "6h": "Last 6 hours",
+      "24h": "Last 24 hours"
+    },
+    "chart": {
+      "title": "Clicks"
+    },
+    "events": {
+      "title": "Live activity",
+      "empty": "No recent clicks"
+    }
+  },
+  "check": {
+    "title": "Health check",
+    "subtitle": "Verify your links still resolve and are safe.",
+    "run": "Run check",
+    "running": "Checking…",
+    "empty": "Run a check to see results.",
+    "tabs": {
+      "all": "All",
+      "ok": "OK",
+      "broken": "Broken",
+      "unsafe": "Unsafe"
+    },
+    "table": {
+      "slug": "Slug",
+      "url": "Destination",
+      "status": "Status",
+      "verdict": "Verdict"
+    },
+    "verdict": {
+      "ok": "OK",
+      "broken": "Broken",
+      "unsafe": "Unsafe"
     }
   }
 }

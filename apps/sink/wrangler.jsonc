@@ -19,10 +19,10 @@
     // Driver selector — both run on Cloudflare Workers:
     //   "d1"     → uses the `DB` binding below
     //   "libsql" → uses LIBSQL_URL + LIBSQL_AUTH_TOKEN (Turso etc.)
-    "DB_TYPE": "d1",
+    "DB_TYPE": "libsql",
     // LibSQL Configuration (dev / Turso). Default is a local SQLite file.
-    "LIBSQL_URL": "your-libsql-url",
-    "LIBSQL_AUTH_TOKEN": "your-libsql-auth-token",
+    "LIBSQL_URL": "libsql://sink-cdhj996.aws-ap-northeast-1.turso.io",
+    "LIBSQL_AUTH_TOKEN": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODE1MDg2MzcsImlkIjoiMDE5ZWNhMzAtNmQwMS03NmI4LWFiNmQtODVkMzU5ODBkNDNiIiwicmlkIjoiZjNlZmQ5MWQtYTQ1NC00NTFhLTgwODEtOTk0NGY3NWE3ODRlIn0.rOX8npi6R4F8R1_AqmCGuU1ZSxQsfxaij0bSLoIPALjxZKiA-41s76nlS-ow4nONJI8ZybqRz3HA3dMwFFwTAw",
     // Redirect engine knobs (all optional — defaults shown).
     "REDIRECT_STATUS_CODE": "308",
     "LINK_CACHE_TTL": "60",
@@ -40,6 +40,9 @@
     // API which needs an account id + a token with Account Analytics:Read).
     "CLOUDFLARE_ACCOUNT_ID": "",
     "CLOUDFLARE_API_TOKEN": "",
+    // Health-check Safe Browsing via DoH (empty = disabled). A filtering
+    // resolver returns 0.0.0.0 for blocked hosts.
+    "SAFE_BROWSING_DOH": "",
     // AI slug generation knobs.
     "AI_MODEL": "@cf/meta/llama-3.1-8b-instruct",
     "AI_PROMPT": ""
