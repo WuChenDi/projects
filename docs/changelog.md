@@ -137,3 +137,39 @@ Pushed `feat/sink-app` and opened **PR #38**
 as a Sink-like Next.js app (P1)". Includes the untracked `@cdlab996/ui` QRCode
 component (`b3bb20c`) and a QR scannability fix (`68152d5`: fixed black/white +
 quiet zone). 89 files. P1 (P1a+P1b+P1c) complete; P2/P3 not included.
+
+## 2026-06-14 11:30 [progress]
+
+**P2 complete** (P2a–d), in-session on `feat/sink-app`, **uncommitted** pending
+the user's commit decision. BKD cards `1jw4hg6n`/`iixw16z9`/`d2s5537y`/`ipjia79l`
+→ done.
+
+- P2a: `/api/stats/heatmap`, `/api/location`, `/api/logs/events` + AE SQL builders
+  + client `statsApi` extensions. (logs/locations skipped — no globe.)
+- P2b: analytics world bubble map (`react-simple-maps` + `/world-110m.json`,
+  `next/dynamic` ssr:false) + CSS-grid heatmap, wired to range+filters,
+  replacing the placeholders.
+- P2c: `/dashboard/realtime` — live event feed (poll, pauses when tab hidden) +
+  realtime views chart (1h/6h/24h). No globe (decided). Nav item added.
+- P2d: `POST /api/link/check` (bounded concurrency/timeout, cap 100, site-token
+  gated) + Safe Browsing via DoH (`SAFE_BROWSING_DOH`) + `/dashboard/check` UI.
+
+Deps added: `react-simple-maps` (+ `@types/...`, `world-atlas` topojson asset).
+Build + biome clean. Smoke-tested locally: endpoints 401-gate + degrade
+gracefully without AE creds; realtime/check pages render; `/api/link/check` ran
+end-to-end (real fetch, 200). **Caveat**: the world map's runtime render with
+real geo points is unverified locally (AE has no data in dev) — verify on deploy.
+
+## 2026-06-14 11:45 [BUG-P1]
+
+Automated commit security review flagged **HIGH SSRF** in `health-check.ts`:
+`/api/link/check` fetched user-stored destination URLs server-side without
+host validation (cloud-metadata / internal-service reach). The deployed Worker
+already runs with `global_fetch_strictly_public` (platform blocks private/
+DNS-rebound targets), but local dev / preview use Node fetch which does not.
+Added an app-level guard (`validateFetchUrl`): http/https only, reject userinfo,
+block loopback/private/link-local (incl. 169.254.169.254)/unique-local IPv4+IPv6
+and `localhost`/`.local`/`.internal`; switched to `redirect: 'manual'` so 3xx
+is treated as reachable without chasing the Location into an internal host.
+Verified locally: `http://127.0.0.1/admin` → `blocked`, public URL → 200 ok.
+Still uncommitted.
