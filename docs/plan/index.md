@@ -30,3 +30,4 @@ Each plan is a single line linking to its detail file. All detailed information 
 ## Plans
 
 - [-] [**PLAN-001 Rebuild shortener as a Sink-like Next.js app**](PLAN-001.md) `2026-06-14`
+- [x] [**PLAN-002 Sink P2 — analytics enrichment, realtime, health check**](PLAN-002.md) `2026-06-14`

@@ -32,3 +32,7 @@ Each task is a single line linking to its detail file. All detailed information 
 ## Tasks
 
 - [-] [**FEAT-001 Rebuild shortener as a Sink-like Next.js app**](FEAT-001.md) `P1`
+- [x] [**FEAT-002 Sink P2a — stats/logs backend (heatmap, location, logs)**](FEAT-002.md) `P2`
+- [x] [**FEAT-003 Sink P2b — world map + heatmap on analytics page**](FEAT-003.md) `P2`
+- [x] [**FEAT-004 Sink P2c — realtime page**](FEAT-004.md) `P2`
+- [x] [**FEAT-005 Sink P2d — link health check page**](FEAT-005.md) `P2`
