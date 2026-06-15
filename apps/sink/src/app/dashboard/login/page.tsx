@@ -9,11 +9,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import { Field, FieldDescription } from '@cdlab996/ui/components/field'
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+} from '@cdlab996/ui/components/field'
 import { PasswordInput } from '@cdlab996/ui/components/password-input'
+import { useForm } from '@tanstack/react-form'
+import { useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import * as z from 'zod'
 import { verifyToken } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth-store'
 
@@ -21,29 +27,31 @@ export default function LoginPage() {
   const t = useTranslations('login')
   const router = useRouter()
   const setToken = useAuthStore((s) => s.setToken)
-  const [value, setValue] = useState('')
-  const [error, setError] = useState(false)
-  const [pending, setPending] = useState(false)
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!value || pending) return
-    setPending(true)
-    setError(false)
-    try {
-      const ok = await verifyToken(value)
+  const verify = useMutation({
+    mutationFn: (token: string) => verifyToken(token),
+  })
+
+  const form = useForm({
+    defaultValues: { token: '' },
+    validators: {
+      onSubmit: z.object({ token: z.string().min(1, t('required')) }),
+    },
+    onSubmit: async ({ value, formApi }) => {
+      const ok = await verify.mutateAsync(value.token)
       if (ok) {
-        setToken(value)
+        setToken(value.token)
         router.replace('/dashboard')
-      } else {
-        setError(true)
+        return
       }
-    } catch {
-      setError(true)
-    } finally {
-      setPending(false)
-    }
-  }
+      // Surface the server rejection on the field.
+      formApi.setFieldMeta('token', (prev) => ({
+        ...prev,
+        errors: [t('invalid')],
+        errorMap: { onSubmit: t('invalid') },
+      }))
+    },
+  })
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
@@ -52,36 +60,63 @@ export default function LoginPage() {
           <CardTitle>{t('title')}</CardTitle>
           <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
-        <form onSubmit={onSubmit}>
-          <CardContent>
-            <Field>
-              <PasswordInput
-                value={value}
-                onChange={(e) => {
-                  setValue(e.target.value)
-                  setError(false)
-                }}
-                placeholder={t('tokenPlaceholder')}
-                aria-label={t('tokenLabel')}
-                aria-invalid={error}
-                autoFocus
-              />
-              {error && (
-                <FieldDescription className="text-destructive">
-                  {t('invalid')}
-                </FieldDescription>
-              )}
-            </Field>
-          </CardContent>
-          <CardFooter>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!value || pending}
-            >
-              {pending ? t('verifying') : t('submit')}
-            </Button>
-          </CardFooter>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            void form.handleSubmit()
+          }}
+        >
+          <FieldGroup>
+            <form.Field name="token">
+              {(field) => {
+                const error = field.state.meta.errors[0]
+                const message =
+                  typeof error === 'string' ? error : error?.message
+                return (
+                  <>
+                    <CardContent>
+                      <Field>
+                        <PasswordInput
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          onBlur={field.handleBlur}
+                          placeholder={t('tokenPlaceholder')}
+                          aria-label={t('tokenLabel')}
+                          autoFocus
+                          aria-invalid={!!message}
+                          aria-describedby={message ? 'login-error' : undefined}
+                        />
+                        {message && (
+                          <FieldDescription
+                            id="login-error"
+                            className="text-destructive"
+                          >
+                            {message}
+                          </FieldDescription>
+                        )}
+                      </Field>
+                    </CardContent>
+                    <CardFooter>
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={
+                          !field.state.value ||
+                          verify.isPending ||
+                          form.state.isSubmitting
+                        }
+                      >
+                        {verify.isPending || form.state.isSubmitting
+                          ? t('verifying')
+                          : t('submit')}
+                      </Button>
+                    </CardFooter>
+                  </>
+                )
+              }}
+            </form.Field>
+          </FieldGroup>
         </form>
       </Card>
     </div>
