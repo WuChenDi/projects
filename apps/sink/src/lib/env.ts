@@ -19,6 +19,10 @@ export interface SinkConfig {
   // Analytics Engine SQL API credentials (required only for the stats endpoints).
   cfAccountId: string
   cfApiToken: string
+  // DoH endpoint for Safe Browsing checks (empty = disabled). A filtering
+  // resolver (e.g. https://family.cloudflare-dns.com/dns-query) returns
+  // 0.0.0.0 for blocked hosts.
+  safeBrowsingDoh: string
 }
 
 function num(value: string | undefined, fallback: number): number {
@@ -66,5 +70,6 @@ export function getConfig(env?: CloudflareEnv): SinkConfig {
     aiPrompt: raw.AI_PROMPT ?? '',
     cfAccountId: loose.CLOUDFLARE_ACCOUNT_ID ?? '',
     cfApiToken: loose.CLOUDFLARE_API_TOKEN ?? '',
+    safeBrowsingDoh: loose.SAFE_BROWSING_DOH ?? '',
   }
 }

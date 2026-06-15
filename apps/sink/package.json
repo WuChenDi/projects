@@ -6,7 +6,7 @@
   "description": "Privacy-first link shortener with geo / device routing and analytics — Next.js + Drizzle on Cloudflare Workers.",
   "license": "MIT",
   "scripts": {
-    "dev": "nsl run next dev",
+    "dev": "nsl run --name \"sink\" next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -27,6 +27,7 @@
     "@cdlab996/ui": "workspace:*",
     "@cdlab996/utils": "workspace:*",
     "@libsql/client": "catalog:prod",
+    "@tanstack/react-form": "catalog:prod",
     "@tanstack/react-query": "catalog:prod",
     "drizzle-orm": "catalog:prod",
     "lucide-react": "catalog:prod",
@@ -35,6 +36,7 @@
     "next-themes": "catalog:prod",
     "react": "catalog:prod",
     "react-dom": "catalog:prod",
+    "react-simple-maps": "^3.0.0",
     "recharts": "catalog:prod",
     "sonner": "catalog:prod",
     "ua-parser-js": "^2.0.9",
@@ -48,8 +50,10 @@
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
+    "@types/react-simple-maps": "^3.0.6",
     "drizzle-kit": "catalog:dev",
     "typescript": "catalog:dev",
+    "world-atlas": "^2.0.2",
     "wrangler": "catalog:dev"
   }
 }

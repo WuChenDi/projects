@@ -56,6 +56,8 @@
       "overview": "概览",
       "links": "链接",
       "analytics": "分析",
+      "realtime": "实时",
+      "check": "健康检查",
       "settings": "设置"
     },
     "overview": {
@@ -151,6 +153,12 @@
     "views": {
       "title": "访问趋势"
     },
+    "map": {
+      "title": "访客地理分布"
+    },
+    "heatmap": {
+      "title": "时段活跃热力"
+    },
     "groups": {
       "location": "地域",
       "referer": "来源",
@@ -175,6 +183,47 @@
     "placeholders": {
       "map": "世界地图与热力图",
       "realtime": "实时"
+    }
+  },
+  "realtime": {
+    "title": "实时",
+    "subtitle": "实时查看正在发生的点击。",
+    "notConfigured": "尚未配置分析。设置 CLOUDFLARE_ACCOUNT_ID 与 CLOUDFLARE_API_TOKEN 以启用统计。",
+    "window": {
+      "1h": "最近 1 小时",
+      "6h": "最近 6 小时",
+      "24h": "最近 24 小时"
+    },
+    "chart": {
+      "title": "点击量"
+    },
+    "events": {
+      "title": "实时活动",
+      "empty": "暂无最近点击"
+    }
+  },
+  "check": {
+    "title": "健康检查",
+    "subtitle": "检测链接是否可达且安全。",
+    "run": "开始检查",
+    "running": "检查中…",
+    "empty": "运行一次检查以查看结果。",
+    "tabs": {
+      "all": "全部",
+      "ok": "正常",
+      "broken": "失效",
+      "unsafe": "不安全"
+    },
+    "table": {
+      "slug": "短码",
+      "url": "目标地址",
+      "status": "状态码",
+      "verdict": "结论"
+    },
+    "verdict": {
+      "ok": "正常",
+      "broken": "失效",
+      "unsafe": "不安全"
     }
   }
 }

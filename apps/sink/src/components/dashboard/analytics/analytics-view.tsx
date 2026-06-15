@@ -17,12 +17,28 @@ import {
 } from '@cdlab996/ui/components/select'
 import { useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { CountersCards } from '@/components/dashboard/analytics/counters'
+import { Heatmap } from '@/components/dashboard/analytics/heatmap'
 import { MetricGroup } from '@/components/dashboard/analytics/metric-group'
 import { ViewsChart } from '@/components/dashboard/analytics/views-chart'
 import { statsApi } from '@/lib/api'
+
+// Map lib is client-only (SVG, runtime topojson fetch) — skip SSR.
+const WorldMap = dynamic(
+  () =>
+    import('@/components/dashboard/analytics/world-map').then(
+      (m) => m.WorldMap,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[300px] animate-pulse rounded-md bg-muted" />
+    ),
+  },
+)
 
 const DAY = 24 * 60 * 60 * 1000
 const RANGES: Record<string, number> = {
@@ -61,6 +77,14 @@ export function AnalyticsView() {
   const views = useQuery({
     queryKey: ['views', params],
     queryFn: () => statsApi.views(params),
+  })
+  const location = useQuery({
+    queryKey: ['location', params],
+    queryFn: () => statsApi.location(params),
+  })
+  const heatmap = useQuery({
+    queryKey: ['heatmap', params],
+    queryFn: () => statsApi.heatmap(params),
   })
 
   function drill(dim: string, value: string) {
@@ -136,30 +160,35 @@ export function AnalyticsView() {
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <PlaceholderCard title={t('placeholders.map')} hint={t('comingSoon')} />
-        <PlaceholderCard
-          title={t('placeholders.realtime')}
-          hint={t('comingSoon')}
-        />
-      </div>
-    </div>
-  )
-}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">{t('map.title')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {location.isLoading ? (
+            <div className="h-[300px] animate-pulse rounded-md bg-muted" />
+          ) : (location.data?.points.length ?? 0) === 0 ? (
+            <div className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">
+              {t('noData')}
+            </div>
+          ) : (
+            <WorldMap points={location.data?.points ?? []} />
+          )}
+        </CardContent>
+      </Card>
 
-function PlaceholderCard({ title, hint }: { title: string; hint: string }) {
-  return (
-    <Card className="border-dashed">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base text-muted-foreground">
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex h-28 items-center justify-center text-sm text-muted-foreground">
-          {hint}
-        </div>
-      </CardContent>
-    </Card>
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">{t('heatmap.title')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {heatmap.isLoading ? (
+            <div className="h-40 animate-pulse rounded-md bg-muted" />
+          ) : (
+            <Heatmap data={heatmap.data?.heatmap ?? []} />
+          )}
+        </CardContent>
+      </Card>
+    </div>
   )
 }

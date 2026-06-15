@@ -2,7 +2,15 @@
 
 import { Button } from '@cdlab996/ui/components/button'
 import { cn } from '@cdlab996/ui/lib/utils'
-import { BarChart3, Link2, LogOut, Settings, Sparkles } from 'lucide-react'
+import {
+  Activity,
+  BarChart3,
+  Link2,
+  LogOut,
+  Settings,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -16,6 +24,18 @@ const ITEMS = [
     href: '/dashboard/analytics',
     key: 'analytics',
     icon: Sparkles,
+    exact: false,
+  },
+  {
+    href: '/dashboard/realtime',
+    key: 'realtime',
+    icon: Activity,
+    exact: false,
+  },
+  {
+    href: '/dashboard/check',
+    key: 'check',
+    icon: ShieldCheck,
     exact: false,
   },
   {

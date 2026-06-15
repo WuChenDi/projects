@@ -177,6 +177,53 @@ export function metricsSql(
     GROUP BY name ORDER BY count DESC LIMIT ${Math.max(1, Math.floor(limit))}`
 }
 
+// Weekday (0=Sunday .. 6=Saturday) x hour (00..23) grid.
+export function heatmapSql(env: CloudflareEnv, q: StatsQuery): string {
+  return `SELECT
+      formatDateTime(timestamp, '%w') AS weekday,
+      formatDateTime(timestamp, '%H') AS hour,
+      SUM(_sample_interval) AS visits,
+      ${VISITORS} AS visitors
+    FROM ${dataset(env)} ${whereClause(q)}
+    GROUP BY weekday, hour`
+}
+
+// Aggregated geo points (rounded to ~0.1deg) for the world map.
+// latitude/longitude are AE doubles (double1/double2), not blobs.
+const LAT = 'double1'
+const LNG = 'double2'
+export function locationSql(
+  env: CloudflareEnv,
+  q: StatsQuery,
+  limit: number,
+): string {
+  return `SELECT
+      ROUND(${LAT}, 1) AS lat,
+      ROUND(${LNG}, 1) AS lng,
+      SUM(_sample_interval) AS count
+    FROM ${dataset(env)} ${whereClause(q)}
+      AND (${LAT} != 0 OR ${LNG} != 0)
+    GROUP BY lat, lng ORDER BY count DESC LIMIT ${Math.max(1, Math.floor(limit))}`
+}
+
+// Recent raw events for the realtime log feed.
+export function eventsSql(
+  env: CloudflareEnv,
+  q: StatsQuery,
+  limit: number,
+): string {
+  return `SELECT
+      ${FIELD.slug} AS slug,
+      ${FIELD.country} AS country,
+      ${FIELD.city} AS city,
+      ${FIELD.os} AS os,
+      ${FIELD.browser} AS browser,
+      ${FIELD.deviceType} AS deviceType,
+      timestamp
+    FROM ${dataset(env)} ${whereClause(q)}
+    ORDER BY timestamp DESC LIMIT ${Math.max(1, Math.floor(limit))}`
+}
+
 // Parse StatsQuery (range + drill-down filters) from request search params.
 export function parseStatsQuery(params: URLSearchParams): StatsQuery {
   const filters: Partial<Record<Dimension, string>> = {}
