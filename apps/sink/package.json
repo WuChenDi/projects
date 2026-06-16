@@ -29,6 +29,7 @@
     "@libsql/client": "catalog:prod",
     "@tanstack/react-form": "catalog:prod",
     "@tanstack/react-query": "catalog:prod",
+    "cobe": "^2.0.1",
     "drizzle-orm": "catalog:prod",
     "lucide-react": "catalog:prod",
     "next": "catalog:prod",

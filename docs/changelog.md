@@ -1,5 +1,65 @@
 # Changelog
 
+## 2026-06-16 09:50 [progress]
+
+Full re-scan of `apps/sink` vs the reference `tmp/Sink` to find remaining
+feature gaps after P1–P3. Verified each candidate against port source.
+Confirmed gaps: realtime WebGL globe + `/api/logs/locations` (B was deferred in
+PLAN-001), AI OG metadata (`og-ai`), auto Safe-Browsing on create/edit
+(`detectUnsafeLink` — port only checks on-demand), i18n breadth (10→2 locales) +
+localized redirect interstitials; deferred polish: animated realtime
+notifications, custom analytics date picker, marketing landing sections.
+Captured as PLAN-004 + FEAT-009..011 and BKD cards (tags `sink`,`P4`).
+Documents only — no implementation. Awaiting approval on globe port-vs-replace
+and i18n full-vs-subset.
+
+## 2026-06-16 11:10 [progress]
+
+FEAT-009 done (P4a). Realtime WebGL globe via `cobe@^2.0.1`
+(`components/dashboard/realtime/globe.tsx`, lazy + `ssr:false`, self-driven rAF
+since cobe v2 has no render loop). **No new endpoint** — the existing
+`/api/location` (`locationSql`, weighted lat/lng points) already is the globe
+feed, reused via `statsApi.location`. Realtime event rows now play an
+`animate-in` entrance for genuinely-new rows only. i18n `realtime.globe.*`
+(en/zh). tsc + biome clean. Card → review.
+
+## 2026-06-16 11:45 [progress]
+
+FEAT-010 done (P4b). AI OG: `lib/ai-og.ts` (`generateAiOg` — Workers AI +
+hostname fallback, `AI_OG_PROMPT`), `GET /api/link/og-ai` (site-token gated),
+`linkApi.aiOg`, editor "AI fill" button on the OG section (`links.form.aiOg`
+en/zh). Auto Safe-Browsing: `lib/safe-browsing.ts` (`safeBrowsingHost` extracted
+from `health-check.ts` + `isUnsafeUrl`); `links.ts` `buildConfig` now auto-flags
+`config.unsafe` on a DoH hit when not explicitly set (best-effort, no-op without
+`SAFE_BROWSING_DOH`). tsc + biome clean. Card → review.
+
+## 2026-06-16 12:30 [fix]
+
+Fixed `/dashboard/settings` 404. The shell nav linked `/dashboard/settings`
+(`dashboard.nav.settings`) but no route existed. Added
+`dashboard/(app)/settings/page.tsx` + `components/dashboard/settings/
+settings-view.tsx` — Appearance (`ThemeToggle`), Language (`LocaleSwitcher`),
+System status (R2 + Analytics via `/api/config`). i18n `settings.*` (en/zh).
+tsc + biome clean. BKD card `fzx10b9k` → review.
+
+## 2026-06-16 12:10 [progress]
+
+FEAT-011 done (P4c) → PLAN-004 complete. Redirect interstitials localized:
+`lib/html.ts` password/unsafe pages carry en/zh string tables; new
+`resolveRedirectLocale(request)` in `lib/redirect.ts` (NEXT_LOCALE cookie →
+Accept-Language → default); `app/[slug]/route.ts` passes the locale. P4 all
+three slices (FEAT-009..011) implemented in-session, tsc + biome clean; cards in
+review. Deferred polish (custom date picker, landing sections) not built.
+
+## 2026-06-16 10:20 [decision]
+
+PLAN-004 approved. Decisions: (1) realtime globe → light lib `cobe` (no port of
+the bespoke WebGL globe / binary asset pipeline); (2) i18n stays en/zh only —
+FEAT-011 narrowed from "locale breadth + interstitials" to localizing the
+redirect interstitials for en/zh (no new locale files). PLAN-004 → approved/
+implementing; FEAT-011 retitled. Implementation not yet started (awaiting go +
+slice order).
+
 ## 2026-06-14 05:23 [decision]
 
 Started PMA tracking for FEAT-001 (rebuild `apps/shortener` as a Sink-like
@@ -173,3 +233,24 @@ and `localhost`/`.local`/`.internal`; switched to `redirect: 'manual'` so 3xx
 is treated as reachable without chasing the Location into an internal host.
 Verified locally: `http://127.0.0.1/admin` → `blocked`, public URL → 200 ok.
 Still uncommitted.
+
+## 2026-06-14 12:30 [progress]
+
+**P3 complete (P3a/P3b/P3c)** — full Sink parity — in-session on `feat/sink-app`,
+**uncommitted** pending the user's commit decision. BKD cards `qco9cw3g`/
+`6thmki2b`/`u5jtpagr` → done; FEAT-006/007/008 + PLAN-003 completed; FEAT-001
+(umbrella) marked complete (P1+P2+P3 delivered).
+
+- P3a migrate: `/api/link/export` + `/api/link/import` (non-destructive, fresh
+  id) + `/api/stats/export` CSV + `/dashboard/migrate`.
+- P3b R2 (config-gated, opt-in): `/api/config` flags, `/api/upload/image` +
+  `/api/asset/[...key]` (og/-only, image-only), `/api/backup` + cron backup;
+  editor OG uploader + migrate backup card gated on R2. Binding commented in
+  wrangler by default → graceful 503/r2:false; deploy = create bucket + uncomment.
+- P3c editor: ISO country picker (Command combobox, Intl.DisplayNames + flags) +
+  UTM builder. Added `cmdk` to `@cdlab996/ui` (shipped command.tsx needed it).
+
+Verified locally: migrate round-trip; R2 both states (off graceful / on full:
+upload→asset→backup, validation, og-prefix guard); editor pages render. Build +
+biome clean. Deps: react-simple-maps (P2b), cmdk (ui). Tooling note: cleared an
+orphaned next-dev process holding the nsl `sink.localhost` route during testing.

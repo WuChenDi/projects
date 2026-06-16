@@ -5,6 +5,7 @@ import { cn } from '@cdlab996/ui/lib/utils'
 import {
   Activity,
   BarChart3,
+  Database,
   Link2,
   LogOut,
   Settings,
@@ -36,6 +37,12 @@ const ITEMS = [
     href: '/dashboard/check',
     key: 'check',
     icon: ShieldCheck,
+    exact: false,
+  },
+  {
+    href: '/dashboard/migrate',
+    key: 'migrate',
+    icon: Database,
     exact: false,
   },
   {

@@ -25,6 +25,14 @@ export default async function LandingPage() {
     { key: 'privacy', icon: ShieldCheck },
   ] as const
 
+  const stats = ['runtime', 'license', 'tracking'] as const
+  const logos = [
+    'Next.js',
+    'Cloudflare Workers',
+    'Analytics Engine',
+    'Workers KV',
+  ]
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="mx-auto flex h-20 w-full max-w-6xl shrink-0 items-center justify-between gap-2 px-4 md:px-6">
@@ -102,6 +110,55 @@ export default async function LandingPage() {
                 </div>
               )
             })}
+          </div>
+        </section>
+
+        <section className="border-t py-16 md:py-20">
+          <div className="mx-auto max-w-xl text-center">
+            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
+              {t('stats.title')}
+            </h2>
+            <p className="mt-3 text-muted-foreground">{t('stats.subtitle')}</p>
+          </div>
+          <div className="mt-10 grid gap-6 sm:grid-cols-3">
+            {stats.map((key) => (
+              <div key={key} className="text-center">
+                <div className="text-4xl font-bold tracking-tight md:text-5xl">
+                  {t(`stats.items.${key}.value`)}
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {t(`stats.items.${key}.label`)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="border-t py-12 md:py-16">
+          <p className="text-center text-xs uppercase tracking-widest text-muted-foreground">
+            {t('logos.title')}
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-lg font-semibold text-muted-foreground">
+            {logos.map((name) => (
+              <span key={name}>{name}</span>
+            ))}
+          </div>
+        </section>
+
+        <section className="border-t py-16 text-center md:py-24">
+          <h2 className="mx-auto max-w-2xl text-balance text-3xl font-bold tracking-tight md:text-4xl">
+            {t('cta.title')}
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+            {t('cta.subtitle')}
+          </p>
+          <div className="mt-8">
+            <Button asChild size="lg">
+              <Link href="/dashboard">
+                {t('cta.button')}
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
           </div>
         </section>
       </main>

@@ -6,8 +6,13 @@ import { getConfig } from '@/lib/env'
 import { genid } from '@/lib/genid'
 import { hashLinkPassword } from '@/lib/hash'
 import { logger } from '@/lib/logger'
+import { isUnsafeUrl } from '@/lib/safe-browsing'
 import { defaultSlug, validateSlug } from '@/lib/slug'
-import type { CreateLinkInput, EditLinkInput } from '@/schemas/link'
+import type {
+  CreateLinkInput,
+  EditLinkInput,
+  ImportLinkInput,
+} from '@/schemas/link'
 
 // KV cache key. Multi-domain links are namespaced by host so the same slug can
 // point to different destinations per domain.
@@ -203,7 +208,9 @@ export async function searchLinks(
 
 // Build the stored LinkConfig from input config + password handling.
 async function buildConfig(
+  env: CloudflareEnv,
   input: CreateLinkInput | EditLinkInput,
+  url: string,
   previous?: LinkConfig,
 ): Promise<LinkConfig> {
   const config: LinkConfig = { ...(input.config ?? {}) }
@@ -212,6 +219,12 @@ async function buildConfig(
     if (previous?.passwordHash) config.passwordHash = previous.passwordHash
   } else if (input.password) {
     config.passwordHash = await hashLinkPassword(input.password)
+  }
+  // Auto Safe-Browsing: when the caller didn't explicitly mark the link unsafe,
+  // probe the destination via DoH and flag it on a hit. Best-effort and a no-op
+  // when SAFE_BROWSING_DOH is unset — never blocks the write.
+  if (config.unsafe === undefined && url) {
+    if (await isUnsafeUrl(env, url)) config.unsafe = true
   }
   return config
 }
@@ -232,7 +245,7 @@ export async function createLink(
     return { ok: false, status: 409, error: 'Slug already exists' }
   }
 
-  const config = await buildConfig(input)
+  const config = await buildConfig(env, input, input.url)
   const values: NewLink = {
     id: existing?.id ?? String(genid.nextId()),
     slug,
@@ -284,7 +297,12 @@ export async function updateLink(
     }
   }
 
-  const config = await buildConfig(input, current.config)
+  const config = await buildConfig(
+    env,
+    input,
+    input.url ?? current.url,
+    current.config,
+  )
   const db = await getDb(env)
   const link = (
     await db
@@ -345,4 +363,66 @@ export async function deleteLink(
     .where(eq(links.id, id))
   await purgeLink(env, current.domain, current.slug)
   return { ok: true, link: current }
+}
+
+export interface ImportReport {
+  success: number
+  skipped: number
+  failed: number
+  failedItems: { slug: string; reason: string }[]
+}
+
+// Non-destructive import: existing active (slug,domain) is skipped, a
+// soft-deleted one is revived, otherwise inserted. Config (incl. passwordHash)
+// and timestamps are preserved verbatim.
+export async function importLinks(
+  env: CloudflareEnv,
+  items: ImportLinkInput[],
+): Promise<ImportReport> {
+  const db = await getDb(env)
+  const report: ImportReport = {
+    success: 0,
+    skipped: 0,
+    failed: 0,
+    failedItems: [],
+  }
+
+  for (const item of items) {
+    const domain = item.domain?.trim() || ''
+    const rawSlug = item.slug.trim()
+    const slugError = validateSlug(rawSlug)
+    if (slugError) {
+      report.failed++
+      report.failedItems.push({ slug: rawSlug, reason: `slug:${slugError}` })
+      continue
+    }
+    const slug = normalizeSlug(rawSlug, env)
+    const existing = await findBySlugDomain(env, domain, slug)
+    if (existing && existing.isDeleted === 0) {
+      report.skipped++
+      continue
+    }
+
+    const values: NewLink = {
+      // Always mint a fresh id for new rows — reusing the exported id would
+      // collide with an existing PK when importing into a populated DB.
+      id: existing?.id ?? String(genid.nextId()),
+      slug,
+      domain,
+      url: item.url,
+      comment: item.comment ?? '',
+      config: (item.config ?? {}) as LinkConfig,
+      expiresAt: item.expiresAt ? new Date(item.expiresAt) : null,
+      isDeleted: 0,
+      updatedAt: new Date(),
+      ...(item.createdAt ? { createdAt: new Date(item.createdAt) } : {}),
+    }
+    if (existing) {
+      await db.update(links).set(values).where(eq(links.id, existing.id))
+    } else {
+      await db.insert(links).values(values)
+    }
+    report.success++
+  }
+  return report
 }

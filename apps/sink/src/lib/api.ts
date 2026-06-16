@@ -86,6 +86,12 @@ export const linkApi = {
     request<{ slug: string; method: string }>(
       `/api/link/ai?url=${encodeURIComponent(url)}`,
     ),
+  aiOg: (url: string, locale?: string) =>
+    request<{ title: string; description: string; method: string }>(
+      `/api/link/og-ai?url=${encodeURIComponent(url)}${
+        locale ? `&locale=${encodeURIComponent(locale)}` : ''
+      }`,
+    ),
 }
 
 export interface StatsParams {
@@ -161,7 +167,7 @@ export const statsApi = {
     ),
   location: (params: StatsParams) =>
     request<{ configured: boolean; points: GeoPoint[] }>(
-      `/api/location${statsQuery(params)}`,
+      `/api/logs/locations${statsQuery(params)}`,
     ),
   events: (params: StatsParams) =>
     request<{ configured: boolean; events: LogEvent[] }>(
@@ -185,4 +191,63 @@ export const checkApi = {
       method: 'POST',
       body: JSON.stringify(ids ? { ids } : {}),
     }),
+}
+
+export interface ImportReport {
+  success: number
+  skipped: number
+  failed: number
+  failedItems: { slug: string; reason: string }[]
+}
+
+// Authed download → trigger a browser file save (needs the Bearer header, so a
+// plain <a href> won't work).
+async function downloadAuthed(path: string, filename: string): Promise<void> {
+  const res = await fetch(path, { headers: authHeader() })
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string }
+    throw new ApiError(body.error || res.statusText, res.status)
+  }
+  const href = URL.createObjectURL(await res.blob())
+  const a = document.createElement('a')
+  a.href = href
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(href)
+}
+
+export const migrateApi = {
+  exportLinks: () =>
+    downloadAuthed('/api/link/export', `sink-links-${Date.now()}.json`),
+  exportCsv: () =>
+    downloadAuthed('/api/stats/export', `sink-access-${Date.now()}.csv`),
+  importLinks: (data: unknown) =>
+    request<ImportReport>('/api/link/import', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  backup: () =>
+    request<{ ok: true; key: string }>('/api/backup', { method: 'POST' }),
+}
+
+export const configApi = {
+  get: () => request<{ r2: boolean; analytics: boolean }>('/api/config'),
+}
+
+export const uploadApi = {
+  image: async (file: File, slug: string): Promise<{ url: string }> => {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('slug', slug)
+    const res = await fetch('/api/upload/image', {
+      method: 'POST',
+      headers: authHeader(),
+      body: fd,
+    })
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string }
+      throw new ApiError(body.error || res.statusText, res.status)
+    }
+    return res.json() as Promise<{ url: string }>
+  },
 }

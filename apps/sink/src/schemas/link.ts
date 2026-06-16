@@ -67,3 +67,39 @@ export const DeleteLinkSchema = z.object({
 export type CreateLinkInput = z.infer<typeof CreateLinkSchema>
 export type EditLinkInput = z.infer<typeof EditLinkSchema>
 export type LinkConfigInput = z.infer<typeof LinkConfigInputSchema>
+
+// Import accepts the exported stored shape (config kept verbatim incl.
+// passwordHash; timestamps as epoch ms).
+const ImportConfigSchema = z
+  .object({
+    geo: z.record(z.string(), z.string()).optional(),
+    apple: z.string().optional(),
+    google: z.string().optional(),
+    title: z.string().optional(),
+    description: z.string().optional(),
+    image: z.string().optional(),
+    cloaking: z.boolean().optional(),
+    redirectWithQuery: z.boolean().optional(),
+    unsafe: z.boolean().optional(),
+    passwordHash: z.string().optional(),
+  })
+  .optional()
+
+export const ImportLinkSchema = z.object({
+  // Accepted but ignored on import (a fresh id is minted) — kept lenient.
+  id: z.string().nullable().optional(),
+  slug: z.string().trim().min(1).max(2048),
+  domain: z.string().trim().max(255).optional(),
+  url: z.string().trim().url().max(2048),
+  comment: z.string().max(2048).optional(),
+  config: ImportConfigSchema,
+  expiresAt: z.number().int().nullable().optional(),
+  createdAt: z.number().int().optional(),
+})
+
+export const ImportDataSchema = z.object({
+  version: z.string().optional(),
+  links: z.array(ImportLinkSchema).min(1).max(5000),
+})
+
+export type ImportLinkInput = z.infer<typeof ImportLinkSchema>

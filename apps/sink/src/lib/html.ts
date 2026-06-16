@@ -1,5 +1,46 @@
 import type { LinkConfig } from '@/database/schema'
 
+// Interstitials are plain server-rendered HTML (no next-intl runtime), so they
+// carry their own minimal en/zh string tables. `pickLocale` folds any locale
+// tag down to a supported UI language.
+type UiLocale = 'en' | 'zh'
+
+function pickLocale(locale?: string): UiLocale {
+  return locale?.toLowerCase().startsWith('zh') ? 'zh' : 'en'
+}
+
+const UNSAFE_STRINGS: Record<UiLocale, Record<string, string>> = {
+  en: {
+    title: 'Warning · external link',
+    heading: '⚠️ You are leaving via an unverified link',
+    body: 'This link was flagged as potentially unsafe. You are about to visit:',
+    button: 'Continue anyway',
+  },
+  zh: {
+    title: '警告 · 外部链接',
+    heading: '⚠️ 您正在通过未经验证的链接离开',
+    body: '该链接被标记为可能不安全。您即将访问：',
+    button: '仍然继续',
+  },
+}
+
+const PASSWORD_STRINGS: Record<UiLocale, Record<string, string>> = {
+  en: {
+    title: 'Protected link',
+    heading: '🔒 This link is password protected',
+    placeholder: 'Enter password',
+    button: 'Unlock',
+    error: 'Incorrect password. Try again.',
+  },
+  zh: {
+    title: '受保护的链接',
+    heading: '🔒 此链接受密码保护',
+    placeholder: '输入密码',
+    button: '解锁',
+    error: '密码错误，请重试。',
+  },
+}
+
 export function escapeHtml(unsafe: string): string {
   return unsafe
     .replace(/&/g, '&amp;')
@@ -68,44 +109,65 @@ export function ogPageHtml(
 </html>`
 }
 
-// Interstitial shown when a link is flagged unsafe. The user must confirm.
-export function unsafeWarningHtml(url: string): string {
+// Interstitial shown when a link is flagged unsafe. Confirming POSTs back to the
+// slug with `confirm=true` (re-carrying the verified `password` when the link is
+// also password-protected) so the route resolves geo/device targeting and writes
+// the access log instead of bouncing straight to the destination.
+export function unsafeWarningHtml(
+  slug: string,
+  url: string,
+  options: { locale?: string; password?: string } = {},
+): string {
+  const safeSlug = escapeHtml(slug)
   const safeUrl = escapeHtml(safeExternalUrl(url))
+  const lang = pickLocale(options.locale)
+  const s = UNSAFE_STRINGS[lang]
+  const passwordField = options.password
+    ? `<input type="hidden" name="password" value="${escapeHtml(options.password)}" />`
+    : ''
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Warning · external link</title>
+    <title>${escapeHtml(s.title!)}</title>
     <meta name="robots" content="noindex, nofollow" />
     <style>
       body { font-family: system-ui, sans-serif; background: #0b0b0c; color: #e5e5e5; display: flex; min-height: 100vh; align-items: center; justify-content: center; margin: 0; }
       .card { max-width: 32rem; padding: 2rem; border: 1px solid #27272a; border-radius: 1rem; background: #111113; text-align: center; }
       h1 { font-size: 1.25rem; margin: 0 0 0.75rem; }
       p { color: #a1a1aa; word-break: break-all; }
-      a.btn { display: inline-block; margin-top: 1.25rem; padding: 0.6rem 1.2rem; border-radius: 0.6rem; background: #e11d48; color: #fff; text-decoration: none; font-weight: 600; }
+      button.btn { display: inline-block; margin-top: 1.25rem; padding: 0.6rem 1.2rem; border-radius: 0.6rem; border: none; background: #e11d48; color: #fff; font-weight: 600; font-size: 1rem; cursor: pointer; }
     </style>
   </head>
   <body>
-    <div class="card">
-      <h1>⚠️ You are leaving via an unverified link</h1>
-      <p>This link was flagged as potentially unsafe. You are about to visit:</p>
+    <form class="card" method="POST" action="/${safeSlug}">
+      <h1>${escapeHtml(s.heading!)}</h1>
+      <p>${escapeHtml(s.body!)}</p>
       <p><strong>${safeUrl}</strong></p>
-      <a class="btn" href="${safeUrl}" rel="noopener noreferrer nofollow">Continue anyway</a>
-    </div>
+      <input type="hidden" name="confirm" value="true" />
+      ${passwordField}
+      <button class="btn" type="submit">${escapeHtml(s.button!)}</button>
+    </form>
   </body>
 </html>`
 }
 
 // Password gate form. Submits back to the same slug via POST with the password.
-export function passwordFormHtml(slug: string, error = false): string {
+export function passwordFormHtml(
+  slug: string,
+  error = false,
+  locale?: string,
+): string {
   const safeSlug = escapeHtml(slug)
+  const lang = pickLocale(locale)
+  const s = PASSWORD_STRINGS[lang]
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Protected link</title>
+    <title>${escapeHtml(s.title!)}</title>
     <meta name="robots" content="noindex, nofollow" />
     <style>
       body { font-family: system-ui, sans-serif; background: #0b0b0c; color: #e5e5e5; display: flex; min-height: 100vh; align-items: center; justify-content: center; margin: 0; }
@@ -118,10 +180,10 @@ export function passwordFormHtml(slug: string, error = false): string {
   </head>
   <body>
     <form class="card" method="POST" action="/${safeSlug}">
-      <h1>🔒 This link is password protected</h1>
-      <input type="password" name="password" placeholder="Enter password" autofocus autocomplete="off" />
-      <button type="submit">Unlock</button>
-      ${error ? '<p class="err">Incorrect password. Try again.</p>' : ''}
+      <h1>${escapeHtml(s.heading!)}</h1>
+      <input type="password" name="password" placeholder="${escapeHtml(s.placeholder!)}" autofocus autocomplete="off" />
+      <button type="submit">${escapeHtml(s.button!)}</button>
+      ${error ? `<p class="err">${escapeHtml(s.error!)}</p>` : ''}
     </form>
   </body>
 </html>`

@@ -1,5 +1,37 @@
 import type { Link } from '@/database/schema'
+import type { Locale } from '@/i18n/config'
+import { defaultLocale, localeCookieName, locales } from '@/i18n/config'
 import { getConfig } from '@/lib/env'
+
+// Resolve the UI locale for server-rendered interstitials (password / unsafe
+// pages) from the `NEXT_LOCALE` cookie first, then `Accept-Language`, matching
+// the dashboard's locale selection. Falls back to the default locale.
+export function resolveRedirectLocale(request: Request): Locale {
+  const match = (tag: string): Locale | undefined =>
+    locales.find(
+      (l) => tag === l || tag.startsWith(`${l}-`) || tag.startsWith(l),
+    )
+
+  const cookie = request.headers.get('cookie') ?? ''
+  const cookieMatch = cookie.match(
+    new RegExp(`(?:^|; )${localeCookieName}=([^;]+)`),
+  )
+  if (cookieMatch?.[1]) {
+    const hit = match(decodeURIComponent(cookieMatch[1]).toLowerCase())
+    if (hit) return hit
+  }
+
+  const accept = (request.headers.get('accept-language') ?? '').toLowerCase()
+  for (const part of accept.split(',')) {
+    const tag = part.split(';')[0]?.trim()
+    if (tag) {
+      const hit = match(tag)
+      if (hit) return hit
+    }
+  }
+
+  return defaultLocale
+}
 
 // iOS devices only — desktop macOS must NOT match, or a Mac visitor would be
 // sent to a link's App Store URL. `crios` covers Chrome on iOS.
@@ -15,14 +47,22 @@ export function isAndroidDevice(ua: string): boolean {
 }
 
 const SOCIAL_CRAWLERS = [
-  'facebookexternalhit',
-  'twitterbot',
-  'linkedinbot',
-  'telegrambot',
-  'whatsapp',
+  'applebot',
   'discordbot',
-  'slackbot',
+  'facebot',
+  'facebookexternalhit',
+  'linkedinbot',
+  'linkexpanding',
+  'mastodon',
   'pinterest',
+  'skypeuripreview',
+  'slackbot',
+  'slackbot-linkexpanding',
+  'snapchat',
+  'telegrambot',
+  'tiktok',
+  'twitterbot',
+  'whatsapp',
 ] as const
 
 export function isSocialCrawler(ua: string): boolean {
