@@ -15,6 +15,7 @@ import type {
   ExportedHandlerFetchHandler,
   ScheduledController,
 } from '@cloudflare/workers-types'
+import { backupToR2 } from '@/lib/backup'
 import { cleanupExpiredLinks } from '@/lib/cleanup'
 // @ts-expect-error: artifact only exists after `opennextjs-cloudflare build`
 import openNextWorker from '../../.open-next/worker.js'
@@ -36,5 +37,7 @@ export default {
     // inside its fetch wrapper, so the cron path can't rely on
     // `getCloudflareContext()`.
     await cleanupExpiredLinks(env)
+    // Daily R2 backup (no-op when R2 is not configured).
+    await backupToR2(env)
   },
 } satisfies ExportedHandler<CloudflareEnv>

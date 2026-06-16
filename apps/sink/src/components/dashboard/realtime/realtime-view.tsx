@@ -15,10 +15,26 @@ import {
 } from '@cdlab996/ui/components/select'
 import { useQuery } from '@tanstack/react-query'
 import { Globe } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { useLocale, useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ViewsChart } from '@/components/dashboard/analytics/views-chart'
+import type { LogEvent } from '@/lib/api'
 import { statsApi } from '@/lib/api'
+
+// WebGL globe is client-only — skip SSR and lazy-load so it never blocks the page.
+const RealtimeGlobe = dynamic(
+  () =>
+    import('@/components/dashboard/realtime/globe').then(
+      (m) => m.RealtimeGlobe,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="mx-auto aspect-square w-full max-w-[420px] animate-pulse rounded-full bg-muted" />
+    ),
+  },
+)
 
 const MIN = 60 * 1000
 const WINDOWS: Record<string, number> = {
@@ -28,6 +44,10 @@ const WINDOWS: Record<string, number> = {
 }
 const EVENTS_INTERVAL = 12_000
 const CHART_INTERVAL = 15_000
+const GLOBE_INTERVAL = 20_000
+
+const eventKey = (e: LogEvent) =>
+  `${e.timestamp}-${e.slug}-${e.city}-${e.browser}-${e.os}`
 
 // AE returns UTC "YYYY-MM-DD HH:MM:SS"; render as local time.
 function localTime(ts: string, locale: string): string {
@@ -57,10 +77,30 @@ export function RealtimeView() {
     },
     refetchInterval: CHART_INTERVAL,
   })
+  const location = useQuery({
+    queryKey: ['rt-location', windowKey],
+    queryFn: () => {
+      const end = Date.now()
+      return statsApi.location({
+        startAt: end - WINDOWS[windowKey]!,
+        endAt: end,
+      })
+    },
+    refetchInterval: GLOBE_INTERVAL,
+  })
 
   const rows = events.data?.events ?? []
+  const points = location.data?.points ?? []
   const notConfigured =
     events.data?.configured === false || views.data?.configured === false
+
+  // Track which event keys we've already shown so only genuinely new rows play
+  // the entrance animation on each poll (the first render animates the batch).
+  const seenRef = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    if (seenRef.current.size > 500) seenRef.current.clear()
+    for (const e of rows) seenRef.current.add(eventKey(e))
+  })
 
   return (
     <div className="space-y-6">
@@ -103,6 +143,26 @@ export function RealtimeView() {
 
       <Card>
         <CardHeader className="pb-2">
+          <CardTitle className="text-base">{t('globe.title')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {location.isLoading ? (
+            <div className="mx-auto aspect-square w-full max-w-[420px] animate-pulse rounded-full bg-muted" />
+          ) : (
+            <>
+              <RealtimeGlobe points={points} />
+              {points.length === 0 && (
+                <p className="mt-2 text-center text-sm text-muted-foreground">
+                  {t('globe.empty')}
+                </p>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
             <span className="relative flex size-2">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -120,30 +180,38 @@ export function RealtimeView() {
             </div>
           ) : (
             <ul className="divide-y">
-              {rows.map((e) => (
-                <li
-                  key={`${e.timestamp}-${e.slug}-${e.city}-${e.browser}-${e.os}`}
-                  className="flex items-center justify-between gap-3 py-2 text-sm"
-                >
-                  <div className="flex min-w-0 items-center gap-2">
-                    <Globe className="size-3.5 shrink-0 text-muted-foreground" />
-                    <span className="font-medium">/{e.slug}</span>
-                    <span className="truncate text-muted-foreground">
-                      {[e.city, e.country].filter(Boolean).join(', ')}
-                    </span>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
-                    <span className="hidden sm:inline">
-                      {[e.os, e.browser, e.deviceType]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </span>
-                    <span className="tabular-nums">
-                      {localTime(e.timestamp, locale)}
-                    </span>
-                  </div>
-                </li>
-              ))}
+              {rows.map((e) => {
+                const key = eventKey(e)
+                const isNew = !seenRef.current.has(key)
+                return (
+                  <li
+                    key={key}
+                    className={`flex items-center justify-between gap-3 py-2 text-sm${
+                      isNew
+                        ? ' animate-in fade-in slide-in-from-top-2 duration-500'
+                        : ''
+                    }`}
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <Globe className="size-3.5 shrink-0 text-muted-foreground" />
+                      <span className="font-medium">/{e.slug}</span>
+                      <span className="truncate text-muted-foreground">
+                        {[e.city, e.country].filter(Boolean).join(', ')}
+                      </span>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                      <span className="hidden sm:inline">
+                        {[e.os, e.browser, e.deviceType]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </span>
+                      <span className="tabular-nums">
+                        {localTime(e.timestamp, locale)}
+                      </span>
+                    </div>
+                  </li>
+                )
+              })}
             </ul>
           )}
         </CardContent>

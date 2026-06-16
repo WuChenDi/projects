@@ -17,14 +17,15 @@ import {
 } from '@cdlab996/ui/components/popover'
 import { Switch } from '@cdlab996/ui/components/switch'
 import { Textarea } from '@cdlab996/ui/components/textarea'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { CalendarIcon, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { CalendarIcon, Plus, Sparkles, Trash2, Upload } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { CountrySelect } from '@/components/dashboard/link-editor/country-select'
 import type { LinkRow } from '@/lib/api'
-import { linkApi } from '@/lib/api'
+import { configApi, linkApi, uploadApi } from '@/lib/api'
 import type { CreateLinkInput } from '@/schemas/link'
 
 const SLUG_ALPHABET = '23456789abcdefghjkmnpqrstuvwxyz'
@@ -125,7 +126,14 @@ export function LinkEditor({ existing }: { existing?: LinkRow }) {
 
   const [form, setForm] = useState<FormState>(() => initialState(existing))
   const [aiPending, setAiPending] = useState(false)
+  const [ogAiPending, setOgAiPending] = useState(false)
   const [dateOpen, setDateOpen] = useState(false)
+  const { data: config } = useQuery({
+    queryKey: ['config'],
+    queryFn: () => configApi.get(),
+    staleTime: Number.POSITIVE_INFINITY,
+  })
+  const r2Enabled = config?.r2 ?? false
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((s) => ({ ...s, [key]: value }))
@@ -159,6 +167,22 @@ export function LinkEditor({ existing }: { existing?: LinkRow }) {
       toast.error(t('aiFailed'))
     } finally {
       setAiPending(false)
+    }
+  }
+
+  async function generateOg() {
+    if (!form.url.trim()) {
+      toast.error(t('urlRequired'))
+      return
+    }
+    setOgAiPending(true)
+    try {
+      const { title, description } = await linkApi.aiOg(form.url.trim(), locale)
+      setForm((s) => ({ ...s, title, description }))
+    } catch {
+      toast.error(t('aiFailed'))
+    } finally {
+      setOgAiPending(false)
     }
   }
 
@@ -316,7 +340,21 @@ export function LinkEditor({ existing }: { existing?: LinkRow }) {
           <AccordionTrigger>{t('section.og')}</AccordionTrigger>
           <AccordionContent className="space-y-4 px-1">
             <div className="space-y-2">
-              <Label htmlFor="title">{t('ogTitle')}</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="title">{t('ogTitle')}</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={ogAiPending}
+                  onClick={generateOg}
+                >
+                  <Sparkles
+                    className={`mr-1 size-3.5 ${ogAiPending ? 'animate-pulse' : ''}`}
+                  />
+                  {t('aiOg')}
+                </Button>
+              </div>
               <Input
                 id="title"
                 value={form.title}
@@ -339,6 +377,12 @@ export function LinkEditor({ existing }: { existing?: LinkRow }) {
                 onChange={(e) => set('image', e.target.value)}
                 placeholder="https://…"
               />
+              {r2Enabled && (
+                <ImageUploader
+                  slug={form.slug}
+                  onUploaded={(url) => set('image', url)}
+                />
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -372,20 +416,20 @@ export function LinkEditor({ existing }: { existing?: LinkRow }) {
           <AccordionContent className="space-y-2 px-1">
             {form.geo.map((row) => (
               <div key={row.id} className="flex gap-2">
-                <Input
-                  value={row.country}
-                  maxLength={2}
-                  placeholder="US"
-                  className="w-20 uppercase"
-                  onChange={(e) =>
-                    set(
-                      'geo',
-                      form.geo.map((g) =>
-                        g.id === row.id ? { ...g, country: e.target.value } : g,
-                      ),
-                    )
-                  }
-                />
+                <div className="w-28 shrink-0">
+                  <CountrySelect
+                    value={row.country}
+                    placeholder={t('selectCountry')}
+                    onChange={(code) =>
+                      set(
+                        'geo',
+                        form.geo.map((g) =>
+                          g.id === row.id ? { ...g, country: code } : g,
+                        ),
+                      )
+                    }
+                  />
+                </div>
                 <Input
                   value={row.url}
                   placeholder="https://…"
@@ -425,6 +469,16 @@ export function LinkEditor({ existing }: { existing?: LinkRow }) {
             </Button>
           </AccordionContent>
         </AccordionItem>
+
+        <AccordionItem value="utm">
+          <AccordionTrigger>{t('section.utm')}</AccordionTrigger>
+          <AccordionContent className="px-1">
+            <UtmBuilder
+              onApply={(url) => set('url', url)}
+              getUrl={() => form.url}
+            />
+          </AccordionContent>
+        </AccordionItem>
       </Accordion>
 
       <div className="flex justify-end gap-2">
@@ -456,6 +510,107 @@ function SwitchField({
     <div className="flex items-center justify-between">
       <Label className="font-normal">{label}</Label>
       <Switch checked={checked} onCheckedChange={onChange} />
+    </div>
+  )
+}
+
+// Shown only when R2 is configured — uploads an image and sets the OG image URL.
+function ImageUploader({
+  slug,
+  onUploaded,
+}: {
+  slug: string
+  onUploaded: (url: string) => void
+}) {
+  const t = useTranslations('links.form')
+  const fileRef = useRef<HTMLInputElement>(null)
+  const upload = useMutation({
+    mutationFn: (file: File) => uploadApi.image(file, slug),
+    onSuccess: (r) => {
+      onUploaded(r.url)
+      toast.success(t('imageUploaded'))
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+
+  return (
+    <>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          e.target.value = ''
+          if (file) upload.mutate(file)
+        }}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={upload.isPending}
+        onClick={() => fileRef.current?.click()}
+      >
+        <Upload className="mr-2 size-3.5" />
+        {upload.isPending ? t('imageUploading') : t('imageUpload')}
+      </Button>
+    </>
+  )
+}
+
+const UTM_FIELDS = ['source', 'medium', 'campaign', 'term', 'content'] as const
+
+// Appends utm_* params to the current destination URL.
+function UtmBuilder({
+  getUrl,
+  onApply,
+}: {
+  getUrl: () => string
+  onApply: (url: string) => void
+}) {
+  const t = useTranslations('links.form')
+  const [utm, setUtm] = useState<Record<string, string>>({})
+
+  function apply() {
+    const base = getUrl().trim()
+    if (!base) {
+      toast.error(t('urlRequired'))
+      return
+    }
+    try {
+      const u = new URL(base)
+      for (const key of UTM_FIELDS) {
+        const value = (utm[key] ?? '').trim()
+        if (value) u.searchParams.set(`utm_${key}`, value)
+      }
+      onApply(u.toString())
+      toast.success(t('utmApplied'))
+    } catch {
+      toast.error(t('urlInvalid'))
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {UTM_FIELDS.map((key) => (
+          <div key={key} className="space-y-1.5">
+            <Label htmlFor={`utm-${key}`} className="text-xs">
+              {t(`utm.${key}`)}
+            </Label>
+            <Input
+              id={`utm-${key}`}
+              value={utm[key] ?? ''}
+              onChange={(e) => setUtm((s) => ({ ...s, [key]: e.target.value }))}
+            />
+          </div>
+        ))}
+      </div>
+      <Button type="button" variant="outline" size="sm" onClick={apply}>
+        {t('utmApply')}
+      </Button>
     </div>
   )
 }

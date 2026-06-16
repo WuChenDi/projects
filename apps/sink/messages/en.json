@@ -23,6 +23,32 @@
     "title": "Short links with geo, device & analytics built in",
     "subtitle": "Create short links that route by country and device, gate behind a password, and stream every click into Analytics Engine — all on the edge with zero cold-start lookups.",
     "getStarted": "Get started",
+    "stats": {
+      "title": "Built for the edge",
+      "subtitle": "No origin server, no cold starts — just fast redirects.",
+      "items": {
+        "runtime": {
+          "value": "Edge",
+          "label": "Runs entirely on Cloudflare Workers"
+        },
+        "license": {
+          "value": "MIT",
+          "label": "Fully open source"
+        },
+        "tracking": {
+          "value": "0",
+          "label": "Third-party tracking scripts"
+        }
+      }
+    },
+    "logos": {
+      "title": "Built with"
+    },
+    "cta": {
+      "title": "Ready to shorten your first link?",
+      "subtitle": "Open the dashboard and create a link in seconds.",
+      "button": "Open dashboard"
+    },
     "featuresTitle": "What's inside",
     "features": {
       "geo": {
@@ -58,6 +84,7 @@
       "analytics": "Analytics",
       "realtime": "Realtime",
       "check": "Health",
+      "migrate": "Migrate",
       "settings": "Settings"
     },
     "overview": {
@@ -103,14 +130,30 @@
       "slugPlaceholder": "Leave empty to auto-generate",
       "random": "Random",
       "aiSlug": "AI slug",
+      "aiOg": "AI fill",
       "comment": "Comment",
       "commentPlaceholder": "Optional note",
       "section": {
         "settings": "Link settings",
         "og": "Open Graph",
         "device": "Device redirect",
-        "geo": "Geo routing"
+        "geo": "Geo routing",
+        "utm": "UTM builder"
       },
+      "selectCountry": "Country",
+      "utm": {
+        "source": "Source",
+        "medium": "Medium",
+        "campaign": "Campaign",
+        "term": "Term",
+        "content": "Content"
+      },
+      "utmApply": "Append to URL",
+      "utmApplied": "UTM parameters added to the URL",
+      "urlInvalid": "The destination URL is not valid",
+      "imageUpload": "Upload image",
+      "imageUploading": "Uploading…",
+      "imageUploaded": "Image uploaded",
       "redirectWithQuery": "Forward query string",
       "cloaking": "Cloaking",
       "unsafe": "Unsafe warning",
@@ -197,6 +240,10 @@
     "chart": {
       "title": "Clicks"
     },
+    "globe": {
+      "title": "Live locations",
+      "empty": "No location data yet"
+    },
     "events": {
       "title": "Live activity",
       "empty": "No recent clicks"
@@ -224,6 +271,56 @@
       "ok": "OK",
       "broken": "Broken",
       "unsafe": "Unsafe"
+    }
+  },
+  "migrate": {
+    "title": "Migrate",
+    "subtitle": "Back up, restore, and export your data.",
+    "export": {
+      "title": "Export links",
+      "description": "Download all links as a JSON file.",
+      "action": "Export JSON"
+    },
+    "import": {
+      "title": "Import links",
+      "description": "Restore links from a previously exported JSON file. Existing slugs are skipped.",
+      "action": "Choose file",
+      "running": "Importing…",
+      "result": "Imported {success}, skipped {skipped}, failed {failed}",
+      "invalid": "Invalid JSON file"
+    },
+    "csv": {
+      "title": "Export access log",
+      "description": "Download per-link click stats as CSV.",
+      "action": "Export CSV"
+    },
+    "backup": {
+      "title": "Backup to R2",
+      "description": "Snapshot all links to your R2 bucket.",
+      "disabled": "Enable R2 in wrangler.jsonc to use backups.",
+      "action": "Back up now",
+      "running": "Backing up…",
+      "success": "Backed up to {key}"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Appearance, language, and system status.",
+    "appearance": {
+      "title": "Appearance",
+      "description": "Switch between light and dark themes."
+    },
+    "language": {
+      "title": "Language",
+      "description": "Choose your dashboard language."
+    },
+    "system": {
+      "title": "System",
+      "description": "Server configuration detected at runtime.",
+      "r2": "R2 storage",
+      "analytics": "Analytics Engine",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
     }
   }
 }

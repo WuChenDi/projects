@@ -7,7 +7,11 @@ import { verifyLinkPassword } from '@/lib/hash'
 import { ogPageHtml, passwordFormHtml, unsafeWarningHtml } from '@/lib/html'
 import { isExpired, purgeLink, resolveLink } from '@/lib/links'
 import { logger } from '@/lib/logger'
-import { isSocialCrawler, resolveDestination } from '@/lib/redirect'
+import {
+  isSocialCrawler,
+  resolveDestination,
+  resolveRedirectLocale,
+} from '@/lib/redirect'
 import { isReservedSlug } from '@/lib/reserve-slug'
 
 const NO_STORE = { 'cache-control': 'no-store' } as const
@@ -64,6 +68,43 @@ function redirectTo(
   })
 }
 
+// Post-gate resolution shared by browser and programmatic (header-password)
+// paths: cloaking serves the OG/cloaking page, social crawlers get the OG
+// preview only when the link carries OG metadata, an unsafe link shows the
+// confirm interstitial (unless already cleared), otherwise we redirect.
+function afterGate(
+  request: NextRequest,
+  env: CloudflareEnv,
+  cf: IncomingRequestCfProperties | undefined,
+  ctx: { waitUntil: (p: Promise<unknown>) => void },
+  link: Link,
+  slug: string,
+  ua: string,
+  opts: { unsafeCleared: boolean; password?: string },
+): Response {
+  if (link.config.cloaking) {
+    return htmlResponse(ogPageHtml(link.url, link.config, { redirect: false }))
+  }
+
+  // A crawler only gets the OG HTML when there is something to preview;
+  // otherwise it falls through to a normal redirect (matches upstream).
+  const hasOg = Boolean(link.config.title || link.config.image)
+  if (isSocialCrawler(ua) && hasOg) {
+    return htmlResponse(ogPageHtml(link.url, link.config, { redirect: true }))
+  }
+
+  if (link.config.unsafe && !opts.unsafeCleared) {
+    return htmlResponse(
+      unsafeWarningHtml(slug, link.url, {
+        locale: resolveRedirectLocale(request),
+        password: opts.password,
+      }),
+    )
+  }
+
+  return redirectTo(request, env, cf, ctx, link, slug)
+}
+
 export async function GET(
   request: NextRequest,
   { params }: RouteContext,
@@ -91,24 +132,44 @@ export async function GET(
 
   // Password gate takes priority — it must run before the OG/cloaking branch,
   // otherwise a social crawler would receive the destination via `og:url` and
-  // defeat the gate. The POST handler verifies the submission.
+  // defeat the gate.
   if (link.config.passwordHash) {
-    return htmlResponse(passwordFormHtml(slug))
-  }
-
-  // Social crawlers (and cloaked links) get the OG preview page.
-  if (link.config.cloaking || isSocialCrawler(ua)) {
-    return htmlResponse(
-      ogPageHtml(link.url, link.config, { redirect: !link.config.cloaking }),
+    // Programmatic clients can pass the password (and unsafe confirmation) as
+    // headers instead of the HTML form; failures return 403, not the form.
+    const headerPassword = request.headers.get('x-link-password')
+    if (headerPassword === null) {
+      return htmlResponse(
+        passwordFormHtml(slug, false, resolveRedirectLocale(request)),
+      )
+    }
+    const ok = await verifyLinkPassword(
+      headerPassword,
+      link.config.passwordHash,
     )
+    if (!ok) {
+      logger.info(`Incorrect x-link-password for slug: ${slug}`)
+      return new Response('Incorrect password', {
+        status: 403,
+        headers: NO_STORE,
+      })
+    }
+    if (
+      link.config.unsafe &&
+      request.headers.get('x-link-confirm') !== 'true'
+    ) {
+      return new Response(
+        'Unsafe link: set the x-link-confirm: true header to proceed',
+        { status: 403, headers: NO_STORE },
+      )
+    }
+    return afterGate(request, env, cf, ctx, link, slug, ua, {
+      unsafeCleared: true,
+    })
   }
 
-  // Unsafe interstitial — require an explicit click-through.
-  if (link.config.unsafe) {
-    return htmlResponse(unsafeWarningHtml(link.url))
-  }
-
-  return redirectTo(request, env, cf, ctx, link, slug)
+  return afterGate(request, env, cf, ctx, link, slug, ua, {
+    unsafeCleared: false,
+  })
 }
 
 export async function POST(
@@ -125,19 +186,40 @@ export async function POST(
 
   if (!link || isExpired(link.expiresAt)) return notFound(request, env)
 
-  // Only the password flow uses POST.
-  if (!link.config.passwordHash) {
-    return redirectTo(request, env, cf, ctx, link, slug)
-  }
-
+  const ua = request.headers.get('user-agent') || ''
   const form = await request.formData()
-  const password = String(form.get('password') || '')
-  const ok = await verifyLinkPassword(password, link.config.passwordHash)
+  const confirmed = String(form.get('confirm') || '') === 'true'
 
-  if (!ok) {
-    logger.info(`Incorrect password for slug: ${slug}`)
-    return htmlResponse(passwordFormHtml(slug, true), 401)
+  if (link.config.passwordHash) {
+    const password = String(form.get('password') || '')
+    const ok = await verifyLinkPassword(password, link.config.passwordHash)
+
+    if (!ok) {
+      logger.info(`Incorrect password for slug: ${slug}`)
+      return htmlResponse(
+        passwordFormHtml(slug, true, resolveRedirectLocale(request)),
+        401,
+      )
+    }
+
+    // Password verified — an unsafe link still needs an explicit confirmation,
+    // chained from the same submission (the password is re-carried).
+    if (link.config.unsafe && !confirmed) {
+      return htmlResponse(
+        unsafeWarningHtml(slug, link.url, {
+          locale: resolveRedirectLocale(request),
+          password,
+        }),
+      )
+    }
+
+    return afterGate(request, env, cf, ctx, link, slug, ua, {
+      unsafeCleared: true,
+    })
   }
 
-  return redirectTo(request, env, cf, ctx, link, slug)
+  // No password — only the unsafe interstitial uses POST.
+  return afterGate(request, env, cf, ctx, link, slug, ua, {
+    unsafeCleared: confirmed,
+  })
 }

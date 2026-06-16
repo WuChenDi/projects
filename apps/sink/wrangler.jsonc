@@ -70,6 +70,15 @@
       "dataset": "sink_analytics"
     }
   ],
+  // R2 is OPTIONAL — OG image upload + backups are disabled until you enable it.
+  // To turn it on: `wrangler r2 bucket create sink`, then uncomment below.
+  // (Local dev auto-creates a local bucket once this binding is present.)
+  // "r2_buckets": [
+  //   {
+  //     "binding": "R2",
+  //     "bucket_name": "sink"
+  //   }
+  // ],
   // Scheduled cleanup — handled by the `scheduled()` handler in src/worker/index.ts.
   // Default: daily at 00:00 UTC. Soft-deletes expired links + purges their KV cache.
   "triggers": {

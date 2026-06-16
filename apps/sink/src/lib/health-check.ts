@@ -1,4 +1,5 @@
 import { getConfig } from '@/lib/env'
+import { safeBrowsingHost } from '@/lib/safe-browsing'
 
 const TIMEOUT_MS = 5000
 const CONCURRENCY = 5
@@ -99,26 +100,6 @@ async function fetchStatus(
   }
 }
 
-// Resolve the host via a filtering DoH resolver; a 0.0.0.0/:: answer means the
-// host is blocked (unsafe). Returns null when DoH is unavailable/unparseable.
-async function safeBrowsing(
-  doh: string,
-  host: string,
-): Promise<boolean | null> {
-  try {
-    const res = await fetch(`${doh}?name=${encodeURIComponent(host)}&type=A`, {
-      headers: { accept: 'application/dns-json' },
-    })
-    if (!res.ok) return null
-    const data = (await res.json()) as { Answer?: { data: string }[] }
-    return (data.Answer ?? []).some(
-      (a) => a.data === '0.0.0.0' || a.data === '::',
-    )
-  } catch {
-    return null
-  }
-}
-
 export async function runHealthCheck(
   env: CloudflareEnv,
   targets: CheckTarget[],
@@ -134,7 +115,7 @@ export async function runHealthCheck(
       let unsafe: boolean | null = null
       if (doh) {
         try {
-          unsafe = await safeBrowsing(doh, new URL(target.url).hostname)
+          unsafe = await safeBrowsingHost(doh, new URL(target.url).hostname)
         } catch {
           unsafe = null
         }

@@ -23,6 +23,32 @@
     "title": "内置地域、设备路由与数据分析的短链接",
     "subtitle": "创建可按国家与设备分流、支持密码保护的短链接，并将每一次点击实时写入 Analytics Engine —— 全部在边缘完成，无冷启动查询。",
     "getStarted": "立即开始",
+    "stats": {
+      "title": "为边缘而生",
+      "subtitle": "没有源站、没有冷启动，只有飞快的跳转。",
+      "items": {
+        "runtime": {
+          "value": "Edge",
+          "label": "完全运行在 Cloudflare Workers 上"
+        },
+        "license": {
+          "value": "MIT",
+          "label": "完全开源"
+        },
+        "tracking": {
+          "value": "0",
+          "label": "第三方追踪脚本"
+        }
+      }
+    },
+    "logos": {
+      "title": "技术栈"
+    },
+    "cta": {
+      "title": "准备好创建第一个短链接了吗？",
+      "subtitle": "打开控制台，几秒钟即可创建链接。",
+      "button": "打开控制台"
+    },
     "featuresTitle": "核心能力",
     "features": {
       "geo": {
@@ -58,6 +84,7 @@
       "analytics": "分析",
       "realtime": "实时",
       "check": "健康检查",
+      "migrate": "迁移",
       "settings": "设置"
     },
     "overview": {
@@ -103,14 +130,30 @@
       "slugPlaceholder": "留空则自动生成",
       "random": "随机",
       "aiSlug": "AI 生成",
+      "aiOg": "AI 填充",
       "comment": "备注",
       "commentPlaceholder": "可选备注",
       "section": {
         "settings": "链接设置",
         "og": "Open Graph",
         "device": "设备跳转",
-        "geo": "地域路由"
+        "geo": "地域路由",
+        "utm": "UTM 构建器"
       },
+      "selectCountry": "国家",
+      "utm": {
+        "source": "来源 (source)",
+        "medium": "媒介 (medium)",
+        "campaign": "活动 (campaign)",
+        "term": "关键词 (term)",
+        "content": "内容 (content)"
+      },
+      "utmApply": "追加到 URL",
+      "utmApplied": "UTM 参数已追加到 URL",
+      "urlInvalid": "目标地址无效",
+      "imageUpload": "上传图片",
+      "imageUploading": "上传中…",
+      "imageUploaded": "图片已上传",
       "redirectWithQuery": "透传查询参数",
       "cloaking": "链接隐藏（Cloaking）",
       "unsafe": "不安全提示",
@@ -197,6 +240,10 @@
     "chart": {
       "title": "点击量"
     },
+    "globe": {
+      "title": "实时位置",
+      "empty": "暂无位置数据"
+    },
     "events": {
       "title": "实时活动",
       "empty": "暂无最近点击"
@@ -224,6 +271,56 @@
       "ok": "正常",
       "broken": "失效",
       "unsafe": "不安全"
+    }
+  },
+  "migrate": {
+    "title": "迁移",
+    "subtitle": "备份、恢复并导出你的数据。",
+    "export": {
+      "title": "导出链接",
+      "description": "将全部链接下载为 JSON 文件。",
+      "action": "导出 JSON"
+    },
+    "import": {
+      "title": "导入链接",
+      "description": "从之前导出的 JSON 文件恢复链接；已存在的短码会被跳过。",
+      "action": "选择文件",
+      "running": "导入中…",
+      "result": "成功 {success}，跳过 {skipped}，失败 {failed}",
+      "invalid": "无效的 JSON 文件"
+    },
+    "csv": {
+      "title": "导出访问日志",
+      "description": "将各链接的点击统计下载为 CSV。",
+      "action": "导出 CSV"
+    },
+    "backup": {
+      "title": "备份到 R2",
+      "description": "将全部链接快照到你的 R2 存储桶。",
+      "disabled": "在 wrangler.jsonc 中启用 R2 后可用。",
+      "action": "立即备份",
+      "running": "备份中…",
+      "success": "已备份到 {key}"
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "subtitle": "外观、语言与系统状态。",
+    "appearance": {
+      "title": "外观",
+      "description": "在浅色与深色主题之间切换。"
+    },
+    "language": {
+      "title": "语言",
+      "description": "选择控制台语言。"
+    },
+    "system": {
+      "title": "系统",
+      "description": "运行时检测到的服务端配置。",
+      "r2": "R2 存储",
+      "analytics": "Analytics Engine",
+      "enabled": "已启用",
+      "disabled": "未启用"
     }
   }
 }

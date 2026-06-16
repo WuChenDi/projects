@@ -16,6 +16,7 @@ export interface SinkConfig {
   disableBotAccessLog: boolean
   aiModel: string
   aiPrompt: string
+  aiOgPrompt: string
   // Analytics Engine SQL API credentials (required only for the stats endpoints).
   cfAccountId: string
   cfApiToken: string
@@ -68,6 +69,7 @@ export function getConfig(env?: CloudflareEnv): SinkConfig {
     disableBotAccessLog: bool(raw.DISABLE_BOT_ACCESS_LOG),
     aiModel: raw.AI_MODEL ?? '@cf/meta/llama-3.1-8b-instruct',
     aiPrompt: raw.AI_PROMPT ?? '',
+    aiOgPrompt: loose.AI_OG_PROMPT ?? '',
     cfAccountId: loose.CLOUDFLARE_ACCOUNT_ID ?? '',
     cfApiToken: loose.CLOUDFLARE_API_TOKEN ?? '',
     safeBrowsingDoh: loose.SAFE_BROWSING_DOH ?? '',

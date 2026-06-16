@@ -1049,6 +1049,9 @@ importers:
       '@tanstack/react-query':
         specifier: catalog:prod
         version: 5.101.0(react@19.2.4)
+      cobe:
+        specifier: ^2.0.1
+        version: 2.0.1
       drizzle-orm:
         specifier: catalog:prod
         version: 0.45.2(@cloudflare/workers-types@4.20260613.1)(@libsql/client@0.17.3)(@types/pg@8.18.0)(@upstash/redis@1.37.0)(kysely@0.28.13)(pg@8.20.0)(postgres@3.4.8)
@@ -1465,6 +1468,9 @@ importers:
       clsx:
         specifier: catalog:prod
         version: 2.1.1
+      cmdk:
+        specifier: ^1.1.1
+        version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       date-fns:
         specifier: catalog:prod
         version: 4.4.0
@@ -6814,6 +6820,9 @@ packages:
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
       react-dom: ^18 || ^19 || ^19.0.0-rc
+
+  cobe@2.0.1:
+    resolution: {integrity: sha512-aaa6vcIlaC8C1SF50LDH0Anybo/EAXnrxqe+bwvr4+YUtZydqjeBjTTD7ziCCkbRrRGSns3I3F6cZsf3W+L+ag==}
 
   code-block-writer@13.0.3:
     resolution: {integrity: sha512-Oofo0pq3IKnsFtuHqSF7TqBfr71aeyZDVJ0HpmqB7FBM2qEigL0iPONSCZSO9pE9dZTAxANe5XHG9Uy0YMv8cg==}
@@ -17373,6 +17382,8 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
       - '@types/react-dom'
+
+  cobe@2.0.1: {}
 
   code-block-writer@13.0.3: {}
 

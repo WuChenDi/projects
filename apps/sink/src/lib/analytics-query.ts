@@ -224,6 +224,18 @@ export function eventsSql(
     ORDER BY timestamp DESC LIMIT ${Math.max(1, Math.floor(limit))}`
 }
 
+// Per-slug access aggregates for the CSV export.
+export function accessExportSql(env: CloudflareEnv, q: StatsQuery): string {
+  return `SELECT
+      ${FIELD.slug} AS slug,
+      ${FIELD.url} AS url,
+      ${VISITORS} AS viewers,
+      SUM(_sample_interval) AS views,
+      COUNT(DISTINCT if(${FIELD.referer} = 'direct', NULL, ${FIELD.referer})) AS referers
+    FROM ${dataset(env)} ${whereClause(q)}
+    GROUP BY slug, url ORDER BY views DESC`
+}
+
 // Parse StatsQuery (range + drill-down filters) from request search params.
 export function parseStatsQuery(params: URLSearchParams): StatsQuery {
   const filters: Partial<Record<Dimension, string>> = {}
