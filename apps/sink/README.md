@@ -15,7 +15,8 @@ via [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare).
 - **Access logging** to Analytics Engine via `ctx.waitUntil` (bot detection,
   UA parsing, geo dimensions), with `DISABLE_BOT_ACCESS_LOG` toggle.
 - **Multi-domain** support via a `(slug, domain)` composite unique key.
-- **Single-token auth** (`SITE_TOKEN`) gating the dashboard + every `/api/*` route.
+- **Social-login auth** (better-auth — Google + GitHub; login == signup) gating
+  the dashboard + every `/api/*` route via a session cookie.
 - **i18n** (en / zh) via `next-intl` with a **cookie-based** locale (no URL prefix),
   so it never collides with the top-level `[slug]` route.
 - **Cron cleanup** — soft-deletes expired links + purges KV, run from the
@@ -31,9 +32,29 @@ pnpm --filter @cdlab996/sink db:gen     # generate a migration from schema.ts
 pnpm --filter @cdlab996/sink db:studio  # drizzle-kit studio (port 3021)
 ```
 
-Copy `.env.example` to `.env` and set `SITE_TOKEN` plus your DB credentials.
-`DB_TYPE=libsql` uses a local SQLite file by default; `DB_TYPE=d1` uses the `DB`
-binding.
+Copy `.env.example` to `.env` and set the better-auth + OAuth secrets plus your
+DB credentials. `DB_TYPE=libsql` uses a local SQLite file by default;
+`DB_TYPE=d1` uses the `DB` binding.
+
+### Authentication
+
+Auth is **better-auth** with Google + GitHub social login only — the first
+sign-in for an account auto-creates the user (login == registration). No
+email/password.
+
+Required env (secrets — keep in `.env` locally, `wrangler secret put` for
+deploy; only `BETTER_AUTH_URL` is committed in `wrangler.jsonc`):
+
+- `BETTER_AUTH_URL` — the public origin (dev `http://sink.localhost:3355`).
+- `BETTER_AUTH_SECRET` — a long random string.
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
+- `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`
+
+Configure each OAuth app's callback URL as
+`{BETTER_AUTH_URL}/api/auth/callback/{google|github}`. A provider with no
+credentials set is simply unavailable; at least one must be configured to log
+in. **Any** Google/GitHub account that signs in gains dashboard access — front
+it with an additional access layer if it must stay private.
 
 ## Deploy
 

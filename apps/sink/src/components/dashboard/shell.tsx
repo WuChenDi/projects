@@ -1,22 +1,35 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { cn } from '@cdlab996/ui/lib/utils'
+import { Separator } from '@cdlab996/ui/components/separator'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarTrigger,
+} from '@cdlab996/ui/components/sidebar'
 import {
   Activity,
   BarChart3,
   Database,
   Link2,
-  LogOut,
   Settings,
   ShieldCheck,
   Sparkles,
 } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { LocaleSwitcher, ThemeToggle } from '@/components/layout'
-import { useAuthStore } from '@/stores/auth-store'
+import { NavUser } from '@/components/dashboard/nav-user'
+import { SinkLogo } from '@/components/layout'
 
 const ITEMS = [
   { href: '/dashboard', key: 'overview', icon: BarChart3, exact: true },
@@ -53,74 +66,87 @@ const ITEMS = [
   },
 ] as const
 
+function isActive(pathname: string, item: (typeof ITEMS)[number]) {
+  return item.exact
+    ? pathname === item.href
+    : pathname === item.href || pathname.startsWith(`${item.href}/`)
+}
+
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const router = useRouter()
   const t = useTranslations('dashboard.nav')
   const tc = useTranslations('common')
-  const signOut = useAuthStore((s) => s.signOut)
 
-  function onSignOut() {
-    signOut()
-    router.replace('/dashboard/login')
-  }
+  const active = ITEMS.find((item) => isActive(pathname, item))
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 md:px-6">
-          <div className="flex items-center gap-1 md:gap-6">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-2 font-semibold"
-            >
-              <span className="inline-flex size-7 items-center justify-center rounded-md bg-primary/10 text-primary">
-                <Link2 className="size-4" />
-              </span>
-              {tc('appName')}
-            </Link>
-            <nav className="hidden items-center gap-1 md:flex">
-              {ITEMS.map((item) => {
-                const Icon = item.icon
-                const active = item.exact
-                  ? pathname === item.href
-                  : pathname === item.href ||
-                    pathname.startsWith(`${item.href}/`)
-                return (
-                  <Link key={item.href} href={item.href}>
-                    <Button
-                      variant={active ? 'secondary' : 'ghost'}
-                      size="sm"
-                      className={cn('h-8', active && 'pointer-events-none')}
-                    >
-                      <Icon className="mr-1 size-3.5" />
-                      {t(item.key)}
-                    </Button>
-                  </Link>
-                )
-              })}
-            </nav>
-          </div>
+    <SidebarProvider>
+      <Sidebar collapsible="icon">
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
+              <SidebarMenuButton
+                size="lg"
+                asChild
+                className="flex-1 group-data-[collapsible=icon]:hidden"
+              >
+                <Link href="/dashboard">
+                  <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <SinkLogo className="size-4" />
+                  </span>
+                  <span className="truncate font-semibold">
+                    {tc('appName')}
+                  </span>
+                </Link>
+              </SidebarMenuButton>
+              <SidebarTrigger />
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
 
-          <div className="flex items-center gap-2">
-            <LocaleSwitcher />
-            <ThemeToggle />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onSignOut}
-              aria-label={tc('signOut')}
-            >
-              <LogOut className="size-3.5" />
-              <span className="hidden sm:inline">{tc('signOut')}</span>
-            </Button>
-          </div>
-        </div>
-      </header>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {ITEMS.map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive(pathname, item)}
+                        tooltip={t(item.key)}
+                      >
+                        <Link href={item.href}>
+                          <Icon />
+                          <span>{t(item.key)}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 md:px-6">
-        {children}
-      </main>
-    </div>
+        <SidebarFooter>
+          <NavUser />
+        </SidebarFooter>
+        <SidebarRail />
+      </Sidebar>
+
+      <SidebarInset>
+        <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur">
+          <SidebarTrigger className="-ml-1 md:hidden" />
+          <Separator orientation="vertical" className="mr-2 h-4 md:hidden" />
+          <h1 className="text-base font-medium">
+            {active ? t(active.key) : tc('appName')}
+          </h1>
+        </header>
+
+        <main className="flex-1 p-4 md:p-6">{children}</main>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

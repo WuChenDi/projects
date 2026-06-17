@@ -1,12 +1,12 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
-import { requireSiteToken } from '@/lib/auth'
+import { requireSession } from '@/lib/auth'
 
 // Returns the caller's own geo from Cloudflare's request properties (matches
 // upstream Sink's `/api/location`). The aggregated globe feed lives at
 // `/api/logs/locations`.
 export async function GET(request: Request): Promise<NextResponse> {
-  const auth = requireSiteToken(request)
+  const auth = await requireSession(request)
   if (!auth.ok) return auth.response
 
   const { cf } = getCloudflareContext()

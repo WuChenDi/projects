@@ -1,5 +1,49 @@
 # Changelog
 
+## 2026-06-17 [feature]
+
+FEAT-012 / PLAN-005 done. Replaced Sink's shared `SITE_TOKEN` Bearer gate with
+**better-auth** (`^1.6.19`) social login — **Google + GitHub only, login ==
+registration** (no email/password). Backed by the existing Drizzle D1/libsql DB.
+
+- Schema: added better-auth `user`/`session`/`account`/`verification` tables.
+  Init migration **regenerated from scratch** (`0000_fair_luckman.sql`, 5 tables)
+  — old init deleted per approval, no data preserved.
+- `lib/auth.ts`: `getAuth()` (per-request, drizzle adapter, `socialProviders`
+  google+github gated by env, `nextCookies()`) + `requireSession()` guard
+  replacing `requireSiteToken`. Mounted handler at `/api/auth/[...all]`.
+  `lib/auth-client.ts` added.
+- Swapped `requireSiteToken` → `await requireSession` in all 23 `/api/*` routes;
+  deleted `/api/verify`. Dashboard `(app)/layout.tsx` now does a server-side
+  `getSession` + `redirect('/dashboard/login')`; deleted client `SiteTokenGate`
+  and `stores/auth-store.ts`.
+- Login page → two social buttons (i18n en/zh, inline Google/GitHub SVGs since
+  lucide `Github` was removed in v1). `lib/api.ts` dropped all Bearer/authHeader
+  wiring (session cookie is same-origin automatic). `env.ts` dropped `siteToken`.
+- Env/docs: `wrangler.jsonc` swapped `SITE_TOKEN`→`BETTER_AUTH_URL` (secrets via
+  `.dev.vars`/`wrangler secret`); `.env.example`, README, `cloudflare-env.d.ts`
+  (cf-typegen) updated.
+- OpenNext note: no `runtime='edge'` needed (vs the flox next-on-pages port).
+- Verify: `next build` + `tsc` + biome all clean.
+- External setup required before login works: create Google + GitHub OAuth apps,
+  callback `{BETTER_AUTH_URL}/api/auth/callback/{google|github}`, set
+  `BETTER_AUTH_SECRET` + client id/secret in `.env`. Caveat: any Google/GitHub
+  account can sign in (open access) — add an allowlist later if needed.
+- Login UI: adopted the shadcn `login-04` layout (centered brand + 2-col social
+  button grid, `Field`/`FieldGroup` from `@cdlab996/ui`). Added public Privacy
+  Policy + Terms of Service pages at `/dashboard/privacy` + `/dashboard/terms`
+  (styled after the ikui pages, content adapted to Sink's actual data
+  practices; English text, sibling to `/dashboard/login` so outside the auth
+  gate; `dashboard` is already a reserved slug so no `[slug]` conflict). Login
+  footer links to both via `t.rich('agreement')` (en/zh).
+- Sidebar footer: replaced the bare sign-out button with a `NavUser` card
+  (`components/dashboard/nav-user.tsx`) — avatar (image or initials fallback) +
+  name/email, opening a dropdown (`useSession` from better-auth) with Theme +
+  Language radio submenus, Docs + GitHub repo links, and Sign out. Theme/Language
+  thus moved out of the dashboard header (removed the now-duplicate header
+  `ThemeToggle`/`LocaleSwitcher`; both still used on the landing + settings
+  pages). i18n `userMenu.*` (en/zh).
+
 ## 2026-06-16 09:50 [progress]
 
 Full re-scan of `apps/sink` vs the reference `tmp/Sink` to find remaining

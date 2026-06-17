@@ -1,15 +1,17 @@
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
-import { SiteTokenGate } from '@/components/auth/site-token-gate'
 import { DashboardShell } from '@/components/dashboard/shell'
+import { getAuth } from '@/lib/auth'
 
-export default function ProtectedDashboardLayout({
+export default async function ProtectedDashboardLayout({
   children,
 }: {
   children: ReactNode
 }) {
-  return (
-    <SiteTokenGate>
-      <DashboardShell>{children}</DashboardShell>
-    </SiteTokenGate>
-  )
+  const auth = await getAuth()
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session) redirect('/dashboard/login')
+
+  return <DashboardShell>{children}</DashboardShell>
 }

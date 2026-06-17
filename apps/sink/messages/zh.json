@@ -62,18 +62,93 @@
       "privacy": {
         "title": "密码与安全拦截",
         "desc": "为链接设置访问密码，或为不安全目标展示风险提示页。"
+      },
+      "ai": {
+        "title": "AI 短码与 OG",
+        "desc": "一键生成可读短码，以及社交分享的预览元数据。"
+      },
+      "realtime": {
+        "title": "实时地球",
+        "desc": "在实时 WebGL 地球上看着点击落点，并附带实时位置信息流。"
+      },
+      "health": {
+        "title": "链接健康检查",
+        "desc": "按需或写入时扫描目标地址，发现失效链接与不安全主机。"
       }
+    },
+    "steps": {
+      "title": "三步,从网址到洞察",
+      "subtitle": "无需维护源站 —— 建好链接即可开始追踪。",
+      "items": {
+        "create": {
+          "title": "创建短链接",
+          "desc": "粘贴长网址即可得到简洁短码,也可让 AI 帮你生成。"
+        },
+        "route": {
+          "title": "添加路由与规则",
+          "desc": "按国家或设备分流,设置访问密码与过期时间。"
+        },
+        "track": {
+          "title": "分享并追踪",
+          "desc": "每次点击实时写入 Analytics Engine —— 地域、设备、来源一应俱全。"
+        }
+      }
+    },
+    "faq": {
+      "title": "常见问题",
+      "subtitle": "创建链接前你可能想了解的一切。",
+      "items": {
+        "cost": {
+          "q": "是免费的吗?",
+          "a": "是。Sink 开源(MIT),运行在你自己的 Cloudflare 账号上,只需承担 Cloudflare 的用量费用(若有)。"
+        },
+        "data": {
+          "q": "我的数据存在哪里?",
+          "a": "存在你自己的 Cloudflare D1 / Turso 数据库与 Analytics Engine 中,不会发送给任何第三方。"
+        },
+        "geo": {
+          "q": "地域 / 设备路由如何工作?",
+          "a": "每条链接都能把国家或 Apple / Android 设备映射到不同目标,在边缘解析,无冷启动。"
+        },
+        "privacy": {
+          "q": "你们会追踪访客吗?",
+          "a": "只在你自己的账号里做聚合点击分析 —— 没有第三方追踪,也不给访客种 Cookie。"
+        },
+        "auth": {
+          "q": "谁能访问控制台?",
+          "a": "控制台通过 Google / GitHub 登录把关,只有你允许的账号才能管理链接。"
+        }
+      }
+    },
+    "footer": {
+      "blurb": "内置地域 / 设备路由与边缘分析的短链接,完全运行在 Cloudflare Workers 上。",
+      "product": "产品",
+      "resources": "资源",
+      "dashboard": "控制台",
+      "source": "源代码",
+      "privacy": "隐私政策",
+      "terms": "服务条款",
+      "builtWith": "基于 Next.js · Cloudflare Workers 构建"
     }
   },
   "login": {
-    "title": "登录 Sink",
-    "description": "输入站点令牌以访问控制台。",
-    "tokenLabel": "站点令牌",
-    "tokenPlaceholder": "请输入站点令牌",
-    "submit": "继续",
-    "verifying": "验证中…",
-    "invalid": "站点令牌无效",
-    "required": "请输入站点令牌"
+    "welcome": "欢迎使用 Sink",
+    "description": "登录以访问控制台。",
+    "continueWithGoogle": "使用 Google 登录",
+    "continueWithGitHub": "使用 GitHub 登录",
+    "redirecting": "跳转中…",
+    "error": "登录失败，请重试。",
+    "agreement": "继续即表示你同意我们的<terms>服务条款</terms>和<privacy>隐私政策</privacy>。"
+  },
+  "userMenu": {
+    "theme": "主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统",
+    "language": "语言",
+    "docs": "文档",
+    "repo": "GitHub 仓库",
+    "signOut": "退出登录"
   },
   "dashboard": {
     "title": "控制台",
