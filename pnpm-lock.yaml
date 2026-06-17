@@ -190,8 +190,8 @@ importers:
         specifier: workspace:*
         version: link:packages/tsconfig
       '@dotns/nsl':
-        specifier: ^0.1.9
-        version: 0.1.9
+        specifier: ^0.1.10
+        version: 0.1.10
       '@types/node':
         specifier: catalog:dev
         version: 25.3.3
@@ -2349,33 +2349,33 @@ packages:
     resolution: {integrity: sha512-CaQcc8JvtzQhUSm9877b6V4Tb7HCotkcyud9X2YwdqtQKwgljkMRwU96fVYKnzN3V0Hj74oP7Es+vZ0mS+Aa1w==}
     hasBin: true
 
-  '@dotns/nsl-darwin-arm64@0.1.9':
-    resolution: {integrity: sha512-udjryAzTm6NNCH3+v291sa1F5kXILUiAihwKSAIeDzvmZXjrSJ8Giyqhy9AXnInLKC4uuORSKvDHiFx3lhuP1A==}
+  '@dotns/nsl-darwin-arm64@0.1.10':
+    resolution: {integrity: sha512-/XGjJ0ifHVwMs9/aQjHBOYBXatDJCk5sminK8FOTBQdhtK5XG64Q3w/4I8FQMkLqUSIeIewjfh8vJzJv2vzWDQ==}
     cpu: [arm64]
     os: [darwin]
 
-  '@dotns/nsl-darwin-x64@0.1.9':
-    resolution: {integrity: sha512-tsuPF5d983CJ6wwnucbm9Hnu3D+5kKihZVB71dSbC0iSJuXhrooRWwlh8nvCR7rRS5ZN0tyLc80YUM8Ie7G9QA==}
+  '@dotns/nsl-darwin-x64@0.1.10':
+    resolution: {integrity: sha512-6yvI5W5m5xApkT9wQGddtcviefbHL3/inlEA0f8rFZfrKEVjzh+8l4yySDC3dnPVb0lMq4rVz+coNvE68s1f6A==}
     cpu: [x64]
     os: [darwin]
 
-  '@dotns/nsl-linux-arm64@0.1.9':
-    resolution: {integrity: sha512-qGuoj58r3MkSTow8nGj8EL7SAMIqHvEfv8LXLuneYYjQ+xYeo0lpUceR82IYOB92IxN6Fd5D1nnd+XefVCyVIg==}
+  '@dotns/nsl-linux-arm64@0.1.10':
+    resolution: {integrity: sha512-838BUltjK1PaNVJtTjkKhmIQa1i9H9p27Cbmy53WVwXUfyZsy2DpeYnbrGDGt16dHyTFHEG8tM3xNCfMGM1RBA==}
     cpu: [arm64]
     os: [linux]
 
-  '@dotns/nsl-linux-x64@0.1.9':
-    resolution: {integrity: sha512-iZT3gq8DTSaKtn6btQgntE0wMjp2XDKnRzoWN1nus3Rr/iGyxBfk7kaJw1xPh5gLUVdVckiXc3uklvtF9pylWg==}
+  '@dotns/nsl-linux-x64@0.1.10':
+    resolution: {integrity: sha512-42CspMUYXpzbe9MPRLyKCa1cWjv6SBhLu5C4UmC+0g0F+bWYib8bmWLio7tAXkvu01Qy1blY7nPuQ10Lh36mQg==}
     cpu: [x64]
     os: [linux]
 
-  '@dotns/nsl-win32-x64@0.1.9':
-    resolution: {integrity: sha512-/1jv9G1tJuQtpPCSRIMBlf6/5RUO2l00DEJSRStsEzLV6eW7b5ByaWXiGm8EQqWdO9PQFcKzOPk6Dmuu/IFVoA==}
+  '@dotns/nsl-win32-x64@0.1.10':
+    resolution: {integrity: sha512-xfeERi4F/oEFZ6TFoNfhq/LWkMvxLJZsABcaBT72u/TuLaMsYuzDJKnYZKadm3MeCapTpqvpdvehdiY+sUKEhA==}
     cpu: [x64]
     os: [win32]
 
-  '@dotns/nsl@0.1.9':
-    resolution: {integrity: sha512-9LPTSPNMDQqEVwZJOD9HZ2ZoyzmG+tbUXiYS8hKVrLJ8UoyqI9QQ2m/nnv4nmpubjrKMFap5kxZazM0fYgXp/g==}
+  '@dotns/nsl@0.1.10':
+    resolution: {integrity: sha512-8p5oqSoA8cRVM1buymLcgdq0aU0s6cqZNRzBAiQ2BsrUBu1AACik9u7N6RaeOjUzmN+G/UOdHNTNW6x6Y/iSKw==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -12673,28 +12673,28 @@ snapshots:
       picomatch: 4.0.4
       which: 4.0.0
 
-  '@dotns/nsl-darwin-arm64@0.1.9':
+  '@dotns/nsl-darwin-arm64@0.1.10':
     optional: true
 
-  '@dotns/nsl-darwin-x64@0.1.9':
+  '@dotns/nsl-darwin-x64@0.1.10':
     optional: true
 
-  '@dotns/nsl-linux-arm64@0.1.9':
+  '@dotns/nsl-linux-arm64@0.1.10':
     optional: true
 
-  '@dotns/nsl-linux-x64@0.1.9':
+  '@dotns/nsl-linux-x64@0.1.10':
     optional: true
 
-  '@dotns/nsl-win32-x64@0.1.9':
+  '@dotns/nsl-win32-x64@0.1.10':
     optional: true
 
-  '@dotns/nsl@0.1.9':
+  '@dotns/nsl@0.1.10':
     optionalDependencies:
-      '@dotns/nsl-darwin-arm64': 0.1.9
-      '@dotns/nsl-darwin-x64': 0.1.9
-      '@dotns/nsl-linux-arm64': 0.1.9
-      '@dotns/nsl-linux-x64': 0.1.9
-      '@dotns/nsl-win32-x64': 0.1.9
+      '@dotns/nsl-darwin-arm64': 0.1.10
+      '@dotns/nsl-darwin-x64': 0.1.10
+      '@dotns/nsl-linux-arm64': 0.1.10
+      '@dotns/nsl-linux-x64': 0.1.10
+      '@dotns/nsl-win32-x64': 0.1.10
 
   '@drizzle-team/brocli@0.10.2': {}
 
