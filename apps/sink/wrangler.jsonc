@@ -23,11 +23,10 @@
     //   "d1"     → uses the `DB` binding below
     //   "libsql" → uses LIBSQL_URL + LIBSQL_AUTH_TOKEN (Turso etc.)
     "DB_TYPE": "libsql",
-    // LibSQL Configuration (dev / Turso). The URL points at your own database;
-    // LIBSQL_AUTH_TOKEN is a SECRET — keep it in `.dev.vars` (local) or set it
-    // with `wrangler secret put LIBSQL_AUTH_TOKEN` (deploy), never commit it.
-    "LIBSQL_URL": "libsql://<your-database>.turso.io",
-    "LIBSQL_AUTH_TOKEN": "",
+    // LibSQL Configuration (dev / Turso).
+    "LIBSQL_URL": "your-libsql-url",
+    // The authentication token for accessing the LibSQL
+    "LIBSQL_AUTH_TOKEN": "your-libsql-auth-token",
     // Redirect engine knobs (all optional — defaults shown).
     "REDIRECT_STATUS_CODE": "308",
     "LINK_CACHE_TTL": "60",
