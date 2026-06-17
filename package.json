@@ -57,7 +57,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",
     "@cdlab996/tsconfig": "workspace:*",
-    "@dotns/nsl": "^0.1.9",
+    "@dotns/nsl": "^0.1.10",
     "@types/node": "catalog:dev",
     "turbo": "^2.9.18",
     "typescript": "catalog:dev"
