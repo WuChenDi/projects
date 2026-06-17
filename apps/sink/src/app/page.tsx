@@ -79,7 +79,7 @@ export default async function LandingPage() {
               <Github className="size-4" />
             </a>
           </Button>
-          <Button asChild size="sm">
+          <Button asChild>
             <Link href="/dashboard">
               {tc('enterDashboard')}
               <ArrowRight className="size-3.5" />
@@ -296,17 +296,6 @@ export default async function LandingPage() {
                     {t('footer.resources')}
                   </p>
                   <ul className="space-y-2.5 text-sm">
-                    <li>
-                      <a
-                        href={GITHUB_HREF}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-foreground/80 transition-colors hover:text-foreground"
-                      >
-                        <Github className="size-4" />
-                        {t('footer.source')}
-                      </a>
-                    </li>
                     <li>
                       <Link
                         href="/dashboard/privacy"
