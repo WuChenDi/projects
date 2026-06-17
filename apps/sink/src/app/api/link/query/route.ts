@@ -1,11 +1,11 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
-import { requireSiteToken } from '@/lib/auth'
+import { requireSession } from '@/lib/auth'
 import { getLinkById, resolveLink } from '@/lib/links'
 
 // Fetch a single link by id, or by (slug, domain) when id is absent.
 export async function GET(request: Request): Promise<NextResponse> {
-  const auth = requireSiteToken(request)
+  const auth = await requireSession(request)
   if (!auth.ok) return auth.response
 
   const { env } = getCloudflareContext()

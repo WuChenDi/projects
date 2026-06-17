@@ -1,10 +1,10 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
-import { requireSiteToken } from '@/lib/auth'
+import { requireSession } from '@/lib/auth'
 import { backupToR2 } from '@/lib/backup'
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const auth = requireSiteToken(request)
+  const auth = await requireSession(request)
   if (!auth.ok) return auth.response
 
   const { env } = getCloudflareContext()

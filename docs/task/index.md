@@ -42,3 +42,4 @@ Each task is a single line linking to its detail file. All detailed information 
 - [x] [**FEAT-009 Sink P4a — realtime WebGL globe + locations feed**](FEAT-009.md) `P2`
 - [x] [**FEAT-010 Sink P4b — AI OG metadata + auto Safe-Browsing on write**](FEAT-010.md) `P3`
 - [x] [**FEAT-011 Sink P4c — localized redirect interstitials (en/zh)**](FEAT-011.md) `P3`
+- [x] [**FEAT-012 Sink — replace SITE_TOKEN with better-auth (Google/GitHub social login)**](FEAT-012.md) `P1`

@@ -1,7 +1,7 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
 import * as z from 'zod'
-import { requireSiteToken } from '@/lib/auth'
+import { requireSession } from '@/lib/auth'
 import { MAX_LINKS, runHealthCheck } from '@/lib/health-check'
 import { getLinkById, listLinks } from '@/lib/links'
 
@@ -10,7 +10,7 @@ const BodySchema = z.object({
 })
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const auth = requireSiteToken(request)
+  const auth = await requireSession(request)
   if (!auth.ok) return auth.response
 
   const parsed = BodySchema.safeParse(await request.json().catch(() => ({})))

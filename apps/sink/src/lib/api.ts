@@ -1,6 +1,5 @@
 import type { LinkConfig } from '@/database/schema'
 import type { CreateLinkInput, EditLinkInput } from '@/schemas/link'
-import { useAuthStore } from '@/stores/auth-store'
 
 // Client-facing link shape — dates are JSON strings over the wire.
 export interface LinkRow {
@@ -25,25 +24,13 @@ export class ApiError extends Error {
   }
 }
 
-// Verify a site token against GET /api/verify.
-export async function verifyToken(token: string): Promise<boolean> {
-  const res = await fetch('/api/verify', {
-    headers: { authorization: `Bearer ${token}` },
-  })
-  return res.ok
-}
-
-function authHeader(): Record<string, string> {
-  const token = useAuthStore.getState().token
-  return token ? { authorization: `Bearer ${token}` } : {}
-}
-
+// Auth is a better-auth session cookie, sent automatically on same-origin
+// fetches — no Authorization header to attach.
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
     ...init,
     headers: {
       'content-type': 'application/json',
-      ...authHeader(),
       ...init?.headers,
     },
   })
@@ -200,10 +187,10 @@ export interface ImportReport {
   failedItems: { slug: string; reason: string }[]
 }
 
-// Authed download → trigger a browser file save (needs the Bearer header, so a
-// plain <a href> won't work).
+// Authed download → trigger a browser file save. Uses fetch (not a plain
+// <a href>) so the session cookie + error handling apply consistently.
 async function downloadAuthed(path: string, filename: string): Promise<void> {
-  const res = await fetch(path, { headers: authHeader() })
+  const res = await fetch(path)
   if (!res.ok) {
     const body = (await res.json().catch(() => ({}))) as { error?: string }
     throw new ApiError(body.error || res.statusText, res.status)
@@ -241,7 +228,6 @@ export const uploadApi = {
     fd.append('slug', slug)
     const res = await fetch('/api/upload/image', {
       method: 'POST',
-      headers: authHeader(),
       body: fd,
     })
     if (!res.ok) {

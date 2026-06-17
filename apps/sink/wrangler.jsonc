@@ -13,16 +13,21 @@
     "directory": ".open-next/assets"
   },
   "vars": {
-    // Single shared token that gates the dashboard + every /api/* route.
-    // Set to empty string to disable the gate (NOT recommended in production).
-    "SITE_TOKEN": "SinkSecretToken",
+    // Public origin better-auth issues cookies/redirects against. Must match the
+    // deployed URL (dev: http://sink.localhost:3355). The auth secret + OAuth
+    // client secrets are SECRETS — set them via `.dev.vars` (local) or
+    // `wrangler secret put` (BETTER_AUTH_SECRET, GOOGLE_CLIENT_ID/SECRET,
+    // GITHUB_CLIENT_ID/SECRET), never commit them here.
+    "BETTER_AUTH_URL": "https://sink.a.wd.ds.cc",
     // Driver selector — both run on Cloudflare Workers:
     //   "d1"     → uses the `DB` binding below
     //   "libsql" → uses LIBSQL_URL + LIBSQL_AUTH_TOKEN (Turso etc.)
     "DB_TYPE": "libsql",
-    // LibSQL Configuration (dev / Turso). Default is a local SQLite file.
-    "LIBSQL_URL": "libsql://sink-cdhj996.aws-ap-northeast-1.turso.io",
-    "LIBSQL_AUTH_TOKEN": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODE1MDg2MzcsImlkIjoiMDE5ZWNhMzAtNmQwMS03NmI4LWFiNmQtODVkMzU5ODBkNDNiIiwicmlkIjoiZjNlZmQ5MWQtYTQ1NC00NTFhLTgwODEtOTk0NGY3NWE3ODRlIn0.rOX8npi6R4F8R1_AqmCGuU1ZSxQsfxaij0bSLoIPALjxZKiA-41s76nlS-ow4nONJI8ZybqRz3HA3dMwFFwTAw",
+    // LibSQL Configuration (dev / Turso). The URL points at your own database;
+    // LIBSQL_AUTH_TOKEN is a SECRET — keep it in `.dev.vars` (local) or set it
+    // with `wrangler secret put LIBSQL_AUTH_TOKEN` (deploy), never commit it.
+    "LIBSQL_URL": "libsql://<your-database>.turso.io",
+    "LIBSQL_AUTH_TOKEN": "",
     // Redirect engine knobs (all optional — defaults shown).
     "REDIRECT_STATUS_CODE": "308",
     "LINK_CACHE_TTL": "60",

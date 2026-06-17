@@ -3,7 +3,6 @@ import { getCloudflareContext } from '@opennextjs/cloudflare'
 // Resolved, typed view of the env flags wired in wrangler.jsonc. Reading goes
 // through here so defaults live in one place and every call site is consistent.
 export interface SinkConfig {
-  siteToken: string
   redirectStatusCode: number
   linkCacheTtl: number
   redirectWithQuery: boolean
@@ -56,7 +55,6 @@ export function getConfig(env?: CloudflareEnv): SinkConfig {
   const loose = raw as Record<string, string | undefined>
 
   return {
-    siteToken: raw.SITE_TOKEN ?? process.env.SITE_TOKEN ?? '',
     redirectStatusCode: num(raw.REDIRECT_STATUS_CODE, 308),
     linkCacheTtl: num(raw.LINK_CACHE_TTL, 60),
     redirectWithQuery: bool(raw.REDIRECT_WITH_QUERY),

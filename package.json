@@ -34,7 +34,7 @@
     "dev:repo-changelog": "turbo dev --filter=./apps/repo-changelog",
     "dev:securec": "turbo dev --filter=./apps/SecureC",
     "dev:shortener": "turbo dev --filter=./apps/shortener",
-    "dev:sink": "turbo dev --filter=./apps/sink",
+    "dev:sink": "pnpm --filter ./apps/sink run dev",
     "dev:text2img": "turbo dev --filter=./apps/text2img",
     "dev:values": "turbo dev --filter=./apps/values",
     "dev:vidl": "turbo dev --filter=./apps/vidl",

@@ -2,15 +2,15 @@ import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
 import * as z from 'zod'
 import { generateAiOg } from '@/lib/ai-og'
-import { requireSiteToken } from '@/lib/auth'
+import { requireSession } from '@/lib/auth'
 
 const QuerySchema = z.object({
-  url: z.string().url(),
+  url: z.url(),
   locale: z.string().max(35).optional(),
 })
 
 export async function GET(request: Request): Promise<NextResponse> {
-  const auth = requireSiteToken(request)
+  const auth = await requireSession(request)
   if (!auth.ok) return auth.response
 
   const url = new URL(request.url)

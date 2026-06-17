@@ -1,11 +1,11 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
-import { requireSiteToken } from '@/lib/auth'
+import { requireSession } from '@/lib/auth'
 import { createLink } from '@/lib/links'
 import { CreateLinkSchema } from '@/schemas/link'
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const auth = requireSiteToken(request)
+  const auth = await requireSession(request)
   if (!auth.ok) return auth.response
 
   const parsed = CreateLinkSchema.safeParse(

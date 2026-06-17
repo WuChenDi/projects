@@ -1,12 +1,12 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
-import { requireSiteToken } from '@/lib/auth'
+import { requireSession } from '@/lib/auth'
 import { genid } from '@/lib/genid'
 import { getR2, IMAGE_ALLOWED_TYPES, IMAGE_MAX_SIZE } from '@/lib/r2'
 import { validateSlug } from '@/lib/slug'
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const auth = requireSiteToken(request)
+  const auth = await requireSession(request)
   if (!auth.ok) return auth.response
 
   const { env } = getCloudflareContext()

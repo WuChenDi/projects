@@ -6,7 +6,7 @@
   "description": "Privacy-first link shortener with geo / device routing and analytics — Next.js + Drizzle on Cloudflare Workers.",
   "license": "MIT",
   "scripts": {
-    "dev": "nsl run --name \"sink\" next dev",
+    "dev": "nsl run --name \"sink\" -f next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -29,6 +29,7 @@
     "@libsql/client": "catalog:prod",
     "@tanstack/react-form": "catalog:prod",
     "@tanstack/react-query": "catalog:prod",
+    "better-auth": "catalog:prod",
     "cobe": "^2.0.1",
     "drizzle-orm": "catalog:prod",
     "lucide-react": "catalog:prod",

@@ -62,18 +62,93 @@
       "privacy": {
         "title": "Password & safety gates",
         "desc": "Protect links with a password or show an interstitial warning for unsafe destinations."
+      },
+      "ai": {
+        "title": "AI slugs & OG",
+        "desc": "Generate readable slugs and social preview metadata with a single click."
+      },
+      "realtime": {
+        "title": "Realtime globe",
+        "desc": "Watch clicks land on a live WebGL globe with a streaming locations feed."
+      },
+      "health": {
+        "title": "Link health checks",
+        "desc": "Scan destinations for broken links and unsafe hosts, on demand or on write."
       }
+    },
+    "steps": {
+      "title": "From URL to insight in three steps",
+      "subtitle": "No origin server to manage — set up a link and start tracking.",
+      "items": {
+        "create": {
+          "title": "Create a short link",
+          "desc": "Paste a long URL and get a clean slug — or let AI suggest one for you."
+        },
+        "route": {
+          "title": "Add routing & rules",
+          "desc": "Route by country or device, gate behind a password, and set an expiry."
+        },
+        "track": {
+          "title": "Share & track",
+          "desc": "Every click streams into Analytics Engine — geo, device and referrer, live."
+        }
+      }
+    },
+    "faq": {
+      "title": "Frequently asked",
+      "subtitle": "Everything you might wonder before you create a link.",
+      "items": {
+        "cost": {
+          "q": "Is it free?",
+          "a": "Yes. Sink is open source (MIT) and runs on your own Cloudflare account — you only pay Cloudflare's usage, if any."
+        },
+        "data": {
+          "q": "Where is my data stored?",
+          "a": "In your own Cloudflare D1 / Turso database and Analytics Engine. Nothing is sent to a third party."
+        },
+        "geo": {
+          "q": "How does geo / device routing work?",
+          "a": "Each link can map countries or Apple / Android devices to different destinations, resolved at the edge with no cold start."
+        },
+        "privacy": {
+          "q": "Do you track visitors?",
+          "a": "Only aggregated click analytics in your own account — no third-party trackers and no visitor cookies."
+        },
+        "auth": {
+          "q": "Who can access the dashboard?",
+          "a": "The dashboard is gated by Google / GitHub sign-in, so only the accounts you allow can manage links."
+        }
+      }
+    },
+    "footer": {
+      "blurb": "Short links with geo / device routing and edge analytics, running entirely on Cloudflare Workers.",
+      "product": "Product",
+      "resources": "Resources",
+      "dashboard": "Dashboard",
+      "source": "Source code",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "builtWith": "Built with Next.js · Cloudflare Workers"
     }
   },
   "login": {
-    "title": "Sign in to Sink",
-    "description": "Enter the site token to access the dashboard.",
-    "tokenLabel": "Site token",
-    "tokenPlaceholder": "Enter your site token",
-    "submit": "Continue",
-    "verifying": "Verifying…",
-    "invalid": "Invalid site token",
-    "required": "Please enter the site token"
+    "welcome": "Welcome to Sink",
+    "description": "Sign in to access the dashboard.",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithGitHub": "Continue with GitHub",
+    "redirecting": "Redirecting…",
+    "error": "Sign-in failed. Please try again.",
+    "agreement": "By continuing, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
+  },
+  "userMenu": {
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "language": "Language",
+    "docs": "Documentation",
+    "repo": "GitHub repository",
+    "signOut": "Sign out"
   },
   "dashboard": {
     "title": "Dashboard",

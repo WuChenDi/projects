@@ -5,11 +5,11 @@ import {
   executeAeSql,
   parseStatsQuery,
 } from '@/lib/analytics-query'
-import { requireSiteToken } from '@/lib/auth'
+import { requireSession } from '@/lib/auth'
 import { generateCsv } from '@/lib/csv'
 
 export async function GET(request: Request): Promise<Response> {
-  const auth = requireSiteToken(request)
+  const auth = await requireSession(request)
   if (!auth.ok) return auth.response
 
   const { env } = getCloudflareContext()

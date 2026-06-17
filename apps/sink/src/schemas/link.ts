@@ -17,7 +17,7 @@ const GeoSchema = z.preprocess(
   },
   z.record(
     z.string().regex(/^[A-Z]{2}$/u, 'Country must be a 2-letter ISO code'),
-    z.string().trim().url().max(2048),
+    z.url().max(2048),
   ),
 )
 
@@ -25,11 +25,11 @@ const GeoSchema = z.preprocess(
 // derives that from the optional plaintext `password` field).
 export const LinkConfigInputSchema = z.object({
   geo: GeoSchema.optional(),
-  apple: z.string().trim().url().max(2048).optional(),
-  google: z.string().trim().url().max(2048).optional(),
+  apple: z.url().max(2048).optional(),
+  google: z.url().max(2048).optional(),
   title: z.string().trim().max(256).optional(),
   description: z.string().trim().max(2048).optional(),
-  image: z.string().trim().url().max(2048).optional(),
+  image: z.url().max(2048).optional(),
   cloaking: z.boolean().optional(),
   redirectWithQuery: z.boolean().optional(),
   unsafe: z.boolean().optional(),
@@ -42,7 +42,7 @@ const slugField = z
   .regex(SLUG_REGEX, 'Invalid slug format')
 
 export const CreateLinkSchema = z.object({
-  url: z.string().trim().url('Please provide a valid URL').max(2048),
+  url: z.url('Please provide a valid URL').max(2048),
   slug: slugField.optional(),
   domain: z.string().trim().max(255).optional(),
   comment: z.string().trim().max(2048).optional(),
@@ -55,7 +55,7 @@ export const CreateLinkSchema = z.object({
 
 export const EditLinkSchema = CreateLinkSchema.extend({
   id: z.string().min(1, 'id is required'),
-  url: z.string().trim().url().max(2048).optional(),
+  url: z.url().max(2048).optional(),
 })
 
 export const UpsertLinkSchema = CreateLinkSchema
@@ -90,7 +90,7 @@ export const ImportLinkSchema = z.object({
   id: z.string().nullable().optional(),
   slug: z.string().trim().min(1).max(2048),
   domain: z.string().trim().max(255).optional(),
-  url: z.string().trim().url().max(2048),
+  url: z.url().max(2048),
   comment: z.string().max(2048).optional(),
   config: ImportConfigSchema,
   expiresAt: z.number().int().nullable().optional(),

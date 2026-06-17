@@ -6,13 +6,13 @@ import {
   locationSql,
   parseStatsQuery,
 } from '@/lib/analytics-query'
-import { requireSiteToken } from '@/lib/auth'
+import { requireSession } from '@/lib/auth'
 
 // Aggregated visit coordinates for the realtime globe. Upstream Sink serves this
 // from `/api/logs/locations`; `/api/location` instead returns the caller's own
 // geo (see ../../location/route.ts).
 export async function GET(request: Request): Promise<NextResponse> {
-  const auth = requireSiteToken(request)
+  const auth = await requireSession(request)
   if (!auth.ok) return auth.response
 
   const { env } = getCloudflareContext()
