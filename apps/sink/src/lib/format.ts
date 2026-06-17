@@ -1,9 +1,25 @@
 import type { LinkConfig } from '@/database/schema'
 
-// Full short URL for a link. Falls back to the current origin when the link has
-// no explicit domain (single-domain deploys store domain as the request host).
+// True for loopback / dev hosts that should never be rendered as a public
+// `https://…` short link (single-domain deploys store the request host as the
+// link's domain, which in local dev is `localhost` / `sink.localhost`).
+function isLocalHost(domain: string): boolean {
+  const host = domain.replace(/:\d+$/u, '').toLowerCase()
+  return (
+    host === 'localhost' ||
+    host.endsWith('.localhost') ||
+    host === '127.0.0.1' ||
+    host === '0.0.0.0' ||
+    host === '::1'
+  )
+}
+
+// Full short URL for a link. Uses the link's explicit domain for real
+// multi-domain links, but falls back to the current browser origin (correct
+// scheme + port) when there is no domain or the stored domain is a local/dev
+// host — otherwise dev links render as the unreachable `https://localhost/<slug>`.
 export function buildShortUrl(slug: string, domain: string): string {
-  if (domain) return `https://${domain}/${slug}`
+  if (domain && !isLocalHost(domain)) return `https://${domain}/${slug}`
   if (typeof window !== 'undefined') return `${window.location.origin}/${slug}`
   return `/${slug}`
 }
