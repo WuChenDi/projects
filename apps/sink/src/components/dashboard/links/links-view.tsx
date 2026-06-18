@@ -2,6 +2,14 @@
 
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@cdlab996/ui/components/card'
 import { Input } from '@cdlab996/ui/components/input'
 import {
   Select,
@@ -11,14 +19,6 @@ import {
   SelectValue,
 } from '@cdlab996/ui/components/select'
 import { Spinner } from '@cdlab996/ui/components/spinner'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@cdlab996/ui/components/table'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Copy,
@@ -29,12 +29,12 @@ import {
   Search,
   Trash2,
 } from 'lucide-react'
-import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { DeleteDialog } from '@/components/dashboard/links/delete-dialog'
-import { QrDialog } from '@/components/dashboard/links/qr-dialog'
+import { LinkDrawer } from '@/components/dashboard/links/link-drawer'
+import { QrPopover } from '@/components/dashboard/links/qr-popover'
 import type { LinkRow, SortKey } from '@/lib/api'
 import { linkApi } from '@/lib/api'
 import { buildShortUrl, configBadges, formatDate } from '@/lib/format'
@@ -52,8 +52,19 @@ export function LinksView() {
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<SortKey>('createdAt')
   const [page, setPage] = useState(0)
-  const [qrLink, setQrLink] = useState<LinkRow | null>(null)
   const [toDelete, setToDelete] = useState<LinkRow | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  // undefined → create; a row → edit. Kept while the drawer animates closed.
+  const [editing, setEditing] = useState<LinkRow | undefined>(undefined)
+
+  function openCreate() {
+    setEditing(undefined)
+    setDrawerOpen(true)
+  }
+  function openEdit(link: LinkRow) {
+    setEditing(link)
+    setDrawerOpen(true)
+  }
 
   // Debounce the search box.
   useEffect(() => {
@@ -104,12 +115,10 @@ export function LinksView() {
           <h1 className="text-2xl font-semibold">{t('title')}</h1>
           <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
         </div>
-        <Link href="/dashboard/link">
-          <Button>
-            <Plus className="mr-1 size-4" />
-            {t('new')}
-          </Button>
-        </Link>
+        <Button onClick={openCreate}>
+          <Plus className="mr-1 size-4" />
+          {t('new')}
+        </Button>
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -136,114 +145,90 @@ export function LinksView() {
         </Select>
       </div>
 
-      <div className="rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('table.slug')}</TableHead>
-              <TableHead>{t('table.destination')}</TableHead>
-              <TableHead className="hidden md:table-cell">
-                {t('table.created')}
-              </TableHead>
-              <TableHead className="text-right">{t('table.actions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {query.isLoading ? (
-              <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
-                  <Spinner className="mx-auto size-5" />
-                </TableCell>
-              </TableRow>
-            ) : rows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className="h-24 text-center text-muted-foreground"
-                >
-                  {t('empty')}
-                </TableCell>
-              </TableRow>
-            ) : (
-              rows.map((link) => {
-                const shortUrl = buildShortUrl(link.slug, link.domain)
-                return (
-                  <TableRow key={link.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2 font-medium">
-                        {link.slug}
-                      </div>
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        {configBadges(link.config).map((b) => (
-                          <Badge
-                            key={b}
-                            variant="secondary"
-                            className="text-[10px]"
-                          >
-                            {b}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="max-w-[240px] truncate text-muted-foreground">
-                      {link.url}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell text-muted-foreground">
-                      {formatDate(link.createdAt, locale)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label={tc('copy')}
-                          onClick={() => copy(shortUrl)}
+      {query.isLoading ? (
+        <div className="flex h-40 items-center justify-center rounded-lg border">
+          <Spinner className="size-5" />
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="flex h-40 items-center justify-center rounded-lg border text-sm text-muted-foreground">
+          {t('empty')}
+        </div>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {rows.map((link) => {
+            const shortUrl = buildShortUrl(link.slug, link.domain)
+            const badges = configBadges(link.config)
+            return (
+              <Card key={link.id} size="sm" className="ring-1">
+                <CardHeader>
+                  <CardTitle className="truncate">{link.slug}</CardTitle>
+                  <CardDescription className="truncate">
+                    {link.url}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {badges.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {badges.map((b) => (
+                        <Badge
+                          key={b}
+                          variant="secondary"
+                          className="text-[10px]"
                         >
-                          <Copy className="size-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label={t('qr.title')}
-                          onClick={() => setQrLink(link)}
-                        >
-                          <QrCode className="size-4" />
-                        </Button>
-                        <a href={shortUrl} target="_blank" rel="noreferrer">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={tc('open')}
-                          >
-                            <ExternalLink className="size-4" />
-                          </Button>
-                        </a>
-                        <Link href={`/dashboard/link?id=${link.id}`}>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={tc('edit')}
-                          >
-                            <Pencil className="size-4" />
-                          </Button>
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label={tc('delete')}
-                          onClick={() => setToDelete(link)}
-                        >
-                          <Trash2 className="size-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                          {b}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {formatDate(link.createdAt, locale)}
+                  </p>
+                </CardContent>
+                <CardFooter className="justify-end gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={tc('copy')}
+                    onClick={() => copy(shortUrl)}
+                  >
+                    <Copy className="size-4" />
+                  </Button>
+                  <QrPopover url={shortUrl} slug={link.slug}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={t('qr.title')}
+                    >
+                      <QrCode className="size-4" />
+                    </Button>
+                  </QrPopover>
+                  <a href={shortUrl} target="_blank" rel="noreferrer">
+                    <Button variant="ghost" size="icon" aria-label={tc('open')}>
+                      <ExternalLink className="size-4" />
+                    </Button>
+                  </a>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={tc('edit')}
+                    onClick={() => openEdit(link)}
+                  >
+                    <Pencil className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={tc('delete')}
+                    onClick={() => setToDelete(link)}
+                  >
+                    <Trash2 className="size-4 text-destructive" />
+                  </Button>
+                </CardFooter>
+              </Card>
+            )
+          })}
+        </div>
+      )}
 
       {!search && pageCount > 1 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -269,14 +254,12 @@ export function LinksView() {
         </div>
       )}
 
-      {qrLink && (
-        <QrDialog
-          url={buildShortUrl(qrLink.slug, qrLink.domain)}
-          slug={qrLink.slug}
-          open={!!qrLink}
-          onOpenChange={(o) => !o && setQrLink(null)}
-        />
-      )}
+      <LinkDrawer
+        open={drawerOpen}
+        existing={editing}
+        onOpenChange={setDrawerOpen}
+      />
+
       <DeleteDialog
         slug={toDelete?.slug ?? ''}
         open={!!toDelete}

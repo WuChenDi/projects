@@ -17,6 +17,8 @@ export interface CheckTarget {
 export interface CheckResult extends CheckTarget {
   status: number | null
   ok: boolean
+  // Round-trip time of the reachability fetch, in milliseconds.
+  duration: number
   error?: string
   // null when Safe Browsing (DoH) is not configured.
   unsafe: boolean | null
@@ -74,12 +76,19 @@ function validateFetchUrl(raw: string): URL | null {
 
 async function fetchStatus(
   url: string,
-): Promise<{ status: number | null; ok: boolean; error?: string }> {
+  timeoutMs: number,
+): Promise<{
+  status: number | null
+  ok: boolean
+  duration: number
+  error?: string
+}> {
+  const startedAt = Date.now()
   const valid = validateFetchUrl(url)
-  if (!valid) return { status: null, ok: false, error: 'blocked' }
+  if (!valid) return { status: null, ok: false, duration: 0, error: 'blocked' }
 
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
     // `redirect: 'manual'` so we never auto-follow a 3xx into an internal host;
     // a redirect counts as reachable (ok) without chasing the Location.
@@ -88,11 +97,16 @@ async function fetchStatus(
       redirect: 'manual',
       signal: controller.signal,
     })
-    return { status: res.status, ok: res.status >= 200 && res.status < 400 }
+    return {
+      status: res.status,
+      ok: res.status >= 200 && res.status < 400,
+      duration: Date.now() - startedAt,
+    }
   } catch (error) {
     return {
       status: null,
       ok: false,
+      duration: Date.now() - startedAt,
       error: error instanceof Error ? error.message : 'fetch failed',
     }
   } finally {
@@ -103,6 +117,7 @@ async function fetchStatus(
 export async function runHealthCheck(
   env: CloudflareEnv,
   targets: CheckTarget[],
+  timeoutMs: number = TIMEOUT_MS,
 ): Promise<CheckResult[]> {
   const doh = getConfig(env).safeBrowsingDoh
   const queue = [...targets]
@@ -111,7 +126,10 @@ export async function runHealthCheck(
   async function worker(): Promise<void> {
     while (queue.length > 0) {
       const target = queue.shift()!
-      const { status, ok, error } = await fetchStatus(target.url)
+      const { status, ok, duration, error } = await fetchStatus(
+        target.url,
+        timeoutMs,
+      )
       let unsafe: boolean | null = null
       if (doh) {
         try {
@@ -120,7 +138,7 @@ export async function runHealthCheck(
           unsafe = null
         }
       }
-      results.push({ ...target, status, ok, error, unsafe })
+      results.push({ ...target, status, ok, duration, error, unsafe })
     }
   }
 

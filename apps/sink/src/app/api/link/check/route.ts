@@ -3,10 +3,14 @@ import { NextResponse } from 'next/server'
 import * as z from 'zod'
 import { requireSession } from '@/lib/auth'
 import { MAX_LINKS, runHealthCheck } from '@/lib/health-check'
-import { getLinkById, listLinks } from '@/lib/links'
+import { getLinkById } from '@/lib/links'
 
+// One batch of links to check, with a per-link timeout. The client drives
+// batching (so it can show progress and stop), so each request carries an
+// explicit, bounded set of ids.
 const BodySchema = z.object({
-  ids: z.array(z.string()).optional(),
+  ids: z.array(z.string()).min(1).max(MAX_LINKS),
+  timeout: z.coerce.number().int().min(1).max(30).optional(),
 })
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -19,21 +23,19 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const { env } = getCloudflareContext()
-  const { ids } = parsed.data
+  const { ids, timeout } = parsed.data
 
-  // Resolve targets: explicit ids, else all active links (capped).
-  let targets: { id: string; slug: string; url: string }[]
-  if (ids && ids.length > 0) {
-    const found = await Promise.all(ids.map((id) => getLinkById(env, id)))
-    targets = found
-      .filter((l): l is NonNullable<typeof l> => !!l)
-      .map((l) => ({ id: l.id, slug: l.slug, url: l.url }))
-  } else {
-    const { links } = await listLinks(env, { limit: MAX_LINKS, offset: 0 })
-    targets = links.map((l) => ({ id: l.id, slug: l.slug, url: l.url }))
-  }
+  // Re-resolve each id to its stored link server-side — never trust a
+  // client-supplied destination URL for the server-side fetch (SSRF surface).
+  const found = await Promise.all(ids.map((id) => getLinkById(env, id)))
+  const targets = found
+    .filter((l): l is NonNullable<typeof l> => !!l)
+    .map((l) => ({ id: l.id, slug: l.slug, url: l.url }))
 
-  targets = targets.slice(0, MAX_LINKS)
-  const results = await runHealthCheck(env, targets)
+  const results = await runHealthCheck(
+    env,
+    targets,
+    timeout ? timeout * 1000 : undefined,
+  )
   return NextResponse.json({ results })
 }

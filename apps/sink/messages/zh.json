@@ -160,7 +160,11 @@
       "realtime": "实时",
       "check": "健康检查",
       "migrate": "迁移",
-      "settings": "设置"
+      "settings": "设置",
+      "group": {
+        "workspace": "工作区",
+        "manage": "管理"
+      }
     },
     "overview": {
       "totalLinks": "链接总数",

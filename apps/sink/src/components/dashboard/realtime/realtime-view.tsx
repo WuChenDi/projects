@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@cdlab996/ui/components/select'
 import { useQuery } from '@tanstack/react-query'
+import { format } from 'date-fns'
 import { Globe } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useLocale, useTranslations } from 'next-intl'
@@ -21,6 +22,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ViewsChart } from '@/components/dashboard/analytics/views-chart'
 import type { LogEvent } from '@/lib/api'
 import { statsApi } from '@/lib/api'
+import { dateLocale } from '@/lib/format'
 
 // WebGL globe is client-only — skip SSR and lazy-load so it never blocks the page.
 const RealtimeGlobe = dynamic(
@@ -54,7 +56,7 @@ function localTime(ts: string, locale: string): string {
   const d = new Date(ts.replace(' ', 'T') + 'Z')
   return Number.isNaN(d.getTime())
     ? ts
-    : d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
+    : format(d, 'HH:mm', { locale: dateLocale(locale) })
 }
 
 export function RealtimeView() {

@@ -160,7 +160,11 @@
       "realtime": "Realtime",
       "check": "Health",
       "migrate": "Migrate",
-      "settings": "Settings"
+      "settings": "Settings",
+      "group": {
+        "workspace": "Workspace",
+        "manage": "Management"
+      }
     },
     "overview": {
       "totalLinks": "Total links",

@@ -1,12 +1,12 @@
 'use client'
 
-import { Separator } from '@cdlab996/ui/components/separator'
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -16,6 +16,8 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from '@cdlab996/ui/components/sidebar'
+import { IKFooter, IKPageContainer } from '@cdlab996/ui/IK'
+import type { LucideIcon } from 'lucide-react'
 import {
   Activity,
   BarChart3,
@@ -31,7 +33,15 @@ import { useTranslations } from 'next-intl'
 import { NavUser } from '@/components/dashboard/nav-user'
 import { SinkLogo } from '@/components/layout'
 
-const ITEMS = [
+interface NavItem {
+  href: string
+  key: string
+  icon: LucideIcon
+  exact: boolean
+}
+
+// Core product features.
+const MAIN_ITEMS: NavItem[] = [
   { href: '/dashboard', key: 'overview', icon: BarChart3, exact: true },
   { href: '/dashboard/links', key: 'links', icon: Link2, exact: false },
   {
@@ -46,27 +56,21 @@ const ITEMS = [
     icon: Activity,
     exact: false,
   },
-  {
-    href: '/dashboard/check',
-    key: 'check',
-    icon: ShieldCheck,
-    exact: false,
-  },
-  {
-    href: '/dashboard/migrate',
-    key: 'migrate',
-    icon: Database,
-    exact: false,
-  },
+  { href: '/dashboard/check', key: 'check', icon: ShieldCheck, exact: false },
+]
+
+// Management / admin utilities, pinned to the bottom of the sidebar.
+const MANAGE_ITEMS: NavItem[] = [
+  { href: '/dashboard/migrate', key: 'migrate', icon: Database, exact: false },
   {
     href: '/dashboard/settings',
     key: 'settings',
     icon: Settings,
     exact: false,
   },
-] as const
+]
 
-function isActive(pathname: string, item: (typeof ITEMS)[number]) {
+function isActive(pathname: string, item: NavItem) {
   return item.exact
     ? pathname === item.href
     : pathname === item.href || pathname.startsWith(`${item.href}/`)
@@ -77,7 +81,23 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations('dashboard.nav')
   const tc = useTranslations('common')
 
-  const active = ITEMS.find((item) => isActive(pathname, item))
+  const renderItem = (item: NavItem) => {
+    const Icon = item.icon
+    return (
+      <SidebarMenuItem key={item.href}>
+        <SidebarMenuButton
+          asChild
+          isActive={isActive(pathname, item)}
+          tooltip={t(item.key)}
+        >
+          <Link href={item.href}>
+            <Icon />
+            <span>{t(item.key)}</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    )
+  }
 
   return (
     <SidebarProvider>
@@ -106,26 +126,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
         <SidebarContent>
           <SidebarGroup>
+            <SidebarGroupLabel>{t('group.workspace')}</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
-                {ITEMS.map((item) => {
-                  const Icon = item.icon
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive(pathname, item)}
-                        tooltip={t(item.key)}
-                      >
-                        <Link href={item.href}>
-                          <Icon />
-                          <span>{t(item.key)}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-              </SidebarMenu>
+              <SidebarMenu>{MAIN_ITEMS.map(renderItem)}</SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupLabel>{t('group.manage')}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>{MANAGE_ITEMS.map(renderItem)}</SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
@@ -137,15 +146,14 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </Sidebar>
 
       <SidebarInset>
-        <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur">
-          <SidebarTrigger className="-ml-1 md:hidden" />
-          <Separator orientation="vertical" className="mr-2 h-4 md:hidden" />
-          <h1 className="text-base font-medium">
-            {active ? t(active.key) : tc('appName')}
-          </h1>
+        <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center border-b bg-background/80 px-4 backdrop-blur md:hidden">
+          <SidebarTrigger className="-ml-1" />
         </header>
 
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <IKPageContainer className="flex-col pt-4 md:pt-6">
+          {children}
+        </IKPageContainer>
+        <IKFooter year={new Date().getFullYear()} />
       </SidebarInset>
     </SidebarProvider>
   )

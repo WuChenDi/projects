@@ -13,10 +13,11 @@ import {
   TabsTrigger,
 } from '@cdlab996/ui/components/tabs'
 import { useQuery } from '@tanstack/react-query'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 import type { StatsParams } from '@/lib/api'
 import { statsApi } from '@/lib/api'
+import { formatNumber } from '@/lib/format'
 
 function MetricList({
   type,
@@ -28,6 +29,7 @@ function MetricList({
   onDrill: (dim: string, value: string) => void
 }) {
   const t = useTranslations('analytics')
+  const locale = useLocale()
   const query = useQuery({
     queryKey: ['metrics', type, params],
     queryFn: () => statsApi.metrics(type, params),
@@ -60,7 +62,7 @@ function MetricList({
             />
             <span className="relative z-10 truncate pr-2">{row.name}</span>
             <span className="relative z-10 tabular-nums text-muted-foreground">
-              {row.count.toLocaleString()}
+              {formatNumber(row.count, locale)}
             </span>
           </button>
         </li>

@@ -1,4 +1,14 @@
+import type { Locale } from 'date-fns'
+import { format } from 'date-fns'
+import { enUS, zhCN } from 'date-fns/locale'
 import type { LinkConfig } from '@/database/schema'
+
+const DATE_LOCALES: Record<string, Locale> = { en: enUS, zh: zhCN }
+
+// Map an app locale code to a date-fns locale, defaulting to English.
+export function dateLocale(locale: string): Locale {
+  return DATE_LOCALES[locale] ?? enUS
+}
 
 // True for loopback / dev hosts that should never be rendered as a public
 // `https://…` short link (single-domain deploys store the request host as the
@@ -26,11 +36,12 @@ export function buildShortUrl(slug: string, domain: string): string {
 
 export function formatDate(value: string | null, locale: string): string {
   if (!value) return '—'
-  return new Date(value).toLocaleDateString(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
+  return format(new Date(value), 'PP', { locale: dateLocale(locale) })
+}
+
+// Locale-aware thousands grouping for counts.
+export function formatNumber(value: number, locale: string): string {
+  return new Intl.NumberFormat(locale).format(value)
 }
 
 // Short human summary of the advanced routing a link carries, for the table.

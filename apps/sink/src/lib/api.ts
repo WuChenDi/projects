@@ -168,15 +168,17 @@ export interface CheckResult {
   url: string
   status: number | null
   ok: boolean
+  duration: number
   error?: string
   unsafe: boolean | null
 }
 
 export const checkApi = {
-  run: (ids?: string[]) =>
+  // Check one batch of links by id, with an optional per-link timeout (seconds).
+  run: (ids: string[], timeout?: number) =>
     request<{ results: CheckResult[] }>('/api/link/check', {
       method: 'POST',
-      body: JSON.stringify(ids ? { ids } : {}),
+      body: JSON.stringify({ ids, timeout }),
     }),
 }
 

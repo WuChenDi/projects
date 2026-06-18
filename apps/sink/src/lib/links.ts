@@ -7,7 +7,7 @@ import { genid } from '@/lib/genid'
 import { hashLinkPassword } from '@/lib/hash'
 import { logger } from '@/lib/logger'
 import { isUnsafeUrl } from '@/lib/safe-browsing'
-import { defaultSlug, validateSlug } from '@/lib/slug'
+import { randomSlug, validateSlug } from '@/lib/slug'
 import type {
   CreateLinkInput,
   EditLinkInput,
@@ -229,13 +229,66 @@ async function buildConfig(
   return config
 }
 
+// Maximum attempts to land a non-colliding random slug before giving up.
+const SLUG_MAX_RETRIES = 12
+
+// Allocate a random slug with race-safe insertion. `onConflictDoNothing` lets
+// the unique index arbitrate uniqueness atomically (no check-then-insert race),
+// and we retry with a longer slug to escape collision hot-spots — mirrors
+// shortener's generateUniqueHash but without a separate pre-query.
+async function insertWithRandomSlug(
+  env: CloudflareEnv,
+  domain: string,
+  values: Omit<NewLink, 'slug'>,
+): Promise<RepoResult> {
+  const db = await getDb(env)
+  const baseLen = getConfig(env).slugDefaultLength
+
+  for (let attempt = 1; attempt <= SLUG_MAX_RETRIES; attempt++) {
+    const length = baseLen + (attempt <= 4 ? 0 : attempt <= 8 ? 1 : 2)
+    const slug = normalizeSlug(randomSlug(length), env)
+    const link = (
+      await db
+        .insert(links)
+        .values({ ...values, slug })
+        .onConflictDoNothing()
+        .returning()
+    )[0]
+    if (link) {
+      await writeCache(env, domain, slug, link)
+      return { ok: true, link }
+    }
+    logger.debug(`Random slug collision on attempt ${attempt}: ${slug}`)
+  }
+  return { ok: false, status: 500, error: 'Failed to allocate a unique slug' }
+}
+
 export async function createLink(
   env: CloudflareEnv,
   input: CreateLinkInput,
   requestDomain: string,
 ): Promise<RepoResult> {
   const domain = input.domain?.trim() || requestDomain
-  const rawSlug = input.slug?.trim() || defaultSlug(env)
+  const config = await buildConfig(env, input, input.url)
+  const baseValues: Omit<NewLink, 'slug'> = {
+    id: String(genid.nextId()),
+    domain,
+    url: input.url,
+    comment: input.comment ?? '',
+    config,
+    expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
+    isDeleted: 0,
+    updatedAt: new Date(),
+  }
+
+  // No user-supplied slug → allocate a random one with collision retry.
+  if (!input.slug?.trim()) {
+    return insertWithRandomSlug(env, domain, baseValues)
+  }
+
+  // User-supplied slug: must be unique among active rows; a soft-deleted row
+  // holding this slug is revived in place.
+  const rawSlug = input.slug.trim()
   const slugError = validateSlug(rawSlug)
   if (slugError) return { ok: false, status: 400, error: `slug:${slugError}` }
   const slug = normalizeSlug(rawSlug, env)
@@ -245,17 +298,10 @@ export async function createLink(
     return { ok: false, status: 409, error: 'Slug already exists' }
   }
 
-  const config = await buildConfig(env, input, input.url)
   const values: NewLink = {
-    id: existing?.id ?? String(genid.nextId()),
+    ...baseValues,
+    id: existing?.id ?? baseValues.id,
     slug,
-    domain,
-    url: input.url,
-    comment: input.comment ?? '',
-    config,
-    expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
-    isDeleted: 0,
-    updatedAt: new Date(),
   }
 
   const db = await getDb(env)
