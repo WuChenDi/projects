@@ -75,7 +75,7 @@ export default function EditTemplatePage() {
         initial={data}
         submitting={update.isPending}
         onSubmit={(value) => update.mutate(value)}
-        onCancel={() => router.push('/templates')}
+        onCancel={() => router.push('/dashboard/templates')}
       />
     </IKPageContainer>
   )

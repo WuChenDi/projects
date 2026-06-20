@@ -33,7 +33,7 @@ export default function NewTemplatePage() {
     onSuccess: (t) => {
       void qc.invalidateQueries({ queryKey: ['templates'] })
       toast.success('已创建')
-      router.push(`/templates/${t.id}`)
+      router.push(`/dashboard/templates/${t.id}`)
     },
     onError: (e: Error) => toast.error(e.message),
   })

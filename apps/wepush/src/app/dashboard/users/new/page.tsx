@@ -72,7 +72,7 @@ export default function NewUserPage() {
         templates={templates ?? []}
         submitting={create.isPending}
         onSubmit={(v) => create.mutate(v)}
-        onCancel={() => router.push('/users')}
+        onCancel={() => router.push('/dashboard/users')}
       />
     </IKPageContainer>
   )

@@ -163,7 +163,7 @@ export default function EditUserPage() {
         templates={tmplQ.data ?? []}
         submitting={update.isPending}
         onSubmit={(v) => update.mutate(v)}
-        onCancel={() => router.push('/users')}
+        onCancel={() => router.push('/dashboard/users')}
       />
 
       <PreviewDialog

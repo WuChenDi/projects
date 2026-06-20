@@ -375,7 +375,7 @@ export default function UsersPage() {
                       >
                         <Send className="size-4" />
                       </Button>
-                      <Link href={`/users/${u.id}`}>
+                      <Link href={`/dashboard/users/${u.id}`}>
                         <Button variant="ghost" size="icon" aria-label="编辑">
                           <Pencil className="size-4" />
                         </Button>

@@ -126,7 +126,7 @@ export default function TemplatesPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="inline-flex gap-1">
-                      <Link href={`/templates/${t.id}`}>
+                      <Link href={`/dashboard/templates/${t.id}`}>
                         <Button variant="ghost" size="icon" aria-label="编辑">
                           <Pencil className="size-4" />
                         </Button>
