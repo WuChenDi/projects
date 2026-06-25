@@ -8,10 +8,10 @@ import {
   CardTitle,
 } from '@cdlab996/ui/components/card'
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
+import CountUp from '@cdlab996/ui/reactbits/CountUp'
 import { MousePointerClick, Share2, Users } from 'lucide-react'
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import type { Counters } from '@/lib/api'
-import { formatNumber } from '@/lib/format'
 
 export function CountersCards({
   data,
@@ -21,7 +21,6 @@ export function CountersCards({
   loading: boolean
 }) {
   const t = useTranslations('analytics.counters')
-  const locale = useLocale()
   const items = [
     { key: 'visits', value: data?.visits ?? 0, icon: MousePointerClick },
     { key: 'visitors', value: data?.visitors ?? 0, icon: Users },
@@ -47,7 +46,7 @@ export function CountersCards({
                 {loading ? (
                   <Skeleton className="h-9 w-20" />
                 ) : (
-                  formatNumber(item.value, locale)
+                  <CountUp to={item.value} duration={1.2} separator="," />
                 )}
               </div>
             </CardContent>
