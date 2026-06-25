@@ -132,17 +132,7 @@ export function RealtimeView() {
         </div>
       )}
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">{t('chart.title')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ViewsChart
-            data={views.data?.views ?? []}
-            loading={views.isLoading}
-          />
-        </CardContent>
-      </Card>
+      <ViewsChart data={views.data?.views ?? []} loading={views.isLoading} />
 
       <Card>
         <CardHeader className="pb-2">

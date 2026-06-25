@@ -25,7 +25,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Inbox } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import type { StatsParams } from '@/lib/api'
 import { statsApi } from '@/lib/api'
 import { formatNumber } from '@/lib/format'
@@ -58,21 +58,36 @@ function MetricList({
     count: { label: t(`metrics.${type}`), color: 'var(--chart-1)' },
   } satisfies ChartConfig
 
+  // Horizontal bars read better than vertical ones when only a few categories
+  // come back — height scales with the row count so bars stay evenly spaced.
+  const chartHeight = Math.max(140, rows.length * 44)
+
   return (
-    <ChartContainer config={config} className="aspect-auto h-[220px] w-full">
-      <BarChart accessibilityLayer data={rows} margin={{ top: 8 }}>
-        <CartesianGrid vertical={false} />
-        <XAxis
+    <ChartContainer
+      config={config}
+      className="aspect-auto w-full"
+      style={{ height: chartHeight }}
+    >
+      <BarChart
+        accessibilityLayer
+        data={rows}
+        layout="vertical"
+        margin={{ left: 4, right: 16 }}
+      >
+        <CartesianGrid horizontal={false} />
+        <YAxis
           dataKey="name"
+          type="category"
           tickLine={false}
           axisLine={false}
-          tickMargin={10}
+          tickMargin={8}
           fontSize={11}
-          interval={0}
+          width={80}
           tickFormatter={(v: string) =>
-            v.length > 10 ? `${v.slice(0, 9)}…` : v
+            v.length > 12 ? `${v.slice(0, 11)}…` : v
           }
         />
+        <XAxis type="number" hide />
         <ChartTooltip
           cursor={false}
           content={
@@ -85,7 +100,7 @@ function MetricList({
           dataKey="count"
           fill="var(--color-count)"
           radius={4}
-          maxBarSize={40}
+          maxBarSize={32}
           className="cursor-pointer"
           onClick={(_, index) => onDrill(type, rows[index]!.name)}
         />
