@@ -147,7 +147,7 @@ export function countersSql(env: CloudflareEnv, q: StatsQuery): string {
   return `SELECT
       SUM(_sample_interval) AS visits,
       ${VISITORS} AS visitors,
-      COUNT(DISTINCT if(${FIELD.referer} = 'direct', NULL, ${FIELD.referer})) AS referers
+      COUNT(DISTINCT ${FIELD.referer}) - MAX(if(${FIELD.referer} = 'direct', 1, 0)) AS referers
     FROM ${dataset(env)} ${whereClause(q)}`
 }
 
@@ -231,7 +231,7 @@ export function accessExportSql(env: CloudflareEnv, q: StatsQuery): string {
       ${FIELD.url} AS url,
       ${VISITORS} AS viewers,
       SUM(_sample_interval) AS views,
-      COUNT(DISTINCT if(${FIELD.referer} = 'direct', NULL, ${FIELD.referer})) AS referers
+      COUNT(DISTINCT ${FIELD.referer}) - MAX(if(${FIELD.referer} = 'direct', 1, 0)) AS referers
     FROM ${dataset(env)} ${whereClause(q)}
     GROUP BY slug, url ORDER BY views DESC`
 }
