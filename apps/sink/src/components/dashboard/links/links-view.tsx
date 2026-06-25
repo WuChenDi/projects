@@ -820,7 +820,7 @@ export function LinksView() {
               {t('disable')}
             </Button>
             <Button
-              variant="outline"
+              variant="destructive"
               size="sm"
               className="text-destructive"
               onClick={() => setBulkConfirm(true)}
@@ -829,7 +829,7 @@ export function LinksView() {
               {tc('delete')}
             </Button>
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon-sm"
               aria-label={tc('cancel')}
               onClick={() => setSelected(new Set())}
