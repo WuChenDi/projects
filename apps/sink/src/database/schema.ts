@@ -42,8 +42,9 @@ export interface LinkConfig {
   // When true, the link is paused: the redirect path serves not-found without
   // soft-deleting the row.
   disabled?: boolean
-  // PBKDF2 hash of the link password (`pbkdf2$<iters>$<saltB64>$<keyB64>`, see
-  // lib/hash.ts); when set, the destination is gated behind a password form.
+  // Argon2id hash of the link password (`<saltHex>:<hashHex>`, via
+  // `@cdlab996/utils` hashPasswordFn/verifyPasswordFn); when set, the
+  // destination is gated behind a password form.
   passwordHash?: string
 }
 

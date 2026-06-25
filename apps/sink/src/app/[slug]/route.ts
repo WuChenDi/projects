@@ -1,9 +1,9 @@
+import { verifyPasswordFn } from '@cdlab996/utils'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import type { NextRequest } from 'next/server'
 import type { Link } from '@/database/schema'
 import { extractAccessLog, writeAccessLog } from '@/lib/analytics'
 import { getConfig } from '@/lib/env'
-import { verifyLinkPassword } from '@/lib/hash'
 import { ogPageHtml, passwordFormHtml, unsafeWarningHtml } from '@/lib/html'
 import {
   isExpired,
@@ -51,6 +51,11 @@ async function redirectTo(
   ctx: { waitUntil: (p: Promise<unknown>) => void },
   link: Link,
   slug: string,
+  // When the redirect follows a form POST (password / unsafe confirm) we must
+  // emit 303 See Other so the browser follows it with GET — otherwise the
+  // configured 307/308 status preserves the method and re-POSTs to the external
+  // destination, which answers 405.
+  seeOther = false,
 ): Promise<Response> {
   // Click-limit expiry: over the maxVisits cap → treat like a time-expired link
   // (purge cache + serve not-found) before redirecting. Increments the counter
@@ -75,7 +80,7 @@ async function redirectTo(
     ),
   )
 
-  const status = getConfig(env).redirectStatusCode
+  const status = seeOther ? 303 : getConfig(env).redirectStatusCode
   return new Response(null, {
     status,
     headers: { location: dest, ...NO_STORE },
@@ -94,7 +99,7 @@ async function afterGate(
   link: Link,
   slug: string,
   ua: string,
-  opts: { unsafeCleared: boolean; password?: string },
+  opts: { unsafeCleared: boolean; password?: string; seeOther?: boolean },
 ): Promise<Response> {
   if (link.config.cloaking) {
     return htmlResponse(ogPageHtml(link.url, link.config, { redirect: false }))
@@ -116,7 +121,7 @@ async function afterGate(
     )
   }
 
-  return redirectTo(request, env, cf, ctx, link, slug)
+  return redirectTo(request, env, cf, ctx, link, slug, opts.seeOther)
 }
 
 export async function GET(
@@ -161,10 +166,7 @@ export async function GET(
         passwordFormHtml(slug, false, resolveRedirectLocale(request)),
       )
     }
-    const ok = await verifyLinkPassword(
-      headerPassword,
-      link.config.passwordHash,
-    )
+    const ok = await verifyPasswordFn(link.config.passwordHash, headerPassword)
     if (!ok) {
       logger.info(`Incorrect x-link-password for slug: ${slug}`)
       return new Response('Incorrect password', {
@@ -212,7 +214,7 @@ export async function POST(
 
   if (link.config.passwordHash) {
     const password = String(form.get('password') || '')
-    const ok = await verifyLinkPassword(password, link.config.passwordHash)
+    const ok = await verifyPasswordFn(link.config.passwordHash, password)
 
     if (!ok) {
       logger.info(`Incorrect password for slug: ${slug}`)
@@ -235,11 +237,13 @@ export async function POST(
 
     return afterGate(request, env, cf, ctx, link, slug, ua, {
       unsafeCleared: true,
+      seeOther: true,
     })
   }
 
   // No password — only the unsafe interstitial uses POST.
   return afterGate(request, env, cf, ctx, link, slug, ua, {
     unsafeCleared: confirmed,
+    seeOther: true,
   })
 }
