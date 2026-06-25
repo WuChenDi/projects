@@ -273,7 +273,8 @@
       "referers": "来源数"
     },
     "views": {
-      "title": "访问趋势"
+      "title": "访问趋势",
+      "subtitle": "访问量与独立访客随时间变化"
     },
     "map": {
       "title": "访客地理分布"

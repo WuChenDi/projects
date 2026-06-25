@@ -273,7 +273,8 @@
       "referers": "Referrers"
     },
     "views": {
-      "title": "Views over time"
+      "title": "Views over time",
+      "subtitle": "Visits and unique visitors over time"
     },
     "map": {
       "title": "Visitor locations"

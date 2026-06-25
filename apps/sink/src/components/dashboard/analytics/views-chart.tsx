@@ -1,22 +1,28 @@
 'use client'
 
+import { Badge } from '@cdlab996/ui/components/badge'
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
-import { useTranslations } from 'next-intl'
+import type { ChartConfig } from '@cdlab996/ui/components/chart'
 import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@cdlab996/ui/components/chart'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
+import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
+import { cn } from '@cdlab996/ui/lib/utils'
+import { Inbox, TrendingDown, TrendingUp } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 import type { ViewPoint } from '@/lib/api'
+
+const SERIES = ['visits', 'visitors'] as const
 
 export function ViewsChart({
   data,
@@ -27,75 +33,105 @@ export function ViewsChart({
 }) {
   const t = useTranslations('analytics')
 
+  const config = {
+    visits: { label: t('counters.visits'), color: 'var(--chart-1)' },
+    visitors: { label: t('counters.visitors'), color: 'var(--chart-2)' },
+  } satisfies ChartConfig
+
+  // Period-over-period change on visits, used for the header trend badge.
+  const first = data[0]?.visits ?? 0
+  const last = data[data.length - 1]?.visits ?? 0
+  const trend = first === 0 ? null : ((last - first) / first) * 100
+  const up = (trend ?? 0) >= 0
+
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{t('views.title')}</CardTitle>
+      <CardHeader>
+        <CardTitle className="text-base">
+          {t('views.title')}
+          {trend !== null && data.length > 1 && (
+            <Badge
+              variant="secondary"
+              className={cn(
+                'ml-2',
+                up
+                  ? 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400'
+                  : 'bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400',
+              )}
+            >
+              {up ? (
+                <TrendingUp aria-hidden="true" />
+              ) : (
+                <TrendingDown aria-hidden="true" />
+              )}
+              {`${up ? '+' : ''}${trend.toFixed(1)}%`}
+            </Badge>
+          )}
+        </CardTitle>
+        <CardDescription>{t('views.subtitle')}</CardDescription>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="h-[260px] animate-pulse rounded-md bg-muted" />
+          <Skeleton className="h-[260px] w-full" />
         ) : data.length === 0 ? (
-          <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">
-            {t('noData')}
-          </div>
+          <IKEmpty className="h-[260px]" title={t('noData')} icon={Inbox} />
         ) : (
-          <ResponsiveContainer width="100%" height={260}>
+          <ChartContainer
+            config={config}
+            className="aspect-auto h-[260px] w-full"
+          >
             <AreaChart
+              accessibilityLayer
               data={data}
-              margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
+              margin={{ top: 20, right: 0, bottom: 0, left: 0 }}
             >
               <defs>
-                <linearGradient id="visitsFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="0%"
-                    stopColor="var(--primary)"
-                    stopOpacity={0.4}
-                  />
-                  <stop
-                    offset="100%"
-                    stopColor="var(--primary)"
-                    stopOpacity={0}
-                  />
-                </linearGradient>
+                {SERIES.map((key) => (
+                  <linearGradient
+                    key={key}
+                    id={`fill-${key}`}
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor={`var(--color-${key})`}
+                      stopOpacity={0.5}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor={`var(--color-${key})`}
+                      stopOpacity={0.05}
+                    />
+                  </linearGradient>
+                ))}
               </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                className="stroke-muted"
-                vertical={false}
-              />
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
                 dataKey="time"
                 tickLine={false}
                 axisLine={false}
-                fontSize={11}
+                tickMargin={8}
                 minTickGap={24}
               />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                fontSize={11}
-                width={36}
-                allowDecimals={false}
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent indicator="dot" />}
               />
-              <Tooltip
-                contentStyle={{
-                  background: 'var(--popover)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 8,
-                  fontSize: 12,
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="visits"
-                name={t('counters.visits')}
-                stroke="var(--primary)"
-                fill="url(#visitsFill)"
-                strokeWidth={2}
-              />
+              {SERIES.map((key) => (
+                <Area
+                  key={key}
+                  dataKey={key}
+                  type="natural"
+                  fill={`url(#fill-${key})`}
+                  stroke={`var(--color-${key})`}
+                  strokeWidth={2}
+                />
+              ))}
             </AreaChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         )}
       </CardContent>
     </Card>

@@ -2,19 +2,30 @@
 
 import {
   Card,
+  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
+import type { ChartConfig } from '@cdlab996/ui/components/chart'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@cdlab996/ui/components/chart'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from '@cdlab996/ui/components/tabs'
+import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
 import { useQuery } from '@tanstack/react-query'
+import { Inbox } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
+import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
 import type { StatsParams } from '@/lib/api'
 import { statsApi } from '@/lib/api'
 import { formatNumber } from '@/lib/format'
@@ -35,39 +46,51 @@ function MetricList({
     queryFn: () => statsApi.metrics(type, params),
   })
   const rows = query.data?.metrics ?? []
-  const max = rows.reduce((m, r) => Math.max(m, r.count), 0) || 1
 
   if (query.isLoading) {
-    return <div className="h-40 animate-pulse rounded-md bg-muted" />
+    return <Skeleton className="h-40 w-full" />
   }
   if (rows.length === 0) {
-    return (
-      <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
-        {t('noData')}
-      </div>
-    )
+    return <IKEmpty className="h-40" title={t('noData')} icon={Inbox} />
   }
+
+  const config = {
+    count: { label: t(`metrics.${type}`), color: 'var(--chart-1)' },
+  } satisfies ChartConfig
+
   return (
-    <ul className="space-y-1">
-      {rows.map((row) => (
-        <li key={row.name}>
-          <button
-            type="button"
-            onClick={() => onDrill(type, row.name)}
-            className="relative flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-muted/60"
-          >
-            <span
-              className="absolute inset-y-0 left-0 rounded-md bg-primary/10"
-              style={{ width: `${(row.count / max) * 100}%` }}
+    <ChartContainer config={config} className="aspect-auto h-[220px] w-full">
+      <BarChart accessibilityLayer data={rows} margin={{ top: 8 }}>
+        <CartesianGrid vertical={false} />
+        <XAxis
+          dataKey="name"
+          tickLine={false}
+          axisLine={false}
+          tickMargin={10}
+          fontSize={11}
+          interval={0}
+          tickFormatter={(v: string) =>
+            v.length > 10 ? `${v.slice(0, 9)}…` : v
+          }
+        />
+        <ChartTooltip
+          cursor={false}
+          content={
+            <ChartTooltipContent
+              formatter={(value) => formatNumber(Number(value), locale)}
             />
-            <span className="relative z-10 truncate pr-2">{row.name}</span>
-            <span className="relative z-10 tabular-nums text-muted-foreground">
-              {formatNumber(row.count, locale)}
-            </span>
-          </button>
-        </li>
-      ))}
-    </ul>
+          }
+        />
+        <Bar
+          dataKey="count"
+          fill="var(--color-count)"
+          radius={4}
+          maxBarSize={40}
+          className="cursor-pointer"
+          onClick={(_, index) => onDrill(type, rows[index]!.name)}
+        />
+      </BarChart>
+    </ChartContainer>
   )
 }
 
@@ -87,25 +110,27 @@ export function MetricGroup({
 
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{t(`groups.${titleKey}`)}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className="mb-3">
-            {dims.map((dim) => (
-              <TabsTrigger key={dim} value={dim}>
-                {t(`metrics.${dim}`)}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+      <Tabs value={tab} onValueChange={setTab}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">{t(`groups.${titleKey}`)}</CardTitle>
+          <CardAction>
+            <TabsList>
+              {dims.map((dim) => (
+                <TabsTrigger key={dim} value={dim}>
+                  {t(`metrics.${dim}`)}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </CardAction>
+        </CardHeader>
+        <CardContent>
           {dims.map((dim) => (
             <TabsContent key={dim} value={dim}>
               <MetricList type={dim} params={params} onDrill={onDrill} />
             </TabsContent>
           ))}
-        </Tabs>
-      </CardContent>
+        </CardContent>
+      </Tabs>
     </Card>
   )
 }

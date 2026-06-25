@@ -15,8 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@cdlab996/ui/components/select'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
+import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
 import { useQuery } from '@tanstack/react-query'
-import { X } from 'lucide-react'
+import { Inbox, X } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
@@ -34,9 +36,7 @@ const WorldMap = dynamic(
     ),
   {
     ssr: false,
-    loading: () => (
-      <div className="h-[300px] animate-pulse rounded-md bg-muted" />
-    ),
+    loading: () => <Skeleton className="h-[300px] w-full" />,
   },
 )
 
@@ -166,11 +166,9 @@ export function AnalyticsView() {
         </CardHeader>
         <CardContent>
           {location.isLoading ? (
-            <div className="h-[300px] animate-pulse rounded-md bg-muted" />
+            <Skeleton className="h-[300px] w-full" />
           ) : (location.data?.points.length ?? 0) === 0 ? (
-            <div className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">
-              {t('noData')}
-            </div>
+            <IKEmpty className="h-[300px]" title={t('noData')} icon={Inbox} />
           ) : (
             <WorldMap points={location.data?.points ?? []} />
           )}
@@ -183,7 +181,7 @@ export function AnalyticsView() {
         </CardHeader>
         <CardContent>
           {heatmap.isLoading ? (
-            <div className="h-40 animate-pulse rounded-md bg-muted" />
+            <Skeleton className="h-40 w-full" />
           ) : (
             <Heatmap data={heatmap.data?.heatmap ?? []} />
           )}
