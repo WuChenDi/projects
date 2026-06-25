@@ -200,6 +200,10 @@
     "dateRange": "日期范围",
     "clearDate": "清除日期",
     "clearFilters": "清除筛选",
+    "filters": "筛选",
+    "statusLabel": "状态",
+    "creatorLabel": "创建人",
+    "sortLabel": "排序",
     "selectAll": "全选",
     "selectedCount": "已选 {count} 项",
     "bulkUpdated": "已更新 {count} 个链接",
@@ -370,9 +374,37 @@
   "check": {
     "title": "健康检查",
     "subtitle": "检测链接是否可达且安全。",
-    "run": "开始检查",
-    "running": "检查中…",
     "empty": "运行一次检查以查看结果。",
+    "noLinks": "没有可检查的链接。",
+    "config": {
+      "timeout": "超时时间（秒）",
+      "timeoutHint": "每个链接的最长等待时间（1–30 秒）。",
+      "batchSize": "并发数量",
+      "batchSizeHint": "并行检查的链接数量（1–10）。"
+    },
+    "actions": {
+      "start": "开始",
+      "running": "检查中…",
+      "stop": "停止",
+      "reload": "重新加载链接",
+      "clear": "清空",
+      "exportCsv": "导出 CSV"
+    },
+    "stats": {
+      "total": "总数",
+      "checked": "已检查",
+      "ok": "正常",
+      "broken": "失效",
+      "unsafe": "不安全"
+    },
+    "progress": {
+      "title": "进度",
+      "label": "{checked} / {total}"
+    },
+    "results": {
+      "title": "结果",
+      "subtitle": "每个已检查链接的详细状态。"
+    },
     "tabs": {
       "all": "全部",
       "ok": "正常",
@@ -383,7 +415,9 @@
       "slug": "短码",
       "url": "目标地址",
       "status": "状态码",
-      "verdict": "结论"
+      "verdict": "结论",
+      "duration": "耗时",
+      "error": "错误"
     },
     "verdict": {
       "ok": "正常",

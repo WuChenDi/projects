@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@cdlab996/ui/components/dropdown-menu'
 import { Input } from '@cdlab996/ui/components/input'
+import { Label } from '@cdlab996/ui/components/label'
 import {
   Popover,
   PopoverContent,
@@ -35,6 +36,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@cdlab996/ui/components/select'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@cdlab996/ui/components/sheet'
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import {
   ToggleGroup,
@@ -60,6 +68,7 @@ import {
   PowerOff,
   QrCode,
   Search,
+  SlidersHorizontal,
   Tag,
   Trash2,
   User,
@@ -511,18 +520,135 @@ export function LinksView() {
     )
   }
 
+  // Filter controls — rendered both inline (desktop) and inside the mobile
+  // filter drawer. `mobile` stretches them full-width; the inline copies hide
+  // below `md` so the drawer owns the small-screen layout.
+  function statusSelect(mobile: boolean) {
+    return (
+      <Select
+        value={status}
+        onValueChange={(v) => setStatus(v as typeof status)}
+      >
+        <SelectTrigger
+          className={mobile ? 'w-full' : 'hidden w-auto min-w-28 md:flex'}
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t('allStatus')}</SelectItem>
+          {STATUSES.map((s) => (
+            <SelectItem key={s} value={s}>
+              {t(`status.${s}`)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    )
+  }
+
+  function creatorSelect(mobile: boolean) {
+    return (
+      <Select
+        value={creator || 'all'}
+        onValueChange={(v) => setCreator(v === 'all' ? '' : v)}
+      >
+        <SelectTrigger
+          className={
+            mobile ? 'w-full' : 'hidden w-auto min-w-32 max-w-52 md:flex'
+          }
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t('allCreators')}</SelectItem>
+          {creators.map((c) => (
+            <SelectItem key={c} value={c}>
+              {c}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    )
+  }
+
+  function dateRangePicker(mobile: boolean) {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={`${mobile ? 'w-full justify-start' : 'hidden md:flex'} ${
+              startAt && endAt ? '' : 'text-muted-foreground'
+            }`}
+          >
+            <CalendarDays className="size-4" />
+            {dateLabel}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="range"
+            numberOfMonths={2}
+            defaultMonth={startAt ? new Date(startAt) : undefined}
+            selected={{
+              from: startAt ? new Date(startAt) : undefined,
+              to: endAt ? new Date(endAt) : undefined,
+            }}
+            onSelect={(range) =>
+              setDateRange(
+                range?.from ? startOfDay(range.from).getTime() : null,
+                range?.to ? endOfDay(range.to).getTime() : null,
+              )
+            }
+          />
+          {(startAt || endAt) && (
+            <div className="border-t p-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-center"
+                onClick={() => setDateRange(null, null)}
+              >
+                <X className="size-4" />
+                {t('clearDate')}
+              </Button>
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
+    )
+  }
+
+  function sortSelect(mobile: boolean) {
+    return (
+      <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+        <SelectTrigger
+          className={mobile ? 'w-full' : 'hidden w-auto min-w-32 md:flex'}
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {SORTS.map((s) => (
+            <SelectItem key={s} value={s}>
+              {t(`sort.${s}`)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    )
+  }
+
+  // Active filters surfaced in the mobile drawer (drives the trigger badge).
+  const drawerActiveCount =
+    (status !== 'all' ? 1 : 0) +
+    (creator !== '' ? 1 : 0) +
+    (startAt || endAt ? 1 : 0)
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-semibold">{t('title')}</h1>
-            {!query.isLoading && (
-              <Badge variant="secondary" className="font-normal">
-                {t('count', { count: total })}
-              </Badge>
-            )}
-          </div>
+      <div className="flex flex-col gap-3 flex-row items-center">
+        <div className="flex-1">
+          <h1 className="text-2xl font-semibold">{t('title')}</h1>
           <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
         </div>
         <Button onClick={openCreate}>
@@ -531,8 +657,9 @@ export function LinksView() {
         </Button>
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-        <div className="relative min-w-[14rem] flex-1">
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Search stays on the far left at every breakpoint. */}
+        <div className="relative min-w-0 flex-1 md:min-w-[14rem]">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={input}
@@ -552,114 +679,72 @@ export function LinksView() {
           )}
         </div>
 
-        <Select
-          value={status}
-          onValueChange={(v) => setStatus(v as typeof status)}
-        >
-          <SelectTrigger className="w-auto min-w-28">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('allStatus')}</SelectItem>
-            {STATUSES.map((s) => (
-              <SelectItem key={s} value={s}>
-                {t(`status.${s}`)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={creator || 'all'}
-          onValueChange={(v) => setCreator(v === 'all' ? '' : v)}
-        >
-          <SelectTrigger className="w-auto min-w-32 max-w-52">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('allCreators')}</SelectItem>
-            {creators.map((c) => (
-              <SelectItem key={c} value={c}>
-                {c}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Popover>
-          <PopoverTrigger asChild>
+        {/* Mobile: collapse the filter controls into a right-side drawer. */}
+        <Sheet>
+          <SheetTrigger asChild>
             <Button
               variant="outline"
-              className={startAt && endAt ? '' : 'text-muted-foreground'}
+              size="icon"
+              aria-label={t('filters')}
+              className="relative shrink-0 md:hidden"
             >
-              <CalendarDays className="size-4" />
-              {dateLabel}
+              <SlidersHorizontal className="size-4" />
+              {drawerActiveCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                  {drawerActiveCount}
+                </span>
+              )}
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="range"
-              numberOfMonths={2}
-              defaultMonth={startAt ? new Date(startAt) : undefined}
-              selected={{
-                from: startAt ? new Date(startAt) : undefined,
-                to: endAt ? new Date(endAt) : undefined,
-              }}
-              onSelect={(range) =>
-                setDateRange(
-                  range?.from ? startOfDay(range.from).getTime() : null,
-                  range?.to ? endOfDay(range.to).getTime() : null,
-                )
-              }
-            />
-            {(startAt || endAt) && (
-              <div className="border-t p-2">
+          </SheetTrigger>
+          <SheetContent side="right">
+            <SheetHeader>
+              <SheetTitle>{t('filters')}</SheetTitle>
+            </SheetHeader>
+            <div className="space-y-4 px-4">
+              <div className="space-y-2">
+                <Label>{t('statusLabel')}</Label>
+                {statusSelect(true)}
+              </div>
+              <div className="space-y-2">
+                <Label>{t('creatorLabel')}</Label>
+                {creatorSelect(true)}
+              </div>
+              <div className="space-y-2">
+                <Label>{t('dateRange')}</Label>
+                {dateRangePicker(true)}
+              </div>
+              <div className="space-y-2">
+                <Label>{t('sortLabel')}</Label>
+                {sortSelect(true)}
+              </div>
+              {hasActiveFilters(filter) && (
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-center"
-                  onClick={() => setDateRange(null, null)}
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setInput('')
+                    resetFilters()
+                  }}
                 >
                   <X className="size-4" />
-                  {t('clearDate')}
+                  {t('clearFilters')}
                 </Button>
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
 
-        <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-          <SelectTrigger className="w-auto min-w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SORTS.map((s) => (
-              <SelectItem key={s} value={s}>
-                {t(`sort.${s}`)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <ToggleGroup
-          type="single"
-          value={view}
-          onValueChange={(v) => v && setView(v as 'list' | 'grid')}
-          variant="outline"
-          className="shrink-0 sm:ml-auto"
-        >
-          <ToggleGroupItem value="list" aria-label={t('viewList')}>
-            <List className="size-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="grid" aria-label={t('viewGrid')}>
-            <LayoutGrid className="size-4" />
-          </ToggleGroupItem>
-        </ToggleGroup>
+        {/* Desktop: filter controls inline (hidden on mobile). */}
+        {sortSelect(false)}
+        {statusSelect(false)}
+        {creatorSelect(false)}
+        {dateRangePicker(false)}
 
         {hasActiveFilters(filter) && (
           <Button
             variant="ghost"
             size="sm"
+            className="hidden md:flex"
             onClick={() => {
               setInput('')
               resetFilters()
@@ -669,6 +754,22 @@ export function LinksView() {
             {t('clearFilters')}
           </Button>
         )}
+
+        {/* View toggle stays visible at every breakpoint. */}
+        <ToggleGroup
+          type="single"
+          value={view}
+          onValueChange={(v) => v && setView(v as 'list' | 'grid')}
+          variant="outline"
+          className="shrink-0"
+        >
+          <ToggleGroupItem value="list" aria-label={t('viewList')}>
+            <List className="size-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="grid" aria-label={t('viewGrid')}>
+            <LayoutGrid className="size-4" />
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
       {allTags.length > 0 && (

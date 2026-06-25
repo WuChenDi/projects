@@ -2,24 +2,104 @@
 
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
+import type { ChartConfig } from '@cdlab996/ui/components/chart'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@cdlab996/ui/components/chart'
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { useQuery } from '@tanstack/react-query'
-import { Globe2, Link2, MousePointerClick, Share2, Users } from 'lucide-react'
-import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { Link2, MousePointerClick, Share2, Users } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { linkApi, statsApi } from '@/lib/api'
+import { formatNumber } from '@/lib/format'
 
 const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000
+
+const TOP_CHART_CONFIG = {
+  count: { label: '', color: 'var(--chart-1)' },
+} satisfies ChartConfig
+
+// Horizontal bar chart shared by the "top links" / "top countries" cards.
+// `formatName` controls the axis label; `onSelect` makes the bars clickable.
+function TopBarChart({
+  data,
+  formatName,
+  onSelect,
+}: {
+  data: { name: string; count: number }[]
+  formatName: (name: string) => string
+  onSelect?: (name: string) => void
+}) {
+  const locale = useLocale()
+  const chartData = data.map((d) => ({ ...d, label: formatName(d.name) }))
+  const chartHeight = Math.max(120, data.length * 44)
+
+  return (
+    <ChartContainer
+      config={TOP_CHART_CONFIG}
+      className="aspect-auto w-full"
+      style={{ height: chartHeight }}
+    >
+      <BarChart
+        accessibilityLayer
+        data={chartData}
+        layout="vertical"
+        margin={{ left: 4, right: 16 }}
+      >
+        <CartesianGrid horizontal={false} />
+        <YAxis
+          dataKey="label"
+          type="category"
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          fontSize={11}
+          width={80}
+          tickFormatter={(v: string) =>
+            v.length > 12 ? `${v.slice(0, 11)}…` : v
+          }
+        />
+        <XAxis type="number" hide />
+        <ChartTooltip
+          cursor={false}
+          content={
+            <ChartTooltipContent
+              formatter={(value) => formatNumber(Number(value), locale)}
+            />
+          }
+        />
+        <Bar
+          dataKey="count"
+          fill="var(--color-count)"
+          radius={4}
+          maxBarSize={32}
+          className={onSelect ? 'cursor-pointer' : undefined}
+          onClick={
+            onSelect
+              ? (_, index) => onSelect(chartData[index]!.name)
+              : undefined
+          }
+        />
+      </BarChart>
+    </ChartContainer>
+  )
+}
 
 export default function DashboardOverviewPage() {
   const t = useTranslations('dashboard')
   const tAnalytics = useTranslations('analytics')
+  const router = useRouter()
 
   // Fixed at first render — the 30d window is anchored to page load.
   const startAt = useMemo(() => Date.now() - THIRTY_DAYS, [])
@@ -93,7 +173,9 @@ export default function DashboardOverviewPage() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   {t(`overview.${s.key}`)}
                 </CardTitle>
-                <Icon className="size-4 text-muted-foreground" />
+                <CardAction>
+                  <Icon className="size-4 text-muted-foreground" />
+                </CardAction>
               </CardHeader>
               <CardContent>
                 {s.loading ? (
@@ -131,21 +213,15 @@ export default function DashboardOverviewPage() {
                 {tAnalytics('noData')}
               </p>
             ) : (
-              <ul className="divide-y">
-                {topLinks.map((item) => (
-                  <li key={item.name}>
-                    <Link
-                      href={`/dashboard/analytics?slug=${encodeURIComponent(item.name)}`}
-                      className="-mx-2 flex items-center justify-between gap-4 rounded-md px-2 py-2 text-sm transition-colors hover:bg-muted"
-                    >
-                      <span className="truncate font-medium">/{item.name}</span>
-                      <span className="tabular-nums text-muted-foreground">
-                        {item.count}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              <TopBarChart
+                data={topLinks}
+                formatName={(name) => `/${name}`}
+                onSelect={(name) =>
+                  router.push(
+                    `/dashboard/analytics?slug=${encodeURIComponent(name)}`,
+                  )
+                }
+              />
             )}
           </CardContent>
         </Card>
@@ -156,7 +232,6 @@ export default function DashboardOverviewPage() {
               <CardTitle>{t('overview.topCountries')}</CardTitle>
               <CardDescription>{t('overview.last30Days')}</CardDescription>
             </div>
-            <Globe2 className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             {topCountriesQuery.isLoading ? (
@@ -170,21 +245,10 @@ export default function DashboardOverviewPage() {
                 {tAnalytics('noData')}
               </p>
             ) : (
-              <ul className="divide-y">
-                {topCountries.map((item) => (
-                  <li
-                    key={item.name}
-                    className="flex items-center justify-between gap-4 py-2 text-sm"
-                  >
-                    <span className="truncate font-medium">
-                      {item.name || '—'}
-                    </span>
-                    <span className="tabular-nums text-muted-foreground">
-                      {item.count}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <TopBarChart
+                data={topCountries}
+                formatName={(name) => name || '—'}
+              />
             )}
           </CardContent>
         </Card>

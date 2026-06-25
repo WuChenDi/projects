@@ -200,6 +200,10 @@
     "dateRange": "Date range",
     "clearDate": "Clear date",
     "clearFilters": "Clear filters",
+    "filters": "Filters",
+    "statusLabel": "Status",
+    "creatorLabel": "Creator",
+    "sortLabel": "Sort",
     "selectAll": "Select all",
     "selectedCount": "{count, plural, one {# selected} other {# selected}}",
     "bulkUpdated": "Updated {count} links",
@@ -370,9 +374,37 @@
   "check": {
     "title": "Health check",
     "subtitle": "Verify your links still resolve and are safe.",
-    "run": "Run check",
-    "running": "Checking…",
     "empty": "Run a check to see results.",
+    "noLinks": "No links to check.",
+    "config": {
+      "timeout": "Timeout (seconds)",
+      "timeoutHint": "Maximum time to wait for each link (1–30s).",
+      "batchSize": "Batch size",
+      "batchSizeHint": "Number of links checked in parallel (1–10)."
+    },
+    "actions": {
+      "start": "Start",
+      "running": "Checking…",
+      "stop": "Stop",
+      "reload": "Reload links",
+      "clear": "Clear",
+      "exportCsv": "Export CSV"
+    },
+    "stats": {
+      "total": "Total",
+      "checked": "Checked",
+      "ok": "OK",
+      "broken": "Broken",
+      "unsafe": "Unsafe"
+    },
+    "progress": {
+      "title": "Progress",
+      "label": "{checked} / {total}"
+    },
+    "results": {
+      "title": "Results",
+      "subtitle": "Detailed status for each checked link."
+    },
     "tabs": {
       "all": "All",
       "ok": "OK",
@@ -383,7 +415,9 @@
       "slug": "Slug",
       "url": "Destination",
       "status": "Status",
-      "verdict": "Verdict"
+      "verdict": "Verdict",
+      "duration": "Duration",
+      "error": "Error"
     },
     "verdict": {
       "ok": "OK",
