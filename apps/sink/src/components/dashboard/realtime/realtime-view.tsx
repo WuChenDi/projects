@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@cdlab996/ui/components/select'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { Globe } from 'lucide-react'
@@ -33,7 +34,7 @@ const RealtimeGlobe = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="mx-auto aspect-square w-full max-w-[420px] animate-pulse rounded-full bg-muted" />
+      <Skeleton className="mx-auto aspect-square w-full max-w-[420px] rounded-full" />
     ),
   },
 )
@@ -149,7 +150,7 @@ export function RealtimeView() {
         </CardHeader>
         <CardContent>
           {location.isLoading ? (
-            <div className="mx-auto aspect-square w-full max-w-[420px] animate-pulse rounded-full bg-muted" />
+            <Skeleton className="mx-auto aspect-square w-full max-w-[420px] rounded-full" />
           ) : (
             <>
               <RealtimeGlobe points={points} />
@@ -175,7 +176,7 @@ export function RealtimeView() {
         </CardHeader>
         <CardContent>
           {events.isLoading ? (
-            <div className="h-40 animate-pulse rounded-md bg-muted" />
+            <Skeleton className="h-40 w-full" />
           ) : rows.length === 0 ? (
             <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
               {t('events.empty')}

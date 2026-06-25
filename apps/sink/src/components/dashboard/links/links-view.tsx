@@ -35,7 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@cdlab996/ui/components/select'
-import { Spinner } from '@cdlab996/ui/components/spinner'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -738,8 +738,16 @@ export function LinksView() {
       )}
 
       {query.isLoading ? (
-        <div className="flex h-40 items-center justify-center rounded-lg border">
-          <Spinner className="size-5" />
+        <div
+          className={
+            view === 'grid'
+              ? 'grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3'
+              : 'space-y-2.5'
+          }
+        >
+          {['a', 'b', 'c', 'd', 'e', 'f'].map((k) => (
+            <Skeleton key={k} className="h-20 w-full rounded-lg" />
+          ))}
         </div>
       ) : visibleRows.length === 0 ? (
         <div className="flex h-40 items-center justify-center rounded-lg border text-sm text-muted-foreground">

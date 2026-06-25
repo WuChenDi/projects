@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
+import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { useLocale, useTranslations } from 'next-intl'
 import type { Counters } from '@/lib/api'
 import { formatNumber } from '@/lib/format'
@@ -36,7 +37,11 @@ export function CountersCards({
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-semibold tabular-nums">
-              {loading ? '—' : formatNumber(item.value, locale)}
+              {loading ? (
+                <Skeleton className="h-9 w-20" />
+              ) : (
+                formatNumber(item.value, locale)
+              )}
             </div>
           </CardContent>
         </Card>
