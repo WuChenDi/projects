@@ -41,6 +41,135 @@ const PASSWORD_STRINGS: Record<UiLocale, Record<string, string>> = {
   },
 }
 
+// Standalone interstitials can't use the React/Tailwind stack, so they inline a
+// stylesheet that mirrors the app's shadcn design tokens (same oklch palette,
+// `--radius`, primary / destructive colours) and follows the OS theme via
+// `prefers-color-scheme` — keeping the password / unsafe pages visually in line
+// with the rest of Sink instead of a bespoke dark-only look.
+const THEME_STYLE = `
+*, *::before, *::after { box-sizing: border-box; }
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.488 0.243 264.376);
+  --primary-foreground: oklch(0.97 0.014 254.604);
+  --muted-foreground: oklch(0.556 0 0);
+  --destructive: oklch(0.58 0.22 27);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --radius: 0.625rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.42 0.18 266);
+    --muted-foreground: oklch(0.708 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+  }
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+.card {
+  width: 100%;
+  max-width: 28rem;
+  padding: 2rem;
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+.card h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.card p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  color: var(--muted-foreground);
+}
+.url {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius);
+  background: color-mix(in oklch, var(--foreground) 5%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  color: var(--foreground);
+  word-break: break-all;
+}
+.field {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--foreground);
+  font-size: 0.9rem;
+  outline: none;
+}
+.field:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 30%, transparent);
+}
+.btn {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.btn:hover { opacity: 0.9; }
+.btn-primary { background: var(--primary); color: var(--primary-foreground); }
+.btn-danger { background: var(--destructive); color: oklch(0.985 0 0); }
+.err { margin-top: 0.5rem; font-size: 0.8rem; color: var(--destructive); }
+`
+
+// Wrap interstitial body markup in the shared, theme-aware document shell.
+function interstitialPage(lang: UiLocale, title: string, body: string): string {
+  return `<!DOCTYPE html>
+<html lang="${lang}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>${escapeHtml(title)}</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <style>${THEME_STYLE}</style>
+  </head>
+  <body>
+    ${body}
+  </body>
+</html>`
+}
+
 export function escapeHtml(unsafe: string): string {
   return unsafe
     .replace(/&/g, '&amp;')
@@ -125,32 +254,15 @@ export function unsafeWarningHtml(
   const passwordField = options.password
     ? `<input type="hidden" name="password" value="${escapeHtml(options.password)}" />`
     : ''
-  return `<!DOCTYPE html>
-<html lang="${lang}">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${escapeHtml(s.title!)}</title>
-    <meta name="robots" content="noindex, nofollow" />
-    <style>
-      body { font-family: system-ui, sans-serif; background: #0b0b0c; color: #e5e5e5; display: flex; min-height: 100vh; align-items: center; justify-content: center; margin: 0; }
-      .card { max-width: 32rem; padding: 2rem; border: 1px solid #27272a; border-radius: 1rem; background: #111113; text-align: center; }
-      h1 { font-size: 1.25rem; margin: 0 0 0.75rem; }
-      p { color: #a1a1aa; word-break: break-all; }
-      button.btn { display: inline-block; margin-top: 1.25rem; padding: 0.6rem 1.2rem; border-radius: 0.6rem; border: none; background: #e11d48; color: #fff; font-weight: 600; font-size: 1rem; cursor: pointer; }
-    </style>
-  </head>
-  <body>
-    <form class="card" method="POST" action="/${safeSlug}">
+  const body = `<form class="card" method="POST" action="/${safeSlug}">
       <h1>${escapeHtml(s.heading!)}</h1>
       <p>${escapeHtml(s.body!)}</p>
-      <p><strong>${safeUrl}</strong></p>
+      <div class="url">${safeUrl}</div>
       <input type="hidden" name="confirm" value="true" />
       ${passwordField}
-      <button class="btn" type="submit">${escapeHtml(s.button!)}</button>
-    </form>
-  </body>
-</html>`
+      <button class="btn btn-danger" type="submit">${escapeHtml(s.button!)}</button>
+    </form>`
+  return interstitialPage(lang, s.title!, body)
 }
 
 // Password gate form. Submits back to the same slug via POST with the password.
@@ -162,29 +274,11 @@ export function passwordFormHtml(
   const safeSlug = escapeHtml(slug)
   const lang = pickLocale(locale)
   const s = PASSWORD_STRINGS[lang]
-  return `<!DOCTYPE html>
-<html lang="${lang}">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${escapeHtml(s.title!)}</title>
-    <meta name="robots" content="noindex, nofollow" />
-    <style>
-      body { font-family: system-ui, sans-serif; background: #0b0b0c; color: #e5e5e5; display: flex; min-height: 100vh; align-items: center; justify-content: center; margin: 0; }
-      .card { width: 22rem; padding: 2rem; border: 1px solid #27272a; border-radius: 1rem; background: #111113; }
-      h1 { font-size: 1.1rem; margin: 0 0 1rem; }
-      input { width: 100%; box-sizing: border-box; padding: 0.6rem 0.75rem; border-radius: 0.6rem; border: 1px solid #3f3f46; background: #18181b; color: #fff; }
-      button { width: 100%; margin-top: 0.75rem; padding: 0.6rem; border: none; border-radius: 0.6rem; background: #6366f1; color: #fff; font-weight: 600; cursor: pointer; }
-      .err { color: #f87171; font-size: 0.85rem; margin-top: 0.5rem; }
-    </style>
-  </head>
-  <body>
-    <form class="card" method="POST" action="/${safeSlug}">
+  const body = `<form class="card" method="POST" action="/${safeSlug}">
       <h1>${escapeHtml(s.heading!)}</h1>
-      <input type="password" name="password" placeholder="${escapeHtml(s.placeholder!)}" autofocus autocomplete="off" />
-      <button type="submit">${escapeHtml(s.button!)}</button>
+      <input class="field" type="password" name="password" placeholder="${escapeHtml(s.placeholder!)}" autofocus autocomplete="off" />
+      <button class="btn btn-primary" type="submit">${escapeHtml(s.button!)}</button>
       ${error ? `<p class="err">${escapeHtml(s.error!)}</p>` : ''}
-    </form>
-  </body>
-</html>`
+    </form>`
+  return interstitialPage(lang, s.title!, body)
 }
