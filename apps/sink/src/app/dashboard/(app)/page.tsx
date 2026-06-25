@@ -15,6 +15,7 @@ import {
   ChartTooltipContent,
 } from '@cdlab996/ui/components/chart'
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
+import CountUp from '@cdlab996/ui/reactbits/CountUp'
 import { useQuery } from '@tanstack/react-query'
 import { Link2, MousePointerClick, Share2, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -186,7 +187,7 @@ export default function DashboardOverviewPage() {
                   </p>
                 ) : (
                   <div className="text-3xl font-bold tabular-nums">
-                    {s.value}
+                    <CountUp to={s.value} duration={1.2} separator="," />
                   </div>
                 )}
               </CardContent>
