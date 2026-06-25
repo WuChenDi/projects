@@ -1,1 +1,0 @@
-ALTER TABLE `links` ADD `created_by` text DEFAULT '' NOT NULL;

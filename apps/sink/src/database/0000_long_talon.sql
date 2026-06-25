@@ -22,6 +22,8 @@ CREATE TABLE `links` (
 	`domain` text DEFAULT '' NOT NULL,
 	`url` text NOT NULL,
 	`comment` text DEFAULT '' NOT NULL,
+	`created_by` text DEFAULT '' NOT NULL,
+	`tags` text DEFAULT '[]' NOT NULL,
 	`config` text DEFAULT '{}' NOT NULL,
 	`expires_at` integer,
 	`created_at` integer NOT NULL,
