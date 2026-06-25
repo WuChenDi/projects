@@ -20,60 +20,53 @@
   },
   "landing": {
     "badge": "Cloudflare Workers · Edge redirects",
-    "title": "Short links with geo, device & analytics built in",
     "subtitle": "Create short links that route by country and device, gate behind a password, and stream every click into Analytics Engine — all on the edge with zero cold-start lookups.",
     "getStarted": "Get started",
     "stats": {
       "title": "Built for the edge",
       "subtitle": "No origin server, no cold starts — just fast redirects.",
       "items": {
-        "runtime": {
-          "value": "Edge",
-          "label": "Runs entirely on Cloudflare Workers"
+        "locations": {
+          "label": "Cloudflare edge locations worldwide"
         },
-        "license": {
-          "value": "MIT",
-          "label": "Fully open source"
+        "features": {
+          "label": "Built-in features, zero config"
         },
-        "tracking": {
-          "value": "0",
+        "trackers": {
           "label": "Third-party tracking scripts"
         }
       }
-    },
-    "logos": {
-      "title": "Built with"
     },
     "cta": {
       "title": "Ready to shorten your first link?",
       "subtitle": "Open the dashboard and create a link in seconds.",
       "button": "Open dashboard"
     },
-    "featuresTitle": "What's inside",
+    "featuresTitle": "Features",
     "features": {
-      "geo": {
-        "title": "Geo & device routing",
-        "desc": "Send visitors to different destinations by country or by Apple / Android device."
-      },
       "analytics": {
-        "title": "Edge analytics",
-        "desc": "Every redirect is logged to Analytics Engine with geo, UA and referer dimensions."
+        "title": "Analytics",
+        "desc": "Track every click and collect meaningful, privacy-first stats."
       },
-      "privacy": {
-        "title": "Password & safety gates",
-        "desc": "Protect links with a password or show an interstitial warning for unsafe destinations."
+      "serverless": {
+        "title": "Serverless",
+        "desc": "Deploy to the edge with no traditional server to run."
       },
       "ai": {
-        "title": "AI slugs & OG",
-        "desc": "Generate readable slugs and social preview metadata with a single click."
+        "title": "AI assistant",
+        "desc": "Generate slugs and OpenGraph metadata from the page content."
+      },
+      "control": {
+        "title": "Link control",
+        "desc": "Set an expiry, an access password and unsafe-link warnings."
+      },
+      "routing": {
+        "title": "Smart routing",
+        "desc": "Redirect by visitor device or country to the right destination."
       },
       "realtime": {
-        "title": "Realtime globe",
-        "desc": "Watch clicks land on a live WebGL globe with a streaming locations feed."
-      },
-      "health": {
-        "title": "Link health checks",
-        "desc": "Scan destinations for broken links and unsafe hosts, on demand or on write."
+        "title": "Realtime analytics",
+        "desc": "A 3D globe visualisation with a live event log of clicks."
       }
     },
     "steps": {
@@ -117,6 +110,26 @@
         "auth": {
           "q": "Who can access the dashboard?",
           "a": "The dashboard is gated by Google / GitHub sign-in, so only the accounts you allow can manage links."
+        },
+        "deploy": {
+          "q": "How do I deploy it?",
+          "a": "Deploy to your own Cloudflare account with a single command — it builds with OpenNext and ships to Workers, with no separate origin server to run."
+        },
+        "domain": {
+          "q": "Can I use my own domain?",
+          "a": "Yes. Point a custom domain at the Worker in Cloudflare and your short links live on your own brand."
+        },
+        "expiry": {
+          "q": "Can links expire or be password-protected?",
+          "a": "Yes. Each link can have an expiry date, an access password, and an interstitial warning for unsafe destinations."
+        },
+        "ai": {
+          "q": "How are the AI slugs generated?",
+          "a": "Workers AI reads the destination and suggests a short, readable slug — it falls back to a Base62 hash if AI is disabled or unavailable."
+        },
+        "import": {
+          "q": "Can I import or export my links?",
+          "a": "Yes. Bulk-migrate links via JSON import, and export your click analytics as CSV straight from the dashboard."
         }
       }
     },
@@ -129,7 +142,10 @@
       "privacy": "Privacy Policy",
       "terms": "Terms of Service",
       "builtWith": "Built with Next.js · Cloudflare Workers"
-    }
+    },
+    "featuresSubtitle": "Simple, practical building blocks.",
+    "titleLead": "Short links with routing & analytics,",
+    "titleHighlight": "built for the edge"
   },
   "login": {
     "welcome": "Welcome to Sink",
