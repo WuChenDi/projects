@@ -5,7 +5,12 @@ import { extractAccessLog, writeAccessLog } from '@/lib/analytics'
 import { getConfig } from '@/lib/env'
 import { verifyLinkPassword } from '@/lib/hash'
 import { ogPageHtml, passwordFormHtml, unsafeWarningHtml } from '@/lib/html'
-import { isExpired, purgeLink, resolveLink } from '@/lib/links'
+import {
+  isExpired,
+  purgeLink,
+  resolveLink,
+  visitLimitReached,
+} from '@/lib/links'
 import { logger } from '@/lib/logger'
 import {
   isSocialCrawler,
@@ -39,14 +44,23 @@ function htmlResponse(body: string, status = 200): Response {
 }
 
 // Build the final redirect + fire the access log.
-function redirectTo(
+async function redirectTo(
   request: Request,
   env: CloudflareEnv,
   cf: IncomingRequestCfProperties | undefined,
   ctx: { waitUntil: (p: Promise<unknown>) => void },
   link: Link,
   slug: string,
-): Response {
+): Promise<Response> {
+  // Click-limit expiry: over the maxVisits cap → treat like a time-expired link
+  // (purge cache + serve not-found) before redirecting. Increments the counter
+  // on the side-effect path when still under the cap.
+  if (await visitLimitReached(env, link, ctx)) {
+    logger.info(`Slug visit limit reached: ${slug}`)
+    await purgeLink(env, new URL(request.url).hostname, slug)
+    return notFound(request, env)
+  }
+
   const ua = request.headers.get('user-agent') || ''
   const dest = resolveDestination(link, {
     ua,
@@ -72,7 +86,7 @@ function redirectTo(
 // paths: cloaking serves the OG/cloaking page, social crawlers get the OG
 // preview only when the link carries OG metadata, an unsafe link shows the
 // confirm interstitial (unless already cleared), otherwise we redirect.
-function afterGate(
+async function afterGate(
   request: NextRequest,
   env: CloudflareEnv,
   cf: IncomingRequestCfProperties | undefined,
@@ -81,7 +95,7 @@ function afterGate(
   slug: string,
   ua: string,
   opts: { unsafeCleared: boolean; password?: string },
-): Response {
+): Promise<Response> {
   if (link.config.cloaking) {
     return htmlResponse(ogPageHtml(link.url, link.config, { redirect: false }))
   }
@@ -125,6 +139,11 @@ export async function GET(
   if (isExpired(link.expiresAt)) {
     logger.info(`Slug expired: ${slug}`)
     await purgeLink(env, domain, slug)
+    return notFound(request, env)
+  }
+
+  if (link.config.disabled) {
+    logger.info(`Slug disabled: ${slug}`)
     return notFound(request, env)
   }
 
@@ -184,7 +203,8 @@ export async function POST(
   const domain = new URL(request.url).hostname
   const link = await resolveLink(env, domain, slug)
 
-  if (!link || isExpired(link.expiresAt)) return notFound(request, env)
+  if (!link || isExpired(link.expiresAt) || link.config.disabled)
+    return notFound(request, env)
 
   const ua = request.headers.get('user-agent') || ''
   const form = await request.formData()

@@ -20,6 +20,7 @@ import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
 import { useQuery } from '@tanstack/react-query'
 import { Inbox, X } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { CountersCards } from '@/components/dashboard/analytics/counters'
@@ -57,8 +58,15 @@ const GROUPS = [
 
 export function AnalyticsView() {
   const t = useTranslations('analytics')
+  const searchParams = useSearchParams()
   const [range, setRange] = useState('7d')
-  const [filters, setFilters] = useState<Record<string, string>>({})
+  // Seed the drill-down from a `?slug=` link (e.g. the links list Analytics action).
+  const [filters, setFilters] = useState<Record<string, string>>(() => {
+    const slug = searchParams.get('slug')
+    const init: Record<string, string> = {}
+    if (slug) init.slug = slug
+    return init
+  })
 
   // endAt is captured when the range changes so query keys stay stable.
   const dateWindow = useMemo(() => {

@@ -1,0 +1,54 @@
+name: Deploy sink
+
+# Manual trigger only — this repo deploys explicitly (CI does not auto-deploy).
+# Run from the Actions tab, optionally choosing a ref to deploy.
+on:
+  workflow_dispatch:
+    inputs:
+      run_migrations:
+        description: 'Apply D1 remote migrations before deploy (only when DB_TYPE=d1)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-sink
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Cloudflare credentials used by wrangler / OpenNext to deploy the Worker.
+      # Add these as repository secrets (Settings → Secrets and variables → Actions).
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      # Also builds workspace packages via the root `prepare` script.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Optional: apply D1 migrations to the remote database before deploying.
+      # Only relevant when the Worker uses DB_TYPE=d1 and wrangler.jsonc has a
+      # real d1_databases database_id. Turso/libsql deploys migrate out of band.
+      - name: Apply D1 migrations (remote)
+        if: ${{ inputs.run_migrations }}
+        run: pnpm --filter @cdlab996/sink cf:remotedb
+
+      - name: Build & deploy
+        run: pnpm --filter @cdlab996/sink deploy

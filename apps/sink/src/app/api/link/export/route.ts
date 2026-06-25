@@ -17,6 +17,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     domain: l.domain,
     url: l.url,
     comment: l.comment,
+    tags: l.tags,
     config: l.config,
     expiresAt: l.expiresAt ? l.expiresAt.getTime() : null,
     createdAt: l.createdAt.getTime(),

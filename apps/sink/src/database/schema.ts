@@ -37,6 +37,11 @@ export interface LinkConfig {
   redirectWithQuery?: boolean
   // When true, show an interstitial warning before redirecting.
   unsafe?: boolean
+  // Click limit: expire the link after this many visits (KV counter `visits:{id}`).
+  maxVisits?: number
+  // When true, the link is paused: the redirect path serves not-found without
+  // soft-deleting the row.
+  disabled?: boolean
   // PBKDF2 hash of the link password (`pbkdf2$<iters>$<saltB64>$<keyB64>`, see
   // lib/hash.ts); when set, the destination is gated behind a password form.
   passwordHash?: string
@@ -50,6 +55,12 @@ export const links = sqliteTable(
     domain: text('domain').notNull().default(''),
     url: text('url').notNull(),
     comment: text('comment').notNull().default(''),
+    // Email of the signed-in user who created the link (empty for legacy rows).
+    createdBy: text('created_by').notNull().default(''),
+    tags: text('tags', { mode: 'json' })
+      .$type<string[]>()
+      .notNull()
+      .default([]),
     config: text('config', { mode: 'json' })
       .$type<LinkConfig>()
       .notNull()

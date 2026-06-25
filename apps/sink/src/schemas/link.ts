@@ -33,6 +33,8 @@ export const LinkConfigInputSchema = z.object({
   cloaking: z.boolean().optional(),
   redirectWithQuery: z.boolean().optional(),
   unsafe: z.boolean().optional(),
+  maxVisits: z.number().int().positive().optional(),
+  disabled: z.boolean().optional(),
 })
 
 const slugField = z
@@ -41,11 +43,15 @@ const slugField = z
   .max(2048)
   .regex(SLUG_REGEX, 'Invalid slug format')
 
+// Bounded free-form tags for link organization.
+const tagsField = z.array(z.string().trim().min(1).max(32)).max(20)
+
 export const CreateLinkSchema = z.object({
   url: z.url('Please provide a valid URL').max(2048),
   slug: slugField.optional(),
   domain: z.string().trim().max(255).optional(),
   comment: z.string().trim().max(2048).optional(),
+  tags: tagsField.optional(),
   // Epoch milliseconds; null/omitted means never expires.
   expiresAt: z.number().int().positive().nullable().optional(),
   config: LinkConfigInputSchema.optional(),
@@ -81,6 +87,8 @@ const ImportConfigSchema = z
     cloaking: z.boolean().optional(),
     redirectWithQuery: z.boolean().optional(),
     unsafe: z.boolean().optional(),
+    maxVisits: z.number().int().positive().optional(),
+    disabled: z.boolean().optional(),
     passwordHash: z.string().optional(),
   })
   .optional()
@@ -92,6 +100,7 @@ export const ImportLinkSchema = z.object({
   domain: z.string().trim().max(255).optional(),
   url: z.url().max(2048),
   comment: z.string().max(2048).optional(),
+  tags: tagsField.optional(),
   config: ImportConfigSchema,
   expiresAt: z.number().int().nullable().optional(),
   createdAt: z.number().int().optional(),

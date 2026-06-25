@@ -20,7 +20,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const { env } = getCloudflareContext()
   const domain = new URL(request.url).hostname
-  const result = await upsertLink(env, parsed.data, domain)
+  const result = await upsertLink(env, parsed.data, domain, auth.user.email)
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: result.status })
   }

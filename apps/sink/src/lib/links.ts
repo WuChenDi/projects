@@ -1,4 +1,16 @@
-import { and, desc, eq, like, or, sql } from 'drizzle-orm'
+import {
+  and,
+  desc,
+  eq,
+  gt,
+  gte,
+  isNotNull,
+  isNull,
+  like,
+  lte,
+  or,
+  sql,
+} from 'drizzle-orm'
 import type { Link, LinkConfig, NewLink } from '@/database/schema'
 import { links } from '@/database/schema'
 import { getDb } from '@/lib/db'
@@ -84,6 +96,35 @@ export async function purgeLink(
   }
 }
 
+// Click-limit gate. For a link with `config.maxVisits`, reads the KV counter
+// `visits:{id}` and returns true once the cap is reached (caller treats it as
+// expired). Otherwise schedules a background increment via `waitUntil` so the
+// hot path pays only one KV read. No-op for links without `maxVisits`. KV is
+// eventually consistent, so the limit is approximate under concurrency.
+export async function visitLimitReached(
+  env: CloudflareEnv,
+  link: Link,
+  ctx: { waitUntil: (p: Promise<unknown>) => void },
+): Promise<boolean> {
+  const max = link.config.maxVisits
+  if (!max) return false
+  const key = `visits:${link.id}`
+  let count: number
+  try {
+    const raw = await env.KV.get(key)
+    count = raw ? Number(raw) : 0
+  } catch (error) {
+    logger.warn('KV read error', error instanceof Error ? error.message : error)
+    return false
+  }
+  if (count >= max) {
+    ctx.waitUntil(env.KV.delete(key).catch(() => {}))
+    return true
+  }
+  ctx.waitUntil(env.KV.put(key, String(count + 1)).catch(() => {}))
+  return false
+}
+
 // Resolve a link: KV cache → D1 fallback → fill cache. Returns null when the
 // slug doesn't exist (caller handles not-found / expiry).
 export async function resolveLink(
@@ -166,24 +207,84 @@ export async function getLinkById(
   )
 }
 
+export type LinkStatus = 'active' | 'disabled' | 'expired'
+
+export interface ListOptions {
+  limit: number
+  offset: number
+  sort?: SortKey
+  status?: LinkStatus
+  createdBy?: string
+  // createdAt range (epoch ms).
+  startAt?: number
+  endAt?: number
+}
+
+// Build the WHERE conditions shared by the list query and its count, so a
+// filtered page reports a matching total.
+function listConditions(opts: ListOptions) {
+  const now = new Date()
+  const conds = [eq(links.isDeleted, 0)]
+  if (opts.createdBy) conds.push(eq(links.createdBy, opts.createdBy))
+  if (opts.startAt) conds.push(gte(links.createdAt, new Date(opts.startAt)))
+  if (opts.endAt) conds.push(lte(links.createdAt, new Date(opts.endAt)))
+  // `disabled` lives inside the config JSON; json_extract returns 1 for true,
+  // NULL when absent. `IS NOT 1` keeps NULL/0 rows in the "active" set.
+  const notDisabled = sql`json_extract(${links.config}, '$.disabled') is not 1`
+  const isDisabled = sql`json_extract(${links.config}, '$.disabled') = 1`
+  if (opts.status === 'disabled') {
+    conds.push(isDisabled)
+  } else if (opts.status === 'expired') {
+    conds.push(and(isNotNull(links.expiresAt), lte(links.expiresAt, now))!)
+  } else if (opts.status === 'active') {
+    conds.push(notDisabled)
+    conds.push(or(isNull(links.expiresAt), gt(links.expiresAt, now))!)
+  }
+  return and(...conds)
+}
+
 export async function listLinks(
   env: CloudflareEnv,
-  opts: { limit: number; offset: number; sort?: SortKey },
+  opts: ListOptions,
 ): Promise<{ links: Link[]; total: number }> {
   const db = await getDb(env)
   const sortCol = SORT_COLUMNS[opts.sort ?? 'createdAt']
+  const where = listConditions(opts)
   const rows = await db
     .select()
     .from(links)
-    .where(eq(links.isDeleted, 0))
+    .where(where)
     .orderBy(desc(sortCol))
     .limit(opts.limit)
     .offset(opts.offset)
   const totalRow = await db
     .select({ value: sql<number>`count(*)` })
     .from(links)
-    .where(eq(links.isDeleted, 0))
+    .where(where)
   return { links: rows, total: Number(totalRow[0]?.value ?? 0) }
+}
+
+// Distinct non-empty link authors, for the dashboard creator filter.
+export async function listCreators(env: CloudflareEnv): Promise<string[]> {
+  const db = await getDb(env)
+  const rows = await db
+    .selectDistinct({ createdBy: links.createdBy })
+    .from(links)
+    .where(eq(links.isDeleted, 0))
+  return rows
+    .map((r) => r.createdBy)
+    .filter((v) => v.length > 0)
+    .sort((a, b) => a.localeCompare(b))
+}
+
+// Count of non-deleted links — backs the overview "total links" card.
+export async function countLinks(env: CloudflareEnv): Promise<number> {
+  const db = await getDb(env)
+  const row = await db
+    .select({ value: sql<number>`count(*)` })
+    .from(links)
+    .where(eq(links.isDeleted, 0))
+  return Number(row[0]?.value ?? 0)
 }
 
 export async function searchLinks(
@@ -267,6 +368,7 @@ export async function createLink(
   env: CloudflareEnv,
   input: CreateLinkInput,
   requestDomain: string,
+  createdBy = '',
 ): Promise<RepoResult> {
   const domain = input.domain?.trim() || requestDomain
   const config = await buildConfig(env, input, input.url)
@@ -275,6 +377,8 @@ export async function createLink(
     domain,
     url: input.url,
     comment: input.comment ?? '',
+    createdBy,
+    tags: input.tags ?? [],
     config,
     expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
     isDeleted: 0,
@@ -358,6 +462,7 @@ export async function updateLink(
         domain,
         url: input.url ?? current.url,
         comment: input.comment ?? current.comment,
+        tags: input.tags ?? current.tags,
         config,
         expiresAt:
           input.expiresAt === undefined
@@ -380,6 +485,7 @@ export async function upsertLink(
   env: CloudflareEnv,
   input: CreateLinkInput,
   requestDomain: string,
+  createdBy = '',
 ): Promise<RepoResult> {
   const domain = input.domain?.trim() || requestDomain
   const rawSlug = input.slug?.trim()
@@ -393,7 +499,7 @@ export async function upsertLink(
       return updateLink(env, { ...input, id: existing.id })
     }
   }
-  return createLink(env, input, requestDomain)
+  return createLink(env, input, requestDomain, createdBy)
 }
 
 export async function deleteLink(
@@ -457,6 +563,7 @@ export async function importLinks(
       domain,
       url: item.url,
       comment: item.comment ?? '',
+      tags: item.tags ?? [],
       config: (item.config ?? {}) as LinkConfig,
       expiresAt: item.expiresAt ? new Date(item.expiresAt) : null,
       isDeleted: 0,

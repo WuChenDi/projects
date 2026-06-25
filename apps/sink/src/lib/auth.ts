@@ -41,10 +41,19 @@ export async function getAuth() {
   })
 }
 
-type AuthResult = { ok: true } | { ok: false; response: NextResponse }
+export interface SessionUser {
+  id: string
+  email: string
+  name: string
+}
+
+type AuthResult =
+  | { ok: true; user: SessionUser }
+  | { ok: false; response: NextResponse }
 
 // Session gate for /api/* route handlers. Replaces the old SITE_TOKEN Bearer
-// check — a valid better-auth session cookie is required.
+// check — a valid better-auth session cookie is required. On success the signed
+// -in user is returned so writes can record their author (e.g. links.createdBy).
 export async function requireSession(request: Request): Promise<AuthResult> {
   const auth = await getAuth()
   const session = await auth.api.getSession({ headers: request.headers })
@@ -57,5 +66,5 @@ export async function requireSession(request: Request): Promise<AuthResult> {
       ),
     }
   }
-  return { ok: true }
+  return { ok: true, user: session.user as SessionUser }
 }

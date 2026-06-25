@@ -34,3 +34,4 @@ Each plan is a single line linking to its detail file. All detailed information 
 - [x] [**PLAN-003 Sink P3 — migrate, R2, editor polish**](PLAN-003.md) `2026-06-14`
 - [x] [**PLAN-004 Sink P4 — remaining parity gaps (globe, AI-OG, auto-safe, i18n)**](PLAN-004.md) `2026-06-16`
 - [x] [**PLAN-005 Sink — better-auth replaces SITE_TOKEN**](PLAN-005.md) `2026-06-17`
+- [ ] [**PLAN-006 Sink P5 — dashboard & link-management enhancements**](PLAN-006.md) `2026-06-25`

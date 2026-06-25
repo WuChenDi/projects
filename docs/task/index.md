@@ -43,3 +43,8 @@ Each task is a single line linking to its detail file. All detailed information 
 - [x] [**FEAT-010 Sink P4b — AI OG metadata + auto Safe-Browsing on write**](FEAT-010.md) `P3`
 - [x] [**FEAT-011 Sink P4c — localized redirect interstitials (en/zh)**](FEAT-011.md) `P3`
 - [x] [**FEAT-012 Sink — replace SITE_TOKEN with better-auth (Google/GitHub social login)**](FEAT-012.md) `P1`
+- [ ] [**FEAT-013 Sink P5a — overview real metrics**](FEAT-013.md) `P2`
+- [x] [**FEAT-014 Sink P5b — per-link clicks + analytics drill-down**](FEAT-014.md) `P2`
+- [x] [**FEAT-015 Sink P5c — link tags**](FEAT-015.md) `P2`
+- [x] [**FEAT-016 Sink P5d — click-limit expiration (maxVisits)**](FEAT-016.md) `P3`
+- [x] [**FEAT-017 Sink P5e — enable/disable (pause) toggle**](FEAT-017.md) `P3`

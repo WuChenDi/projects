@@ -6,6 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@cdlab996/ui/components/accordion'
+import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
 import { Calendar } from '@cdlab996/ui/components/calendar'
 import { Input } from '@cdlab996/ui/components/input'
@@ -18,7 +19,7 @@ import {
 import { Switch } from '@cdlab996/ui/components/switch'
 import { Textarea } from '@cdlab996/ui/components/textarea'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CalendarIcon, Plus, Sparkles, Trash2, Upload } from 'lucide-react'
+import { CalendarIcon, Plus, Sparkles, Trash2, Upload, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRef, useState } from 'react'
@@ -51,7 +52,9 @@ interface FormState {
   url: string
   slug: string
   comment: string
+  tags: string[]
   expiresAt: number | null
+  maxVisits: number | null
   password: string
   apple: string
   google: string
@@ -70,9 +73,11 @@ function initialState(existing?: LinkRow): FormState {
     url: existing?.url ?? '',
     slug: existing?.slug ?? '',
     comment: existing?.comment ?? '',
+    tags: existing?.tags ?? [],
     expiresAt: existing?.expiresAt
       ? new Date(existing.expiresAt).getTime()
       : null,
+    maxVisits: c.maxVisits ?? null,
     password: '',
     apple: c.apple ?? '',
     google: c.google ?? '',
@@ -98,6 +103,7 @@ function buildPayload(f: FormState): CreateLinkInput {
   if (f.cloaking) config.cloaking = true
   if (f.redirectWithQuery) config.redirectWithQuery = true
   if (f.unsafe) config.unsafe = true
+  if (f.maxVisits) config.maxVisits = f.maxVisits
   const geo = f.geo
     .filter((g) => g.country.trim() && g.url.trim())
     .reduce<Record<string, string>>((acc, g) => {
@@ -110,6 +116,7 @@ function buildPayload(f: FormState): CreateLinkInput {
     url: f.url.trim(),
     slug: f.slug.trim() || undefined,
     comment: f.comment.trim() || undefined,
+    tags: f.tags,
     expiresAt: f.expiresAt ?? null,
     config,
     password: f.password.trim() || undefined,
@@ -262,6 +269,11 @@ export function LinkEditor({ existing }: { existing?: LinkRow }) {
         />
       </div>
 
+      <div className="space-y-2">
+        <Label>{t('tags')}</Label>
+        <TagsField value={form.tags} onChange={(v) => set('tags', v)} />
+      </div>
+
       <Accordion type="multiple" className="w-full">
         <AccordionItem value="link_settings">
           <AccordionTrigger>{t('section.settings')}</AccordionTrigger>
@@ -319,6 +331,22 @@ export function LinkEditor({ existing }: { existing?: LinkRow }) {
                   {t('clearDate')}
                 </Button>
               )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="maxVisits">{t('maxVisits')}</Label>
+              <Input
+                id="maxVisits"
+                type="number"
+                min={1}
+                value={form.maxVisits ?? ''}
+                onChange={(e) =>
+                  set(
+                    'maxVisits',
+                    e.target.value ? Number(e.target.value) : null,
+                  )
+                }
+                placeholder={t('maxVisitsPlaceholder')}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">{t('password')}</Label>
@@ -494,6 +522,70 @@ export function LinkEditor({ existing }: { existing?: LinkRow }) {
         </Button>
       </div>
     </form>
+  )
+}
+
+const MAX_TAGS = 20
+const MAX_TAG_LEN = 32
+
+// Chip input: type a tag and press Enter (or comma) to add; click × to remove.
+function TagsField({
+  value,
+  onChange,
+}: {
+  value: string[]
+  onChange: (tags: string[]) => void
+}) {
+  const t = useTranslations('links.form')
+  const [draft, setDraft] = useState('')
+
+  function add() {
+    const tag = draft.trim().slice(0, MAX_TAG_LEN)
+    if (!tag || value.includes(tag) || value.length >= MAX_TAGS) {
+      setDraft('')
+      return
+    }
+    onChange([...value, tag])
+    setDraft('')
+  }
+
+  function remove(tag: string) {
+    onChange(value.filter((x) => x !== tag))
+  }
+
+  return (
+    <div className="space-y-2">
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {value.map((tag) => (
+            <Badge key={tag} variant="secondary" className="gap-1">
+              {tag}
+              <button
+                type="button"
+                aria-label={t('removeTag')}
+                onClick={() => remove(tag)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="size-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
+      <Input
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault()
+            add()
+          }
+        }}
+        onBlur={add}
+        placeholder={t('addTag')}
+        disabled={value.length >= MAX_TAGS}
+      />
+    </div>
   )
 }
 

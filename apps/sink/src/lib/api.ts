@@ -8,11 +8,25 @@ export interface LinkRow {
   domain: string
   url: string
   comment: string
+  createdBy: string
+  tags: string[]
   config: LinkConfig
   expiresAt: string | null
   createdAt: string
   updatedAt: string
   isDeleted: number
+}
+
+export type LinkStatusFilter = 'all' | 'active' | 'disabled' | 'expired'
+
+export interface ListParams {
+  limit: number
+  offset: number
+  sort: SortKey
+  status?: LinkStatusFilter
+  createdBy?: string
+  startAt?: number | null
+  endAt?: number | null
 }
 
 export class ApiError extends Error {
@@ -44,10 +58,23 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export type SortKey = 'createdAt' | 'updatedAt' | 'expiresAt'
 
 export const linkApi = {
-  list: (params: { limit: number; offset: number; sort: SortKey }) =>
-    request<{ links: LinkRow[]; total: number }>(
-      `/api/link/list?limit=${params.limit}&offset=${params.offset}&sort=${params.sort}`,
-    ),
+  list: (params: ListParams) => {
+    const sp = new URLSearchParams({
+      limit: String(params.limit),
+      offset: String(params.offset),
+      sort: params.sort,
+    })
+    if (params.status && params.status !== 'all')
+      sp.set('status', params.status)
+    if (params.createdBy) sp.set('createdBy', params.createdBy)
+    if (params.startAt) sp.set('startAt', String(params.startAt))
+    if (params.endAt) sp.set('endAt', String(params.endAt))
+    return request<{ links: LinkRow[]; total: number }>(
+      `/api/link/list?${sp.toString()}`,
+    )
+  },
+  count: () => request<{ total: number }>('/api/link/count'),
+  creators: () => request<{ creators: string[] }>('/api/link/creators'),
   search: (q: string) =>
     request<{ links: LinkRow[] }>(
       `/api/link/search?q=${encodeURIComponent(q)}`,
@@ -141,11 +168,12 @@ export const statsApi = {
     request<{ configured: boolean; interval: string; views: ViewPoint[] }>(
       `/api/stats/views${statsQuery(params)}`,
     ),
-  metrics: (type: string, params: StatsParams) => {
+  metrics: (type: string, params: StatsParams, limit?: number) => {
     const q = statsQuery(params)
     const sep = q ? '&' : '?'
+    const limitQs = limit ? `&limit=${limit}` : ''
     return request<{ configured: boolean; metrics: MetricItem[] }>(
-      `/api/stats/metrics${q}${sep}type=${type}`,
+      `/api/stats/metrics${q}${sep}type=${type}${limitQs}`,
     )
   },
   heatmap: (params: StatsParams) =>
