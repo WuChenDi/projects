@@ -40,6 +40,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from '@cdlab996/ui/components/toggle-group'
+import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { endOfDay, startOfDay } from 'date-fns'
 import {
@@ -49,6 +50,7 @@ import {
   CornerDownRight,
   ExternalLink,
   Globe,
+  Inbox,
   LayoutGrid,
   List,
   MoreHorizontal,
@@ -750,9 +752,12 @@ export function LinksView() {
           ))}
         </div>
       ) : visibleRows.length === 0 ? (
-        <div className="flex h-40 items-center justify-center rounded-lg border text-sm text-muted-foreground">
-          {t('empty')}
-        </div>
+        <IKEmpty className="h-40" title={t('empty')} icon={Inbox}>
+          <Button onClick={openCreate}>
+            <Plus />
+            {t('new')}
+          </Button>
+        </IKEmpty>
       ) : (
         <div
           className={
