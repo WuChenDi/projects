@@ -1,24 +1,41 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
-import { Card, CardContent, CardHeader } from '@cdlab996/ui/components/card'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
-export default function Error({ reset }: { reset: () => void }) {
+interface ErrorProps {
+  error: Error & { digest?: string }
+  reset: () => void
+}
+
+export default function Error({ error, reset }: ErrorProps) {
+  const router = useRouter()
+
+  useEffect(() => {
+    console.error(error)
+  }, [error])
+
   return (
-    <div className="flex min-h-screen items-center justify-center p-4 md:p-6">
-      <Card className="mx-auto w-full max-w-xl rounded-2xl border-none bg-card/20 p-6 backdrop-blur-lg md:p-8">
-        <CardHeader className="text-center">
-          <h1 className="text-2xl font-bold md:text-3xl">Oh no!</h1>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <p className="text-center text-sm text-muted-foreground md:text-base">
-            Something went wrong. This may be temporary — please try again.
-          </p>
-          <Button onClick={() => reset()} className="w-full" size="lg">
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center text-center">
+      <span className="text-[9rem] leading-none font-extrabold text-foreground/10 select-none tracking-tighter">
+        500
+      </span>
+      <div className="-mt-10 flex flex-col items-center gap-3">
+        <h1 className="text-xl font-medium">Something Went Wrong</h1>
+        <p className="max-w-sm text-sm text-muted-foreground leading-relaxed">
+          An unexpected error occurred. You can try again or return to the home
+          page.
+        </p>
+        <div className="mt-8 flex justify-center gap-2">
+          <Button onClick={reset} variant="default" size="lg">
             Try again
           </Button>
-        </CardContent>
-      </Card>
+          <Button onClick={() => router.push('/')} variant="ghost" size="lg">
+            Back to Home
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }
