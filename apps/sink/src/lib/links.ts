@@ -1,3 +1,4 @@
+import { hashPasswordFn } from '@cdlab996/utils'
 import {
   and,
   desc,
@@ -16,7 +17,6 @@ import { links } from '@/database/schema'
 import { getDb } from '@/lib/db'
 import { getConfig } from '@/lib/env'
 import { genid } from '@/lib/genid'
-import { hashLinkPassword } from '@/lib/hash'
 import { logger } from '@/lib/logger'
 import { isUnsafeUrl } from '@/lib/safe-browsing'
 import { randomSlug, validateSlug } from '@/lib/slug'
@@ -319,7 +319,7 @@ async function buildConfig(
   if (input.password === undefined) {
     if (previous?.passwordHash) config.passwordHash = previous.passwordHash
   } else if (input.password) {
-    config.passwordHash = await hashLinkPassword(input.password)
+    config.passwordHash = await hashPasswordFn(input.password)
   }
   // Auto Safe-Browsing: when the caller didn't explicitly mark the link unsafe,
   // probe the destination via DoH and flag it on a hit. Best-effort and a no-op
