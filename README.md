@@ -250,6 +250,25 @@ https://wepush.cdlab.workers.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/wepush/og-image.png" alt="wepush" />
 </details>
 
+### Flnk
+
+**Privacy-first Link Shortener**
+
+https://flnk.cdlab.workers.dev/
+
+- Edge redirect engine (KV cache → D1 fallback → cache fill) with configurable status code and per-link expiration
+- Geo routing by `cf.country` and device routing for Apple / Android user agents, with optional query forwarding
+- Link protection: password gate (PBKDF2-SHA256), unsafe interstitial, social-bot OG HTML with cloaking
+- Privacy-respecting analytics via Cloudflare Analytics Engine — no tracking cookies on the redirect path
+- Dashboard with AI slug generation, multi-domain support, and export / import / backup; social login via better-auth (Google + GitHub)
+- Tech: Next.js 16 (App Router) + React 19 + Drizzle (LibSQL / D1) + better-auth + Workers AI + @opennextjs/cloudflare → Cloudflare Workers (with cron cleanup)
+
+<details>
+  <summary>Preview</summary>
+  <br/>
+  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/flnk/index.png" alt="Flnk" />
+</details>
+
 ### repo-changelog
 
 **Open Source Release / Changelog Aggregation Dashboard**
