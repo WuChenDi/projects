@@ -1,0 +1,494 @@
+{
+  "common": {
+    "appName": "Flnk",
+    "tagline": "运行在边缘的隐私优先短链接服务",
+    "enterDashboard": "进入控制台",
+    "viewSource": "查看源码",
+    "signOut": "退出登录",
+    "language": "语言",
+    "copy": "复制",
+    "copied": "已复制到剪贴板",
+    "copyFailed": "复制失败",
+    "open": "打开",
+    "edit": "编辑",
+    "delete": "删除",
+    "cancel": "取消",
+    "save": "保存",
+    "saving": "保存中…",
+    "prev": "上一页",
+    "next": "下一页"
+  },
+  "landing": {
+    "badge": "Cloudflare Workers · 边缘跳转",
+    "subtitle": "创建可按国家与设备分流、支持密码保护的短链接，并将每一次点击实时写入 Analytics Engine —— 全部在边缘完成，无冷启动查询。",
+    "getStarted": "立即开始",
+    "stats": {
+      "title": "为边缘而生",
+      "subtitle": "没有源站、没有冷启动，只有飞快的跳转。",
+      "items": {
+        "locations": {
+          "label": "遍布全球的 Cloudflare 边缘节点"
+        },
+        "features": {
+          "label": "开箱即用的内置功能，零配置"
+        },
+        "trackers": {
+          "label": "第三方追踪脚本"
+        }
+      }
+    },
+    "cta": {
+      "title": "准备好创建第一个短链接了吗？",
+      "subtitle": "打开控制台，几秒钟即可创建链接。",
+      "button": "打开控制台"
+    },
+    "featuresTitle": "功能特点",
+    "features": {
+      "analytics": {
+        "title": "数据分析",
+        "desc": "监控链接分析并收集有价值的统计数据。"
+      },
+      "serverless": {
+        "title": "无服务器",
+        "desc": "无需传统服务器即可部署。"
+      },
+      "ai": {
+        "title": "AI 助手",
+        "desc": "根据页面内容生成短链和 OpenGraph 元数据。"
+      },
+      "control": {
+        "title": "链接控制",
+        "desc": "设置过期时间、访问密码和不安全链接警告。"
+      },
+      "routing": {
+        "title": "智能路由",
+        "desc": "根据访客设备或国家重定向。"
+      },
+      "realtime": {
+        "title": "实时分析",
+        "desc": "3D 地球可视化和实时事件日志。"
+      }
+    },
+    "steps": {
+      "title": "三步,从网址到洞察",
+      "subtitle": "无需维护源站 —— 建好链接即可开始追踪。",
+      "items": {
+        "create": {
+          "title": "创建短链接",
+          "desc": "粘贴长网址即可得到简洁短码,也可让 AI 帮你生成。"
+        },
+        "route": {
+          "title": "添加路由与规则",
+          "desc": "按国家或设备分流,设置访问密码与过期时间。"
+        },
+        "track": {
+          "title": "分享并追踪",
+          "desc": "每次点击实时写入 Analytics Engine —— 地域、设备、来源一应俱全。"
+        }
+      }
+    },
+    "faq": {
+      "title": "常见问题",
+      "subtitle": "创建链接前你可能想了解的一切。",
+      "items": {
+        "cost": {
+          "q": "是免费的吗?",
+          "a": "是。Flnk 开源(MIT),运行在你自己的 Cloudflare 账号上,只需承担 Cloudflare 的用量费用(若有)。"
+        },
+        "data": {
+          "q": "我的数据存在哪里?",
+          "a": "存在你自己的 Cloudflare D1 / Turso 数据库与 Analytics Engine 中,不会发送给任何第三方。"
+        },
+        "geo": {
+          "q": "地域 / 设备路由如何工作?",
+          "a": "每条链接都能把国家或 Apple / Android 设备映射到不同目标,在边缘解析,无冷启动。"
+        },
+        "privacy": {
+          "q": "你们会追踪访客吗?",
+          "a": "只在你自己的账号里做聚合点击分析 —— 没有第三方追踪,也不给访客种 Cookie。"
+        },
+        "auth": {
+          "q": "谁能访问控制台?",
+          "a": "控制台通过 Google / GitHub 登录把关,只有你允许的账号才能管理链接。"
+        },
+        "deploy": {
+          "q": "如何部署?",
+          "a": "用一条命令部署到你自己的 Cloudflare 账号 —— 基于 OpenNext 构建并发布到 Workers,无需单独的源站。"
+        },
+        "domain": {
+          "q": "可以用我自己的域名吗?",
+          "a": "可以。在 Cloudflare 把自定义域名指向该 Worker,短链就跑在你自己的品牌域名上。"
+        },
+        "expiry": {
+          "q": "链接可以设置过期或密码吗?",
+          "a": "可以。每条链接都能设置过期时间、访问密码,以及对不安全目标的风险提示页。"
+        },
+        "ai": {
+          "q": "AI 短码是怎么生成的?",
+          "a": "Workers AI 会读取目标地址并给出简短可读的短码 —— 若 AI 关闭或不可用,则回退到 Base62 哈希。"
+        },
+        "import": {
+          "q": "可以导入 / 导出链接吗?",
+          "a": "可以。通过 JSON 批量迁移链接,并在控制台把点击分析导出为 CSV。"
+        }
+      }
+    },
+    "footer": {
+      "blurb": "内置地域 / 设备路由与边缘分析的短链接,完全运行在 Cloudflare Workers 上。",
+      "product": "产品",
+      "resources": "资源",
+      "dashboard": "控制台",
+      "source": "源代码",
+      "privacy": "隐私政策",
+      "terms": "服务条款",
+      "builtWith": "基于 Next.js · Cloudflare Workers 构建"
+    },
+    "featuresSubtitle": "简单而实用的功能",
+    "titleLead": "带路由与分析的短链，",
+    "titleHighlight": "为边缘而生"
+  },
+  "login": {
+    "welcome": "欢迎使用 Flnk",
+    "description": "登录以访问控制台。",
+    "continueWithGoogle": "使用 Google 登录",
+    "continueWithGitHub": "使用 GitHub 登录",
+    "redirecting": "跳转中…",
+    "error": "登录失败，请重试。",
+    "agreement": "继续即表示你同意我们的<terms>服务条款</terms>和<privacy>隐私政策</privacy>。"
+  },
+  "userMenu": {
+    "theme": "主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统",
+    "language": "语言",
+    "docs": "文档",
+    "repo": "GitHub 仓库",
+    "signOut": "退出登录"
+  },
+  "dashboard": {
+    "title": "控制台",
+    "description": "管理短链接并查看数据分析。",
+    "nav": {
+      "overview": "概览",
+      "links": "链接",
+      "analytics": "分析",
+      "realtime": "实时",
+      "check": "健康检查",
+      "migrate": "迁移",
+      "settings": "设置",
+      "group": {
+        "workspace": "工作区",
+        "manage": "管理"
+      }
+    },
+    "overview": {
+      "totalLinks": "链接总数",
+      "totalVisits": "访问总数",
+      "totalVisitors": "访客数",
+      "totalReferers": "来源数",
+      "topLinks": "热门链接",
+      "topCountries": "热门国家/地区",
+      "last30Days": "最近 30 天"
+    }
+  },
+  "links": {
+    "title": "链接",
+    "subtitle": "创建并管理你的短链接。",
+    "new": "新建链接",
+    "searchPlaceholder": "按 slug、URL 或备注搜索…",
+    "empty": "还没有链接，创建第一个吧。",
+    "filterByTag": "按标签筛选：",
+    "disable": "停用",
+    "enable": "启用",
+    "disabled": "已停用",
+    "clicks": "点击量",
+    "clicksCount": "{count} 次点击",
+    "noTags": "无标签",
+    "viewAnalytics": "查看分析",
+    "viewList": "列表视图",
+    "viewGrid": "宫格视图",
+    "clearSearch": "清除搜索",
+    "count": "{count} 个链接",
+    "createdBy": "创建人",
+    "allStatus": "全部状态",
+    "allCreators": "全部创建人",
+    "dateRange": "日期范围",
+    "clearDate": "清除日期",
+    "clearFilters": "清除筛选",
+    "filters": "筛选",
+    "statusLabel": "状态",
+    "creatorLabel": "创建人",
+    "sortLabel": "排序",
+    "selectAll": "全选",
+    "selectedCount": "已选 {count} 项",
+    "bulkUpdated": "已更新 {count} 个链接",
+    "bulkDeleted": "已删除 {count} 个链接",
+    "bulkDeleteTitle": "删除 {count} 个链接?",
+    "bulkDeleteDesc": "将永久删除所选链接,此操作无法撤销。",
+    "status": {
+      "active": "正常",
+      "disabled": "已停用",
+      "expired": "已过期"
+    },
+    "pageOf": "第 {page} / {total} 页",
+    "sort": {
+      "createdAt": "最新创建",
+      "updatedAt": "最近更新",
+      "expiresAt": "过期时间"
+    },
+    "table": {
+      "slug": "短码",
+      "destination": "目标地址",
+      "created": "创建时间",
+      "actions": "操作"
+    },
+    "qr": {
+      "title": "二维码",
+      "download": "下载 PNG"
+    },
+    "delete": {
+      "title": "删除链接？",
+      "description": "将删除“{slug}”，此操作不可撤销。",
+      "confirm": "删除",
+      "success": "链接已删除"
+    },
+    "form": {
+      "createTitle": "新建链接",
+      "editTitle": "编辑链接",
+      "subtitle": "配置目标地址与高级路由。",
+      "url": "目标地址",
+      "slug": "短码",
+      "slugPlaceholder": "留空则自动生成",
+      "random": "随机",
+      "aiSlug": "AI 生成",
+      "aiOg": "AI 填充",
+      "comment": "备注",
+      "commentPlaceholder": "可选备注",
+      "tags": "标签",
+      "addTag": "输入标签后按回车添加",
+      "removeTag": "移除标签",
+      "section": {
+        "settings": "链接设置",
+        "og": "Open Graph",
+        "device": "设备跳转",
+        "geo": "地域路由",
+        "utm": "UTM 构建器"
+      },
+      "selectCountry": "国家",
+      "utm": {
+        "source": "来源 (source)",
+        "medium": "媒介 (medium)",
+        "campaign": "活动 (campaign)",
+        "term": "关键词 (term)",
+        "content": "内容 (content)"
+      },
+      "utmApply": "追加到 URL",
+      "utmApplied": "UTM 参数已追加到 URL",
+      "urlInvalid": "目标地址无效",
+      "imageUpload": "上传图片",
+      "imageUploading": "上传中…",
+      "imageUploaded": "图片已上传",
+      "redirectWithQuery": "透传查询参数",
+      "cloaking": "链接隐藏（Cloaking）",
+      "unsafe": "不安全提示",
+      "expiration": "过期时间",
+      "pickDate": "选择日期",
+      "clearDate": "清除",
+      "maxVisits": "最大访问次数",
+      "maxVisitsPlaceholder": "达到该访问次数后过期",
+      "password": "密码",
+      "passwordPlaceholder": "设置访问密码",
+      "passwordKeep": "留空则保持原密码",
+      "ogTitle": "标题",
+      "ogDescription": "描述",
+      "ogImage": "图片地址",
+      "googlePlay": "Google Play 地址",
+      "appStore": "App Store 地址",
+      "addGeo": "添加国家路由",
+      "urlRequired": "请填写目标地址",
+      "aiFailed": "生成短码失败",
+      "created": "链接已创建",
+      "updated": "链接已更新"
+    }
+  },
+  "analytics": {
+    "title": "数据分析",
+    "subtitle": "查看链接的访问与互动数据。",
+    "notConfigured": "尚未配置分析。设置 CLOUDFLARE_ACCOUNT_ID 与 CLOUDFLARE_API_TOKEN 以启用统计。",
+    "clearFilters": "清除筛选",
+    "comingSoon": "敬请期待",
+    "noData": "该时间范围内暂无数据",
+    "range": {
+      "1d": "最近 24 小时",
+      "7d": "最近 7 天",
+      "30d": "最近 30 天",
+      "90d": "最近 90 天"
+    },
+    "counters": {
+      "visits": "访问量",
+      "visitors": "访客数",
+      "referers": "来源数"
+    },
+    "views": {
+      "title": "访问趋势",
+      "subtitle": "访问量与独立访客随时间变化"
+    },
+    "map": {
+      "title": "访客地理分布"
+    },
+    "heatmap": {
+      "title": "时段活跃热力"
+    },
+    "groups": {
+      "location": "地域",
+      "referer": "来源",
+      "time": "区域设置",
+      "device": "设备",
+      "browser": "浏览器"
+    },
+    "metrics": {
+      "country": "国家",
+      "region": "地区",
+      "city": "城市",
+      "referer": "来源",
+      "slug": "短码",
+      "language": "语言",
+      "timezone": "时区",
+      "device": "设备",
+      "deviceType": "设备类型",
+      "os": "操作系统",
+      "browser": "浏览器",
+      "browserType": "浏览器类型"
+    },
+    "placeholders": {
+      "map": "世界地图与热力图",
+      "realtime": "实时"
+    }
+  },
+  "realtime": {
+    "title": "实时",
+    "subtitle": "实时查看正在发生的点击。",
+    "notConfigured": "尚未配置分析。设置 CLOUDFLARE_ACCOUNT_ID 与 CLOUDFLARE_API_TOKEN 以启用统计。",
+    "window": {
+      "1h": "最近 1 小时",
+      "6h": "最近 6 小时",
+      "24h": "最近 24 小时"
+    },
+    "chart": {
+      "title": "点击量"
+    },
+    "globe": {
+      "title": "实时位置",
+      "empty": "暂无位置数据"
+    },
+    "events": {
+      "title": "实时活动",
+      "empty": "暂无最近点击"
+    }
+  },
+  "check": {
+    "title": "健康检查",
+    "subtitle": "检测链接是否可达且安全。",
+    "empty": "运行一次检查以查看结果。",
+    "noLinks": "没有可检查的链接。",
+    "config": {
+      "timeout": "超时时间（秒）",
+      "timeoutHint": "每个链接的最长等待时间（1–30 秒）。",
+      "batchSize": "并发数量",
+      "batchSizeHint": "并行检查的链接数量（1–10）。"
+    },
+    "actions": {
+      "start": "开始",
+      "running": "检查中…",
+      "stop": "停止",
+      "reload": "重新加载链接",
+      "clear": "清空",
+      "exportCsv": "导出 CSV"
+    },
+    "stats": {
+      "total": "总数",
+      "checked": "已检查",
+      "ok": "正常",
+      "broken": "失效",
+      "unsafe": "不安全"
+    },
+    "progress": {
+      "title": "进度",
+      "label": "{checked} / {total}"
+    },
+    "results": {
+      "title": "结果",
+      "subtitle": "每个已检查链接的详细状态。"
+    },
+    "tabs": {
+      "all": "全部",
+      "ok": "正常",
+      "broken": "失效",
+      "unsafe": "不安全"
+    },
+    "table": {
+      "slug": "短码",
+      "url": "目标地址",
+      "status": "状态码",
+      "verdict": "结论",
+      "duration": "耗时",
+      "error": "错误"
+    },
+    "verdict": {
+      "ok": "正常",
+      "broken": "失效",
+      "unsafe": "不安全"
+    }
+  },
+  "migrate": {
+    "title": "迁移",
+    "subtitle": "备份、恢复并导出你的数据。",
+    "export": {
+      "title": "导出链接",
+      "description": "将全部链接下载为 JSON 文件。",
+      "action": "导出 JSON"
+    },
+    "import": {
+      "title": "导入链接",
+      "description": "从之前导出的 JSON 文件恢复链接；已存在的短码会被跳过。",
+      "action": "选择文件",
+      "running": "导入中…",
+      "result": "成功 {success}，跳过 {skipped}，失败 {failed}",
+      "invalid": "无效的 JSON 文件"
+    },
+    "csv": {
+      "title": "导出访问日志",
+      "description": "将各链接的点击统计下载为 CSV。",
+      "action": "导出 CSV"
+    },
+    "backup": {
+      "title": "备份到 R2",
+      "description": "将全部链接快照到你的 R2 存储桶。",
+      "disabled": "在 wrangler.jsonc 中启用 R2 后可用。",
+      "action": "立即备份",
+      "running": "备份中…",
+      "success": "已备份到 {key}"
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "subtitle": "外观、语言与系统状态。",
+    "appearance": {
+      "title": "外观",
+      "description": "在浅色与深色主题之间切换。"
+    },
+    "language": {
+      "title": "语言",
+      "description": "选择控制台语言。"
+    },
+    "system": {
+      "title": "系统",
+      "description": "运行时检测到的服务端配置。",
+      "r2": "R2 存储",
+      "analytics": "Analytics Engine",
+      "enabled": "已启用",
+      "disabled": "未启用"
+    }
+  }
+}

@@ -1,0 +1,95 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "flnk",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-05-25",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".open-next/assets"
+  },
+  "vars": {
+    // Public origin better-auth issues cookies/redirects against. Must match the
+    // deployed URL (dev: http://flnk.localhost:3355). The auth secret + OAuth
+    // client secrets are SECRETS — set them via `.dev.vars` (local) or
+    // `wrangler secret put` (BETTER_AUTH_SECRET, GOOGLE_CLIENT_ID/SECRET,
+    // GITHUB_CLIENT_ID/SECRET), never commit them here.
+    "BETTER_AUTH_URL": "https://flnk.a.wd.ds.cc",
+    // Driver selector — both run on Cloudflare Workers:
+    //   "d1"     → uses the `DB` binding below
+    //   "libsql" → uses LIBSQL_URL + LIBSQL_AUTH_TOKEN (Turso etc.)
+    "DB_TYPE": "libsql",
+    // LibSQL Configuration (dev / Turso).
+    "LIBSQL_URL": "your-libsql-url",
+    // The authentication token for accessing the LibSQL
+    "LIBSQL_AUTH_TOKEN": "your-libsql-auth-token",
+    // Redirect engine knobs (all optional — defaults shown).
+    "REDIRECT_STATUS_CODE": "308",
+    "LINK_CACHE_TTL": "60",
+    "REDIRECT_WITH_QUERY": "false",
+    "HOME_URL": "",
+    "NOT_FOUND_REDIRECT": "",
+    "CASE_SENSITIVE": "false",
+    "SLUG_DEFAULT_LENGTH": "6",
+    "LIST_QUERY_LIMIT": "500",
+    // Analytics Engine knobs.
+    "DATASET": "flnk_analytics",
+    "DISABLE_BOT_ACCESS_LOG": "false",
+    // Analytics Engine SQL API credentials — required for the dashboard stats
+    // queries (the AE binding writes data points, but reading uses the REST SQL
+    // API which needs an account id + a token with Account Analytics:Read).
+    "CLOUDFLARE_ACCOUNT_ID": "",
+    "CLOUDFLARE_API_TOKEN": "",
+    // Health-check Safe Browsing via DoH (empty = disabled). A filtering
+    // resolver returns 0.0.0.0 for blocked hosts.
+    "SAFE_BROWSING_DOH": "",
+    // AI slug generation knobs.
+    "AI_MODEL": "@cf/meta/llama-3.1-8b-instruct",
+    "AI_PROMPT": ""
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "flnk",
+      "migrations_dir": "./src/database",
+      "database_id": "your-d1-database-id"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "your-kv-namespace-id"
+    }
+  ],
+  "ai": {
+    "binding": "AI"
+  },
+  "analytics_engine_datasets": [
+    {
+      "binding": "ANALYTICS",
+      "dataset": "flnk_analytics"
+    }
+  ],
+  // R2 is OPTIONAL — OG image upload + backups are disabled until you enable it.
+  // To turn it on: `wrangler r2 bucket create flnk`, then uncomment below.
+  // (Local dev auto-creates a local bucket once this binding is present.)
+  // "r2_buckets": [
+  //   {
+  //     "binding": "R2",
+  //     "bucket_name": "flnk"
+  //   }
+  // ],
+  // Scheduled cleanup — handled by the `scheduled()` handler in src/worker/index.ts.
+  // Default: daily at 00:00 UTC. Soft-deletes expired links + purges their KV cache.
+  "triggers": {
+    "crons": ["0 0 * * *"]
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

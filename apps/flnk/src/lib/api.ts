@@ -1,0 +1,269 @@
+import type { LinkConfig } from '@/database/schema'
+import type { CreateLinkInput, EditLinkInput } from '@/schemas/link'
+
+// Client-facing link shape — dates are JSON strings over the wire.
+export interface LinkRow {
+  id: string
+  slug: string
+  domain: string
+  url: string
+  comment: string
+  createdBy: string
+  tags: string[]
+  config: LinkConfig
+  expiresAt: string | null
+  createdAt: string
+  updatedAt: string
+  isDeleted: number
+}
+
+export type LinkStatusFilter = 'all' | 'active' | 'disabled' | 'expired'
+
+export interface ListParams {
+  limit: number
+  offset: number
+  sort: SortKey
+  status?: LinkStatusFilter
+  createdBy?: string
+  startAt?: number | null
+  endAt?: number | null
+}
+
+export class ApiError extends Error {
+  readonly status: number
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
+
+// Auth is a better-auth session cookie, sent automatically on same-origin
+// fetches — no Authorization header to attach.
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(path, {
+    ...init,
+    headers: {
+      'content-type': 'application/json',
+      ...init?.headers,
+    },
+  })
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string }
+    throw new ApiError(body.error || res.statusText, res.status)
+  }
+  return res.json() as Promise<T>
+}
+
+export type SortKey = 'createdAt' | 'updatedAt' | 'expiresAt'
+
+export const linkApi = {
+  list: (params: ListParams) => {
+    const sp = new URLSearchParams({
+      limit: String(params.limit),
+      offset: String(params.offset),
+      sort: params.sort,
+    })
+    if (params.status && params.status !== 'all')
+      sp.set('status', params.status)
+    if (params.createdBy) sp.set('createdBy', params.createdBy)
+    if (params.startAt) sp.set('startAt', String(params.startAt))
+    if (params.endAt) sp.set('endAt', String(params.endAt))
+    return request<{ links: LinkRow[]; total: number }>(
+      `/api/link/list?${sp.toString()}`,
+    )
+  },
+  count: () => request<{ total: number }>('/api/link/count'),
+  creators: () => request<{ creators: string[] }>('/api/link/creators'),
+  search: (q: string) =>
+    request<{ links: LinkRow[] }>(
+      `/api/link/search?q=${encodeURIComponent(q)}`,
+    ),
+  get: (id: string) =>
+    request<{ link: LinkRow }>(`/api/link/query?id=${encodeURIComponent(id)}`),
+  create: (input: CreateLinkInput) =>
+    request<{ link: LinkRow }>('/api/link/create', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  edit: (input: EditLinkInput) =>
+    request<{ link: LinkRow }>('/api/link/edit', {
+      method: 'PUT',
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) =>
+    request<{ ok: true }>('/api/link/delete', {
+      method: 'POST',
+      body: JSON.stringify({ id }),
+    }),
+  aiSlug: (url: string) =>
+    request<{ slug: string; method: string }>(
+      `/api/link/ai?url=${encodeURIComponent(url)}`,
+    ),
+  aiOg: (url: string, locale?: string) =>
+    request<{ title: string; description: string; method: string }>(
+      `/api/link/og-ai?url=${encodeURIComponent(url)}${
+        locale ? `&locale=${encodeURIComponent(locale)}` : ''
+      }`,
+    ),
+}
+
+export interface StatsParams {
+  startAt?: number
+  endAt?: number
+  filters?: Record<string, string>
+}
+
+export interface Counters {
+  configured: boolean
+  visits: number
+  visitors: number
+  referers: number
+}
+export interface ViewPoint {
+  time: string
+  visits: number
+  visitors: number
+}
+export interface MetricItem {
+  name: string
+  count: number
+}
+export interface HeatmapCell {
+  weekday: number
+  hour: number
+  visits: number
+  visitors: number
+}
+export interface GeoPoint {
+  lat: number
+  lng: number
+  count: number
+}
+export interface LogEvent {
+  slug: string
+  country: string
+  city: string
+  os: string
+  browser: string
+  deviceType: string
+  timestamp: string
+}
+
+function statsQuery(params: StatsParams): string {
+  const sp = new URLSearchParams()
+  if (params.startAt) sp.set('startAt', String(params.startAt))
+  if (params.endAt) sp.set('endAt', String(params.endAt))
+  for (const [k, v] of Object.entries(params.filters ?? {})) {
+    if (v) sp.set(k, v)
+  }
+  const s = sp.toString()
+  return s ? `?${s}` : ''
+}
+
+export const statsApi = {
+  counters: (params: StatsParams) =>
+    request<Counters>(`/api/stats/counters${statsQuery(params)}`),
+  views: (params: StatsParams) =>
+    request<{ configured: boolean; interval: string; views: ViewPoint[] }>(
+      `/api/stats/views${statsQuery(params)}`,
+    ),
+  metrics: (type: string, params: StatsParams, limit?: number) => {
+    const q = statsQuery(params)
+    const sep = q ? '&' : '?'
+    const limitQs = limit ? `&limit=${limit}` : ''
+    return request<{ configured: boolean; metrics: MetricItem[] }>(
+      `/api/stats/metrics${q}${sep}type=${type}${limitQs}`,
+    )
+  },
+  heatmap: (params: StatsParams) =>
+    request<{ configured: boolean; heatmap: HeatmapCell[] }>(
+      `/api/stats/heatmap${statsQuery(params)}`,
+    ),
+  location: (params: StatsParams) =>
+    request<{ configured: boolean; points: GeoPoint[] }>(
+      `/api/logs/locations${statsQuery(params)}`,
+    ),
+  events: (params: StatsParams) =>
+    request<{ configured: boolean; events: LogEvent[] }>(
+      `/api/logs/events${statsQuery(params)}`,
+    ),
+}
+
+export interface CheckResult {
+  id: string
+  slug: string
+  url: string
+  status: number | null
+  ok: boolean
+  duration: number
+  error?: string
+  unsafe: boolean | null
+}
+
+export const checkApi = {
+  // Check one batch of links by id, with an optional per-link timeout (seconds).
+  run: (ids: string[], timeout?: number) =>
+    request<{ results: CheckResult[] }>('/api/link/check', {
+      method: 'POST',
+      body: JSON.stringify({ ids, timeout }),
+    }),
+}
+
+export interface ImportReport {
+  success: number
+  skipped: number
+  failed: number
+  failedItems: { slug: string; reason: string }[]
+}
+
+// Authed download → trigger a browser file save. Uses fetch (not a plain
+// <a href>) so the session cookie + error handling apply consistently.
+async function downloadAuthed(path: string, filename: string): Promise<void> {
+  const res = await fetch(path)
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string }
+    throw new ApiError(body.error || res.statusText, res.status)
+  }
+  const href = URL.createObjectURL(await res.blob())
+  const a = document.createElement('a')
+  a.href = href
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(href)
+}
+
+export const migrateApi = {
+  exportLinks: () =>
+    downloadAuthed('/api/link/export', `flnk-links-${Date.now()}.json`),
+  exportCsv: () =>
+    downloadAuthed('/api/stats/export', `flnk-access-${Date.now()}.csv`),
+  importLinks: (data: unknown) =>
+    request<ImportReport>('/api/link/import', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  backup: () =>
+    request<{ ok: true; key: string }>('/api/backup', { method: 'POST' }),
+}
+
+export const configApi = {
+  get: () => request<{ r2: boolean; analytics: boolean }>('/api/config'),
+}
+
+export const uploadApi = {
+  image: async (file: File, slug: string): Promise<{ url: string }> => {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('slug', slug)
+    const res = await fetch('/api/upload/image', {
+      method: 'POST',
+      body: fd,
+    })
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string }
+      throw new ApiError(body.error || res.statusText, res.status)
+    }
+    return res.json() as Promise<{ url: string }>
+  },
+}
