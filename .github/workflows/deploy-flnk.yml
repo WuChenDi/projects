@@ -1,4 +1,4 @@
-name: Deploy sink
+name: Deploy flnk
 
 # Manual trigger only — this repo deploys explicitly (CI does not auto-deploy).
 # Run from the Actions tab, optionally choosing a ref to deploy.
@@ -11,7 +11,7 @@ on:
         default: false
 
 concurrency:
-  group: deploy-sink
+  group: deploy-flnk
   cancel-in-progress: false
 
 permissions:
@@ -48,7 +48,7 @@ jobs:
       # real d1_databases database_id. Turso/libsql deploys migrate out of band.
       - name: Apply D1 migrations (remote)
         if: ${{ inputs.run_migrations }}
-        run: pnpm --filter @cdlab996/sink cf:remotedb
+        run: pnpm --filter @cdlab996/flnk cf:remotedb
 
       - name: Build & deploy
-        run: pnpm --filter @cdlab996/sink deploy
+        run: pnpm --filter @cdlab996/flnk deploy

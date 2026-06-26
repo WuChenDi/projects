@@ -231,24 +231,6 @@ https://live-user.cdlab.workers.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/live-user/index.png" alt="live-user" />
 </details>
 
-### shortener
-
-**短链服务**
-
-https://shortener.cdlab.workers.dev/
-
-- 边缘短链服务，支持 D1 / LibSQL 存储（通过 `DB_TYPE` 切换），KV 缓存，JWT 鉴权的管理 API
-- 使用 Cloudflare Workers AI 生成语义化 slug，KV 缓存命中后回退到 Base62 算法
-- Analytics Engine 实时上报 + 查询接口（总览 / 时间序列 / 国家 / 来源 / 设备 / 浏览器 / 操作系统）
-- 自动识别爬虫返回 OG 元数据，过期短链每天定时清理，所有表均使用软删除
-- 核心技术：Hono + Cloudflare Workers + Drizzle + D1/LibSQL + KV + Workers AI + Analytics Engine
-
-<details>
-  <summary>预览</summary>
-  <br/>
-  <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Shortener/index.png" alt="Shortener" />
-</details>
-
 ### wepush
 
 **微信测试号模板消息推送控制台**
@@ -318,7 +300,7 @@ pnpm --filter @cdlab996/byshot dev           # → http://byshot.localhost:3355
 pnpm --filter @cdlab996/dropply-web dev      # → http://dropply-web.localhost:3355
 pnpm --filter @cdlab996/flox dev             # → http://flox.localhost:3355
 pnpm --filter @cdlab996/live-user dev        # → http://live-user.localhost:3355
-pnpm --filter @cdlab996/shortener dev        # → http://shortener.localhost:3355
+pnpm --filter @cdlab996/flnk dev             # → http://flnk.localhost:3355
 pnpm --filter @cdlab996/wepush dev           # → http://wepush.localhost:3355
 pnpm --filter @cdlab996/repo-changelog dev   # → http://repo-changelog.localhost:3355
 pnpm build                                   # 构建所有应用
@@ -334,7 +316,7 @@ pnpm --filter @cdlab996/bytts run build
 pnpm --filter @cdlab996/byshot run build
 pnpm --filter @cdlab996/dropply-web run build
 pnpm --filter @cdlab996/flox run build
-pnpm --filter @cdlab996/shortener run build
+pnpm --filter @cdlab996/flnk run build
 pnpm --filter @cdlab996/wepush run build
 pnpm --filter @cdlab996/repo-changelog run build
 pnpm lint                          # Biome 代码检查
@@ -360,7 +342,7 @@ pnpm clean                         # 清理 node_modules / 缓存 / 构建产物
 │   ├── live-user/         # 实时在线用户计数器
 │   ├── repo-changelog/    # GitHub Release / Changelog 聚合工具
 │   ├── SecureC/           # 加解密工具
-│   ├── shortener/         # 短链服务（Cloudflare Workers）
+│   ├── flnk/              # 隐私优先短链服务（Next.js + Cloudflare Workers）
 │   ├── text2img/          # 文生图前端
 │   ├── value-vision/      # 价值对比 / 可视化工具
 │   ├── vidl/              # 视频下载工具（M3U8/HLS、MP4 等）
