@@ -49,6 +49,7 @@ import {
   ToggleGroupItem,
 } from '@cdlab996/ui/components/toggle-group'
 import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
+import { cn } from '@cdlab996/ui/lib/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { endOfDay, startOfDay } from 'date-fns'
 import {
@@ -577,9 +578,10 @@ export function LinksView() {
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className={`${mobile ? 'w-full justify-start' : 'hidden md:flex'} ${
-              startAt && endAt ? '' : 'text-muted-foreground'
-            }`}
+            className={cn(
+              mobile ? 'w-full justify-start' : 'hidden md:flex',
+              !(startAt && endAt) && 'text-muted-foreground',
+            )}
           >
             <CalendarDays className="size-4" />
             {dateLabel}
@@ -886,9 +888,11 @@ export function LinksView() {
               return (
                 <div
                   key={link.id}
-                  className={`group flex flex-col gap-2 rounded-xl border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/30 ${
-                    disabled ? 'opacity-60' : ''
-                  } ${isSelected ? 'border-primary/60 ring-1 ring-primary/30' : ''}`}
+                  className={cn(
+                    'group flex flex-col gap-2 rounded-xl border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/30',
+                    disabled && 'opacity-60',
+                    isSelected && 'border-primary/60 ring-1 ring-primary/30',
+                  )}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -908,9 +912,11 @@ export function LinksView() {
             return (
               <div
                 key={link.id}
-                className={`group flex items-start gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/30 ${
-                  disabled ? 'opacity-60' : ''
-                } ${isSelected ? 'border-primary/60 ring-1 ring-primary/30' : ''}`}
+                className={cn(
+                  'group flex items-start gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/30',
+                  disabled && 'opacity-60',
+                  isSelected && 'border-primary/60 ring-1 ring-primary/30',
+                )}
               >
                 <div className="pt-1">{checkbox}</div>
                 <LinkFavicon url={link.url} />

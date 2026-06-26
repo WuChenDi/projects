@@ -19,6 +19,7 @@ import {
 } from '@cdlab996/ui/components/drawer'
 import { Input } from '@cdlab996/ui/components/input'
 import { Label } from '@cdlab996/ui/components/label'
+import { PasswordInput } from '@cdlab996/ui/components/password-input'
 import {
   Popover,
   PopoverContent,
@@ -27,9 +28,10 @@ import {
 import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
 import { Switch } from '@cdlab996/ui/components/switch'
 import { Textarea } from '@cdlab996/ui/components/textarea'
+import { cn } from '@cdlab996/ui/lib/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { addMonths, format } from 'date-fns'
-import { CalendarIcon, Plus, Sparkles, Trash2, Upload } from 'lucide-react'
+import { CalendarIcon, Plus, Sparkles, Trash2, Upload, X } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -161,7 +163,7 @@ export function LinkDrawer({
         </DrawerHeader>
 
         <ScrollArea className="min-h-0 flex-1">
-          <div className="p-4 sm:p-6">
+          <div className="p-4">
             <EditorForm
               key={existing?.id ?? 'new'}
               existing={existing}
@@ -317,7 +319,7 @@ function EditorForm({
               onClick={generateSlug}
             >
               <Sparkles
-                className={`mr-1 size-3.5 ${aiPending ? 'animate-pulse' : ''}`}
+                className={cn('mr-1 size-3.5', aiPending && 'animate-pulse')}
               />
               {t('aiSlug')}
             </Button>
@@ -363,48 +365,54 @@ function EditorForm({
             />
             <div className="space-y-2">
               <Label>{t('expiration')}</Label>
-              <Popover open={dateOpen} onOpenChange={setDateOpen}>
-                <PopoverTrigger asChild>
-                  <Button
+              <div className="relative">
+                <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        'w-full justify-start pr-9 font-normal',
+                        !expiryDate && 'text-muted-foreground',
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 size-4" />
+                      {expiryDate
+                        ? format(expiryDate, 'PP', {
+                            locale: dateLocale(locale),
+                          })
+                        : t('pickDate')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={expiryDate}
+                      defaultMonth={expiryDate}
+                      disabled={{ before: new Date() }}
+                      onSelect={(d?: Date) => {
+                        set('expiresAt', d ? d.getTime() : null)
+                        if (d) setDateOpen(false)
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {expiryDate && (
+                  <button
                     type="button"
-                    variant="outline"
-                    className={`w-full justify-start font-normal ${expiryDate ? '' : 'text-muted-foreground'}`}
+                    aria-label={t('clearDate')}
+                    onClick={() => set('expiresAt', null)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    <CalendarIcon className="mr-2 size-4" />
-                    {expiryDate
-                      ? format(expiryDate, 'PP', { locale: dateLocale(locale) })
-                      : t('pickDate')}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={expiryDate}
-                    defaultMonth={expiryDate}
-                    disabled={{ before: new Date() }}
-                    onSelect={(d?: Date) => {
-                      set('expiresAt', d ? d.getTime() : null)
-                      if (d) setDateOpen(false)
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
-              {expiryDate && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => set('expiresAt', null)}
-                >
-                  {t('clearDate')}
-                </Button>
-              )}
+                    <X className="size-4" />
+                  </button>
+                )}
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">{t('password')}</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 value={form.password}
                 onChange={(e) => set('password', e.target.value)}
                 placeholder={
@@ -430,7 +438,10 @@ function EditorForm({
                   onClick={generateOg}
                 >
                   <Sparkles
-                    className={`mr-1 size-3.5 ${ogAiPending ? 'animate-pulse' : ''}`}
+                    className={cn(
+                      'mr-1 size-3.5',
+                      ogAiPending && 'animate-pulse',
+                    )}
                   />
                   {t('aiOg')}
                 </Button>

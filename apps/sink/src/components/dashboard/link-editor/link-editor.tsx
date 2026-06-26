@@ -11,6 +11,7 @@ import { Button } from '@cdlab996/ui/components/button'
 import { Calendar } from '@cdlab996/ui/components/calendar'
 import { Input } from '@cdlab996/ui/components/input'
 import { Label } from '@cdlab996/ui/components/label'
+import { PasswordInput } from '@cdlab996/ui/components/password-input'
 import {
   Popover,
   PopoverContent,
@@ -295,42 +296,44 @@ export function LinkEditor({ existing }: { existing?: LinkRow }) {
             />
             <div className="space-y-2">
               <Label>{t('expiration')}</Label>
-              <Popover open={dateOpen} onOpenChange={setDateOpen}>
-                <PopoverTrigger asChild>
-                  <Button
+              <div className="relative">
+                <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={`w-full justify-start pr-9 font-normal ${expiryDate ? '' : 'text-muted-foreground'}`}
+                    >
+                      <CalendarIcon className="mr-2 size-4" />
+                      {expiryDate
+                        ? expiryDate.toLocaleDateString(locale)
+                        : t('pickDate')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={expiryDate}
+                      defaultMonth={expiryDate}
+                      disabled={{ before: new Date() }}
+                      onSelect={(d?: Date) => {
+                        set('expiresAt', d ? d.getTime() : null)
+                        if (d) setDateOpen(false)
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {expiryDate && (
+                  <button
                     type="button"
-                    variant="outline"
-                    className={`w-full justify-start font-normal ${expiryDate ? '' : 'text-muted-foreground'}`}
+                    aria-label={t('clearDate')}
+                    onClick={() => set('expiresAt', null)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    <CalendarIcon className="mr-2 size-4" />
-                    {expiryDate
-                      ? expiryDate.toLocaleDateString(locale)
-                      : t('pickDate')}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={expiryDate}
-                    defaultMonth={expiryDate}
-                    disabled={{ before: new Date() }}
-                    onSelect={(d?: Date) => {
-                      set('expiresAt', d ? d.getTime() : null)
-                      if (d) setDateOpen(false)
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
-              {expiryDate && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => set('expiresAt', null)}
-                >
-                  {t('clearDate')}
-                </Button>
-              )}
+                    <X className="size-4" />
+                  </button>
+                )}
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="maxVisits">{t('maxVisits')}</Label>
@@ -350,9 +353,8 @@ export function LinkEditor({ existing }: { existing?: LinkRow }) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">{t('password')}</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 value={form.password}
                 onChange={(e) => set('password', e.target.value)}
                 placeholder={
