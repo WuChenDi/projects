@@ -4,24 +4,24 @@ packages:
 catalogs:
   dev:
     '@cloudflare/next-on-pages': ^1.13.16
-    '@cloudflare/workers-types': ^4.20260613.1
-    '@opennextjs/cloudflare': ^1.19.11
+    '@cloudflare/workers-types': ^4.20260626.1
+    '@opennextjs/cloudflare': ^1.20.0
     '@types/node': ^25
     '@types/react': ^19
     '@types/react-dom': ^19
     drizzle-kit: ^0.31.10
     jsdom: ^29
     tailwindcss: ^4
-    tsdown: ^0.22.2
+    tsdown: ^0.22.3
     typescript: ^6
     vitest: ^4.1.8
-    wrangler: ^4.100.0
+    wrangler: ^4.105.0
   prod:
     '@base-ui/react': ^1.5.0
     '@cdlab996/genid': ^1.4.0
     '@date-fns/tz': ^1.5.0
     '@hono/zod-validator': ^0.7.6
-    '@libsql/client': ^0.17.3
+    '@libsql/client': ^0.17.4
     '@next/third-parties': 16.2.9
     '@noble/ciphers': ^2.2.0
     '@noble/curves': ^2.2.0
@@ -30,9 +30,9 @@ catalogs:
     '@scure/bip32': ^2.2.0
     '@scure/bip39': ^2.2.0
     '@tanstack/react-form': ^1.33.0
-    '@tanstack/react-query': ^5.101.0
+    '@tanstack/react-query': ^5.101.1
     '@vercel/analytics': ^2.0.1
-    better-auth: ^1.6.19
+    better-auth: ^1.6.21
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
     cmdk: ^1.1.1
@@ -42,7 +42,7 @@ catalogs:
     'hls.js': ^1.6.16
     hono: ^4.12.25
     jszip: ^3.10.1
-    lucide-react: ^1.18.0
+    lucide-react: ^1.21.0
     mediabunny: ^1.46.0
     motion: ^12.40.0
     next: 16.2.9
