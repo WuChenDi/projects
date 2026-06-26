@@ -16,7 +16,7 @@
 
 ## 应用详情
 
-### Clearify
+### [Clearify](./apps/clearify)
 
 **图片 & 视频处理工具箱**
 
@@ -32,7 +32,7 @@ https://clearify.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Clearify/og-image.png" alt="Clearify" />
 </details>
 
-### SecureC
+### [SecureC](./apps/SecureC)
 
 **客户端文件 / 文本加解密工具**
 
@@ -48,7 +48,7 @@ https://securec.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/og-image.png" alt="SecureC" />
 </details>
 
-### Dropply
+### [Dropply](./apps/dropply-web)
 
 **端到端加密的文件分享平台**
 
@@ -64,7 +64,7 @@ https://dropply.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Dropply/og-image.png" alt="Dropply" />
 </details>
 
-### text2img
+### [text2img](./apps/text2img)
 
 **浏览器端文本生成图像**
 
@@ -80,7 +80,7 @@ https://text2img.cdlab.workers.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/og-image.png" alt="text2img" />
 </details>
 
-### ByCut
+### [ByCut](./apps/bycut)
 
 **浏览器端视频编辑器**
 
@@ -97,7 +97,7 @@ https://bycut.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/bycut/og-image.png" alt="ByCut" />
 </details>
 
-### byplay
+### [byplay](./apps/byplay)
 
 **在线视频播放器**
 
@@ -114,14 +114,14 @@ https://byplay.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byplay/og-image.png" alt="byplay" />
 </details>
 
-### byplay-log
+### [byplay-log](./apps/byplay-log)
 
 **ByPlay 播放器监控与分析服务**
 
 - 为 ByPlay 提供播放数据采集、日志上报与行为分析能力
 - 适合作为播放器日志后端或 A/B 实验/质量监控的数据基础设施
 
-### byTTS
+### [byTTS](./apps/bytts)
 
 **浏览器端文字转语音工具**
 
@@ -137,7 +137,7 @@ https://bytts.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/bytts/og-image.png" alt="bytts" />
 </details>
 
-### byshot
+### [byshot](./apps/byshot)
 
 **个人摄影作品集**
 
@@ -155,7 +155,7 @@ https://byshot.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/image-gallery/index.png" alt="byshot" />
 </details>
 
-### vidl
+### [vidl](./apps/vidl)
 
 **在线视频下载工具**
 
@@ -173,7 +173,7 @@ https://vidl.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/vidl/og-image.png" alt="vidl" />
 </details>
 
-### value-vision
+### [value-vision](./apps/value-vision)
 
 **加密货币 / 法币 / 商品价值对比工具**
 
@@ -188,7 +188,7 @@ https://values.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/value-vision/og-image.png" alt="value-vision" />
 </details>
 
-### Baccarat
+### [Baccarat](./apps/baccarat)
 
 **Telegram 百家乐游戏机器人**
 
@@ -197,7 +197,7 @@ https://values.pages.dev/
 - 游戏历史记录通过 Durable Objects SQLite 持久化存储
 - 核心技术：Hono + Grammy + Cloudflare Workers + Durable Objects
 
-### Flox
+### [Flox](./apps/flox)
 
 **视频聚合与播放平台**
 
@@ -214,7 +214,7 @@ https://floxx.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/flox/og-image.png" alt="flox" />
 </details>
 
-### LiveUser
+### [LiveUser](./apps/live-user)
 
 **实时在线用户计数器**
 
@@ -231,7 +231,7 @@ https://live-user.cdlab.workers.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/live-user/index.png" alt="live-user" />
 </details>
 
-### wepush
+### [wepush](./apps/wepush)
 
 **微信测试号模板消息推送控制台**
 
@@ -250,7 +250,7 @@ https://wepush.cdlab.workers.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/wepush/og-image.png" alt="wepush" />
 </details>
 
-### Flnk
+### [Flnk](./apps/flnk)
 
 **隐私优先短链服务**
 
@@ -269,7 +269,7 @@ https://flnk.cdlab.workers.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/flnk/index.png" alt="Flnk" />
 </details>
 
-### repo-changelog
+### [repo-changelog](./apps/repo-changelog)
 
 **开源项目 Release / Changelog 聚合面板**
 

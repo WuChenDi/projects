@@ -16,7 +16,7 @@ A modern web tools monorepo built with **Turborepo + pnpm**, spanning Next.js, N
 
 ## Applications
 
-### Clearify
+### [Clearify](./apps/clearify)
 
 **Image & Video Processing Toolbox**
 
@@ -32,7 +32,7 @@ https://clearify.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Clearify/og-image.png" alt="Clearify" />
 </details>
 
-### SecureC
+### [SecureC](./apps/SecureC)
 
 **Client-side File / Text Encryption Tool**
 
@@ -48,7 +48,7 @@ https://securec.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/og-image.png" alt="SecureC" />
 </details>
 
-### Dropply
+### [Dropply](./apps/dropply-web)
 
 **End-to-end Encrypted File Sharing Platform**
 
@@ -64,7 +64,7 @@ https://dropply.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Dropply/og-image.png" alt="Dropply" />
 </details>
 
-### text2img
+### [text2img](./apps/text2img)
 
 **Browser-based Text-to-Image Generator**
 
@@ -80,7 +80,7 @@ https://text2img.cdlab.workers.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/og-image.png" alt="text2img" />
 </details>
 
-### ByCut
+### [ByCut](./apps/bycut)
 
 **Browser-based Video Editor**
 
@@ -97,7 +97,7 @@ https://bycut.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/bycut/og-image.png" alt="ByCut" />
 </details>
 
-### byplay
+### [byplay](./apps/byplay)
 
 **Online Video Player**
 
@@ -114,14 +114,14 @@ https://byplay.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byplay/og-image.png" alt="byplay" />
 </details>
 
-### byplay-log
+### [byplay-log](./apps/byplay-log)
 
 **ByPlay Player Monitoring & Analytics Service**
 
 - Playback data collection, log reporting, and behavior analytics for ByPlay
 - Suitable as a player log backend or data infrastructure for A/B testing / quality monitoring
 
-### byTTS
+### [byTTS](./apps/bytts)
 
 **Browser-based Text-to-Speech Tool**
 
@@ -137,7 +137,7 @@ https://bytts.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/bytts/og-image.png" alt="bytts" />
 </details>
 
-### byshot
+### [byshot](./apps/byshot)
 
 **Personal Photography Collection**
 
@@ -155,7 +155,7 @@ https://byshot.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/image-gallery/index.png" alt="byshot" />
 </details>
 
-### vidl
+### [vidl](./apps/vidl)
 
 **Online Video Downloader**
 
@@ -173,7 +173,7 @@ https://vidl.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/vidl/og-image.png" alt="vidl" />
 </details>
 
-### value-vision
+### [value-vision](./apps/value-vision)
 
 **Crypto / Fiat / Commodity Value Comparison Tool**
 
@@ -188,7 +188,7 @@ https://values.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/value-vision/og-image.png" alt="value-vision" />
 </details>
 
-### Baccarat
+### [Baccarat](./apps/baccarat)
 
 **Telegram Baccarat Game Bot**
 
@@ -197,7 +197,7 @@ https://values.pages.dev/
 - Game history persistence via Durable Objects SQLite
 - Tech: Hono + Grammy + Cloudflare Workers + Durable Objects
 
-### Flox
+### [Flox](./apps/flox)
 
 **Video Aggregation & Playback Platform**
 
@@ -214,7 +214,7 @@ https://floxx.pages.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/flox/og-image.png" alt="flox" />
 </details>
 
-### LiveUser
+### [LiveUser](./apps/live-user)
 
 **Real-time Online User Counter**
 
@@ -231,7 +231,7 @@ https://live-user.cdlab.workers.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/live-user/index.png" alt="live-user" />
 </details>
 
-### wepush
+### [wepush](./apps/wepush)
 
 **WeChat Test-Account Template Message Console**
 
@@ -250,7 +250,7 @@ https://wepush.cdlab.workers.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/wepush/og-image.png" alt="wepush" />
 </details>
 
-### Flnk
+### [Flnk](./apps/flnk)
 
 **Privacy-first Link Shortener**
 
@@ -269,7 +269,7 @@ https://flnk.cdlab.workers.dev/
   <img src="https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/flnk/index.png" alt="Flnk" />
 </details>
 
-### repo-changelog
+### [repo-changelog](./apps/repo-changelog)
 
 **Open Source Release / Changelog Aggregation Dashboard**
 
