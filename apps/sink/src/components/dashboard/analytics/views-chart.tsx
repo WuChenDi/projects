@@ -115,6 +115,8 @@ export function ViewsChart({
                 axisLine={false}
                 tickMargin={8}
                 minTickGap={24}
+                interval="preserveStartEnd"
+                padding={{ left: 12, right: 12 }}
               />
               <ChartTooltip
                 cursor={false}
