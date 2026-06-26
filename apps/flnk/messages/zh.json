@@ -35,12 +35,14 @@
         "trackers": {
           "label": "第三方追踪脚本"
         }
-      }
+      },
+      "eyebrow": "性能"
     },
     "cta": {
       "title": "准备好创建第一个短链接了吗？",
       "subtitle": "打开控制台，几秒钟即可创建链接。",
-      "button": "打开控制台"
+      "button": "打开控制台",
+      "eyebrow": "开始使用"
     },
     "featuresTitle": "功能特点",
     "features": {
@@ -85,7 +87,8 @@
           "title": "分享并追踪",
           "desc": "每次点击实时写入 Analytics Engine —— 地域、设备、来源一应俱全。"
         }
-      }
+      },
+      "eyebrow": "流程"
     },
     "faq": {
       "title": "常见问题",
@@ -131,7 +134,8 @@
           "q": "可以导入 / 导出链接吗?",
           "a": "可以。通过 JSON 批量迁移链接,并在控制台把点击分析导出为 CSV。"
         }
-      }
+      },
+      "eyebrow": "常见问题"
     },
     "footer": {
       "blurb": "内置地域 / 设备路由与边缘分析的短链接,完全运行在 Cloudflare Workers 上。",
@@ -145,7 +149,8 @@
     },
     "featuresSubtitle": "简单而实用的功能",
     "titleLead": "带路由与分析的短链，",
-    "titleHighlight": "为边缘而生"
+    "titleHighlight": "为边缘而生",
+    "featuresEyebrow": "功能"
   },
   "login": {
     "welcome": "欢迎使用 Flnk",
