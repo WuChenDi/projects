@@ -1,0 +1,42 @@
+{
+  "name": "@cdlab996/db",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Shared Drizzle DB factory (D1 / LibSQL) and query helpers for projects-monorepo.",
+  "license": "MIT",
+  "exports": {
+    "./node": {
+      "types": "./dist/node.d.mts",
+      "import": "./dist/node.mjs",
+      "require": "./dist/node.cjs"
+    },
+    "./web": {
+      "types": "./dist/web.d.mts",
+      "import": "./dist/web.mjs",
+      "require": "./dist/web.cjs"
+    },
+    "./utils": {
+      "types": "./dist/utils.d.mts",
+      "import": "./dist/utils.mjs",
+      "require": "./dist/utils.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --project ./tsconfig.json --noEmit",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@libsql/client": "catalog:prod",
+    "drizzle-orm": "catalog:prod"
+  },
+  "devDependencies": {
+    "@cdlab996/tsconfig": "workspace:*",
+    "@cloudflare/workers-types": "catalog:dev",
+    "@types/node": "catalog:dev",
+    "tsdown": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}

@@ -719,6 +719,9 @@ importers:
 
   apps/dropply-api:
     dependencies:
+      '@cdlab996/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@cdlab996/uncrypto':
         specifier: workspace:*
         version: link:../../packages/uncrypto
@@ -728,9 +731,6 @@ importers:
       '@hono/zod-validator':
         specifier: catalog:prod
         version: 0.7.6(hono@4.12.25)(zod@4.4.3)
-      '@libsql/client':
-        specifier: catalog:prod
-        version: 0.17.3
       '@react-email/components':
         specifier: ^1.0.8
         version: 1.0.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1034,6 +1034,9 @@ importers:
 
   apps/sink:
     dependencies:
+      '@cdlab996/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@cdlab996/genid':
         specifier: catalog:prod
         version: 1.4.0
@@ -1329,6 +1332,9 @@ importers:
 
   apps/wepush:
     dependencies:
+      '@cdlab996/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@cdlab996/genid':
         specifier: catalog:prod
         version: 1.4.0
@@ -1460,6 +1466,31 @@ importers:
       vitest:
         specifier: catalog:dev
         version: 4.1.8(@types/node@25.3.3)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@25.3.3)(typescript@6.0.2))(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.9.0))
+
+  packages/db:
+    dependencies:
+      '@libsql/client':
+        specifier: catalog:prod
+        version: 0.17.3
+      drizzle-orm:
+        specifier: catalog:prod
+        version: 0.45.2(@cloudflare/workers-types@4.20260613.1)(@libsql/client@0.17.3)(@types/pg@8.18.0)(@upstash/redis@1.37.0)(kysely@0.29.2)(pg@8.20.0)(postgres@3.4.8)
+    devDependencies:
+      '@cdlab996/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@cloudflare/workers-types':
+        specifier: catalog:dev
+        version: 4.20260613.1
+      '@types/node':
+        specifier: catalog:dev
+        version: 25.3.3
+      tsdown:
+        specifier: catalog:dev
+        version: 0.22.2(tsx@4.21.0)(typescript@6.0.2)(unrun@0.2.37)(vue-tsc@3.2.6(typescript@6.0.2))
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.2
 
   packages/tsconfig: {}
 

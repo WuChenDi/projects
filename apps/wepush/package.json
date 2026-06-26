@@ -31,6 +31,7 @@
     "gen:cities": "node scripts/fetch-city-codes.mjs"
   },
   "dependencies": {
+    "@cdlab996/db": "workspace:*",
     "@cdlab996/genid": "catalog:prod",
     "@cdlab996/ui": "workspace:*",
     "@cdlab996/utils": "workspace:*",

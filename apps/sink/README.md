@@ -33,8 +33,18 @@ pnpm --filter @cdlab996/sink db:studio  # drizzle-kit studio (port 3021)
 ```
 
 Copy `.env.example` to `.env` and set the better-auth + OAuth secrets plus your
-DB credentials. `DB_TYPE=libsql` uses a local SQLite file by default;
-`DB_TYPE=d1` uses the `DB` binding.
+DB credentials. `DB_TYPE` selects the driver and **both run in production on
+Workers**:
+
+- `DB_TYPE=d1` — uses the `DB` binding (Cloudflare D1).
+- `DB_TYPE=libsql` — uses `LIBSQL_URL` + `LIBSQL_AUTH_TOKEN` (remote Turso, or a
+  local SQLite file via `file:./src/database/data.db` for offline dev).
+
+> LibSQL on Workers relies on `serverExternalPackages` in `next.config.ts`
+> (`@libsql/client`, `@libsql/hrana-client`, `@libsql/isomorphic-ws`). These
+> must stay external so wrangler resolves them via the `workerd` export
+> condition — removing them breaks the OpenNext build with "Could not resolve
+> @libsql/isomorphic-ws". See https://opennext.js.org/cloudflare/howtos/workerd
 
 ### Authentication
 
@@ -62,8 +72,10 @@ it with an additional access layer if it must stay private.
 pnpm --filter @cdlab996/sink deploy
 ```
 
-Requires Cloudflare bindings: `DB` (D1), `KV`, `AI`, `ANALYTICS`
-(Analytics Engine). See `wrangler.jsonc`.
+Requires Cloudflare bindings: `KV`, `AI`, `ANALYTICS` (Analytics Engine), plus
+the database for the active `DB_TYPE` — the `DB` binding (D1) or
+`LIBSQL_URL` + `LIBSQL_AUTH_TOKEN` (Turso; set the token via
+`wrangler secret put LIBSQL_AUTH_TOKEN`, don't commit it). See `wrangler.jsonc`.
 
 ## Seeding a link (manual, P1a)
 
