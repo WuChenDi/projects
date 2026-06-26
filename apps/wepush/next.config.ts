@@ -5,6 +5,17 @@ const nextConfig: NextConfig = {
     BUILD_TIME: new Date().toLocaleString(),
   },
   allowedDevOrigins: ['wepush.a.wd.ds.cc'],
+  // Keep the libsql packages unbundled so wrangler resolves them at runtime via
+  // the correct `workerd` export condition. `@libsql/isomorphic-ws` ships
+  // workerd-specific code; per OpenNext docs it (and the libsql client/hrana
+  // chain that pulls it in) must be external, otherwise the build fails with
+  // "Could not resolve @libsql/isomorphic-ws".
+  // https://opennext.js.org/cloudflare/howtos/workerd
+  serverExternalPackages: [
+    '@libsql/client',
+    '@libsql/hrana-client',
+    '@libsql/isomorphic-ws',
+  ],
   images: {
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],

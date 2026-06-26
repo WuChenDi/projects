@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Workspace layout:
 
 - `apps/*` — 17 deployable products (Next.js, Nuxt, Cloudflare Workers)
-- `packages/*` — 5 shared libraries (`ui`, `utils`, `cipher`, `uncrypto`, `tsconfig`)
+- `packages/*` — 6 shared libraries (`ui`, `utils`, `cipher`, `uncrypto`, `db`, `tsconfig`)
 
 Apps fall into three runtime families with different toolchains:
 
@@ -189,7 +189,7 @@ Uses `@cdlab996/cipher` (XChaCha20-Poly1305 + Argon2id + ECIES) and runs all cry
 Single-tenant console for sending WeChat official-account template messages. Replaces the legacy `ALL_CONFIG` + Qinglong script setup — everything (recipients, templates, push logs, settings) lives in the DB and is editable from the UI.
 
 - `src/app/` — App Router pages (`/`, `/users`, `/templates`, `/logs`, `/settings`, `/debug`) + `/api/*` route handlers. `PasswordGate` (`src/components/`) is a **client-side UI gate only** — APIs other than `/api/push/run` and `/api/push/retry` are not server-authorized.
-- `src/database/schema.ts` — Drizzle schema with the shared `trackingFields` block (soft-delete via `isDeleted`). Dual driver: `libsql` (dev / Turso) or `d1` (Cloudflare). `DB_TYPE` switches the dialect (see `drizzle.config.ts`); `LIBSQL_URL` defaults to `file:./src/database/data.db`. Studio runs on port 3020.
+- `src/database/schema.ts` — Drizzle schema with the shared `trackingFields` block (soft-delete via `isDeleted`). Dual driver (`libsql`/Turso or `d1`) — **both run in production on Workers** — wired via `@cdlab996/db/web` (`src/lib/db.ts` is a thin adapter). `DB_TYPE` switches the dialect (see `drizzle.config.ts`); `LIBSQL_URL` defaults to `file:./src/database/data.db`. Studio runs on port 3020.
 - `src/services/channels/wechat.ts` — Acquires the WeChat `access_token` and sends template messages.
 - `src/services/sources/{weather,hitokoto,iciba}.ts` — External data sources for template variables (basic weather via `t.weather.itboy.net`, Hitokoto quotes, iCIBA English notes).
 - `src/services/calendar/` — Solar + lunar diff math built on `tyme4ts`. Each festival/anniversary has an `isLunar` toggle; lunar `MM-DD` is converted to the next solar occurrence and rendered with a `(农历)` suffix.
@@ -291,6 +291,18 @@ Pure-browser stream download — `mux.js` + Streams API, near-zero memory footpr
 - Two-file package: `crypto.node.ts` (Node `webcrypto`) and `crypto.web.ts` (browser `crypto`). Resolved at build via tsdown.
 - Used wherever code runs in both Workers/browser and Node test runners.
 
+#### `@cdlab996/db` — Shared Drizzle DB factory + query helpers
+
+Built with `tsdown`. The single source of truth for the dual-driver (`d1` / `libsql`) DB wiring across `dropply-api`, `sink`, and `wepush` — each app's `src/lib/db.ts` is now a thin adapter over this package (no more divergent hand-rolled `DatabaseManager` / `getDb` copies).
+
+- **Two runtime entries** — pick by the app's bundler, NOT auto-selected (explicit subpaths avoid Hono-on-miniflare picking the wrong client):
+  - `@cdlab996/db/node` → uses `@libsql/client` (Node entry, supports `file:` local SQLite). For plain-wrangler **Hono** workers (`dropply-api`) + Node test runners.
+  - `@cdlab996/db/web` → uses `@libsql/client/web` (pure fetch/ws, bundles under OpenNext esbuild). For **Next.js / OpenNext** apps (`sink`, `wepush`). Remote Turso only, no `file:`.
+- `defineDb(schema)` returns a keyed-cached `getDb(env: DbEnv)`; `DbEnv` = `{ DB_TYPE?, DB?, LIBSQL_URL?, LIBSQL_AUTH_TOKEN? }`. `DB_TYPE` ('libsql' default | 'd1') selects the driver. Each app builds `DbEnv` from its own source (Hono `c.env`; OpenNext injected env / `getCloudflareContext()` with `process.env` fallback).
+- Exported `Db<TSchema>` = `BaseSQLiteDatabase<'async', unknown, TSchema>` — driver-agnostic; `.batch` etc. need narrowing.
+- `./utils` (also re-exported from `/node` and `/web`) — `trackingFields` query helpers: `notDeleted`, `withNotDeleted`, `softDelete`, `isNotExpired`, `withNotDeletedAndNotExpired`, `withUpdatedTimestamp`, `isExpired`.
+- `@libsql/client` / `drizzle-orm` are kept **external** in the build so consumers resolve them — critical so the OpenNext apps' `serverExternalPackages` (`@libsql/client`, `@libsql/hrana-client`, `@libsql/isomorphic-ws` in `next.config.ts`) still matches the import and wrangler resolves the libsql chain via the `workerd` export condition.
+
 #### `@cdlab996/tsconfig` — Shared TS configs
 
 - `base.json` — strict, NodeNext, ES2017. Used by everything.
@@ -332,7 +344,7 @@ Pure-browser stream download — `mux.js` + Streams API, near-zero memory footpr
 
 ### Soft delete
 
-Drizzle tables share a `trackingFields` block: `createdAt`, `updatedAt` (auto-updated via `$onUpdateFn`), `isDeleted` (default 0). Never hard-delete; filter with `eq(table.isDeleted, 0)`.
+Drizzle tables share a `trackingFields` block: `createdAt`, `updatedAt` (auto-updated via `$onUpdateFn`), `isDeleted` (default 0). Never hard-delete; filter with `eq(table.isDeleted, 0)` — or the shared helpers from `@cdlab996/db/utils` (`notDeleted`, `withNotDeleted`, `softDelete`, `isNotExpired`, …).
 
 ### API response envelope (Workers)
 

@@ -23,6 +23,7 @@
     "db:studio": "drizzle-kit studio --port 3021 --host 0.0.0.0"
   },
   "dependencies": {
+    "@cdlab996/db": "workspace:*",
     "@cdlab996/genid": "catalog:prod",
     "@cdlab996/ui": "workspace:*",
     "@cdlab996/utils": "workspace:*",

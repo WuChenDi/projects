@@ -27,10 +27,10 @@
     "db:up": "drizzle-kit up"
   },
   "dependencies": {
+    "@cdlab996/db": "workspace:*",
     "@cdlab996/uncrypto": "workspace:*",
     "@cdlab996/utils": "workspace:*",
     "@hono/zod-validator": "catalog:prod",
-    "@libsql/client": "catalog:prod",
     "@react-email/components": "^1.0.8",
     "drizzle-orm": "catalog:prod",
     "hono": "catalog:prod",

@@ -21,7 +21,7 @@ Preview: https://wepush.cdlab.workers.dev/
 
 - **Framework** — Next.js 16 App Router + React 19 + TypeScript
 - **UI** — `@cdlab996/ui` (shadcn + Tailwind v4) + TanStack Query / Form + Zustand
-- **ORM** — Drizzle, dual driver (`libsql` for dev/Turso, `d1` for Cloudflare)
+- **ORM** — Drizzle, dual driver (`libsql`/Turso or `d1`); both run in production on Workers
 - **Calendar** — `react-day-picker` (date picker) + `tyme4ts` (solar/lunar conversion)
 - **Deployment** — `@opennextjs/cloudflare` → Cloudflare Workers (with cron triggers)
 
@@ -32,9 +32,9 @@ Preview: https://wepush.cdlab.workers.dev/
 - Node.js 20+
 - pnpm
 - A SQLite-compatible database (one of):
-  - Local `libsql` file (zero-config default)
-  - [Turso](https://turso.tech) remote libsql
-  - Cloudflare D1 (production)
+  - Local `libsql` file (zero-config default, dev)
+  - [Turso](https://turso.tech) remote libsql (dev or production)
+  - Cloudflare D1 (dev or production)
 
 ### Install
 
@@ -98,6 +98,12 @@ pnpm cf:remotedb           # for D1
 # 4. Build + deploy
 pnpm deploy
 ```
+
+> **LibSQL on Workers** relies on `serverExternalPackages` in `next.config.ts`
+> (`@libsql/client`, `@libsql/hrana-client`, `@libsql/isomorphic-ws`). These must
+> stay external so wrangler resolves them via the `workerd` export condition;
+> removing them breaks the OpenNext build with "Could not resolve
+> @libsql/isomorphic-ws". See <https://opennext.js.org/cloudflare/howtos/workerd>.
 
 ## Security model
 

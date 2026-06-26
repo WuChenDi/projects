@@ -1,6 +1,12 @@
 export interface CloudflareEnv {
   R2_STORAGE: R2Bucket
 
+  // Database — driver selected by DB_TYPE ('libsql' default | 'd1').
+  DB_TYPE?: string
+  DB?: D1Database
+  LIBSQL_URL?: string
+  LIBSQL_AUTH_TOKEN?: string
+
   JWT_SECRET: string
   TOTP_SECRETS?: string
   REQUIRE_TOTP?: string

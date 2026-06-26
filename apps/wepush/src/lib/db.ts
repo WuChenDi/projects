@@ -1,16 +1,14 @@
+import type { Db } from '@cdlab996/db/web'
+import { defineDb } from '@cdlab996/db/web'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
-import { drizzle as drizzleD1 } from 'drizzle-orm/d1'
-import type { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core'
 import * as schema from '@/database/schema'
 
-// Common base type — both LibSQLDatabase and DrizzleD1Database extend this.
-// Using the base lets a single `DB` reference accept either driver while
-// keeping every standard query-builder method (select with projection,
-// leftJoin, $count, etc.) intact. Driver-specific extras (e.g. `.batch`) are
-// intentionally not on this type — callers must narrow if they need them.
-export type DB = BaseSQLiteDatabase<'async', unknown, typeof schema>
+// Both LibSQLDatabase and DrizzleD1Database extend this base, so a single `DB`
+// reference accepts either driver. Driver-specific extras (e.g. `.batch`) are
+// not on this type — callers must narrow.
+export type DB = Db<typeof schema>
 
-let cachedDb: DB | undefined
+const getDbFromEnv = defineDb(schema)
 
 // `env` lets callers (e.g. the `scheduled()` handler) inject the worker env
 // directly. The cron path can't use `getCloudflareContext()` because opennext
@@ -18,36 +16,11 @@ let cachedDb: DB | undefined
 // likewise only populated on first fetch — so a cron-first cold start would
 // otherwise see no bindings and no DB_TYPE.
 export async function getDb(env?: CloudflareEnv): Promise<DB> {
-  if (cachedDb) return cachedDb
-
-  const dbType = env?.DB_TYPE || process.env.DB_TYPE || 'libsql'
-
-  if (dbType === 'd1') {
-    const binding = env?.DB ?? getCloudflareContext().env.DB
-    if (!binding) {
-      throw new Error(
-        'D1 binding "DB" not found — set d1_databases in wrangler.jsonc',
-      )
-    }
-    cachedDb = drizzleD1(binding, { schema })
-    return cachedDb
-  }
-
-  // Dev-only path. `new Function` hides the import from bundlers so OpenNext's
-  // esbuild never tries to bundle @libsql/* (which fails under pnpm hoisting
-  // because @libsql/hrana-client can't find its sibling @libsql/isomorphic-ws).
-  // In production we always take the D1 branch above, so this is never run.
-  const dynamicImport = new Function('p', 'return import(p)') as <T>(
-    p: string,
-  ) => Promise<T>
-  const [{ createClient }, { drizzle: drizzleSqlite }] = await Promise.all([
-    dynamicImport<typeof import('@libsql/client/web')>('@libsql/client/web'),
-    dynamicImport<typeof import('drizzle-orm/libsql')>('drizzle-orm/libsql'),
-  ])
-  const client = createClient({
-    url: process.env.LIBSQL_URL || 'file:./src/database/data.db',
-    authToken: process.env.LIBSQL_AUTH_TOKEN || undefined,
+  const e = env ?? getCloudflareContext().env
+  return getDbFromEnv({
+    DB_TYPE: e.DB_TYPE ?? process.env.DB_TYPE,
+    DB: e.DB,
+    LIBSQL_URL: e.LIBSQL_URL ?? process.env.LIBSQL_URL,
+    LIBSQL_AUTH_TOKEN: e.LIBSQL_AUTH_TOKEN ?? process.env.LIBSQL_AUTH_TOKEN,
   })
-  cachedDb = drizzleSqlite(client, { schema })
-  return cachedDb
 }
