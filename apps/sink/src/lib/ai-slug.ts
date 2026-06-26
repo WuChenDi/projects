@@ -8,15 +8,66 @@ const AI_TIMEOUT_MS = 10_000
 const DEFAULT_PROMPT =
   'You are a URL-to-slug converter. Given a URL, produce a short, human-readable slug derived from the URL and its purpose. Use only lowercase letters, numbers and single hyphens, at most three words. Return ONLY JSON: {"slug": "example-slug"}'
 
-// Coerce an arbitrary AI response into a valid slug, or null when unusable.
-function parseSlug(text: string): string | null {
-  const match = text.match(/\{[^}]*"slug"\s*:\s*"([^"]+)"[^}]*\}/u)
-  const raw = (match?.[1] ?? '').trim().toLowerCase()
+// Few-shot examples priming the model toward idiomatic slugs (repo name,
+// `*-docs`, `tg-*`, etc.) before it sees the real URL.
+const FEW_SHOT: { role: 'user' | 'assistant'; content: string }[] = [
+  { role: 'user', content: 'https://www.cloudflare.com/' },
+  { role: 'assistant', content: '{"slug": "cloudflare"}' },
+  { role: 'user', content: 'https://github.com/vercel/next.js' },
+  { role: 'assistant', content: '{"slug": "nextjs"}' },
+  { role: 'user', content: 'https://github.com/WuChenDi' },
+  { role: 'assistant', content: '{"slug": "wuchendi"}' },
+  { role: 'user', content: 'https://wcd.pages.dev' },
+  { role: 'assistant', content: '{"slug": "notes-wudi"}' },
+  { role: 'user', content: 'https://clearify.pages.dev' },
+  { role: 'assistant', content: '{"slug": "clearify"}' },
+  { role: 'user', content: 'https://t.me/cdlab996' },
+  { role: 'assistant', content: '{"slug": "tg-cdlab996"}' },
+  { role: 'user', content: 'https://shortener.cdlab.workers.dev' },
+  { role: 'assistant', content: '{"slug": "shortener"}' },
+]
+
+// Normalize a raw candidate into a valid slug, or null when unusable.
+function cleanSlug(raw: string): string | null {
   const cleaned = raw
+    .trim()
+    .toLowerCase()
     .replace(/[^a-z0-9-]+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
   return cleaned && SLUG_REGEX.test(cleaned) ? cleaned : null
+}
+
+// Coerce an arbitrary AI response into a valid slug, or null when unusable.
+// Tries progressively looser strategies: strict JSON → embedded `{...slug...}`
+// → bare slug-shaped substring.
+function parseSlug(text: string): string | null {
+  // 1) Strict JSON body.
+  try {
+    const parsed = JSON.parse(text)
+    if (typeof parsed?.slug === 'string') {
+      const slug = cleanSlug(parsed.slug)
+      if (slug) return slug
+    }
+  } catch {
+    // fall through
+  }
+
+  // 2) Embedded JSON object carrying a slug.
+  const jsonMatch = text.match(/\{[^}]*"slug"\s*:\s*"([^"]+)"[^}]*\}/u)
+  if (jsonMatch?.[1]) {
+    const slug = cleanSlug(jsonMatch[1])
+    if (slug) return slug
+  }
+
+  // 3) Bare slug-shaped substring as a last resort.
+  const bare = text.match(/[a-z0-9][a-z0-9-]{1,18}[a-z0-9]/iu)
+  if (bare?.[0]) {
+    const slug = cleanSlug(bare[0])
+    if (slug) return slug
+  }
+
+  return null
 }
 
 async function readResponseText(response: unknown): Promise<string> {
@@ -52,6 +103,7 @@ export async function generateAiSlug(
         const response = await env.AI.run(aiModel as keyof AiModels, {
           messages: [
             { role: 'system', content: aiPrompt || DEFAULT_PROMPT },
+            ...FEW_SHOT,
             { role: 'user', content: url },
           ],
           stream: false,

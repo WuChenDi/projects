@@ -48,3 +48,4 @@ Each task is a single line linking to its detail file. All detailed information 
 - [x] [**FEAT-015 Sink P5c — link tags**](FEAT-015.md) `P2`
 - [x] [**FEAT-016 Sink P5d — click-limit expiration (maxVisits)**](FEAT-016.md) `P3`
 - [x] [**FEAT-017 Sink P5e — enable/disable (pause) toggle**](FEAT-017.md) `P3`
+- [x] [**FEAT-018 Sink — upgrade AI slug quality (few-shot + robust parsing)**](FEAT-018.md) `P3`
