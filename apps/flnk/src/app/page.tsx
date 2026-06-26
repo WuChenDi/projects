@@ -1,6 +1,12 @@
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
-import { IKPageContainer } from '@cdlab996/ui/IK'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@cdlab996/ui/components/input-group'
+import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
 import { GitHubIcon as Github } from '@cdlab996/ui/icon'
 import { cn } from '@cdlab996/ui/lib/utils'
 import BlurText from '@cdlab996/ui/reactbits/BlurText'
@@ -31,6 +37,62 @@ import { getConfig } from '@/lib/env'
 
 const GITHUB_HREF = 'https://github.com/WuChenDi/projects/tree/main/apps/flnk'
 const AUTHOR_HREF = 'https://github.com/WuChenDi'
+
+// Fixed full-page backdrop: a subtle grid washed with violet corner glows
+// (adapted from patterncraft's "Grid Quad Purple Glow"). Two theme-specific
+// layers so it reads on both light and dark without touching shared globals.
+function PageBackground() {
+  const grid =
+    'linear-gradient(to right, VAR 1px, transparent 1px), linear-gradient(to bottom, VAR 1px, transparent 1px)'
+  const size = '96px 64px, 96px 64px, 100% 100%, 100% 100%, 100% 100%'
+  return (
+    <>
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10 dark:hidden"
+        style={{
+          background: '#ffffff',
+          backgroundImage: `${grid.replaceAll('VAR', '#eef0f4')}, radial-gradient(circle 600px at 0% 200px, #e9e3ff, transparent), radial-gradient(circle 600px at 100% 200px, #e9e3ff, transparent), radial-gradient(circle 700px at 50% -100px, #ece7ff, transparent)`,
+          backgroundSize: size,
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10 hidden dark:block"
+        style={{
+          background: '#000000',
+          backgroundImage: `${grid.replaceAll('VAR', 'rgba(255,255,255,0.05)')}, radial-gradient(circle 600px at 0% 200px, rgba(99,102,241,0.18), transparent), radial-gradient(circle 600px at 100% 200px, rgba(168,85,247,0.16), transparent), radial-gradient(circle 700px at 50% -100px, rgba(99,102,241,0.12), transparent)`,
+          backgroundSize: size,
+        }}
+      />
+    </>
+  )
+}
+
+// Left-aligned section heading with a numbered eyebrow (e.g. "01 — Performance").
+function SectionHeading({
+  index,
+  eyebrow,
+  title,
+  subtitle,
+}: {
+  index: string
+  eyebrow: string
+  title: string
+  subtitle: string
+}) {
+  return (
+    <div className="max-w-2xl">
+      <p className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-primary">
+        {index} — {eyebrow}
+      </p>
+      <h2 className="mt-3 text-2xl font-bold tracking-tight md:text-3xl">
+        {title}
+      </h2>
+      <p className="mt-3 text-muted-foreground">{subtitle}</p>
+    </div>
+  )
+}
 
 // Animated corner brackets, drawn on every feature card. Decorative only.
 function CardCorners() {
@@ -95,6 +157,7 @@ export default async function LandingPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      <PageBackground />
       <header className="mx-auto flex h-20 w-full max-w-6xl shrink-0 items-center justify-between gap-2 px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2 font-semibold">
           <FlnkLogo className="size-6" />
@@ -117,8 +180,8 @@ export default async function LandingPage() {
         </div>
       </header>
 
-      <IKPageContainer className="p-0 md:px-0">
-        <div className="w-full">
+      <ScrollArea className="h-[calc(100dvh-80px)] w-full [&_[data-slot=scroll-area-viewport]>*]:!block">
+        <div className="w-full min-w-0">
           {/* Hero */}
           <section className="relative isolate overflow-hidden">
             {/* Subtle animated threads backdrop, masked to fade out */}
@@ -154,7 +217,7 @@ export default async function LandingPage() {
               </h1>
               <div
                 aria-hidden
-                className="mx-auto max-w-3xl text-4xl font-bold tracking-tight md:text-6xl"
+                className="mx-auto max-w-3xl text-balance text-3xl font-bold tracking-tight sm:text-4xl"
               >
                 <BlurText
                   text={`${t('titleLead')} ${t('titleHighlight')}`}
@@ -164,11 +227,11 @@ export default async function LandingPage() {
                 />
               </div>
 
-              <p className="mx-auto mt-6 max-w-2xl text-pretty text-base text-muted-foreground md:text-lg">
+              <p className="mx-auto mt-6 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
                 {t('subtitle')}
               </p>
 
-              <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <div className="mt-9 flex items-center justify-center flex-row gap-3">
                 <Button asChild size="lg">
                   <Link href="/dashboard">
                     {t('getStarted')}
@@ -188,18 +251,25 @@ export default async function LandingPage() {
               </div>
 
               {/* Decorative shortener preview */}
-              <div className="mx-auto mt-14 w-full max-w-xl rounded-2xl border bg-card/60 p-2 shadow-sm backdrop-blur">
-                <div className="flex items-center gap-2 rounded-xl bg-muted/50 p-2 pl-4">
-                  <Link2 className="size-4 shrink-0 text-muted-foreground" />
-                  <span className="flex-1 truncate text-left font-mono text-xs text-muted-foreground md:text-sm">
-                    https://example.com/2026/the-very-long-article-slug?utm_source=newsletter
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground">
-                    <Sparkles className="size-3.5" />
-                    Shorten
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-2 px-3 py-3">
+              <div className="mx-auto mt-14 w-full max-w-xl rounded-xl border p-2 shadow-sm backdrop-blur">
+                <InputGroup className='border-none'>
+                  <InputGroupAddon>
+                    <Link2 />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    readOnly
+                    value="https://flnk.cdlab.workers.dev/"
+                    aria-label="Long URL"
+                    className="font-mono text-xs md:text-sm"
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupButton variant="default">
+                      <Sparkles />
+                      Shorten
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                </InputGroup>
+                <div className="flex items-center justify-between gap-2 px-3 pt-3">
                   <div className="flex items-center gap-1.5 text-sm">
                     <span className="font-mono text-muted-foreground">
                       s.ink/
@@ -207,266 +277,283 @@ export default async function LandingPage() {
                     <span className="font-mono font-semibold text-foreground">
                       launch
                     </span>
-                    <Badge variant="secondary" className="ml-1 text-[10px]">
-                      AI
-                    </Badge>
+                    <Badge variant="secondary">AI</Badge>
                   </div>
-                  <div className="flex items-center gap-3 text-muted-foreground">
-                    <Copy className="size-4 transition-colors hover:text-foreground" />
-                    <QrCode className="size-4 transition-colors hover:text-foreground" />
-                    <BarChart3 className="size-4 transition-colors hover:text-foreground" />
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 text-muted-foreground hover:text-foreground"
+                      aria-label="Copy"
+                    >
+                      <Copy className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 text-muted-foreground hover:text-foreground"
+                      aria-label="QR code"
+                    >
+                      <QrCode className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 text-muted-foreground hover:text-foreground"
+                      aria-label="Analytics"
+                    >
+                      <BarChart3 className="size-4" />
+                    </Button>
                   </div>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Stats */}
-          <div className="border-t">
-            <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
-              <div className="mx-auto max-w-xl text-center">
-                <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                  {t('stats.title')}
-                </h2>
-                <p className="mt-3 text-muted-foreground">
-                  {t('stats.subtitle')}
-                </p>
-              </div>
-              <div className="mt-10 grid gap-6 sm:grid-cols-3">
-                {stats.map((s) => (
-                  <div key={s.key} className="text-center">
-                    <div className="flex items-baseline justify-center text-4xl font-bold tracking-tight md:text-5xl">
-                      <CountUp to={s.to} duration={2} />
-                      {s.suffix}
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {t(`stats.items.${s.key}.label`)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-
           {/* Features */}
-          <div className="border-t">
-            <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
-              <div className="mx-auto max-w-xl text-center">
-                <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                  {t('featuresTitle')}
-                </h2>
-                <p className="mt-3 text-muted-foreground">
-                  {t('featuresSubtitle')}
-                </p>
-              </div>
-              <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {features.map((f) => {
-                  const Icon = f.icon
-                  return (
-                    <div
-                      key={f.key}
-                      className="group relative flex min-h-40 flex-col justify-between gap-6 border bg-gradient-to-b from-muted/40 to-transparent p-5 text-left transition-colors hover:border-primary/40"
-                    >
-                      <CardCorners />
-                      <span className="inline-flex size-10 items-center justify-center rounded-lg border bg-background/60 text-foreground transition-colors group-hover:border-primary/40 group-hover:text-primary">
-                        <Icon className="size-5" />
-                      </span>
-                      <div className="space-y-1.5">
-                        <h3 className="font-semibold">
-                          {t(`features.${f.key}.title`)}
-                        </h3>
-                        <p className="text-sm leading-snug text-muted-foreground">
-                          {t(`features.${f.key}.desc`)}
-                        </p>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </section>
-          </div>
-
-          {/* How it works */}
-          <div className="border-t">
-            <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
-              <div className="mx-auto max-w-xl text-center">
-                <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                  {t('steps.title')}
-                </h2>
-                <p className="mt-3 text-muted-foreground">
-                  {t('steps.subtitle')}
-                </p>
-              </div>
-              <div className="mt-10 grid gap-6 md:grid-cols-3">
-                {steps.map((step, i) => {
-                  const Icon = step.icon
-                  return (
-                    <div
-                      key={step.key}
-                      className="group relative rounded-xl border bg-card p-6 transition-colors hover:border-primary/30"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="inline-flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                          <Icon className="size-5" />
-                        </span>
-                        <span className="font-mono text-4xl font-bold text-muted-foreground/15">
-                          0{i + 1}
-                        </span>
-                      </div>
-                      <h3 className="mt-4 font-semibold">
-                        {t(`steps.items.${step.key}.title`)}
+          <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
+            <SectionHeading
+              index="01"
+              eyebrow={t('featuresEyebrow')}
+              title={t('featuresTitle')}
+              subtitle={t('featuresSubtitle')}
+            />
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {features.map((f) => {
+                const Icon = f.icon
+                return (
+                  <div
+                    key={f.key}
+                    className="group relative flex min-h-40 flex-col justify-between gap-6 border bg-gradient-to-b from-muted/40 to-transparent p-5 text-left transition-colors hover:border-primary/40"
+                  >
+                    <CardCorners />
+                    <span className="inline-flex size-10 items-center justify-center rounded-lg border bg-background/60 text-foreground transition-colors group-hover:border-primary/40 group-hover:text-primary">
+                      <Icon className="size-5" />
+                    </span>
+                    <div className="space-y-1.5">
+                      <h3 className="font-semibold">
+                        {t(`features.${f.key}.title`)}
                       </h3>
-                      <p className="mt-1.5 text-sm text-muted-foreground">
-                        {t(`steps.items.${step.key}.desc`)}
+                      <p className="text-sm leading-snug text-muted-foreground">
+                        {t(`features.${f.key}.desc`)}
                       </p>
                     </div>
-                  )
-                })}
-              </div>
-            </section>
-          </div>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
 
-          {/* FAQ */}
-          <div className="border-t">
-            <section className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-16 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] md:gap-12 md:px-6 md:py-20">
-              <div className="md:sticky md:top-6 md:self-start">
-                <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                  {t('faq.title')}
-                </h2>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  {t('faq.subtitle')}
-                </p>
-              </div>
-              <Faq items={faqItems} />
-            </section>
-          </div>
-
-          {/* CTA */}
-          <div className="border-t">
-            <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-24">
-              <div className="relative isolate overflow-hidden rounded-3xl border bg-card px-6 py-14 text-center md:py-20">
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 -z-10 opacity-30 dark:opacity-50"
-                  style={{
-                    maskImage:
-                      'radial-gradient(ellipse 70% 80% at 50% 50%, #000 20%, transparent 70%)',
-                    WebkitMaskImage:
-                      'radial-gradient(ellipse 70% 80% at 50% 50%, #000 20%, transparent 70%)',
-                  }}
-                >
-                  <Threads
-                    color={[0.45, 0.5, 0.72]}
-                    amplitude={1}
-                    distance={0}
-                    enableMouseInteraction={false}
-                  />
-                </div>
-                <h2 className="mx-auto max-w-2xl text-balance text-3xl font-bold tracking-tight md:text-4xl">
-                  {t('cta.title')}
-                </h2>
-                <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-                  {t('cta.subtitle')}
-                </p>
-                <div className="mt-8">
-                  <Button asChild size="lg">
-                    <Link href="/dashboard">
-                      {t('cta.button')}
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </section>
-          </div>
-
-          <div className="border-t">
-            <footer className="mx-auto w-full max-w-6xl px-4 pb-10 pt-12 md:px-6">
-              <div className="flex flex-col gap-10 md:flex-row md:justify-between">
-                <div className="max-w-xs space-y-3">
-                  <Link
-                    href="/"
-                    className="flex items-center gap-2 font-semibold"
+          {/* How it works */}
+          <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
+            <SectionHeading
+              index="02"
+              eyebrow={t('steps.eyebrow')}
+              title={t('steps.title')}
+              subtitle={t('steps.subtitle')}
+            />
+            <div className="mt-10 grid gap-6 md:grid-cols-3">
+              {steps.map((step, i) => {
+                const Icon = step.icon
+                return (
+                  <div
+                    key={step.key}
+                    className="group relative rounded-xl border bg-card/60 p-6 transition-colors hover:border-primary/30"
                   >
-                    <FlnkLogo className="size-6" />
-                    {tc('appName')}
-                  </Link>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {t('footer.blurb')}
+                    <div className="flex items-center justify-between">
+                      <span className="inline-flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                        <Icon className="size-5" />
+                      </span>
+                      <span className="font-mono text-4xl font-bold text-muted-foreground/15">
+                        0{i + 1}
+                      </span>
+                    </div>
+                    <h3 className="mt-4 font-semibold">
+                      {t(`steps.items.${step.key}.title`)}
+                    </h3>
+                    <p className="mt-1.5 text-sm text-muted-foreground">
+                      {t(`steps.items.${step.key}.desc`)}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+
+          {/* Stats */}
+          <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
+            <SectionHeading
+              index="03"
+              eyebrow={t('stats.eyebrow')}
+              title={t('stats.title')}
+              subtitle={t('stats.subtitle')}
+            />
+            <div className="mt-10 grid gap-6 sm:grid-cols-3">
+              {stats.map((s) => (
+                <div key={s.key} className="text-left">
+                  <div className="flex items-baseline text-4xl font-bold tracking-tight md:text-5xl">
+                    <CountUp to={s.to} duration={2} />
+                    {s.suffix}
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {t(`stats.items.${s.key}.label`)}
                   </p>
                 </div>
+              ))}
+            </div>
+          </section>
 
-                <div className="flex flex-wrap gap-x-16 gap-y-10">
-                  <nav className="space-y-3">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
-                      {t('footer.product')}
-                    </p>
-                    <ul className="space-y-2.5 text-sm">
-                      <li>
-                        <Link
-                          href="/dashboard"
-                          className="text-foreground/80 transition-colors hover:text-foreground"
-                        >
-                          {t('footer.dashboard')}
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/dashboard/analytics"
-                          className="text-foreground/80 transition-colors hover:text-foreground"
-                        >
-                          {tc('appName')} Analytics
-                        </Link>
-                      </li>
-                    </ul>
-                  </nav>
+          {/* FAQ */}
+          <section className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-16 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] md:gap-12 md:px-6 md:py-20">
+            <div className="md:sticky md:top-6 md:self-start">
+              <p className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-primary">
+                04 — {t('faq.eyebrow')}
+              </p>
+              <h2 className="mt-3 text-2xl font-bold tracking-tight md:text-3xl">
+                {t('faq.title')}
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                {t('faq.subtitle')}
+              </p>
+            </div>
+            <Faq items={faqItems} />
+          </section>
 
-                  <nav className="space-y-3">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
-                      {t('footer.resources')}
-                    </p>
-                    <ul className="space-y-2.5 text-sm">
-                      <li>
-                        <Link
-                          href="/dashboard/privacy"
-                          className="text-foreground/80 transition-colors hover:text-foreground"
-                        >
-                          {t('footer.privacy')}
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/dashboard/terms"
-                          className="text-foreground/80 transition-colors hover:text-foreground"
-                        >
-                          {t('footer.terms')}
-                        </Link>
-                      </li>
-                    </ul>
-                  </nav>
-                </div>
+          {/* CTA */}
+          <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-24">
+            <div className="relative isolate overflow-hidden rounded-xl border bg-card/60 px-6 py-14 text-center md:py-20">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 -z-10 opacity-30 dark:opacity-50"
+                style={{
+                  maskImage:
+                    'radial-gradient(ellipse 70% 80% at 50% 50%, #000 20%, transparent 70%)',
+                  WebkitMaskImage:
+                    'radial-gradient(ellipse 70% 80% at 50% 50%, #000 20%, transparent 70%)',
+                }}
+              >
+                <Threads
+                  color={[0.45, 0.5, 0.72]}
+                  amplitude={1}
+                  distance={0}
+                  enableMouseInteraction={false}
+                />
               </div>
-
-              <div className="mt-10 flex flex-col gap-2 border-t pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-                <span>
-                  © {new Date().getFullYear()}-PRESENT ·{' '}
+              <p className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-primary">
+                {t('cta.eyebrow')}
+              </p>
+              <h2 className="mx-auto mt-3 max-w-2xl text-balance text-3xl font-bold tracking-tight md:text-4xl">
+                {t('cta.title')}
+              </h2>
+              <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+                {t('cta.subtitle')}
+              </p>
+              <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <Button asChild size="lg">
+                  <Link href="/dashboard">
+                    {t('cta.button')}
+                    <ArrowRight className="size-4" />
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline">
                   <a
-                    href={AUTHOR_HREF}
+                    href={GITHUB_HREF}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-foreground hover:underline"
                   >
-                    wudi
+                    <Github className="size-4" />
+                    {tc('viewSource')}
                   </a>
-                </span>
-                <span className="font-mono text-muted-foreground/70">
-                  {t('footer.builtWith')}
-                </span>
+                </Button>
               </div>
-            </footer>
-          </div>
+            </div>
+          </section>
+
+          <footer className="mx-auto w-full max-w-6xl px-4 pb-10 pt-12 md:px-6">
+            <div className="flex flex-col gap-10 md:flex-row md:justify-between">
+              <div className="max-w-xs space-y-3">
+                <Link
+                  href="/"
+                  className="flex items-center gap-2 font-semibold"
+                >
+                  <FlnkLogo className="size-6" />
+                  {tc('appName')}
+                </Link>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {t('footer.blurb')}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-x-16 gap-y-10">
+                <nav className="space-y-3">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
+                    {t('footer.product')}
+                  </p>
+                  <ul className="space-y-2.5 text-sm">
+                    <li>
+                      <Link
+                        href="/dashboard"
+                        className="text-foreground/80 transition-colors hover:text-foreground"
+                      >
+                        {t('footer.dashboard')}
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/dashboard/analytics"
+                        className="text-foreground/80 transition-colors hover:text-foreground"
+                      >
+                        {tc('appName')} Analytics
+                      </Link>
+                    </li>
+                  </ul>
+                </nav>
+
+                <nav className="space-y-3">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
+                    {t('footer.resources')}
+                  </p>
+                  <ul className="space-y-2.5 text-sm">
+                    <li>
+                      <Link
+                        href="/dashboard/privacy"
+                        className="text-foreground/80 transition-colors hover:text-foreground"
+                      >
+                        {t('footer.privacy')}
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/dashboard/terms"
+                        className="text-foreground/80 transition-colors hover:text-foreground"
+                      >
+                        {t('footer.terms')}
+                      </Link>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+
+            <div className="mt-10 flex flex-col gap-2 border-t pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+              <span>
+                © {new Date().getFullYear()}-PRESENT ·{' '}
+                <a
+                  href={AUTHOR_HREF}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground hover:underline"
+                >
+                  wudi
+                </a>
+              </span>
+              <span className="font-mono text-muted-foreground/70">
+                {t('footer.builtWith')}
+              </span>
+            </div>
+          </footer>
         </div>
-      </IKPageContainer>
+      </ScrollArea>
     </div>
   )
 }
