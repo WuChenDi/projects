@@ -98,7 +98,7 @@
         "apps/flox/**/*",
         "apps/byshot/**/*",
         "apps/wepush/**/*",
-        "apps/sink/**/*"
+        "apps/flnk/**/*"
       ],
       "linter": {
         "domains": {
@@ -132,12 +132,10 @@
       "!apps/byplay-log/src/database/**/*.sql",
       "!apps/dropply-api/src/database/**/*.json",
       "!apps/dropply-api/src/database/**/*.sql",
-      "!apps/shortener/src/database/**/*.json",
-      "!apps/shortener/src/database/**/*.sql",
       "!apps/wepush/src/database/**/*.json",
       "!apps/wepush/src/database/**/*.sql",
-      "!apps/sink/src/database/**/*.json",
-      "!apps/sink/src/database/**/*.sql",
+      "!apps/flnk/src/database/**/*.json",
+      "!apps/flnk/src/database/**/*.sql",
       "!apps/**/cloudflare-env.d.ts",
       "!packages/ui/src/reactbits/**/*.tsx",
       "!packages/ui/src/components/**/*.tsx"

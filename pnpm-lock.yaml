@@ -833,6 +833,112 @@ importers:
         specifier: catalog:dev
         version: 6.0.2
 
+  apps/flnk:
+    dependencies:
+      '@cdlab996/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@cdlab996/genid':
+        specifier: catalog:prod
+        version: 1.4.0
+      '@cdlab996/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@cdlab996/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@libsql/client':
+        specifier: catalog:prod
+        version: 0.17.3
+      '@tanstack/react-form':
+        specifier: catalog:prod
+        version: 1.33.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@tanstack/react-query':
+        specifier: catalog:prod
+        version: 5.101.0(react@19.2.4)
+      better-auth:
+        specifier: catalog:prod
+        version: 1.6.19(@cloudflare/workers-types@4.20260613.1)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260613.1)(@libsql/client@0.17.3)(@types/pg@8.18.0)(@upstash/redis@1.37.0)(kysely@0.29.2)(pg@8.20.0)(postgres@3.4.8))(next@16.2.9(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.20.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.8(@types/node@25.3.3)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@25.3.3)(typescript@6.0.2))(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.9.0)))(vue@3.5.38(typescript@6.0.2))
+      cobe:
+        specifier: ^2.0.1
+        version: 2.0.1
+      date-fns:
+        specifier: catalog:prod
+        version: 4.4.0
+      drizzle-orm:
+        specifier: catalog:prod
+        version: 0.45.2(@cloudflare/workers-types@4.20260613.1)(@libsql/client@0.17.3)(@types/pg@8.18.0)(@upstash/redis@1.37.0)(kysely@0.29.2)(pg@8.20.0)(postgres@3.4.8)
+      lucide-react:
+        specifier: catalog:prod
+        version: 1.18.0(react@19.2.4)
+      next:
+        specifier: catalog:prod
+        version: 16.2.9(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next-intl:
+        specifier: catalog:prod
+        version: 4.11.1(@swc/helpers@0.5.19)(next@16.2.9(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@6.0.2)
+      next-themes:
+        specifier: catalog:prod
+        version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react:
+        specifier: catalog:prod
+        version: 19.2.4
+      react-dom:
+        specifier: catalog:prod
+        version: 19.2.4(react@19.2.4)
+      react-simple-maps:
+        specifier: ^3.0.0
+        version: 3.0.0(prop-types@15.8.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      recharts:
+        specifier: catalog:prod
+        version: 3.8.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react-is@16.13.1)(react@19.2.4)(redux@5.0.1)
+      sonner:
+        specifier: catalog:prod
+        version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      ua-parser-js:
+        specifier: ^2.0.9
+        version: 2.0.9
+      zod:
+        specifier: catalog:prod
+        version: 4.4.3
+      zustand:
+        specifier: catalog:prod
+        version: 5.0.14(@types/react@19.2.14)(immer@11.1.8)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
+    devDependencies:
+      '@cdlab996/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@cloudflare/workers-types':
+        specifier: catalog:dev
+        version: 4.20260613.1
+      '@opennextjs/cloudflare':
+        specifier: catalog:dev
+        version: 1.19.11(next@16.2.9(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.100.0(@cloudflare/workers-types@4.20260613.1))
+      '@types/node':
+        specifier: catalog:dev
+        version: 25.3.3
+      '@types/react':
+        specifier: catalog:dev
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: catalog:dev
+        version: 19.2.3(@types/react@19.2.14)
+      '@types/react-simple-maps':
+        specifier: ^3.0.6
+        version: 3.0.6
+      drizzle-kit:
+        specifier: catalog:dev
+        version: 0.31.10
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.2
+      world-atlas:
+        specifier: ^2.0.2
+        version: 2.0.2
+      wrangler:
+        specifier: catalog:dev
+        version: 4.100.0(@cloudflare/workers-types@4.20260613.1)
+
   apps/flox:
     dependencies:
       '@cdlab996/genid':
@@ -985,158 +1091,6 @@ importers:
       vue-tsc:
         specifier: ^3.3.5
         version: 3.3.5(typescript@6.0.2)
-
-  apps/shortener:
-    dependencies:
-      '@hono/zod-validator':
-        specifier: catalog:prod
-        version: 0.7.6(hono@4.12.25)(zod@4.4.3)
-      '@libsql/client':
-        specifier: catalog:prod
-        version: 0.17.3
-      '@noble/hashes':
-        specifier: ^2.2.0
-        version: 2.2.0
-      drizzle-orm:
-        specifier: catalog:prod
-        version: 0.45.2(@cloudflare/workers-types@4.20260613.1)(@libsql/client@0.17.3)(@types/pg@8.18.0)(@upstash/redis@1.37.0)(kysely@0.29.2)(pg@8.20.0)(postgres@3.4.8)
-      hono:
-        specifier: catalog:prod
-        version: 4.12.25
-      jose:
-        specifier: ^6.2.3
-        version: 6.2.3
-      ua-parser-js:
-        specifier: ^2.0.9
-        version: 2.0.9
-      winston:
-        specifier: catalog:prod
-        version: 3.19.0
-      winston-daily-rotate-file:
-        specifier: catalog:prod
-        version: 5.0.0(winston@3.19.0)
-      zod:
-        specifier: catalog:prod
-        version: 4.4.3
-    devDependencies:
-      '@cdlab996/tsconfig':
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
-      '@cloudflare/workers-types':
-        specifier: catalog:dev
-        version: 4.20260613.1
-      drizzle-kit:
-        specifier: catalog:dev
-        version: 0.31.10
-      wrangler:
-        specifier: catalog:dev
-        version: 4.100.0(@cloudflare/workers-types@4.20260613.1)
-
-  apps/sink:
-    dependencies:
-      '@cdlab996/db':
-        specifier: workspace:*
-        version: link:../../packages/db
-      '@cdlab996/genid':
-        specifier: catalog:prod
-        version: 1.4.0
-      '@cdlab996/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      '@cdlab996/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
-      '@libsql/client':
-        specifier: catalog:prod
-        version: 0.17.3
-      '@tanstack/react-form':
-        specifier: catalog:prod
-        version: 1.33.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@tanstack/react-query':
-        specifier: catalog:prod
-        version: 5.101.0(react@19.2.4)
-      better-auth:
-        specifier: catalog:prod
-        version: 1.6.19(@cloudflare/workers-types@4.20260613.1)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260613.1)(@libsql/client@0.17.3)(@types/pg@8.18.0)(@upstash/redis@1.37.0)(kysely@0.29.2)(pg@8.20.0)(postgres@3.4.8))(next@16.2.9(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.20.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.8(@types/node@25.3.3)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@25.3.3)(typescript@6.0.2))(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.9.0)))(vue@3.5.38(typescript@6.0.2))
-      cobe:
-        specifier: ^2.0.1
-        version: 2.0.1
-      date-fns:
-        specifier: catalog:prod
-        version: 4.4.0
-      drizzle-orm:
-        specifier: catalog:prod
-        version: 0.45.2(@cloudflare/workers-types@4.20260613.1)(@libsql/client@0.17.3)(@types/pg@8.18.0)(@upstash/redis@1.37.0)(kysely@0.29.2)(pg@8.20.0)(postgres@3.4.8)
-      lucide-react:
-        specifier: catalog:prod
-        version: 1.18.0(react@19.2.4)
-      next:
-        specifier: catalog:prod
-        version: 16.2.9(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      next-intl:
-        specifier: catalog:prod
-        version: 4.11.1(@swc/helpers@0.5.19)(next@16.2.9(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@6.0.2)
-      next-themes:
-        specifier: catalog:prod
-        version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      react:
-        specifier: catalog:prod
-        version: 19.2.4
-      react-dom:
-        specifier: catalog:prod
-        version: 19.2.4(react@19.2.4)
-      react-simple-maps:
-        specifier: ^3.0.0
-        version: 3.0.0(prop-types@15.8.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      recharts:
-        specifier: catalog:prod
-        version: 3.8.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react-is@16.13.1)(react@19.2.4)(redux@5.0.1)
-      sonner:
-        specifier: catalog:prod
-        version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      ua-parser-js:
-        specifier: ^2.0.9
-        version: 2.0.9
-      zod:
-        specifier: catalog:prod
-        version: 4.4.3
-      zustand:
-        specifier: catalog:prod
-        version: 5.0.14(@types/react@19.2.14)(immer@11.1.8)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
-    devDependencies:
-      '@cdlab996/tsconfig':
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
-      '@cloudflare/workers-types':
-        specifier: catalog:dev
-        version: 4.20260613.1
-      '@opennextjs/cloudflare':
-        specifier: catalog:dev
-        version: 1.19.11(next@16.2.9(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.100.0(@cloudflare/workers-types@4.20260613.1))
-      '@types/node':
-        specifier: catalog:dev
-        version: 25.3.3
-      '@types/react':
-        specifier: catalog:dev
-        version: 19.2.14
-      '@types/react-dom':
-        specifier: catalog:dev
-        version: 19.2.3(@types/react@19.2.14)
-      '@types/react-simple-maps':
-        specifier: ^3.0.6
-        version: 3.0.6
-      drizzle-kit:
-        specifier: catalog:dev
-        version: 0.31.10
-      typescript:
-        specifier: catalog:dev
-        version: 6.0.2
-      world-atlas:
-        specifier: ^2.0.2
-        version: 2.0.2
-      wrangler:
-        specifier: catalog:dev
-        version: 4.100.0(@cloudflare/workers-types@4.20260613.1)
 
   apps/text2img:
     dependencies:
