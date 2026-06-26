@@ -21,7 +21,7 @@
   - **查询参数透传**（`REDIRECT_WITH_QUERY`，支持按链接覆盖）
 
 - **链接保护**
-  - **密码门** —— HTML 表单，由 PBKDF2-SHA256 + 每链接独立 salt 校验
+  - **密码门** —— HTML 表单，由 Argon2id + 每链接独立 salt 校验
   - 针对风险目标的**不安全跳转中间页**；非 `http(s)` 协议渲染为 `about:blank`
   - **社交爬虫 OG HTML**（`app/[slug]/og/route.ts`）+ 链接伪装（cloaking）
 
@@ -134,7 +134,7 @@ pnpm --filter @cdlab996/flnk db:studio
   "google": "https://play.google.com/...",
   "title": "Example",
   "description": "An example link",
-  "passwordHash": "pbkdf2$100000$<saltB64>$<keyB64> — 见 lib/hash.ts hashLinkPassword",
+  "passwordHash": "<saltHex>:<hashHex> — 见 @cdlab996/utils hashPasswordFn",
   "unsafe": false,
   "redirectWithQuery": true
 }

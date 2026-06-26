@@ -258,7 +258,7 @@ https://flnk.cdlab.workers.dev/
 
 - 边缘跳转引擎（KV 缓存 → D1 兜底 → 回填缓存），状态码可配置，支持按链接过期清理
 - 基于 `cf.country` 的地域路由，以及面向 Apple / Android UA 的设备路由，支持查询参数透传
-- 链接保护：密码门（PBKDF2-SHA256）、不安全跳转中间页、社交爬虫 OG HTML 与链接伪装
+- 链接保护：密码门（Argon2id）、不安全跳转中间页、社交爬虫 OG HTML 与链接伪装
 - 经 Cloudflare Analytics Engine 的隐私友好分析 —— 跳转路径上无追踪 Cookie
 - 后台支持 AI slug 生成、多域名、导出 / 导入 / 备份；社交登录基于 better-auth（Google + GitHub）
 - 核心技术：Next.js 16（App Router）+ React 19 + Drizzle（LibSQL / D1）+ better-auth + Workers AI + @opennextjs/cloudflare → Cloudflare Workers（含 Cron 清理）

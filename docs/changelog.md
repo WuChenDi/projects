@@ -187,7 +187,7 @@ wait until P1 lands on `main`. Decision pending with user.
 to run dependent phases in-session rather than push WIP to main. Delivered:
 link API (list/query/search/create/edit/upsert/delete/ai-slug, all site-token
 gated, KV cache invalidation on mutate), repository CRUD (slug validation,
-per-domain uniqueness with soft-delete revive, PBKDF2 password hashing, geo
+per-domain uniqueness with soft-delete revive, Argon2id password hashing, geo
 keys uppercased), `/dashboard/links` (table, debounced server search, sort,
 pagination, copy, QR, delete) and `/dashboard/link` editor (basic + advanced
 accordion: settings/OG/device/geo, random + AI slug), AI slug with random

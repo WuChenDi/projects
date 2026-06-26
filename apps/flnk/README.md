@@ -21,7 +21,7 @@ Preview: https://flnk.cdlab.workers.dev/
   - **Query forwarding** (`REDIRECT_WITH_QUERY`, with per-link override)
 
 - **Link protection**
-  - **Password gate** — HTML form guarded by PBKDF2-SHA256 with a per-link salt
+  - **Password gate** — HTML form guarded by Argon2id with a per-link salt
   - **Unsafe interstitial** for flagged destinations; non-`http(s)` schemes render as `about:blank`
   - **Social-bot OG HTML** (`app/[slug]/og/route.ts`) with link cloaking
 
@@ -134,7 +134,7 @@ Insert a row into `links` (`id`, `slug`, `domain`, `url`, optional `config` JSON
   "google": "https://play.google.com/...",
   "title": "Example",
   "description": "An example link",
-  "passwordHash": "pbkdf2$100000$<saltB64>$<keyB64> — see lib/hash.ts hashLinkPassword",
+  "passwordHash": "<saltHex>:<hashHex> — see @cdlab996/utils hashPasswordFn",
   "unsafe": false,
   "redirectWithQuery": true
 }
