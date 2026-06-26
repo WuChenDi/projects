@@ -35,12 +35,14 @@
         "trackers": {
           "label": "Third-party tracking scripts"
         }
-      }
+      },
+      "eyebrow": "Performance"
     },
     "cta": {
       "title": "Ready to shorten your first link?",
       "subtitle": "Open the dashboard and create a link in seconds.",
-      "button": "Open dashboard"
+      "button": "Open dashboard",
+      "eyebrow": "Get started"
     },
     "featuresTitle": "Features",
     "features": {
@@ -85,7 +87,8 @@
           "title": "Share & track",
           "desc": "Every click streams into Analytics Engine — geo, device and referrer, live."
         }
-      }
+      },
+      "eyebrow": "Workflow"
     },
     "faq": {
       "title": "Frequently asked",
@@ -131,7 +134,8 @@
           "q": "Can I import or export my links?",
           "a": "Yes. Bulk-migrate links via JSON import, and export your click analytics as CSV straight from the dashboard."
         }
-      }
+      },
+      "eyebrow": "FAQ"
     },
     "footer": {
       "blurb": "Short links with geo / device routing and edge analytics, running entirely on Cloudflare Workers.",
@@ -145,7 +149,8 @@
     },
     "featuresSubtitle": "Simple, practical building blocks.",
     "titleLead": "Short links with routing & analytics,",
-    "titleHighlight": "built for the edge"
+    "titleHighlight": "built for the edge",
+    "featuresEyebrow": "Capabilities"
   },
   "login": {
     "welcome": "Welcome to Flnk",
