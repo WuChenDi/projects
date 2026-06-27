@@ -1,9 +1,10 @@
 import { useMutation } from '@tanstack/react-query'
 import { useTranslations } from 'next-intl'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { genid } from '@/lib/genid'
-import type { GenerateParams, GenerationResult } from '@/types'
+import { useImageStore } from '@/store/useImageStore'
+import type { GenerateParams } from '@/types'
 import { GenerationStatus } from '@/types'
 
 interface ErrorResponse {
@@ -33,7 +34,12 @@ async function generateImage(params: GenerateParams): Promise<Blob> {
 
 export function useGeneration() {
   const t = useTranslations('generation')
-  const [results, setResults] = useState<GenerationResult[]>([])
+  const results = useImageStore((s) => s.results)
+  const addResult = useImageStore((s) => s.addResult)
+  const completeResult = useImageStore((s) => s.completeResult)
+  const failResult = useImageStore((s) => s.failResult)
+  const removeResult = useImageStore((s) => s.removeResult)
+  const clearAll = useImageStore((s) => s.clearAll)
   const currentIdRef = useRef('')
   const startTimeRef = useRef(0)
 
@@ -44,44 +50,16 @@ export function useGeneration() {
       currentIdRef.current = id
       startTimeRef.current = performance.now()
 
-      setResults((prev) => [
-        { id, status: GenerationStatus.PENDING, params },
-        ...prev,
-      ])
+      addResult({ id, status: GenerationStatus.PENDING, params })
     },
     onSuccess: (blob) => {
       const id = currentIdRef.current
-      const imageUrl = URL.createObjectURL(blob)
       const generationTime = (performance.now() - startTimeRef.current) / 1000
-
-      setResults((prev) =>
-        prev.map((r) =>
-          r.id === id
-            ? {
-                ...r,
-                status: GenerationStatus.COMPLETED,
-                imageUrl,
-                generationTime,
-              }
-            : r,
-        ),
-      )
+      completeResult(id, blob, generationTime)
       toast.success(t('success'))
     },
     onError: (error: Error) => {
-      const id = currentIdRef.current
-
-      setResults((prev) =>
-        prev.map((r) =>
-          r.id === id
-            ? {
-                ...r,
-                status: GenerationStatus.FAILED,
-                error: error.message || t('failed'),
-              }
-            : r,
-        ),
-      )
+      failResult(currentIdRef.current, error.message || t('failed'))
       toast.error(error.message || t('failed'))
     },
   })
@@ -93,32 +71,11 @@ export function useGeneration() {
     [mutation],
   )
 
-  const handleRemove = useCallback((id: string) => {
-    setResults((prev) => {
-      const target = prev.find((r) => r.id === id)
-      if (target?.imageUrl) {
-        URL.revokeObjectURL(target.imageUrl)
-      }
-      return prev.filter((r) => r.id !== id)
-    })
-  }, [])
-
-  const handleClearAll = useCallback(() => {
-    setResults((prev) => {
-      for (const r of prev) {
-        if (r.imageUrl) {
-          URL.revokeObjectURL(r.imageUrl)
-        }
-      }
-      return []
-    })
-  }, [])
-
   return {
     mutation,
     results,
     handleGenerateClick,
-    handleRemove,
-    handleClearAll,
+    handleRemove: removeResult,
+    handleClearAll: clearAll,
   }
 }
