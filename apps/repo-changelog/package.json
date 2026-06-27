@@ -40,8 +40,5 @@
     "tailwindcss": "catalog:dev",
     "typescript": "catalog:dev",
     "vue-tsc": "^3.3.5"
-  },
-  "resolutions": {
-    "unimport": "4.1.1"
   }
 }
