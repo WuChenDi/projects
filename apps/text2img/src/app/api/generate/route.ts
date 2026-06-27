@@ -1,3 +1,4 @@
+import { verifyPasswordFn } from '@cdlab996/utils'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { AVAILABLE_MODELS, findModelById } from '@/lib'
 
@@ -307,7 +308,22 @@ export async function POST(request: Request) {
       })
     }
 
-    if (!PASSWORDS.includes(data.password)) {
+    // The client sends an Argon2id hash of the password (see useGeneration),
+    // so the plaintext never travels over the wire. Verify it against each
+    // configured plaintext password.
+    let authorized = false
+    for (const candidate of PASSWORDS) {
+      try {
+        if (await verifyPasswordFn(data.password, candidate)) {
+          authorized = true
+          break
+        }
+      } catch {
+        // Malformed hash from client — treat as a mismatch.
+      }
+    }
+
+    if (!authorized) {
       return new Response(JSON.stringify({ error: 'Incorrect password' }), {
         status: 403,
         headers: {

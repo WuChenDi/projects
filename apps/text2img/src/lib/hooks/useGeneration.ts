@@ -1,3 +1,4 @@
+import { hashPasswordFn } from '@cdlab996/utils'
 import { useMutation } from '@tanstack/react-query'
 import { useTranslations } from 'next-intl'
 import { useCallback, useRef } from 'react'
@@ -12,12 +13,18 @@ interface ErrorResponse {
 }
 
 async function generateImage(params: GenerateParams): Promise<Blob> {
+  // Hash the password client-side so the plaintext never leaves the browser;
+  // the server verifies this hash against the configured passwords.
+  const payload = params.password
+    ? { ...params, password: await hashPasswordFn(params.password) }
+    : params
+
   const response = await fetch('/api/generate', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(params),
+    body: JSON.stringify(payload),
   })
 
   if (!response.ok) {
