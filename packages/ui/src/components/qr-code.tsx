@@ -355,7 +355,7 @@ export const QRCode = React.forwardRef<QRCodeHandle, QRCodeProps>(
 
     if (!geometry) return null
 
-    const graphicClass = cn('block', status === 'expired' && 'blur-[2px]')
+    const graphicClass = cn('block', status !== 'active' && 'blur-[2px]')
 
     const graphic =
       type === 'canvas' ? (
@@ -363,8 +363,7 @@ export const QRCode = React.forwardRef<QRCodeHandle, QRCodeProps>(
           ref={canvasRef}
           role="img"
           aria-label={`QR code for ${value}`}
-          style={{ width: size, height: size }}
-          className={graphicClass}
+          className={cn(graphicClass, 'h-full w-full')}
         />
       ) : (
         <svg
@@ -375,7 +374,7 @@ export const QRCode = React.forwardRef<QRCodeHandle, QRCodeProps>(
           viewBox={`0 0 ${size} ${size}`}
           xmlns="http://www.w3.org/2000/svg"
           aria-label={`QR code for ${value}`}
-          className={graphicClass}
+          className={cn(graphicClass, 'h-full w-full')}
         >
           <rect width={size} height={size} fill={bgColor} rx="12" ry="12" />
           {geometry.finders.map(({ x, y }) => (
@@ -467,11 +466,11 @@ export const QRCode = React.forwardRef<QRCodeHandle, QRCodeProps>(
     return (
       <div
         className={cn(
-          'relative inline-block',
+          'relative inline-block max-w-full',
           bordered && 'rounded-xl border border-input',
           className,
         )}
-        style={{ width: size, height: size }}
+        style={{ width: size, aspectRatio: '1 / 1' }}
       >
         {graphic}
         {status !== 'active' && (
