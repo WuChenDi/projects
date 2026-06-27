@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   // reactStrictMode: true,
   // poweredByHeader: false,
   output: 'standalone',
+  allowedDevOrigins: ['flox.a.wd.ds.cc'],
   images: {
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],

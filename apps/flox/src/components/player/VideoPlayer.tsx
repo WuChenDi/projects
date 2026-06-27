@@ -22,6 +22,7 @@ import { toast } from 'sonner'
 import { useHistory } from '@/lib/store/history-store'
 import type { AdFilterMode } from '@/lib/store/settings-store'
 import { CustomVideoPlayer } from './CustomVideoPlayer'
+import { FloxPlayer } from './FloxPlayer'
 import { usePlayerSettings } from './hooks/usePlayerSettings'
 import type { VideoResolutionInfo } from './hooks/useVideoResolution'
 import { getCopyUrl } from './utils/urlUtils'
@@ -74,6 +75,7 @@ export function VideoPlayer({
   const lastSaveTimeRef = useRef(0)
   const currentTimeRef = useRef(0)
   const durationRef = useRef(0)
+  const switchTimeRef = useRef(0)
   const SAVE_INTERVAL = 5000
 
   const {
@@ -96,6 +98,8 @@ export function VideoPlayer({
     setSkipOutroSeconds,
     fullscreenType,
     setFullscreenType,
+    playerEngine,
+    setPlayerEngine,
   } = usePlayerSettings()
 
   const effectiveUseProxy =
@@ -204,6 +208,12 @@ export function VideoPlayer({
     setRetryCount(0)
   }
 
+  const switchEngine = (engine: typeof playerEngine) => {
+    switchTimeRef.current = currentTimeRef.current
+    setPlayerEngine(engine)
+    setVideoError('')
+  }
+
   const cycleSkipSeconds = (current: number, setter: (v: number) => void) => {
     const next =
       SKIP_PRESETS[(SKIP_PRESETS.indexOf(current) + 1) % SKIP_PRESETS.length]
@@ -231,7 +241,20 @@ export function VideoPlayer({
   return (
     <div className="space-y-4">
       <div data-no-spatial className="relative">
-        {videoError ? (
+        {playerEngine === 'veplayer' ? (
+          <FloxPlayer
+            url={finalPlayUrl}
+            autoplay
+            poster={poster}
+            initialTime={
+              switchTimeRef.current > 0
+                ? switchTimeRef.current
+                : getSavedProgress()
+            }
+            onTimeUpdate={handleTimeUpdate}
+            className="aspect-video w-full bg-black"
+          />
+        ) : videoError ? (
           <VideoPlayerError
             error={videoError}
             onBack={onBack}
@@ -246,7 +269,11 @@ export function VideoPlayer({
             poster={poster}
             onError={handleVideoError}
             onTimeUpdate={handleTimeUpdate}
-            initialTime={getSavedProgress()}
+            initialTime={
+              switchTimeRef.current > 0
+                ? switchTimeRef.current
+                : getSavedProgress()
+            }
             shouldAutoPlay={shouldAutoPlay}
             totalEpisodes={totalEpisodes}
             currentEpisodeIndex={currentEpisode}
@@ -313,6 +340,25 @@ export function VideoPlayer({
                 </div>
 
                 <div className="px-4 py-3 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-xs">播放引擎</Label>
+                    <ToggleGroup
+                      type="single"
+                      size="sm"
+                      variant="outline"
+                      value={playerEngine}
+                      onValueChange={(v) =>
+                        v && switchEngine(v as typeof playerEngine)
+                      }
+                      aria-label="播放引擎"
+                    >
+                      <ToggleGroupItem value="veplayer">
+                        VePlayer
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="native">原生</ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+
                   <div className="flex items-center justify-between gap-2">
                     <Label className="text-xs">广告过滤</Label>
                     <ToggleGroup

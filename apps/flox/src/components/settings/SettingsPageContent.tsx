@@ -26,6 +26,8 @@ export function SettingsPageContent({
     realtimeLatency,
     searchDisplayMode,
     fullscreenType,
+    playerEngine,
+    handlePlayerEngineChange,
     isAddModalOpen,
     isExportModalOpen,
     isImportModalOpen,
@@ -74,6 +76,8 @@ export function SettingsPageContent({
         <div className="max-w-4xl mx-auto w-full space-y-4 pb-8">
           {/* Player Settings */}
           <PlayerSettings
+            playerEngine={playerEngine}
+            onPlayerEngineChange={handlePlayerEngineChange}
             fullscreenType={fullscreenType}
             onFullscreenTypeChange={handleFullscreenTypeChange}
             proxyMode={proxyMode}
