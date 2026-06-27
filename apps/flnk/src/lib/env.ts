@@ -5,6 +5,10 @@ import { getCloudflareContext } from '@opennextjs/cloudflare'
 export interface FlnkConfig {
   redirectStatusCode: number
   linkCacheTtl: number
+  // Negative-cache TTL (seconds) for resolved-to-nothing slugs. Blocks cache
+  // penetration from repeated lookups of non-existent slugs. 0 disables it;
+  // any positive value is floored to KV's 60s minimum.
+  negativeCacheTtl: number
   redirectWithQuery: boolean
   homeURL: string
   notFoundRedirect: string
@@ -57,6 +61,7 @@ export function getConfig(env?: CloudflareEnv): FlnkConfig {
   return {
     redirectStatusCode: num(raw.REDIRECT_STATUS_CODE, 308),
     linkCacheTtl: num(raw.LINK_CACHE_TTL, 60),
+    negativeCacheTtl: num(raw.NEGATIVE_CACHE_TTL, 60),
     redirectWithQuery: bool(raw.REDIRECT_WITH_QUERY),
     homeURL: raw.HOME_URL ?? '',
     notFoundRedirect: raw.NOT_FOUND_REDIRECT ?? '',
