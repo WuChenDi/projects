@@ -24,7 +24,7 @@
     "@cdlab996/genid": "catalog:prod",
     "@cdlab996/ui": "workspace:*",
     "@cdlab996/utils": "workspace:*",
-    "@huggingface/transformers": "^3.8.1",
+    "@huggingface/transformers": "catalog:prod",
     "@jsquash/avif": "^2.1.1",
     "@jsquash/jpeg": "^1.6.0",
     "@jsquash/jxl": "^1.3.0",

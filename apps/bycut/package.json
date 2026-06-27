@@ -26,7 +26,7 @@
     "@cdlab996/ui": "workspace:*",
     "@cdlab996/utils": "workspace:*",
     "@next/third-parties": "catalog:prod",
-    "@huggingface/transformers": "^3.8.1",
+    "@huggingface/transformers": "catalog:prod",
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",
     "eventemitter3": "^5.0.4",
