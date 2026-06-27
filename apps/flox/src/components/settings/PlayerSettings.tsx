@@ -9,10 +9,21 @@ import {
 } from '@cdlab996/ui/components/card'
 import { Separator } from '@cdlab996/ui/components/separator'
 import { Textarea } from '@cdlab996/ui/components/textarea'
-import { GlobeIcon, MaximizeIcon, ShieldIcon } from 'lucide-react'
-import type { AdFilterMode, ProxyMode } from '@/lib/store/settings-store'
+import {
+  GlobeIcon,
+  MaximizeIcon,
+  MonitorPlayIcon,
+  ShieldIcon,
+} from 'lucide-react'
+import type {
+  AdFilterMode,
+  PlayerEngine,
+  ProxyMode,
+} from '@/lib/store/settings-store'
 
 interface PlayerSettingsProps {
+  playerEngine: PlayerEngine
+  onPlayerEngineChange: (engine: PlayerEngine) => void
   fullscreenType: 'native' | 'window'
   onFullscreenTypeChange: (type: 'native' | 'window') => void
   proxyMode: ProxyMode
@@ -40,6 +51,8 @@ const AD_FILTER_MODES: { value: AdFilterMode; label: string; desc: string }[] =
   ]
 
 export function PlayerSettings({
+  playerEngine,
+  onPlayerEngineChange,
   fullscreenType,
   onFullscreenTypeChange,
   proxyMode,
@@ -55,6 +68,35 @@ export function PlayerSettings({
         <CardTitle>播放器设置</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Player Engine */}
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <MonitorPlayIcon className="size-4 text-muted-foreground" />
+            <span className="font-medium text-sm">播放引擎</span>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            VePlayer 功能丰富，原生播放器兼容性更好且支持自定义控制
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant={playerEngine === 'veplayer' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => onPlayerEngineChange('veplayer')}
+            >
+              VePlayer
+            </Button>
+            <Button
+              variant={playerEngine === 'native' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => onPlayerEngineChange('native')}
+            >
+              原生播放器
+            </Button>
+          </div>
+        </div>
+
+        <Separator />
+
         {/* Fullscreen Mode */}
         <div>
           <div className="flex items-center gap-2 mb-1">

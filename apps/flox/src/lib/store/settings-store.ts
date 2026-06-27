@@ -27,6 +27,7 @@ export type SortOption =
 export type SearchDisplayMode = 'normal' | 'grouped'
 export type AdFilterMode = 'off' | 'keyword' | 'heuristic' | 'aggressive'
 export type ProxyMode = 'retry' | 'none' | 'always'
+export type PlayerEngine = 'veplayer' | 'native'
 
 export const DEFAULT_SEEK_STEP_SECONDS = 10
 export const MIN_SEEK_STEP_SECONDS = 1
@@ -67,6 +68,7 @@ export interface SettingsState {
   episodeReverseOrder: boolean
   fullscreenType: 'native' | 'window'
   proxyMode: ProxyMode
+  playerEngine: PlayerEngine
   rememberScrollPosition: boolean
   vConsole: boolean
 }
@@ -81,6 +83,7 @@ export interface SettingsActions {
   setRememberScrollPosition: (v: boolean) => void
   setFullscreenType: (v: 'native' | 'window') => void
   setProxyMode: (v: ProxyMode) => void
+  setPlayerEngine: (v: PlayerEngine) => void
   setEpisodeReverseOrder: (v: boolean) => void
   setVConsole: (v: boolean) => void
 
@@ -189,6 +192,7 @@ function getDefaultSettingsState(): SettingsState {
     episodeReverseOrder: false,
     fullscreenType: 'native',
     proxyMode: 'retry',
+    playerEngine: 'veplayer',
     rememberScrollPosition: true,
     vConsole: false,
   }
@@ -281,6 +285,7 @@ function mergePersistedSettings(
       data.proxyMode === 'always'
         ? data.proxyMode
         : defaults.proxyMode,
+    playerEngine: data.playerEngine === 'native' ? 'native' : 'veplayer',
     rememberScrollPosition:
       data.rememberScrollPosition ?? defaults.rememberScrollPosition,
     vConsole: data.vConsole ?? defaults.vConsole,
@@ -306,6 +311,7 @@ export const useSettingsStore = createPersistedStore<
     setRememberScrollPosition: (v) => set({ rememberScrollPosition: v }),
     setFullscreenType: (v) => set({ fullscreenType: v }),
     setProxyMode: (v) => set({ proxyMode: v }),
+    setPlayerEngine: (v) => set({ playerEngine: v }),
     setEpisodeReverseOrder: (v) => set({ episodeReverseOrder: v }),
     setVConsole: (v) => set({ vConsole: v }),
 
