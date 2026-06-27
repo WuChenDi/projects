@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab996/ui/components/card'
+import { HeatmapCalendar } from '@cdlab996/ui/components/heatmap-calendar'
 import {
   Select,
   SelectContent,
@@ -24,7 +25,6 @@ import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { CountersCards } from '@/components/dashboard/analytics/counters'
-import { Heatmap } from '@/components/dashboard/analytics/heatmap'
 import { MetricGroup } from '@/components/dashboard/analytics/metric-group'
 import { ViewsChart } from '@/components/dashboard/analytics/views-chart'
 import { statsApi } from '@/lib/api'
@@ -90,10 +90,26 @@ export function AnalyticsView() {
     queryKey: ['location', params],
     queryFn: () => statsApi.location(params),
   })
-  const heatmap = useQuery({
-    queryKey: ['heatmap', params],
-    queryFn: () => statsApi.heatmap(params),
+
+  // GitHub-style calendar is fixed to the last 365 days — independent of the
+  // range selector, so it needs its own daily-bucketed query (filters still
+  // apply). Window is captured once per filter change to keep the key stable.
+  const calendarParams = useMemo(() => {
+    const end = Date.now()
+    return { startAt: end - 365 * DAY, endAt: end, filters }
+  }, [filters])
+  const calendar = useQuery({
+    queryKey: ['calendar', calendarParams],
+    queryFn: () => statsApi.views(calendarParams),
   })
+  const calendarData = useMemo(
+    () =>
+      (calendar.data?.views ?? []).map((v) => ({
+        date: v.time.slice(0, 10),
+        value: v.visits,
+      })),
+    [calendar.data],
+  )
 
   function drill(dim: string, value: string) {
     setFilters((f) => ({ ...f, [dim]: value }))
@@ -188,10 +204,14 @@ export function AnalyticsView() {
           <CardTitle className="text-base">{t('heatmap.title')}</CardTitle>
         </CardHeader>
         <CardContent>
-          {heatmap.isLoading ? (
+          {calendar.isLoading ? (
             <Skeleton className="h-40 w-full" />
           ) : (
-            <Heatmap data={heatmap.data?.heatmap ?? []} />
+            <HeatmapCalendar
+              data={calendarData}
+              rangeDays={365}
+              endDate={new Date(calendarParams.endAt)}
+            />
           )}
         </CardContent>
       </Card>

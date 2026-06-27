@@ -343,7 +343,7 @@
       "title": "访客地理分布"
     },
     "heatmap": {
-      "title": "时段活跃热力"
+      "title": "每日活跃热力"
     },
     "groups": {
       "location": "地域",
