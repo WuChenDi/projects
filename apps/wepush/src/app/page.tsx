@@ -8,9 +8,10 @@ import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
 import { IKPageContainer } from '@cdlab996/ui/IK'
 import { GitHubIcon as Github } from '@cdlab996/ui/icon'
+import { cn } from '@cdlab996/ui/lib/utils'
+import BlurText from '@cdlab996/ui/reactbits/BlurText'
 import GradientText from '@cdlab996/ui/reactbits/GradientText'
-import ShinyText from '@cdlab996/ui/reactbits/ShinyText'
-import SpotlightCard from '@cdlab996/ui/reactbits/SpotlightCard'
+import Threads from '@cdlab996/ui/reactbits/Threads'
 import {
   AlarmClock,
   ArrowRight,
@@ -26,6 +27,7 @@ import {
   MessageSquareText,
   ScrollText,
   Send,
+  Settings,
   Users,
   X,
 } from 'lucide-react'
@@ -35,62 +37,59 @@ import { ThemeToggle } from '@/components/layout/theme-toggle'
 
 const BRAND = 'wepush'
 const GITHUB_HREF = 'https://github.com/WuChenDi/projects/tree/main/apps/wepush'
-const SITE_IMAGE =
-  'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/wepush/index.png'
+const AUTHOR_HREF = 'https://github.com/WuChenDi'
 
 const FEATURES = [
   {
     icon: Users,
     title: '多接收人管理',
     desc: '为每个接收人单独配置城市、纪念日与模板变量，集中维护推送名单。',
-    spotlight: 'rgba(99, 102, 241, 0.25)' as const,
   },
   {
     icon: FileText,
     title: '可视化模板',
     desc: '在界面中编辑 {{var.DATA}} 模板与颜色，无需改代码即可调整推送内容。',
-    spotlight: 'rgba(236, 72, 153, 0.25)' as const,
   },
   {
     icon: CalendarClock,
     title: '定时与农历',
     desc: '基于 Cron 定时推送，内置公历 / 农历纪念日倒数，自动换算下一次发送日期。',
-    spotlight: 'rgba(34, 197, 94, 0.25)' as const,
   },
   {
     icon: CloudSun,
     title: '内置数据源',
     desc: '天气、一言、每日英语等数据源开箱即用，自动注入到模板变量中。',
-    spotlight: 'rgba(14, 165, 233, 0.25)' as const,
   },
   {
     icon: ScrollText,
     title: '推送日志',
     desc: '按批次记录每次推送的成功 / 失败明细，支持重试与详情追踪。',
-    spotlight: 'rgba(245, 158, 11, 0.25)' as const,
   },
   {
     icon: KeyRound,
     title: '访问控制',
     desc: '密码门保护控制台，推送接口由独立 Token 鉴权，配置项安全存储。',
-    spotlight: 'rgba(168, 85, 247, 0.25)' as const,
   },
 ]
 
 const STEPS = [
   {
+    icon: Settings,
     title: '配置公众号',
     desc: '在设置中填入测试号 AppID / AppSecret，建立与微信的连接。',
   },
   {
+    icon: Users,
     title: '添加接收人与模板',
     desc: '维护接收人名单，绑定模板与个性化变量（城市、纪念日等）。',
   },
   {
+    icon: CalendarClock,
     title: '设置定时任务',
     desc: '开启 Cron 定时，或随时手动 / 通过 API 触发一次推送。',
   },
   {
+    icon: ScrollText,
     title: '查看推送结果',
     desc: '在日志中查看每个批次的发送明细，失败可一键重试。',
   },
@@ -119,19 +118,16 @@ const USE_CASES = [
     icon: Heart,
     title: '给家人 / 恋人',
     desc: '每天清晨送上问候，附带天气、纪念日倒数与暖心一言。',
-    spotlight: 'rgba(236, 72, 153, 0.25)' as const,
   },
   {
     icon: Gift,
     title: '纪念日不遗忘',
     desc: '公历 / 农历纪念日自动倒数，重要的日子提前提醒。',
-    spotlight: 'rgba(34, 197, 94, 0.25)' as const,
   },
   {
     icon: AlarmClock,
     title: '个人提醒',
     desc: '给自己推送天气、待办与每日英语，开启自律的一天。',
-    spotlight: 'rgba(99, 102, 241, 0.25)' as const,
   },
 ]
 
@@ -220,9 +216,84 @@ const FOOTER_COLUMNS = [
   },
 ]
 
+// Fixed full-page backdrop: a fine dot grid lit by a single top-center glow
+// (patterncraft "Dotted + Top Glow" family). Two theme-specific layers so it
+// reads on both light and dark.
+function PageBackground() {
+  return (
+    <>
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10 dark:hidden"
+        style={{
+          background: '#ffffff',
+          backgroundImage:
+            'radial-gradient(circle, rgba(99,102,241,0.10) 1px, transparent 1px), radial-gradient(ellipse 80% 55% at 50% -10%, rgba(165,180,252,0.40), transparent 70%)',
+          backgroundSize: '22px 22px, 100% 100%',
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10 hidden dark:block"
+        style={{
+          background: '#000000',
+          backgroundImage:
+            'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px), radial-gradient(ellipse 80% 55% at 50% -10%, rgba(99,102,241,0.22), transparent 70%)',
+          backgroundSize: '22px 22px, 100% 100%',
+        }}
+      />
+    </>
+  )
+}
+
+// Left-aligned section heading with a numbered eyebrow (e.g. "01 — 核心能力").
+function SectionHeading({
+  index,
+  eyebrow,
+  title,
+  subtitle,
+  className,
+  children,
+}: {
+  index: string
+  eyebrow: string
+  title: string
+  subtitle: string
+  className?: string
+  children?: React.ReactNode
+}) {
+  return (
+    <div className={cn('max-w-2xl', className)}>
+      <p className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-primary">
+        {index} — {eyebrow}
+      </p>
+      <h2 className="mt-3 text-2xl font-bold tracking-tight md:text-3xl">
+        {title}
+      </h2>
+      <p className="mt-3 text-muted-foreground">{subtitle}</p>
+      {children}
+    </div>
+  )
+}
+
+// Animated corner brackets, drawn on every feature card. Decorative only.
+function CardCorners() {
+  const base =
+    'pointer-events-none absolute size-2.5 border-foreground/20 transition-colors group-hover:border-primary/50'
+  return (
+    <>
+      <span className={cn(base, 'left-0 top-0 border-l border-t')} />
+      <span className={cn(base, 'right-0 top-0 border-r border-t')} />
+      <span className={cn(base, 'bottom-0 left-0 border-b border-l')} />
+      <span className={cn(base, 'bottom-0 right-0 border-b border-r')} />
+    </>
+  )
+}
+
 export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col">
+      <PageBackground />
       <header className="mx-auto flex h-20 w-full max-w-6xl shrink-0 items-center justify-between gap-2 px-4 md:px-6">
         <Link href="/" className="flex items-center font-semibold">
           <Image
@@ -253,107 +324,117 @@ export default function LandingPage() {
 
       <IKPageContainer className="flex-col p-0 md:px-0">
         {/* Hero */}
-        <section className="mx-auto w-full max-w-6xl px-4 py-16 text-center md:px-6 md:py-24">
-          <Badge variant="outline" className="mb-6">
-            微信公众号 · 模板消息推送
-          </Badge>
-          <GradientText
-            className="text-4xl font-bold tracking-tight md:text-6xl"
-            colors={['#6366F1', '#EC4899', '#22D3EE', '#6366F1']}
-            animationSpeed={10}
+        <section className="relative isolate overflow-hidden">
+          {/* Subtle animated threads backdrop, masked to fade out */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] opacity-40 dark:opacity-60"
+            style={{
+              maskImage:
+                'radial-gradient(ellipse 60% 70% at 50% 30%, #000 30%, transparent 75%)',
+              WebkitMaskImage:
+                'radial-gradient(ellipse 60% 70% at 50% 30%, #000 30%, transparent 75%)',
+            }}
           >
-            把每日提醒交给 wepush
-          </GradientText>
-          <div className="mx-auto mt-6 max-w-2xl">
-            <ShinyText
-              text="多接收人、多模板、农历纪念日、天气与每日一言，全部在界面中配置，到点自动发送。"
-              speed={4}
-              className="text-base md:text-lg"
+            <Threads
+              color={[0.45, 0.5, 0.72]}
+              amplitude={1.1}
+              distance={0.1}
+              enableMouseInteraction={false}
             />
-          </div>
-          <div className="mt-9 flex items-center justify-center gap-3">
-            <Button asChild size="lg">
-              <Link href="/dashboard">
-                进入控制台
-                <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <a href={GITHUB_HREF} target="_blank" rel="noopener noreferrer">
-                <Github className="size-4" />
-                查看源码
-              </a>
-            </Button>
           </div>
 
-          <div className="mx-auto mt-16 max-w-5xl overflow-hidden rounded-xl border bg-card shadow-xl">
-            <Image
-              src={SITE_IMAGE}
-              alt="wepush 控制台预览"
-              width={1600}
-              height={900}
-              className="h-auto w-full"
-              unoptimized
-              priority
-            />
+          <div className="mx-auto w-full max-w-6xl px-4 py-16 text-center md:px-6 md:py-24">
+            <GradientText
+              showBorder
+              colors={['#6366f1', '#a855f7', '#ec4899', '#a855f7', '#6366f1']}
+              className="mb-6 border border-border text-xs tracking-wide md:text-sm"
+            >
+              ✨ 微信公众号 · 模板消息推送
+            </GradientText>
+
+            <h1 className="sr-only">把每日提醒交给 wepush</h1>
+            <div
+              aria-hidden
+              className="mx-auto max-w-3xl text-balance text-3xl font-bold tracking-tight sm:text-4xl"
+            >
+              <BlurText
+                text="把每日提醒交给 wepush"
+                animateBy="words"
+                delay={120}
+                className="justify-center text-balance"
+              />
+            </div>
+
+            <p className="mx-auto mt-6 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+              多接收人、多模板、农历纪念日、天气与每日一言，全部在界面中配置，到点自动发送。
+            </p>
+
+            <div className="mt-9 flex items-center justify-center gap-3">
+              <Button asChild size="lg">
+                <Link href="/dashboard">
+                  进入控制台
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <a href={GITHUB_HREF} target="_blank" rel="noopener noreferrer">
+                  <Github className="size-4" />
+                  查看源码
+                </a>
+              </Button>
+            </div>
           </div>
         </section>
 
         {/* Features */}
-        <section className="relative border-t">
-          <div className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
-            <div className="mb-10 text-center">
-              <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                核心能力
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                推送链路上需要的能力，开箱即用
-              </p>
-            </div>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {FEATURES.map((f) => {
-                const Icon = f.icon
-                return (
-                  <SpotlightCard
-                    key={f.title}
-                    spotlightColor={f.spotlight}
-                    className="border-border bg-card"
-                  >
-                    <div className="mb-3 inline-flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <Icon className="size-4.5" />
-                    </div>
+        <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
+          <SectionHeading
+            index="01"
+            eyebrow="核心能力"
+            title="推送链路上需要的能力，开箱即用"
+            subtitle="从接收人、模板到定时与日志，一站式覆盖完整推送流程。"
+          />
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((f) => {
+              const Icon = f.icon
+              return (
+                <div
+                  key={f.title}
+                  className="group relative flex min-h-40 flex-col justify-between gap-6 border bg-gradient-to-b from-muted/40 to-transparent p-5 text-left transition-colors hover:border-primary/40"
+                >
+                  <CardCorners />
+                  <span className="inline-flex size-10 items-center justify-center rounded-lg border bg-background/60 text-foreground transition-colors group-hover:border-primary/40 group-hover:text-primary">
+                    <Icon className="size-5" />
+                  </span>
+                  <div className="space-y-1.5">
                     <h3 className="font-semibold">{f.title}</h3>
-                    <p className="mt-1.5 text-sm text-muted-foreground">
+                    <p className="text-sm leading-snug text-muted-foreground">
                       {f.desc}
                     </p>
-                  </SpotlightCard>
-                )
-              })}
-            </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </section>
 
         {/* Message preview */}
-        <section className="border-t">
-          <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-16 md:grid-cols-2 md:px-6 md:py-20">
-            <div>
-              <Badge variant="outline" className="mb-4">
-                推送内容预览
-              </Badge>
-              <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                一条消息，说清今天的一切
-              </h2>
-              <p className="mt-3 text-sm text-muted-foreground md:text-base">
-                把天气、农历、纪念日倒数、每日一言与英语组合成一条模板消息，
-                变量自动替换、关键字段着色。每个接收人都能收到专属于自己的内容。
-              </p>
+        <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
+          <div className="grid items-center gap-12 md:grid-cols-2">
+            <SectionHeading
+              index="02"
+              eyebrow="推送内容预览"
+              title="一条消息，说清今天的一切"
+              subtitle="把天气、农历、纪念日倒数、每日一言与英语组合成一条模板消息，变量自动替换、关键字段着色。每个接收人都能收到专属于自己的内容。"
+            >
               <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
                 <MessageSquareText className="size-4 text-primary" />
                 变量随接收人配置动态生成
               </div>
-            </div>
+            </SectionHeading>
 
-            <div className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl border bg-card shadow-xl">
+            <div className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl border bg-card shadow-xl backdrop-blur">
               <div className="flex items-center gap-2 border-b bg-primary/5 px-5 py-3">
                 <span className="inline-flex size-7 items-center justify-center rounded-md bg-primary/10 text-primary">
                   <Send className="size-3.5" />
@@ -386,165 +467,160 @@ export default function LandingPage() {
         </section>
 
         {/* Use cases */}
-        <section className="border-t">
-          <div className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
-            <div className="mb-10 text-center">
-              <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                适用场景
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                日复一日的提醒，交给它自动完成
-              </p>
-            </div>
-            <div className="grid gap-5 sm:grid-cols-3">
-              {USE_CASES.map((u) => {
-                const Icon = u.icon
-                return (
-                  <SpotlightCard
-                    key={u.title}
-                    spotlightColor={u.spotlight}
-                    className="border-border bg-card"
-                  >
-                    <div className="mb-3 inline-flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <Icon className="size-4.5" />
-                    </div>
+        <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
+          <SectionHeading
+            index="03"
+            eyebrow="适用场景"
+            title="日复一日的提醒，交给它自动完成"
+            subtitle="无论是给在意的人，还是给自己，都能稳定地按时送达。"
+          />
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
+            {USE_CASES.map((u) => {
+              const Icon = u.icon
+              return (
+                <div
+                  key={u.title}
+                  className="group relative flex min-h-40 flex-col justify-between gap-6 border bg-gradient-to-b from-muted/40 to-transparent p-5 text-left transition-colors hover:border-primary/40"
+                >
+                  <CardCorners />
+                  <span className="inline-flex size-10 items-center justify-center rounded-lg border bg-background/60 text-foreground transition-colors group-hover:border-primary/40 group-hover:text-primary">
+                    <Icon className="size-5" />
+                  </span>
+                  <div className="space-y-1.5">
                     <h3 className="font-semibold">{u.title}</h3>
-                    <p className="mt-1.5 text-sm text-muted-foreground">
+                    <p className="text-sm leading-snug text-muted-foreground">
                       {u.desc}
                     </p>
-                  </SpotlightCard>
-                )
-              })}
-            </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </section>
 
         {/* How it works */}
-        <section className="relative border-t">
-          <div className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
-            <div className="mb-10 text-center">
-              <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                四步开始推送
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                从接入公众号到自动发送，只需几分钟
-              </p>
-            </div>
-            <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {STEPS.map((s, i) => (
-                <SpotlightCard
+        <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
+          <SectionHeading
+            index="04"
+            eyebrow="四步开始"
+            title="从接入公众号到自动发送"
+            subtitle="只需几分钟，即可让每日推送稳定跑起来。"
+          />
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {STEPS.map((s, i) => {
+              const Icon = s.icon
+              return (
+                <div
                   key={s.title}
-                  spotlightColor="rgba(255, 255, 255, 0.18)"
-                  className="border-border bg-card"
+                  className="group relative rounded-xl border bg-card/60 p-6 transition-colors hover:border-primary/30"
                 >
-                  <div className="mb-3 inline-flex items-center justify-center text-primary">
-                    {String(i + 1).padStart(2, '0')}
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Icon className="size-5" />
+                    </span>
+                    <span className="font-mono text-4xl font-bold text-muted-foreground/15">
+                      0{i + 1}
+                    </span>
                   </div>
-                  <h3 className="mt-2 font-semibold">{s.title}</h3>
+                  <h3 className="mt-4 font-semibold">{s.title}</h3>
                   <p className="mt-1.5 text-sm text-muted-foreground">
                     {s.desc}
                   </p>
-                </SpotlightCard>
-              ))}
-            </ol>
+                </div>
+              )
+            })}
           </div>
         </section>
 
         {/* Comparison */}
-        <section className="border-t">
-          <div className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
-            <div className="mb-10 text-center">
-              <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                告别青龙脚本
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                从写死配置的脚本，升级为可视化推送控制台
-              </p>
+        <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
+          <SectionHeading
+            index="05"
+            eyebrow="告别青龙脚本"
+            title="从写死配置的脚本，升级为可视化控制台"
+            subtitle="同样的能力，更低的维护成本与更清晰的可观测性。"
+          />
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            <div className="rounded-xl border bg-card/60 p-6">
+              <h3 className="mb-4 flex items-center gap-2 font-semibold text-muted-foreground">
+                <X className="size-4" />
+                以前：ALL_CONFIG + 青龙脚本
+              </h3>
+              <ul className="space-y-3">
+                {OLD_WAY.map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-2.5 text-sm text-muted-foreground"
+                  >
+                    <X className="mt-0.5 size-4 shrink-0 text-destructive/70" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div className="grid gap-5 md:grid-cols-2">
-              <div className="rounded-xl border bg-card p-6">
-                <h3 className="mb-4 flex items-center gap-2 font-semibold text-muted-foreground">
-                  <X className="size-4" />
-                  以前：ALL_CONFIG + 青龙脚本
-                </h3>
-                <ul className="space-y-3">
-                  {OLD_WAY.map((item) => (
-                    <li
-                      key={item}
-                      className="flex items-start gap-2.5 text-sm text-muted-foreground"
-                    >
-                      <X className="mt-0.5 size-4 shrink-0 text-destructive/70" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="rounded-xl border border-primary/30 bg-card p-6 shadow-sm">
-                <h3 className="mb-4 flex items-center gap-2 font-semibold">
-                  <Check className="size-4 text-primary" />
-                  现在：wepush 控制台
-                </h3>
-                <ul className="space-y-3">
-                  {NEW_WAY.map((item) => (
-                    <li key={item} className="flex items-start gap-2.5 text-sm">
-                      <Check className="mt-0.5 size-4 shrink-0 text-emerald-500" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div className="rounded-xl border border-primary/30 bg-card/60 p-6 shadow-sm">
+              <h3 className="mb-4 flex items-center gap-2 font-semibold">
+                <Check className="size-4 text-primary" />
+                现在：wepush 控制台
+              </h3>
+              <ul className="space-y-3">
+                {NEW_WAY.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm">
+                    <Check className="mt-0.5 size-4 shrink-0 text-emerald-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="border-t">
-          <div className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
-            <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1.7fr)] md:gap-12">
-              <div className="md:sticky md:top-24 md:self-start">
-                <h2 className="text-balance text-2xl font-bold tracking-tight md:text-3xl">
-                  常见问题
-                </h2>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  关于部署、推送与安全的快速解答。
-                </p>
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {STACK.map((tech) => (
-                    <Badge
-                      key={tech}
-                      variant="secondary"
-                      className="font-normal"
-                    >
-                      {tech}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              <Accordion type="single" collapsible className="border-t">
-                {FAQS.map((item) => (
-                  <AccordionItem key={item.q} value={item.q}>
-                    <AccordionTrigger>{item.q}</AccordionTrigger>
-                    <AccordionContent>{item.a}</AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+        <section
+          id="faq"
+          className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-16 md:grid-cols-[minmax(0,1fr)_minmax(0,1.7fr)] md:gap-12 md:px-6 md:py-20"
+        >
+          <div className="md:sticky md:top-6 md:self-start">
+            <p className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-primary">
+              06 — 常见问题
+            </p>
+            <h2 className="mt-3 text-balance text-2xl font-bold tracking-tight md:text-3xl">
+              关于部署、推送与安全
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              几个快速解答，帮你判断它是否适合你。
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              {STACK.map((tech) => (
+                <Badge key={tech} variant="secondary" className="font-normal">
+                  {tech}
+                </Badge>
+              ))}
             </div>
           </div>
+          <Accordion type="single" collapsible className="border-t">
+            {FAQS.map((item) => (
+              <AccordionItem key={item.q} value={item.q}>
+                <AccordionTrigger>{item.q}</AccordionTrigger>
+                <AccordionContent>{item.a}</AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </section>
 
         {/* CTA */}
-        <section className="relative border-t">
-          <div className="mx-auto w-full max-w-6xl px-4 py-16 text-center md:px-6 md:py-20">
+        <section className="relative mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-24 border-t">
+          <div className="relative isolate overflow-hidden rounded-xl border bg-card/60 px-6 py-14 text-center md:py-20">
             <div className="mx-auto mb-4 inline-flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Send className="size-5" />
             </div>
-            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
+            <h2 className="mx-auto max-w-2xl text-balance text-2xl font-bold tracking-tight md:text-4xl">
               准备好发送第一条推送了吗？
             </h2>
-            <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
+            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
               进入控制台查看实时概览、配置接收人与模板，立即体验自动推送。
             </p>
-            <div className="mt-7 flex items-center justify-center gap-3">
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button asChild size="lg">
                 <Link href="/dashboard">
                   进入控制台
@@ -624,7 +700,7 @@ export default function LandingPage() {
               <p>
                 © Copyright 2026-PRESENT,{' '}
                 <Link
-                  href="https://github.com/WuChenDi"
+                  href={AUTHOR_HREF}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="transition-colors hover:text-foreground"

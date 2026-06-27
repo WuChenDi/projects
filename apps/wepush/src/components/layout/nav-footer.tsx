@@ -1,0 +1,106 @@
+'use client'
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@cdlab996/ui/components/dropdown-menu'
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from '@cdlab996/ui/components/sidebar'
+import { GitHubIcon } from '@cdlab996/ui/icon'
+import { BookOpen, ChevronsUpDown, Palette } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useTheme } from 'next-themes'
+
+const REPO_HREF = 'https://github.com/WuChenDi/projects/tree/main/apps/wepush'
+const DOCS_HREF =
+  'https://github.com/WuChenDi/projects/blob/main/apps/wepush/README.md'
+
+export function NavFooter() {
+  const { isMobile } = useSidebar()
+  const { theme, setTheme } = useTheme()
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <Image
+                src="https://wcd.pages.dev/logo.png"
+                alt="wepush"
+                width={32}
+                height={32}
+                className="size-8 shrink-0 rounded-lg"
+                unoptimized
+              />
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">wepush</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  推送控制台
+                </span>
+              </div>
+              <ChevronsUpDown className="ml-auto size-4" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="min-w-56 rounded-lg"
+            side={isMobile ? 'bottom' : 'top'}
+            align="end"
+            sideOffset={4}
+          >
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Palette className="size-4" />
+                主题
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+                  <DropdownMenuRadioItem value="light">
+                    浅色
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="dark">
+                    深色
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="system">
+                    跟随系统
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem asChild>
+              <Link href={DOCS_HREF} target="_blank" rel="noopener noreferrer">
+                <BookOpen className="size-4" />
+                文档
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={REPO_HREF} target="_blank" rel="noopener noreferrer">
+                <GitHubIcon className="size-4" />
+                源码仓库
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  )
+}
