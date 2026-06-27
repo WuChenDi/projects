@@ -48,6 +48,34 @@ Preview: https://flnk.cdlab.workers.dev/
 - **Platform** — Cloudflare Workers (KV, D1, Workers AI, Analytics Engine) via OpenNext
 - **i18n** — next-intl (en / zh)
 
+## How it works
+
+A request to `https://flnk.example/<slug>` resolves entirely at the edge, with
+two cache layers in front of D1 so hot links never touch the database:
+
+```mermaid
+flowchart TD
+    A["GET /:slug"] --> B{"KV positive cache"}
+    B -->|hit| R["308 redirect + async access log"]
+    B -->|miss| C{"KV negative cache"}
+    C -->|hit| N["404 — known-missing slug, D1 skipped"]
+    C -->|miss| D["D1 lookup"]
+    D -->|"found & live"| E["fill positive cache"]
+    E --> R
+    D -->|"not found"| F["seed negative cache (short TTL)"]
+    F --> N
+```
+
+- **Positive cache** — a resolved link is cached in KV for `LINK_CACHE_TTL`
+  seconds. A link expiring within KV's 60s TTL floor is left uncached, so a
+  stale entry can never outlive the link itself.
+- **Negative cache** — a miss writes a short-lived tombstone (`NEGATIVE_CACHE_TTL`)
+  so a flood of lookups for the same non-existent slug stops hitting D1 (a
+  cache-penetration guard). A later create / import writes the real link under
+  the same key, so it becomes visible immediately.
+- **Logging** — access logs go to Analytics Engine via `waitUntil`, off the
+  redirect's critical path, with zero tracking cookies.
+
 ## Quick Start
 
 ```bash
@@ -157,6 +185,30 @@ pnpm --filter @cdlab996/flnk deploy
 ```
 
 Requires Cloudflare bindings: `KV`, `AI`, `ANALYTICS` (Analytics Engine), plus the database for the active `DB_TYPE` — the `DB` binding (D1) or `LIBSQL_URL` + `LIBSQL_AUTH_TOKEN` (Turso; set the token via `wrangler secret put LIBSQL_AUTH_TOKEN`, don't commit it). See `wrangler.jsonc`.
+
+## Performance
+
+`scripts/bench.mjs` measures the redirect resolve path with `redirect: manual`, so it times slug resolution (KV / negative cache / D1) — not the destination site. Three scenarios isolate each layer:
+
+| scenario | what it exercises                                                                              |
+| -------- | ---------------------------------------------------------------------------------------------- |
+| `hit`    | one existing slug, served from the KV positive cache                                           |
+| `miss`   | one missing slug, served from the negative cache after the first request seeds the tombstone   |
+| `cold`   | a fresh random missing slug per request — D1 on every call (the baseline the negative cache beats) |
+
+```bash
+# Point at any running instance (dev or deployed)
+node scripts/bench.mjs \
+  --url http://flnk.localhost:3355 \
+  --slug <an-existing-slug> \
+  --requests 2000 --concurrency 50 \
+  --scenario hit,miss,cold
+
+# or via the package script
+pnpm --filter @cdlab996/flnk bench -- --url https://flnk.example --slug abc123
+```
+
+Comparing `miss` against `cold` shows the negative cache at work: repeated lookups of the same missing slug should resolve well below the cold D1 path. Absolute numbers depend on your region, D1 location, and network — run it against your own instance rather than trusting a fixed table.
 
 ## License
 

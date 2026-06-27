@@ -48,6 +48,27 @@
 - **平台** —— Cloudflare Workers（KV、D1、Workers AI、Analytics Engine），经 OpenNext 部署
 - **国际化** —— next-intl（en / zh）
 
+## 工作原理
+
+对 `https://flnk.example/<slug>` 的请求完全在边缘解析，D1 前面有两层缓存，热点短链永远不会落到数据库：
+
+```mermaid
+flowchart TD
+    A["GET /:slug"] --> B{"KV 正缓存"}
+    B -->|命中| R["308 跳转 + 异步访问日志"]
+    B -->|未命中| C{"KV 负缓存"}
+    C -->|命中| N["404 — 已知不存在的 slug，跳过 D1"]
+    C -->|未命中| D["D1 查询"]
+    D -->|"存在且有效"| E["回填正缓存"]
+    E --> R
+    D -->|"未找到"| F["写入负缓存（短 TTL）"]
+    F --> N
+```
+
+- **正缓存** — 解析到的短链在 KV 中缓存 `LINK_CACHE_TTL` 秒。寿命短于 KV 的 60s TTL 下限的短链不写缓存，避免缓存比短链本身活得更久（stale 命中）。
+- **负缓存** — 未命中时写入一个短寿命墓碑（`NEGATIVE_CACHE_TTL`），让大量对同一个不存在 slug 的查询不再穿透 D1（防缓存穿透）。之后的创建 / 导入会用真实短链覆盖同一个 key，因此立即可见。
+- **日志** — 访问日志通过 `waitUntil` 写入 Analytics Engine，不在跳转关键路径上，且零追踪 cookie。
+
 ## 快速开始
 
 ```bash
@@ -157,6 +178,30 @@ pnpm --filter @cdlab996/flnk deploy
 ```
 
 需要 Cloudflare 绑定：`KV`、`AI`、`ANALYTICS`（Analytics Engine），以及当前 `DB_TYPE` 对应的数据库 —— `DB` 绑定（D1）或 `LIBSQL_URL` + `LIBSQL_AUTH_TOKEN`（Turso；通过 `wrangler secret put LIBSQL_AUTH_TOKEN` 设置令牌，不要提交）。详见 `wrangler.jsonc`。
+
+## 性能
+
+`scripts/bench.mjs` 用 `redirect: manual` 测量跳转解析路径，因此计时的是 slug 解析（KV / 负缓存 / D1），而非目标站点。三个场景分别隔离各层：
+
+| 场景     | 测什么                                                         |
+| -------- | ------------------------------------------------------------ |
+| `hit`    | 一个已存在的 slug，由 KV 正缓存命中                            |
+| `miss`   | 一个不存在的 slug，首次请求写入墓碑后由负缓存命中             |
+| `cold`   | 每次请求都用新的随机不存在 slug —— 每次都打 D1（负缓存要超越的基线） |
+
+```bash
+# 指向任意运行中的实例（dev 或已部署）
+node scripts/bench.mjs \
+  --url http://flnk.localhost:3355 \
+  --slug <一个已存在的-slug> \
+  --requests 2000 --concurrency 50 \
+  --scenario hit,miss,cold
+
+# 或通过 package 脚本
+pnpm --filter @cdlab996/flnk bench -- --url https://flnk.example --slug abc123
+```
+
+对比 `miss` 与 `cold` 即可看出负缓存的效果：对同一个不存在 slug 的重复查询，延迟应远低于 cold 的 D1 路径。绝对数值取决于你的区域、D1 位置和网络 —— 请对你自己的实例实测，而非套用固定表格。
 
 ## 许可证
 
