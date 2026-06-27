@@ -12,7 +12,16 @@ import {
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowRight, FileSearchCorner, RotateCw } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import {
+  ArrowRight,
+  FileSearchCorner,
+  FileText,
+  RotateCw,
+  Send,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
 import Link from 'next/link'
 import { SubHeader } from '@/components/layout/sub-header'
 import { TrendChart } from '@/components/TrendChart'
@@ -57,13 +66,18 @@ function StatusBadge({
 
 function StatsSkeleton() {
   return (
-    <div className="mb-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
       {[0, 1, 2, 3].map((i) => (
-        <div key={i} className="space-y-2 bg-card px-5 py-5">
-          <Skeleton className="h-7 w-14" />
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-3 w-20" />
-        </div>
+        <Card key={i} className="ring-1">
+          <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="size-4 rounded" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-8 w-14" />
+            <Skeleton className="mt-2 h-3 w-20" />
+          </CardContent>
+        </Card>
       ))}
     </div>
   )
@@ -92,18 +106,26 @@ export default function HomePage() {
     queryFn: fetchOverview,
   })
 
-  const stats = [
+  const stats: Array<{
+    label: string
+    value: string | number
+    sub: string | null
+    alert: boolean
+    icon: LucideIcon
+  }> = [
     {
       label: '接收人',
       value: data?.users.total ?? 0,
       sub: data ? `${data.users.enabled} 已启用` : null,
       alert: false,
+      icon: Users,
     },
     {
       label: '推送模板',
       value: data?.templates.total ?? 0,
       sub: null,
       alert: false,
+      icon: FileText,
     },
     {
       label: '近 24h 推送',
@@ -112,6 +134,7 @@ export default function HomePage() {
         ? `${data.logs24h.success} 成功 · ${data.logs24h.failed} 失败`
         : null,
       alert: (data?.logs24h.failed ?? 0) > 0,
+      icon: Send,
     },
     {
       label: '24h 成功率',
@@ -126,6 +149,7 @@ export default function HomePage() {
             : '成功率偏低'
           : null,
       alert: data?.logs24h.successRate != null && data.logs24h.successRate < 90,
+      icon: TrendingUp,
     },
   ]
 
@@ -153,28 +177,48 @@ export default function HomePage() {
       {isLoading ? (
         <StatsSkeleton />
       ) : (
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-border sm:grid-cols-4">
-          {stats.map((stat) => (
-            <div key={stat.label} className="bg-card px-5 py-5">
-              <div
-                className={`text-2xl font-bold tabular-nums tracking-tight ${
-                  stat.alert ? 'text-destructive' : ''
-                }`}
-              >
-                {stat.value}
-              </div>
-              <div className="mt-1 text-sm font-medium">{stat.label}</div>
-              {stat.sub && (
-                <div
-                  className={`mt-0.5 text-xs ${
-                    stat.alert ? 'text-destructive/70' : 'text-muted-foreground'
-                  }`}
-                >
-                  {stat.sub}
-                </div>
-              )}
-            </div>
-          ))}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {stats.map((stat) => {
+            const Icon = stat.icon
+            return (
+              <Card key={stat.label} className="ring-1">
+                <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {stat.label}
+                  </CardTitle>
+                  <CardAction>
+                    <Icon
+                      className={`size-4 ${
+                        stat.alert
+                          ? 'text-destructive'
+                          : 'text-muted-foreground'
+                      }`}
+                    />
+                  </CardAction>
+                </CardHeader>
+                <CardContent>
+                  <div
+                    className={`text-3xl font-bold tabular-nums tracking-tight ${
+                      stat.alert ? 'text-destructive' : ''
+                    }`}
+                  >
+                    {stat.value}
+                  </div>
+                  {stat.sub && (
+                    <p
+                      className={`mt-1 text-xs ${
+                        stat.alert
+                          ? 'text-destructive/70'
+                          : 'text-muted-foreground'
+                      }`}
+                    >
+                      {stat.sub}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
 

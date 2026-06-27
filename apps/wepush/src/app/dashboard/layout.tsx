@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Header } from '@/components/layout'
+import { DashboardShell } from '@/components/layout'
 import { PasswordGate } from '@/components/PasswordGate'
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -7,8 +7,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
     <PasswordGate hasEnvPassword={hasEnvPassword}>
-      <Header />
-      {children}
+      <DashboardShell>{children}</DashboardShell>
     </PasswordGate>
   )
 }
