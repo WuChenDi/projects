@@ -169,7 +169,7 @@ export default function DashboardOverviewPage() {
         {stats.map((s) => {
           const Icon = s.icon
           return (
-            <Card key={s.key}>
+            <Card className="ring-1" key={s.key}>
               <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   {t(`overview.${s.key}`)}
@@ -197,7 +197,7 @@ export default function DashboardOverviewPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
+        <Card className="ring-1">
           <CardHeader>
             <CardTitle>{t('overview.topLinks')}</CardTitle>
             <CardDescription>{t('overview.last30Days')}</CardDescription>

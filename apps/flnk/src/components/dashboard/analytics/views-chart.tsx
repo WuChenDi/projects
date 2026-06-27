@@ -45,7 +45,7 @@ export function ViewsChart({
   const up = (trend ?? 0) >= 0
 
   return (
-    <Card>
+    <Card className="ring-1">
       <CardHeader>
         <CardTitle className="text-base">
           {t('views.title')}

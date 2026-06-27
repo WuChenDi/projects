@@ -73,7 +73,7 @@ export function MigrateView() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
+        <Card className="ring-1">
           <CardHeader>
             <CardTitle className="text-base">{t('export.title')}</CardTitle>
             <CardDescription>{t('export.description')}</CardDescription>
@@ -90,7 +90,7 @@ export function MigrateView() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="ring-1">
           <CardHeader>
             <CardTitle className="text-base">{t('import.title')}</CardTitle>
             <CardDescription>{t('import.description')}</CardDescription>
@@ -114,7 +114,7 @@ export function MigrateView() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="ring-1">
           <CardHeader>
             <CardTitle className="text-base">{t('csv.title')}</CardTitle>
             <CardDescription>{t('csv.description')}</CardDescription>
@@ -131,7 +131,7 @@ export function MigrateView() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="ring-1">
           <CardHeader>
             <CardTitle className="text-base">{t('backup.title')}</CardTitle>
             <CardDescription>

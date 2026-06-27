@@ -184,7 +184,7 @@ export function AnalyticsView() {
         ))}
       </div>
 
-      <Card>
+      <Card className="ring-1">
         <CardHeader className="pb-2">
           <CardTitle className="text-base">{t('map.title')}</CardTitle>
         </CardHeader>
@@ -199,7 +199,7 @@ export function AnalyticsView() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="ring-1">
         <CardHeader className="pb-2">
           <CardTitle className="text-base">{t('heatmap.title')}</CardTitle>
         </CardHeader>

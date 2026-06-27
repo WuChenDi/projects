@@ -124,7 +124,7 @@ export function MetricGroup({
   const [tab, setTab] = useState(dims[0]!)
 
   return (
-    <Card>
+    <Card className="ring-1">
       <Tabs value={tab} onValueChange={setTab}>
         <CardHeader className="pb-2">
           <CardTitle className="text-base">{t(`groups.${titleKey}`)}</CardTitle>

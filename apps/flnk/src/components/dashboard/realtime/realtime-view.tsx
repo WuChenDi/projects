@@ -134,7 +134,7 @@ export function RealtimeView() {
 
       <ViewsChart data={views.data?.views ?? []} loading={views.isLoading} />
 
-      <Card>
+      <Card className="ring-1">
         <CardHeader className="pb-2">
           <CardTitle className="text-base">{t('globe.title')}</CardTitle>
         </CardHeader>
@@ -154,7 +154,7 @@ export function RealtimeView() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="ring-1">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
             <span className="relative flex size-2">

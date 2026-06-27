@@ -41,7 +41,7 @@ export function SettingsView() {
         <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
       </div>
 
-      <Card>
+      <Card className="ring-1">
         <CardHeader>
           <CardTitle className="text-base">{t('appearance.title')}</CardTitle>
           <CardDescription>{t('appearance.description')}</CardDescription>
@@ -51,7 +51,7 @@ export function SettingsView() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="ring-1">
         <CardHeader>
           <CardTitle className="text-base">{t('language.title')}</CardTitle>
           <CardDescription>{t('language.description')}</CardDescription>
@@ -61,7 +61,7 @@ export function SettingsView() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="ring-1">
         <CardHeader>
           <CardTitle className="text-base">{t('system.title')}</CardTitle>
           <CardDescription>{t('system.description')}</CardDescription>

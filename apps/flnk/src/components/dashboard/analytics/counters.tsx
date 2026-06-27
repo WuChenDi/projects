@@ -32,7 +32,7 @@ export function CountersCards({
       {items.map((item) => {
         const Icon = item.icon
         return (
-          <Card key={item.key}>
+          <Card className="ring-1" key={item.key}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {t(item.key)}
