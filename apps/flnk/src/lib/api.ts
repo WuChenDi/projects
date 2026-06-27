@@ -129,12 +129,6 @@ export interface MetricItem {
   name: string
   count: number
 }
-export interface HeatmapCell {
-  weekday: number
-  hour: number
-  visits: number
-  visitors: number
-}
 export interface GeoPoint {
   lat: number
   lng: number
@@ -176,10 +170,6 @@ export const statsApi = {
       `/api/stats/metrics${q}${sep}type=${type}${limitQs}`,
     )
   },
-  heatmap: (params: StatsParams) =>
-    request<{ configured: boolean; heatmap: HeatmapCell[] }>(
-      `/api/stats/heatmap${statsQuery(params)}`,
-    ),
   location: (params: StatsParams) =>
     request<{ configured: boolean; points: GeoPoint[] }>(
       `/api/logs/locations${statsQuery(params)}`,

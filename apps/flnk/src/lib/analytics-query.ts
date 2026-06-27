@@ -177,17 +177,6 @@ export function metricsSql(
     GROUP BY name ORDER BY count DESC LIMIT ${Math.max(1, Math.floor(limit))}`
 }
 
-// Weekday (0=Sunday .. 6=Saturday) x hour (00..23) grid.
-export function heatmapSql(env: CloudflareEnv, q: StatsQuery): string {
-  return `SELECT
-      formatDateTime(timestamp, '%w') AS weekday,
-      formatDateTime(timestamp, '%H') AS hour,
-      SUM(_sample_interval) AS visits,
-      ${VISITORS} AS visitors
-    FROM ${dataset(env)} ${whereClause(q)}
-    GROUP BY weekday, hour`
-}
-
 // Aggregated geo points (rounded to ~0.1deg) for the world map.
 // latitude/longitude are AE doubles (double1/double2), not blobs.
 const LAT = 'double1'

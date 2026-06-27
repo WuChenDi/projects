@@ -343,7 +343,7 @@
       "title": "Visitor locations"
     },
     "heatmap": {
-      "title": "Activity by hour"
+      "title": "Daily activity"
     },
     "groups": {
       "location": "Location",
