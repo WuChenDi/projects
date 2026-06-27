@@ -75,7 +75,7 @@ export function FloxPlayer({
 
     const extractedId = extractIdFromUrl(url)
 
-    const playerId = `kv-video-player-${extractedId}`
+    const playerId = `flox-video-player-${extractedId}`
     containerRef.current.id = playerId
 
     const playerConfig: IPlayerConfig = {
@@ -95,18 +95,18 @@ export function FloxPlayer({
       },
       vodLogOpts: {
         vtype: 'HLS',
-        tag: 'KV',
+        tag: 'Flox',
         subtag: 'Flox Player',
         line_app_id: 920667,
         line_user_id: '123',
       },
       plugins: [MemoryPlay, DynamicWatermarkPlugin, MirrorPlugin],
       MemoryPlay: {
-        memoryId: `kv_memory_id_${extractedId}`,
+        memoryId: `flox_memory_id_${extractedId}`,
       },
       dynamicwatermark: {
         enable: false,
-        content: 'KV',
+        content: 'Flox',
         fontSize: 20,
         opacity: 0.2,
       },
