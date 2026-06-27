@@ -31,7 +31,7 @@
     "@libsql/client": "catalog:prod",
     "@tanstack/react-form": "catalog:prod",
     "@tanstack/react-query": "catalog:prod",
-    "better-auth": "catalog:prod",
+    "better-auth": "^1.6.20",
     "cobe": "^2.0.1",
     "date-fns": "catalog:prod",
     "drizzle-orm": "catalog:prod",
