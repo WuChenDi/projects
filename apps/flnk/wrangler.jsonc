@@ -30,6 +30,10 @@
     // Redirect engine knobs (all optional — defaults shown).
     "REDIRECT_STATUS_CODE": "308",
     "LINK_CACHE_TTL": "60",
+    // Negative-cache TTL (seconds) for non-existent slugs — blocks cache
+    // penetration from repeated lookups of missing slugs. "0" disables it;
+    // KV floors any positive value to 60s.
+    "NEGATIVE_CACHE_TTL": "60",
     "REDIRECT_WITH_QUERY": "false",
     "HOME_URL": "",
     "NOT_FOUND_REDIRECT": "",

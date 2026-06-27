@@ -26,6 +26,13 @@ import type {
   ImportLinkInput,
 } from '@/schemas/link'
 
+// Negative-cache sentinel stored under the link cache key when a slug resolves
+// to nothing. A real link is always serialized JSON ('{'…), so this marker can
+// never be mistaken for one. A later create/import writes the real link under
+// the SAME key, overwriting the tombstone in place — no separate invalidation
+// needed.
+const NEGATIVE_CACHE = '__miss__'
+
 // KV cache key. Multi-domain links are namespaced by host so the same slug can
 // point to different destinations per domain.
 export function linkCacheKey(domain: string, slug: string): string {
@@ -42,24 +49,49 @@ export function isExpired(expiresAt: Date | null): boolean {
   return expiresAt !== null && expiresAt.getTime() <= Date.now()
 }
 
+// Three-state cache read: a Link (positive hit), 'negative' (tombstone hit —
+// known not to exist, skip the DB), or null (not cached, fall through to DB).
 async function readCache(
   env: CloudflareEnv,
   domain: string,
   slug: string,
-): Promise<Link | null> {
+): Promise<Link | 'negative' | null> {
   try {
-    const raw = await env.KV.get<Link>(linkCacheKey(domain, slug), 'json')
-    if (!raw) return null
+    const raw = await env.KV.get(linkCacheKey(domain, slug), 'text')
+    if (raw === null) return null
+    if (raw === NEGATIVE_CACHE) return 'negative'
+    const parsed = JSON.parse(raw) as Link
     // JSON round-trips timestamps to strings — restore the Date shape.
     return {
-      ...raw,
-      expiresAt: raw.expiresAt ? new Date(raw.expiresAt) : null,
-      createdAt: new Date(raw.createdAt),
-      updatedAt: new Date(raw.updatedAt),
+      ...parsed,
+      expiresAt: parsed.expiresAt ? new Date(parsed.expiresAt) : null,
+      createdAt: new Date(parsed.createdAt),
+      updatedAt: new Date(parsed.updatedAt),
     }
   } catch (error) {
     logger.warn('KV read error', error instanceof Error ? error.message : error)
     return null
+  }
+}
+
+// Write a short-TTL tombstone for a slug that resolved to nothing. No-op when
+// disabled (TTL 0). A real create/import later overwrites this same key.
+async function writeNegativeCache(
+  env: CloudflareEnv,
+  domain: string,
+  slug: string,
+): Promise<void> {
+  const ttl = getConfig(env).negativeCacheTtl
+  if (ttl <= 0) return
+  try {
+    await env.KV.put(linkCacheKey(domain, slug), NEGATIVE_CACHE, {
+      expirationTtl: Math.max(60, ttl),
+    })
+  } catch (error) {
+    logger.warn(
+      'KV write error',
+      error instanceof Error ? error.message : error,
+    )
   }
 }
 
@@ -69,6 +101,16 @@ async function writeCache(
   slug: string,
   link: Link,
 ): Promise<void> {
+  // Skip caching a link that outlives its own KV entry's minimum TTL: KV floors
+  // expirationTtl to 60s, so a link expiring sooner would linger as a stale hit
+  // (served, then purged by the route's isExpired check). Let those fall through
+  // to D1 — they're about to vanish anyway, so the traffic is negligible.
+  if (link.expiresAt) {
+    const remainingSec = Math.floor(
+      (link.expiresAt.getTime() - Date.now()) / 1000,
+    )
+    if (remainingSec < 60) return
+  }
   try {
     await env.KV.put(linkCacheKey(domain, slug), JSON.stringify(link), {
       expirationTtl: Math.max(60, getConfig(env).linkCacheTtl),
@@ -135,6 +177,7 @@ export async function resolveLink(
   const slug = normalizeSlug(rawSlug, env)
 
   const cached = await readCache(env, domain, slug)
+  if (cached === 'negative') return null
   if (cached) return cached
 
   const db = await getDb(env)
@@ -155,6 +198,12 @@ export async function resolveLink(
 
   if (row && !isExpired(row.expiresAt)) {
     await writeCache(env, domain, slug, row)
+  } else if (!row) {
+    // Slug doesn't exist — cache the miss so a flood of lookups for the same
+    // non-existent slug doesn't keep hitting D1. Gated to validly-formatted
+    // slugs: malformed scans can never match a stored row, so skipping them
+    // avoids polluting KV with one tombstone per junk request.
+    if (!validateSlug(slug)) await writeNegativeCache(env, domain, slug)
   }
   return row
 }
