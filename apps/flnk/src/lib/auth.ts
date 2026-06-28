@@ -21,6 +21,15 @@ export async function getAuth() {
     database: drizzleAdapter(db, { provider: 'sqlite', schema }),
     secret: process.env.BETTER_AUTH_SECRET,
     baseURL: process.env.BETTER_AUTH_URL,
+    // On Cloudflare Workers the real client IP is forwarded in `CF-Connecting-IP`;
+    // better-auth defaults to `X-Forwarded-For` (absent here), so rate limiting
+    // would otherwise fall back to a single shared per-path bucket. Point it at
+    // CF's trusted header.
+    advanced: {
+      ipAddress: {
+        ipAddressHeaders: ['cf-connecting-ip'],
+      },
+    },
     // Social login only — no email/password. First social sign-in auto-creates
     // the user (login == registration).
     socialProviders: {
