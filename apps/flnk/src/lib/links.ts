@@ -369,7 +369,7 @@ function listConditions(opts: ListOptions) {
     conds.push(sql`json_array_length(${links.tags}) = 0`)
   } else if (opts.tags && opts.tags.length > 0) {
     const hasTag = (tag: string) =>
-      sql`exists (select 1 from json_each(${links.tags}) je inner join ${tags} on ${tags.id} = je.value where ${tags.name} = ${tag})`
+      sql`exists (select 1 from json_each(${links.tags}) je inner join ${tags} on ${tags.id} = je.value where ${tags.name} = ${tag} and ${tags.isDeleted} = 0)`
     if (opts.tagMatch === 'or') {
       conds.push(sql`(${sql.join(opts.tags.map(hasTag), sql` or `)})`)
     } else {
@@ -444,7 +444,7 @@ export async function searchLinks(
           like(links.url, q),
           like(links.comment, q),
           // Match links carrying a tag whose name matches the query.
-          sql`exists (select 1 from json_each(${links.tags}) je inner join ${tags} on ${tags.id} = je.value where ${tags.name} like ${q})`,
+          sql`exists (select 1 from json_each(${links.tags}) je inner join ${tags} on ${tags.id} = je.value where ${tags.name} like ${q} and ${tags.isDeleted} = 0)`,
         ),
       ),
     )
