@@ -18,6 +18,10 @@ import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
+// Mirrors the bound in `schemas/link.ts` (SetTagsSchema) so a staged selection
+// never exceeds what the server accepts.
+const MAX_TAGS = 20
+
 // Same set of tags, order-independent.
 function sameTags(a: string[], b: string[]): boolean {
   if (a.length !== b.length) return false
@@ -57,9 +61,11 @@ export function TagInlineEditor({
   }
 
   function toggle(tag: string) {
-    setDraft((d) =>
-      d.includes(tag) ? d.filter((x) => x !== tag) : [...d, tag],
-    )
+    setDraft((d) => {
+      if (d.includes(tag)) return d.filter((x) => x !== tag)
+      // Cap additions; removals always allowed.
+      return d.length >= MAX_TAGS ? d : [...d, tag]
+    })
   }
 
   const q = query.trim().slice(0, 32)

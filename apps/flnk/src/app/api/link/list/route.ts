@@ -27,10 +27,16 @@ export async function GET(request: Request): Promise<NextResponse> {
   const startAt = Number(sp.get('startAt')) || undefined
   const endAt = Number(sp.get('endAt')) || undefined
   const untagged = sp.get('untagged') === '1'
-  const tags = sp
-    .getAll('tag')
-    .map((t) => t.trim())
-    .filter(Boolean)
+  // De-dupe and cap to the per-link tag limit (20) so a crafted request can't
+  // expand into an oversized EXISTS-per-tag query.
+  const tags = Array.from(
+    new Set(
+      sp
+        .getAll('tag')
+        .map((t) => t.trim())
+        .filter(Boolean),
+    ),
+  ).slice(0, 20)
   const tagMatch = sp.get('tagMatch') === 'or' ? 'or' : 'and'
 
   const result = await listLinks(env, {

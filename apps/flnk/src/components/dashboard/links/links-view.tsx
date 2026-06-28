@@ -164,6 +164,7 @@ export function LinksView() {
     setDateRange,
     toggleTag,
     setTagMatch,
+    setUntagged,
     setView,
     resetFilters,
   } = filter
@@ -857,6 +858,14 @@ export function LinksView() {
               <span className="ml-1 opacity-60">{count}</span>
             </Badge>
           ))}
+          {/* Untagged is mutually exclusive with tag selection (see store). */}
+          <Badge
+            variant={untagged ? 'default' : 'outline'}
+            className="cursor-pointer"
+            onClick={() => setUntagged(!untagged)}
+          >
+            {t('untagged')}
+          </Badge>
           {tags.length > 1 && (
             <ToggleGroup
               type="single"
