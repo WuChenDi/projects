@@ -35,3 +35,5 @@ Each plan is a single line linking to its detail file. All detailed information 
 - [x] [**PLAN-004 Sink P4 — remaining parity gaps (globe, AI-OG, auto-safe, i18n)**](PLAN-004.md) `2026-06-16`
 - [x] [**PLAN-005 Sink — better-auth replaces SITE_TOKEN**](PLAN-005.md) `2026-06-17`
 - [ ] [**PLAN-006 Sink P5 — dashboard & link-management enhancements**](PLAN-006.md) `2026-06-25`
+- [x] [**PLAN-007 flnk — make tags functional**](PLAN-007.md) `2026-06-27`
+- [x] [**PLAN-008 flnk — tags as a dictionary table + inline tag-ID column**](PLAN-008.md) `2026-06-28`

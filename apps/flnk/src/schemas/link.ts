@@ -70,6 +70,19 @@ export const DeleteLinkSchema = z.object({
   id: z.string().min(1),
 })
 
+// Add or remove one tag across a batch of links (dashboard bulk action).
+export const BulkTagSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1).max(500),
+  tag: z.string().trim().min(1).max(32),
+  op: z.enum(['add', 'remove']),
+})
+
+// Replace one link's entire tag set (inline editor saves on popover close).
+export const SetTagsSchema = z.object({
+  id: z.string().min(1),
+  tags: tagsField,
+})
+
 export type CreateLinkInput = z.infer<typeof CreateLinkSchema>
 export type EditLinkInput = z.infer<typeof EditLinkSchema>
 export type LinkConfigInput = z.infer<typeof LinkConfigInputSchema>

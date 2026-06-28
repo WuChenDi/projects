@@ -18,6 +18,7 @@ export interface LinkRow {
 }
 
 export type LinkStatusFilter = 'all' | 'active' | 'disabled' | 'expired'
+export type TagMatch = 'and' | 'or'
 
 export interface ListParams {
   limit: number
@@ -27,6 +28,9 @@ export interface ListParams {
   createdBy?: string
   startAt?: number | null
   endAt?: number | null
+  tags?: string[]
+  tagMatch?: TagMatch
+  untagged?: boolean
 }
 
 export class ApiError extends Error {
@@ -69,12 +73,30 @@ export const linkApi = {
     if (params.createdBy) sp.set('createdBy', params.createdBy)
     if (params.startAt) sp.set('startAt', String(params.startAt))
     if (params.endAt) sp.set('endAt', String(params.endAt))
+    if (params.untagged) {
+      sp.set('untagged', '1')
+    } else if (params.tags?.length) {
+      for (const tag of params.tags) sp.append('tag', tag)
+      if (params.tagMatch) sp.set('tagMatch', params.tagMatch)
+    }
     return request<{ links: LinkRow[]; total: number }>(
       `/api/link/list?${sp.toString()}`,
     )
   },
   count: () => request<{ total: number }>('/api/link/count'),
   creators: () => request<{ creators: string[] }>('/api/link/creators'),
+  tags: () =>
+    request<{ tags: { tag: string; count: number }[] }>('/api/link/tags'),
+  tagBulk: (ids: string[], tag: string, op: 'add' | 'remove') =>
+    request<{ updated: number }>('/api/link/tag-bulk', {
+      method: 'POST',
+      body: JSON.stringify({ ids, tag, op }),
+    }),
+  tagSet: (id: string, tags: string[]) =>
+    request<{ ok: true }>('/api/link/tag-set', {
+      method: 'POST',
+      body: JSON.stringify({ id, tags }),
+    }),
   search: (q: string) =>
     request<{ links: LinkRow[] }>(
       `/api/link/search?q=${encodeURIComponent(q)}`,

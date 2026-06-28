@@ -5,6 +5,7 @@ import {
   eq,
   gt,
   gte,
+  inArray,
   isNotNull,
   isNull,
   like,
@@ -12,8 +13,9 @@ import {
   or,
   sql,
 } from 'drizzle-orm'
-import type { Link, LinkConfig, NewLink } from '@/database/schema'
-import { links } from '@/database/schema'
+import type { Link, LinkConfig, LinkRow, NewLink } from '@/database/schema'
+import { links, tags } from '@/database/schema'
+import type { DB } from '@/lib/db'
 import { getDb } from '@/lib/db'
 import { getConfig } from '@/lib/env'
 import { genid } from '@/lib/genid'
@@ -32,6 +34,70 @@ import type {
 // the SAME key, overwriting the tombstone in place — no separate invalidation
 // needed.
 const NEGATIVE_CACHE = '__miss__'
+
+// Max tags per link — mirrors the bound in `schemas/link.ts`.
+const MAX_TAGS = 20
+
+// Trim, drop empties, de-dupe, and cap a raw tag-name list.
+function normalizeTagList(input?: string[]): string[] {
+  return Array.from(
+    new Set((input ?? []).map((t) => t.trim()).filter(Boolean)),
+  ).slice(0, MAX_TAGS)
+}
+
+// Ensure every name exists in the `tags` dictionary; return name → id. New names
+// are inserted (conflicts on the unique name are ignored), then all are read
+// back so existing tags resolve to their stored id. `createdBy` is recorded on
+// freshly inserted tags only — an existing tag keeps its original author.
+async function upsertTagIds(
+  db: DB,
+  names: string[],
+  createdBy = '',
+): Promise<Map<string, string>> {
+  const unique = Array.from(new Set(names))
+  if (unique.length === 0) return new Map()
+  await db
+    .insert(tags)
+    .values(
+      unique.map((name) => ({ id: String(genid.nextId()), name, createdBy })),
+    )
+    .onConflictDoNothing()
+  const rows = await db
+    .select({ id: tags.id, name: tags.name })
+    .from(tags)
+    .where(inArray(tags.name, unique))
+  return new Map(rows.map((r) => [r.name, r.id]))
+}
+
+// Resolve normalized tag names to their stored IDs (creating any missing ones),
+// preserving the input order. The order is what gets persisted in `links.tags`.
+async function tagNamesToIds(
+  db: DB,
+  names: string[],
+  createdBy = '',
+): Promise<string[]> {
+  const idByName = await upsertTagIds(db, names, createdBy)
+  return names.map((n) => idByName.get(n)).filter((id): id is string => !!id)
+}
+
+// Replace the inline tag-ID column on rows with their display names, the shape
+// the API/UI expects (`Link.tags: string[]`). One dictionary lookup covers the
+// whole batch; IDs whose tag is missing or soft-deleted drop out.
+async function attachTagNames(db: DB, rows: LinkRow[]): Promise<Link[]> {
+  const ids = Array.from(new Set(rows.flatMap((r) => r.tags)))
+  if (ids.length === 0) return rows
+  const dict = await db
+    .select({ id: tags.id, name: tags.name })
+    .from(tags)
+    .where(and(inArray(tags.id, ids), eq(tags.isDeleted, 0)))
+  const nameById = new Map(dict.map((d) => [d.id, d.name]))
+  return rows.map((r) => ({
+    ...r,
+    tags: r.tags
+      .map((id) => nameById.get(id))
+      .filter((n): n is string => n !== undefined),
+  }))
+}
 
 // KV cache key. Multi-domain links are namespaced by host so the same slug can
 // point to different destinations per domain.
@@ -181,6 +247,8 @@ export async function resolveLink(
   if (cached) return cached
 
   const db = await getDb(env)
+  // Redirect hot path: tags aren't displayed, so skip the name resolution and
+  // keep the raw row (its `tags` holds IDs, unread here).
   const row =
     (
       await db
@@ -245,15 +313,15 @@ export async function getLinkById(
   id: string,
 ): Promise<Link | null> {
   const db = await getDb(env)
-  return (
-    (
-      await db
-        .select()
-        .from(links)
-        .where(and(eq(links.id, id), eq(links.isDeleted, 0)))
-        .limit(1)
-    )[0] ?? null
-  )
+  const row = (
+    await db
+      .select()
+      .from(links)
+      .where(and(eq(links.id, id), eq(links.isDeleted, 0)))
+      .limit(1)
+  )[0]
+  if (!row) return null
+  return (await attachTagNames(db, [row]))[0]!
 }
 
 export type LinkStatus = 'active' | 'disabled' | 'expired'
@@ -267,6 +335,11 @@ export interface ListOptions {
   // createdAt range (epoch ms).
   startAt?: number
   endAt?: number
+  // Tag filter: match links that carry these tags (AND = all, OR = any).
+  // `untagged` overrides `tags` and matches links with no tags.
+  tags?: string[]
+  tagMatch?: 'and' | 'or'
+  untagged?: boolean
 }
 
 // Build the WHERE conditions shared by the list query and its count, so a
@@ -289,6 +362,20 @@ function listConditions(opts: ListOptions) {
     conds.push(notDisabled)
     conds.push(or(isNull(links.expiresAt), gt(links.expiresAt, now))!)
   }
+  // Tag filter, evaluated against the inline `links.tags` ID array. Filters take
+  // tag names; each name is resolved to its ID through the `tags` dictionary
+  // inside the EXISTS so a rename is transparent to stored links.
+  if (opts.untagged) {
+    conds.push(sql`json_array_length(${links.tags}) = 0`)
+  } else if (opts.tags && opts.tags.length > 0) {
+    const hasTag = (tag: string) =>
+      sql`exists (select 1 from json_each(${links.tags}) je inner join ${tags} on ${tags.id} = je.value where ${tags.name} = ${tag})`
+    if (opts.tagMatch === 'or') {
+      conds.push(sql`(${sql.join(opts.tags.map(hasTag), sql` or `)})`)
+    } else {
+      for (const tag of opts.tags) conds.push(hasTag(tag))
+    }
+  }
   return and(...conds)
 }
 
@@ -310,7 +397,10 @@ export async function listLinks(
     .select({ value: sql<number>`count(*)` })
     .from(links)
     .where(where)
-  return { links: rows, total: Number(totalRow[0]?.value ?? 0) }
+  return {
+    links: await attachTagNames(db, rows),
+    total: Number(totalRow[0]?.value ?? 0),
+  }
 }
 
 // Distinct non-empty link authors, for the dashboard creator filter.
@@ -343,17 +433,131 @@ export async function searchLinks(
 ): Promise<Link[]> {
   const db = await getDb(env)
   const q = `%${query.trim()}%`
-  return db
+  const rows = await db
     .select()
     .from(links)
     .where(
       and(
         eq(links.isDeleted, 0),
-        or(like(links.slug, q), like(links.url, q), like(links.comment, q)),
+        or(
+          like(links.slug, q),
+          like(links.url, q),
+          like(links.comment, q),
+          // Match links carrying a tag whose name matches the query.
+          sql`exists (select 1 from json_each(${links.tags}) je inner join ${tags} on ${tags.id} = je.value where ${tags.name} like ${q})`,
+        ),
       ),
     )
     .orderBy(desc(links.createdAt))
     .limit(opts.limit)
+  return attachTagNames(db, rows)
+}
+
+// Every tag in the dictionary with its non-deleted link count, for the dashboard
+// tag filter. Counts only links that are not soft-deleted; tags with no live
+// link sort last (count 0).
+export async function listTags(
+  env: CloudflareEnv,
+): Promise<{ tag: string; count: number }[]> {
+  const db = await getDb(env)
+  const rows = await db.all<{ tag: string; count: number }>(sql`
+    select t.name as tag,
+      (
+        select count(*) from ${links} l
+        where l.is_deleted = 0
+          and exists (select 1 from json_each(l.tags) je where je.value = t.id)
+      ) as count
+    from ${tags} t
+    where t.is_deleted = 0
+    order by count desc, tag asc
+  `)
+  return rows.map((r) => ({ tag: String(r.tag), count: Number(r.count) }))
+}
+
+// Add or remove a single tag across many links (dashboard bulk action). The tag
+// name is resolved to its ID once, then each link's inline `tags` ID array is
+// mutated and written back. The cached redirect copy is purged so it rebuilds.
+// Returns the number of rows changed.
+export async function bulkTagLinks(
+  env: CloudflareEnv,
+  ids: string[],
+  tag: string,
+  op: 'add' | 'remove',
+  createdBy = '',
+): Promise<number> {
+  const db = await getDb(env)
+  // Add creates the tag if it's new; remove on an unknown tag is a no-op.
+  const tagId =
+    op === 'add'
+      ? (await upsertTagIds(db, [tag], createdBy)).get(tag)
+      : (
+          await db
+            .select({ id: tags.id })
+            .from(tags)
+            .where(eq(tags.name, tag))
+            .limit(1)
+        )[0]?.id
+  if (!tagId) return 0
+  let updated = 0
+  for (const id of ids) {
+    const current = (
+      await db
+        .select()
+        .from(links)
+        .where(and(eq(links.id, id), eq(links.isDeleted, 0)))
+        .limit(1)
+    )[0]
+    if (!current) continue
+    const has = current.tags.includes(tagId)
+    let next: string[]
+    if (op === 'add') {
+      if (has || current.tags.length >= MAX_TAGS) continue
+      next = [...current.tags, tagId]
+    } else {
+      if (!has) continue
+      next = current.tags.filter((x) => x !== tagId)
+    }
+    const row = (
+      await db
+        .update(links)
+        .set({ tags: next, updatedAt: new Date() })
+        .where(eq(links.id, id))
+        .returning()
+    )[0]!
+    await purgeLink(env, row.domain, row.slug)
+    updated++
+  }
+  return updated
+}
+
+// Replace a single link's entire tag set (dashboard inline editor saves the
+// staged selection on close). Resolves the names to IDs (creating new ones) and
+// writes the inline `tags` column. Returns false when the link doesn't exist.
+export async function setLinkTags(
+  env: CloudflareEnv,
+  id: string,
+  tagNames: string[],
+  createdBy = '',
+): Promise<boolean> {
+  const db = await getDb(env)
+  const current = (
+    await db
+      .select()
+      .from(links)
+      .where(and(eq(links.id, id), eq(links.isDeleted, 0)))
+      .limit(1)
+  )[0]
+  if (!current) return false
+  const ids = await tagNamesToIds(db, normalizeTagList(tagNames), createdBy)
+  const row = (
+    await db
+      .update(links)
+      .set({ tags: ids, updatedAt: new Date() })
+      .where(eq(links.id, id))
+      .returning()
+  )[0]!
+  await purgeLink(env, row.domain, row.slug)
+  return true
 }
 
 // Build the stored LinkConfig from input config + password handling.
@@ -397,17 +601,15 @@ async function insertWithRandomSlug(
   for (let attempt = 1; attempt <= SLUG_MAX_RETRIES; attempt++) {
     const length = baseLen + (attempt <= 4 ? 0 : attempt <= 8 ? 1 : 2)
     const slug = normalizeSlug(randomSlug(length), env)
-    const link = (
+    const row = (
       await db
         .insert(links)
         .values({ ...values, slug })
         .onConflictDoNothing()
         .returning()
     )[0]
-    if (link) {
-      await writeCache(env, domain, slug, link)
-      return { ok: true, link }
-    }
+    // Tags are applied + cached by the caller once the row lands.
+    if (row) return { ok: true, link: { ...row, tags: [] } }
     logger.debug(`Random slug collision on attempt ${attempt}: ${slug}`)
   }
   return { ok: false, status: 500, error: 'Failed to allocate a unique slug' }
@@ -421,19 +623,40 @@ export async function createLink(
 ): Promise<RepoResult> {
   const domain = input.domain?.trim() || requestDomain
   const config = await buildConfig(env, input, input.url)
+  const tagNames = normalizeTagList(input.tags)
+  const db = await getDb(env)
+  const tagIds = await tagNamesToIds(db, tagNames, createdBy)
   const baseValues: Omit<NewLink, 'slug'> = {
     id: String(genid.nextId()),
     domain,
     url: input.url,
     comment: input.comment ?? '',
     createdBy,
-    tags: input.tags ?? [],
     config,
+    tags: tagIds,
     expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
     isDeleted: 0,
     updatedAt: new Date(),
   }
 
+  const result = await insertLinkRow(env, domain, input, baseValues)
+  if (!result.ok) return result
+
+  // Hand back the link with display names and cache it.
+  const link: Link = { ...result.link, tags: tagNames }
+  await writeCache(env, link.domain, link.slug, link)
+  return { ok: true, link }
+}
+
+// Insert the link row (random or user-supplied slug). The `tags` ID column is
+// already part of `baseValues`; the returned link's `tags` is overwritten with
+// display names by `createLink`.
+async function insertLinkRow(
+  env: CloudflareEnv,
+  domain: string,
+  input: CreateLinkInput,
+  baseValues: Omit<NewLink, 'slug'>,
+): Promise<RepoResult> {
   // No user-supplied slug → allocate a random one with collision retry.
   if (!input.slug?.trim()) {
     return insertWithRandomSlug(env, domain, baseValues)
@@ -458,26 +681,23 @@ export async function createLink(
   }
 
   const db = await getDb(env)
-  let link: Link
-  if (existing) {
-    // Revive a soft-deleted row holding this slug.
-    link = (
-      await db
-        .update(links)
-        .set(values)
-        .where(eq(links.id, existing.id))
-        .returning()
-    )[0]!
-  } else {
-    link = (await db.insert(links).values(values).returning())[0]!
-  }
-  await writeCache(env, domain, slug, link)
-  return { ok: true, link }
+  const row = existing
+    ? // Revive a soft-deleted row holding this slug.
+      (
+        await db
+          .update(links)
+          .set(values)
+          .where(eq(links.id, existing.id))
+          .returning()
+      )[0]!
+    : (await db.insert(links).values(values).returning())[0]!
+  return { ok: true, link: { ...row, tags: [] } }
 }
 
 export async function updateLink(
   env: CloudflareEnv,
   input: EditLinkInput,
+  createdBy = '',
 ): Promise<RepoResult> {
   const current = await getLinkById(env, input.id)
   if (!current) return { ok: false, status: 404, error: 'Link not found' }
@@ -502,8 +722,16 @@ export async function updateLink(
     input.url ?? current.url,
     current.config,
   )
+  // Omitted tags keep the current set; provided tags replace it. `current.tags`
+  // is already names (getLinkById resolved them).
   const db = await getDb(env)
-  const link = (
+  const tagNames =
+    input.tags === undefined ? current.tags : normalizeTagList(input.tags)
+  const tagIds =
+    input.tags === undefined
+      ? undefined
+      : await tagNamesToIds(db, tagNames, createdBy)
+  const row = (
     await db
       .update(links)
       .set({
@@ -511,8 +739,9 @@ export async function updateLink(
         domain,
         url: input.url ?? current.url,
         comment: input.comment ?? current.comment,
-        tags: input.tags ?? current.tags,
         config,
+        // Only rewrite the tag column when the caller supplied tags.
+        ...(tagIds !== undefined ? { tags: tagIds } : {}),
         expiresAt:
           input.expiresAt === undefined
             ? current.expiresAt
@@ -526,6 +755,7 @@ export async function updateLink(
   )[0]!
 
   if (keyChanged) await purgeLink(env, current.domain, current.slug)
+  const link: Link = { ...row, tags: tagNames }
   await writeCache(env, domain, slug, link)
   return { ok: true, link }
 }
@@ -545,7 +775,7 @@ export async function upsertLink(
       normalizeSlug(rawSlug, env),
     )
     if (existing && existing.isDeleted === 0) {
-      return updateLink(env, { ...input, id: existing.id })
+      return updateLink(env, { ...input, id: existing.id }, createdBy)
     }
   }
   return createLink(env, input, requestDomain, createdBy)
@@ -579,6 +809,7 @@ export interface ImportReport {
 export async function importLinks(
   env: CloudflareEnv,
   items: ImportLinkInput[],
+  createdBy = '',
 ): Promise<ImportReport> {
   const db = await getDb(env)
   const report: ImportReport = {
@@ -612,8 +843,8 @@ export async function importLinks(
       domain,
       url: item.url,
       comment: item.comment ?? '',
-      tags: item.tags ?? [],
       config: (item.config ?? {}) as LinkConfig,
+      tags: await tagNamesToIds(db, normalizeTagList(item.tags), createdBy),
       expiresAt: item.expiresAt ? new Date(item.expiresAt) : null,
       isDeleted: 0,
       updatedAt: new Date(),

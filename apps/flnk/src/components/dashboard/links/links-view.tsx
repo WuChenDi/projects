@@ -13,6 +13,7 @@ import {
 import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
 import { Calendar } from '@cdlab996/ui/components/calendar'
+import { Card } from '@cdlab996/ui/components/card'
 import { Checkbox } from '@cdlab996/ui/components/checkbox'
 import { CopyButton } from '@cdlab996/ui/components/copy-button'
 import {
@@ -82,6 +83,7 @@ import { toast } from 'sonner'
 import { DeleteDialog } from '@/components/dashboard/links/delete-dialog'
 import { LinkDrawer } from '@/components/dashboard/links/link-drawer'
 import { QrPopover } from '@/components/dashboard/links/qr-popover'
+import { TagInlineEditor } from '@/components/dashboard/links/tag-inline-editor'
 import type { LinkRow, SortKey } from '@/lib/api'
 import { linkApi, statsApi } from '@/lib/api'
 import { buildShortUrl, configBadges, formatDate } from '@/lib/format'
@@ -151,14 +153,17 @@ export function LinksView() {
     creator,
     startAt,
     endAt,
-    tagFilter,
+    tags,
+    tagMatch,
+    untagged,
     view,
     setSearch,
     setSort,
     setStatus,
     setCreator,
     setDateRange,
-    setTagFilter,
+    toggleTag,
+    setTagMatch,
     setView,
     resetFilters,
   } = filter
@@ -167,6 +172,7 @@ export function LinksView() {
   const [page, setPage] = useState(0)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkConfirm, setBulkConfirm] = useState(false)
+  const [bulkTagDraft, setBulkTagDraft] = useState('')
   const [toDelete, setToDelete] = useState<LinkRow | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   // undefined → create; a row → edit. Kept while the drawer animates closed.
@@ -192,14 +198,25 @@ export function LinksView() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional triggers
   useEffect(() => {
     setPage(0)
-  }, [search, sort, status, creator, startAt, endAt])
+  }, [search, sort, status, creator, startAt, endAt, tags, tagMatch, untagged])
 
   const isSearching = search.length > 0
 
   const query = useQuery({
     queryKey: [
       'links',
-      { search, sort, page, status, creator, startAt, endAt },
+      {
+        search,
+        sort,
+        page,
+        status,
+        creator,
+        startAt,
+        endAt,
+        tags,
+        tagMatch,
+        untagged,
+      },
     ],
     queryFn: () =>
       isSearching
@@ -214,12 +231,20 @@ export function LinksView() {
             createdBy: creator,
             startAt,
             endAt,
+            tags,
+            tagMatch,
+            untagged,
           }),
   })
 
   const creatorsQuery = useQuery({
     queryKey: ['link-creators'],
     queryFn: () => linkApi.creators(),
+  })
+
+  const tagsQuery = useQuery({
+    queryKey: ['link-tags'],
+    queryFn: () => linkApi.tags(),
   })
 
   // Click counts for every slug in the last 30 days, fetched in one batched
@@ -266,23 +291,30 @@ export function LinksView() {
   const total = query.data?.total ?? 0
   const pageCount = isSearching ? 1 : Math.max(1, Math.ceil(total / PAGE_SIZE))
 
-  // Tag filter is always client-side; status/creator/date are server-side on the
-  // list path but applied here too when the search endpoint is in use.
-  const visibleRows = rows.filter((l) => {
-    if (tagFilter && !(l.tags ?? []).includes(tagFilter)) return false
-    if (isSearching) {
-      if (status !== 'all' && linkStatus(l) !== status) return false
-      if (creator && l.createdBy !== creator) return false
-      const created = new Date(l.createdAt).getTime()
-      if (startAt && created < startAt) return false
-      if (endAt && created > endAt) return false
-    }
-    return true
-  })
+  // The list path filters status/creator/date/tags on the server. The search
+  // path returns a single unfiltered page, so apply those filters client-side.
+  const visibleRows = isSearching
+    ? rows.filter((l) => {
+        const rowTags = l.tags ?? []
+        if (untagged) {
+          if (rowTags.length > 0) return false
+        } else if (tags.length > 0) {
+          const ok =
+            tagMatch === 'or'
+              ? tags.some((tg) => rowTags.includes(tg))
+              : tags.every((tg) => rowTags.includes(tg))
+          if (!ok) return false
+        }
+        if (status !== 'all' && linkStatus(l) !== status) return false
+        if (creator && l.createdBy !== creator) return false
+        const created = new Date(l.createdAt).getTime()
+        if (startAt && created < startAt) return false
+        if (endAt && created > endAt) return false
+        return true
+      })
+    : rows
 
-  const allTags = Array.from(new Set(rows.flatMap((l) => l.tags ?? []))).sort(
-    (a, b) => a.localeCompare(b),
-  )
+  const allTags = tagsQuery.data?.tags ?? []
   const creators = creatorsQuery.data?.creators ?? []
 
   // Clear the selection whenever the underlying rows change.
@@ -332,6 +364,32 @@ export function LinksView() {
       setSelected(new Set())
       setBulkConfirm(false)
       void queryClient.invalidateQueries({ queryKey: ['links'] })
+      void queryClient.invalidateQueries({ queryKey: ['link-tags'] })
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+
+  const bulkTag = useMutation({
+    mutationFn: (op: 'add' | 'remove') =>
+      linkApi.tagBulk([...selected], bulkTagDraft.trim(), op),
+    onSuccess: (r) => {
+      toast.success(t('bulkTagged', { count: r.updated }))
+      setBulkTagDraft('')
+      setSelected(new Set())
+      void queryClient.invalidateQueries({ queryKey: ['links'] })
+      void queryClient.invalidateQueries({ queryKey: ['link-tags'] })
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+
+  // Per-row tag editing from the inline list editor — the staged tag set is
+  // saved in one call when the popover closes.
+  const inlineTag = useMutation({
+    mutationFn: ({ id, tags }: { id: string; tags: string[] }) =>
+      linkApi.tagSet(id, tags),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['links'] })
+      void queryClient.invalidateQueries({ queryKey: ['link-tags'] })
     },
     onError: (e: Error) => toast.error(e.message),
   })
@@ -412,16 +470,16 @@ export function LinksView() {
             <span className="max-w-[12rem] truncate">{link.createdBy}</span>
           </button>
         )}
-        <span className="flex items-center gap-1.5">
+        <span className="group/tag flex items-center gap-1.5">
           <Tag className="size-3.5 shrink-0" />
           {link.tags.length > 0 ? (
             <span className="flex flex-wrap gap-1">
               {link.tags.map((tag) => (
                 <Badge
                   key={tag}
-                  variant="secondary"
+                  variant={tags.includes(tag) ? 'default' : 'secondary'}
                   className="cursor-pointer px-1.5 py-0 text-[10px] font-normal"
-                  onClick={() => setTagFilter(tagFilter === tag ? null : tag)}
+                  onClick={() => toggleTag(tag)}
                 >
                   {tag}
                 </Badge>
@@ -430,6 +488,14 @@ export function LinksView() {
           ) : (
             <span className="text-muted-foreground/70">{t('noTags')}</span>
           )}
+          <TagInlineEditor
+            selected={link.tags}
+            options={allTags.map((x) => x.tag)}
+            disabled={inlineTag.isPending}
+            onSave={(nextTags) =>
+              inlineTag.mutate({ id: link.id, tags: nextTags })
+            }
+          />
         </span>
         {configBadges(link.config).map((b) => (
           <Badge
@@ -466,7 +532,7 @@ export function LinksView() {
               <MoreHorizontal className="size-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent className="w-36" align="end">
             <DropdownMenuItem asChild>
               <a href={shortUrl} target="_blank" rel="noreferrer">
                 <ExternalLink className="size-4" />
@@ -644,7 +710,8 @@ export function LinksView() {
   const drawerActiveCount =
     (status !== 'all' ? 1 : 0) +
     (creator !== '' ? 1 : 0) +
-    (startAt || endAt ? 1 : 0)
+    (startAt || endAt ? 1 : 0) +
+    (tags.length > 0 || untagged ? 1 : 0)
 
   return (
     <div className="space-y-4">
@@ -779,16 +846,30 @@ export function LinksView() {
           <span className="mr-1 text-sm text-muted-foreground">
             {t('filterByTag')}
           </span>
-          {allTags.map((tag) => (
+          {allTags.map(({ tag, count }) => (
             <Badge
               key={tag}
-              variant={tagFilter === tag ? 'default' : 'secondary'}
+              variant={tags.includes(tag) ? 'default' : 'secondary'}
               className="cursor-pointer"
-              onClick={() => setTagFilter(tagFilter === tag ? null : tag)}
+              onClick={() => toggleTag(tag)}
             >
               {tag}
+              <span className="ml-1 opacity-60">{count}</span>
             </Badge>
           ))}
+          {tags.length > 1 && (
+            <ToggleGroup
+              type="single"
+              value={tagMatch}
+              onValueChange={(v) => v && setTagMatch(v as 'and' | 'or')}
+              variant="outline"
+              size="sm"
+              className="ml-1"
+            >
+              <ToggleGroupItem value="and">{t('tagMatchAnd')}</ToggleGroupItem>
+              <ToggleGroupItem value="or">{t('tagMatchOr')}</ToggleGroupItem>
+            </ToggleGroup>
+          )}
         </div>
       )}
 
@@ -821,6 +902,42 @@ export function LinksView() {
               <PowerOff className="size-4" />
               {t('disable')}
             </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Tag className="size-4" />
+                  {t('tagAction')}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-64 space-y-2">
+                <Label>{t('bulkTagLabel')}</Label>
+                <Input
+                  value={bulkTagDraft}
+                  onChange={(e) => setBulkTagDraft(e.target.value)}
+                  placeholder={t('form.addTag')}
+                  maxLength={32}
+                />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    disabled={!bulkTagDraft.trim() || bulkTag.isPending}
+                    onClick={() => bulkTag.mutate('add')}
+                  >
+                    {t('bulkTagAdd')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    disabled={!bulkTagDraft.trim() || bulkTag.isPending}
+                    onClick={() => bulkTag.mutate('remove')}
+                  >
+                    {t('bulkTagRemove')}
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
             <Button
               variant="destructive"
               size="sm"
@@ -886,10 +1003,10 @@ export function LinksView() {
             )
             if (view === 'grid') {
               return (
-                <div
+                <Card
                   key={link.id}
                   className={cn(
-                    'group flex flex-col gap-2 rounded-xl border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/30',
+                    'flex flex-col gap-2 border p-4 transition-all hover:border-primary/60 hover:shadow-xl',
                     disabled && 'opacity-60',
                     isSelected && 'border-primary/60 ring-1 ring-primary/30',
                   )}
@@ -905,15 +1022,15 @@ export function LinksView() {
                   {renderShort(shortUrl, shortLabel)}
                   {renderDest(link.url)}
                   <div className="mt-auto pt-1">{renderMeta(link, count)}</div>
-                </div>
+                </Card>
               )
             }
 
             return (
-              <div
+              <Card
                 key={link.id}
                 className={cn(
-                  'group flex items-start gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/30',
+                  'flex flex-row items-start gap-3 border p-4 transition-all hover:border-primary/60 hover:shadow-xl',
                   disabled && 'opacity-60',
                   isSelected && 'border-primary/60 ring-1 ring-primary/30',
                 )}
@@ -921,13 +1038,19 @@ export function LinksView() {
                 <div className="pt-1">{checkbox}</div>
                 <LinkFavicon url={link.url} />
                 <div className="min-w-0 flex-1 space-y-1.5">
-                  {titleBlock(title, disabled)}
-                  {renderShort(shortUrl, shortLabel)}
+                  {/* Header: identity on the left, actions pinned top-right. */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 space-y-1.5">
+                      {titleBlock(title, disabled)}
+                      {renderShort(shortUrl, shortLabel)}
+                    </div>
+                    {renderActions(link, shortUrl, disabled)}
+                  </div>
+                  {/* Body spans the full width below the header. */}
                   {renderDest(link.url)}
                   {renderMeta(link, count)}
                 </div>
-                {renderActions(link, shortUrl, disabled)}
-              </div>
+              </Card>
             )
           })}
         </div>

@@ -49,3 +49,5 @@ Each task is a single line linking to its detail file. All detailed information 
 - [x] [**FEAT-016 Sink P5d — click-limit expiration (maxVisits)**](FEAT-016.md) `P3`
 - [x] [**FEAT-017 Sink P5e — enable/disable (pause) toggle**](FEAT-017.md) `P3`
 - [x] [**FEAT-018 Sink — upgrade AI slug quality (few-shot + robust parsing)**](FEAT-018.md) `P3`
+- [x] [**FEAT-019 flnk — make tags functional (server-side filter, multi-tag, batch, overview)**](FEAT-019.md) `P1`
+- [x] [**FEAT-020 flnk — tags as a dictionary table + inline tag-ID column**](FEAT-020.md) `P1`
