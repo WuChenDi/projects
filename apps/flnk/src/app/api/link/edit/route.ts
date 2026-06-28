@@ -19,7 +19,7 @@ export async function PUT(request: Request): Promise<NextResponse> {
   }
 
   const { env } = getCloudflareContext()
-  const result = await updateLink(env, parsed.data)
+  const result = await updateLink(env, parsed.data, auth.user.email)
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: result.status })
   }

@@ -36,6 +36,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CountrySelect } from '@/components/dashboard/links/country-select'
+import { TagCombobox } from '@/components/dashboard/links/tag-combobox'
 import type { LinkRow } from '@/lib/api'
 import { configApi, linkApi, uploadApi } from '@/lib/api'
 import { dateLocale } from '@/lib/format'
@@ -70,6 +71,7 @@ interface FormState {
   url: string
   slug: string
   comment: string
+  tags: string[]
   expiresAt: number | null
   password: string
   apple: string
@@ -89,6 +91,7 @@ function initialState(existing?: LinkRow): FormState {
     url: existing?.url ?? '',
     slug: existing?.slug ?? '',
     comment: existing?.comment ?? '',
+    tags: existing?.tags ?? [],
     expiresAt: existing
       ? existing.expiresAt
         ? new Date(existing.expiresAt).getTime()
@@ -131,6 +134,7 @@ function buildPayload(f: FormState): CreateLinkInput {
     url: f.url.trim(),
     slug: f.slug.trim() || undefined,
     comment: f.comment.trim() || undefined,
+    tags: f.tags,
     expiresAt: f.expiresAt ?? null,
     config,
     password: f.password.trim() || undefined,
@@ -216,6 +220,13 @@ function EditorForm({
   })
   const r2Enabled = config?.r2 ?? false
 
+  // Existing tags, to suggest in the chip input (typing convenience only).
+  const { data: tagsData } = useQuery({
+    queryKey: ['link-tags'],
+    queryFn: () => linkApi.tags(),
+  })
+  const tagSuggestions = tagsData?.tags.map((x) => x.tag) ?? []
+
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((s) => ({ ...s, [key]: value }))
   }
@@ -230,6 +241,7 @@ function EditorForm({
     onSuccess: () => {
       toast.success(isEdit ? t('updated') : t('created'))
       void queryClient.invalidateQueries({ queryKey: ['links'] })
+      void queryClient.invalidateQueries({ queryKey: ['link-tags'] })
       onDone()
     },
     onError: (e: Error) => toast.error(e.message),
@@ -341,6 +353,15 @@ function EditorForm({
           value={form.comment}
           onChange={(e) => set('comment', e.target.value)}
           placeholder={t('commentPlaceholder')}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>{t('tags')}</Label>
+        <TagCombobox
+          value={form.tags}
+          onChange={(v) => set('tags', v)}
+          suggestions={tagSuggestions}
         />
       </div>
 

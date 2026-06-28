@@ -1,5 +1,49 @@
 # Changelog
 
+## 2026-06-28 [feature]
+
+FEAT-019 / PLAN-007 done. Made flnk link **tags functional** — they were storage
++ chip editor + a broken client-only single-tag filter. No tag table, no
+rename/merge/delete (kept the `links.tags` JSON column).
+
+- Server-side tag filter via SQLite `json_each` in `listConditions`
+  (`lib/links.ts`), mirroring the existing `json_extract` config filter. Multi-
+  tag AND (all) / OR (any) + an `untagged` predicate (`json_array_length = 0`).
+  `ListOptions` + `/api/link/list` parse repeated `tag` params + `tagMatch` +
+  `untagged`; `lib/api.ts` `ListParams`/`list()` serialize them.
+- `tagFilter` (now `tags[]` + `tagMatch` + `untagged` in `links-filter-store.ts`)
+  wired into the React Query `queryKey` and the page-reset effect — switching a
+  tag now resets to page 1 and refetches (was silently filtering one loaded page).
+- Search covers tags: `searchLinks` matches the tags JSON text (`tags LIKE`).
+- New `listTags(env)` (distinct tags + counts via `json_each`, mirrors
+  `listCreators`) → `GET /api/link/tags`; the filter bar shows per-tag counts, an
+  Untagged chip, and an All/Any toggle (when >1 tag selected).
+- Bulk tag: checkbox-select rows → `POST /api/link/tag-bulk` (`bulkTagLinks`
+  read-modify-writes each row's `tags`, refreshes KV cache); popover in the bulk
+  toolbar with Add/Remove.
+- Tag editing in the **live create/edit drawer** (`link-drawer.tsx`'s
+  `EditorForm`): added `tags` to its FormState/`initialState`/`buildPayload`.
+  FEAT-015 had only wired tags into the unused page editor `link-editor.tsx`, so
+  tags were never editable in the UI; that dead component is left untouched
+  (candidate for removal). `link-tags` query invalidated on create/edit/bulk/
+  delete.
+- Tags treated as a **shared pool** with two editing surfaces (both creatable,
+  no case folding):
+  - Form: `TagCombobox` (`tag-combobox.tsx`) — base-ui `combobox` multi-select
+    with chips + a dropdown of existing tags (checkmarked); typing a new value
+    offers to create it. Inside the vaul Drawer the popup is portaled into the
+    drawer content (`[data-slot="drawer-content"]`) instead of `<body>`, otherwise
+    it lands outside the drawer's pointer-events/focus scope and items can't be
+    selected; `@cdlab996/ui` `ComboboxContent` now forwards an optional
+    `container` to its portal.
+  - List rows: `TagInlineEditor` (`tag-inline-editor.tsx`) — a "+ Add tag"
+    popover (cmdk search + checkbox list of the pool, creatable) toggling tags on
+    that single link via `/api/link/tag-bulk` (`ids:[id]`). Row chips keep their
+    click-to-filter role.
+- i18n en/zh added; verify: SQL behaviors (AND/OR/untagged/counts/search, deleted
+  rows excluded) validated against the libsql client; `tsc` + biome clean (only
+  pre-existing `page.tsx`/`country-select.tsx` diagnostics remain, untouched).
+
 ## 2026-06-17 [feature]
 
 FEAT-012 / PLAN-005 done. Replaced Sink's shared `SITE_TOKEN` Bearer gate with

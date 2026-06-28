@@ -58,6 +58,9 @@ export const links = sqliteTable(
     comment: text('comment').notNull().default(''),
     // Email of the signed-in user who created the link (empty for legacy rows).
     createdBy: text('created_by').notNull().default(''),
+    // Tag IDs (referencing `tags.id`) stored inline as a JSON array. Storing IDs
+    // rather than names means renaming a tag is a single-row update to `tags`
+    // with no fan-out rewrite of every link that carries it.
     tags: text('tags', { mode: 'json' })
       .$type<string[]>()
       .notNull()
@@ -72,6 +75,22 @@ export const links = sqliteTable(
   (table) => [
     uniqueIndex('uniq_links_slug_domain').on(table.slug, table.domain),
   ],
+)
+
+// Tag dictionary — each tag name exists exactly once and is the single source
+// of truth. Links reference a tag by its `id` (stored in the inline
+// `links.tags` array), so renaming a tag is a single-row update here.
+export const tags = sqliteTable(
+  'tags',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    // Email of the signed-in user who first created the tag (empty for tags
+    // created before this field, or by an unauthenticated path).
+    createdBy: text('created_by').notNull().default(''),
+    ...trackingFields,
+  },
+  (table) => [uniqueIndex('uniq_tags_name').on(table.name)],
 )
 
 // better-auth core tables. Column/table names must match better-auth's expected
@@ -163,8 +182,15 @@ export const verification = sqliteTable(
   (table) => [index('verification_identifier_idx').on(table.identifier)],
 )
 
-export type Link = typeof links.$inferSelect
+// The persisted `links` row carries tag IDs in its inline `tags` column. The
+// repository resolves those IDs to names (via the `tags` dictionary) before
+// handing a link to the API/UI, so `Link.tags` is always a name list.
+export type LinkRow = typeof links.$inferSelect
+export type Link = LinkRow
 export type NewLink = typeof links.$inferInsert
+
+export type Tag = typeof tags.$inferSelect
+export type NewTag = typeof tags.$inferInsert
 
 export type User = typeof user.$inferSelect
 export type Session = typeof session.$inferSelect

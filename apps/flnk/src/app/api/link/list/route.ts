@@ -26,6 +26,12 @@ export async function GET(request: Request): Promise<NextResponse> {
   const createdBy = sp.get('createdBy')?.trim() || undefined
   const startAt = Number(sp.get('startAt')) || undefined
   const endAt = Number(sp.get('endAt')) || undefined
+  const untagged = sp.get('untagged') === '1'
+  const tags = sp
+    .getAll('tag')
+    .map((t) => t.trim())
+    .filter(Boolean)
+  const tagMatch = sp.get('tagMatch') === 'or' ? 'or' : 'and'
 
   const result = await listLinks(env, {
     limit,
@@ -35,6 +41,9 @@ export async function GET(request: Request): Promise<NextResponse> {
     createdBy,
     startAt,
     endAt,
+    untagged,
+    tags,
+    tagMatch,
   })
   return NextResponse.json(result)
 }

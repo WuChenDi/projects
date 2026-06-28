@@ -91,6 +91,11 @@ web_modules/
 .dev.vars
 .dev.vars.*
 
+# local libsql / sqlite dev databases (drizzle file: URL)
+*.db
+*.db-shm
+*.db-wal
+
 # vercel
 .vercel
 
