@@ -104,7 +104,7 @@ export function NavUser() {
 
   async function onSignOut() {
     await authClient.signOut()
-    router.replace('/dashboard/login')
+    router.replace('/')
   }
 
   if (isPending || !user) return null
