@@ -15,7 +15,7 @@
   "vars": {
     // Public origin better-auth issues cookies / OAuth redirects against. Must
     // match the deployed URL (dev: http://wepush.localhost:3355).
-    "BETTER_AUTH_URL": "https://wepush.example.workers.dev",
+    "BETTER_AUTH_URL": "https://wepush.a.wd.ds.cc",
     // Driver selector — both run on Cloudflare Workers:
     //   "d1"     → uses the `DB` binding below
     //   "libsql" → uses LIBSQL_URL + LIBSQL_AUTH_TOKEN (Turso etc.)
