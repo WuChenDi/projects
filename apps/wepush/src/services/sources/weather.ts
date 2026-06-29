@@ -1,4 +1,3 @@
-import { logger } from '@cdlab996/utils'
 import { fetchJson } from '@/lib/http'
 import { withRetry } from '@/lib/withRetry'
 import type { SourceContext, SourceResult } from './types'
@@ -123,7 +122,7 @@ export async function getBaseWeather(
     if (!mapped) {
       const fallback = cityFallback(cityCode)
       if (fallback) {
-        logger.warn(
+        console.warn(
           `itboy 不支持 ${cityCode}(${data.message ?? `status=${data.status}`}), 回退到 ${fallback}`,
         )
         data = await fetchOne(fallback, ctx)

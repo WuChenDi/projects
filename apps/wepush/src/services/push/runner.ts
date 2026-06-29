@@ -1,4 +1,3 @@
-import { logger } from '@cdlab996/utils'
 import { and, eq, inArray } from 'drizzle-orm'
 import type { Template, User, UserConfig } from '@/database/schema'
 import {
@@ -153,7 +152,7 @@ export async function runPush(input: RunPushInput): Promise<RunPushResult> {
     startedAt,
   })
 
-  logger.info('推送批次开始', {
+  console.info('推送批次开始', {
     batchId,
     trigger: input.trigger,
     total: targets.length,
@@ -171,7 +170,7 @@ export async function runPush(input: RunPushInput): Promise<RunPushResult> {
     })
   } catch (error) {
     accessTokenError = error instanceof Error ? error.message : String(error)
-    logger.error('获取微信 AccessToken 失败', { error: accessTokenError })
+    console.error('获取微信 AccessToken 失败', { error: accessTokenError })
   }
 
   const results: PerUserResult[] = []
@@ -195,7 +194,7 @@ export async function runPush(input: RunPushInput): Promise<RunPushResult> {
 
     pushedInWindow++
     if (pushedInWindow >= config.maxPushOneMinute && i < targets.length - 1) {
-      logger.warn('达到节流上限，休眠', {
+      console.warn('达到节流上限，休眠', {
         sleepMs: config.sleepTime,
       })
       await sleep(config.sleepTime)
@@ -219,7 +218,7 @@ export async function runPush(input: RunPushInput): Promise<RunPushResult> {
     })
     .where(eq(pushBatches.id, batchId))
 
-  logger.info('推送批次完成', {
+  console.info('推送批次完成', {
     batchId,
     successCount,
     failedCount,
@@ -334,7 +333,7 @@ async function processUser(args: ProcessArgs): Promise<PerUserResult> {
       errorPayload.stack = error.stack
     }
 
-    logger.error(`用户 ${user.name} 推送失败`, { error: errorMessage })
+    console.error(`用户 ${user.name} 推送失败`, { error: errorMessage })
 
     await db.insert(pushLogs).values({
       id: logId,

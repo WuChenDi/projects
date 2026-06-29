@@ -1,4 +1,3 @@
-import { logger } from '@cdlab996/utils'
 import { eq } from 'drizzle-orm'
 import { userConfig } from '@/database/schema'
 import { getDb } from '@/lib/db'
@@ -24,7 +23,7 @@ export async function runScheduledPush(env: CloudflareEnv): Promise<void> {
       .where(eq(userConfig.cronEnabled, true))
 
     if (configs.length === 0) {
-      logger.info('cron 触发但无启用定时推送的租户，跳过')
+      console.info('cron 触发但无启用定时推送的租户，跳过')
       return
     }
 
@@ -33,7 +32,7 @@ export async function runScheduledPush(env: CloudflareEnv): Promise<void> {
         ? config.cronUserIds
         : []
       if (userIds.length === 0) {
-        logger.warn('cron 已启用但未配置参与用户，跳过', {
+        console.warn('cron 已启用但未配置参与用户，跳过', {
           ownerId: config.ownerId,
         })
         continue
@@ -46,21 +45,21 @@ export async function runScheduledPush(env: CloudflareEnv): Promise<void> {
           userIds,
           env,
         })
-        logger.info('cron 推送完成', {
+        console.info('cron 推送完成', {
           ownerId: config.ownerId,
           batchId: result.batchId,
           successCount: result.successCount,
           failedCount: result.failedCount,
         })
       } catch (error) {
-        logger.error('cron 推送失败', {
+        console.error('cron 推送失败', {
           ownerId: config.ownerId,
           error: error instanceof Error ? error.message : String(error),
         })
       }
     }
   } catch (error) {
-    logger.error('cron 调度失败', {
+    console.error('cron 调度失败', {
       error: error instanceof Error ? error.message : String(error),
     })
   }
