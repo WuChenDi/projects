@@ -1,13 +1,13 @@
 import { logger } from '@cdlab996/utils'
 import { and, eq, inArray } from 'drizzle-orm'
-import type { GlobalConfig, Template, User } from '@/database/schema'
+import type { Template, User, UserConfig } from '@/database/schema'
 import {
   customDates as customDatesTable,
   festivals as festivalsTable,
-  globalConfig as globalConfigTable,
   pushBatches,
   pushLogs,
   templates as templatesTable,
+  userConfig as userConfigTable,
   users as usersTable,
 } from '@/database/schema'
 import type { DB } from '@/lib/db'
@@ -25,6 +25,9 @@ import { aggregateUserData } from './aggregate'
 export type Trigger = 'manual' | 'api' | 'cron'
 
 export interface RunPushInput {
+  // Tenant whose recipients / config / token drive this run. Every row written
+  // and read is scoped to it.
+  ownerId: string
   trigger: Trigger
   userIds?: string[]
   // Provided by the worker `scheduled()` handler so `getDb()` can resolve
@@ -48,11 +51,11 @@ export interface RunPushResult {
   results: PerUserResult[]
 }
 
-async function loadConfig(db: DB): Promise<GlobalConfig> {
+async function loadConfig(db: DB, ownerId: string): Promise<UserConfig> {
   const rows = await db
     .select()
-    .from(globalConfigTable)
-    .where(eq(globalConfigTable.id, 1))
+    .from(userConfigTable)
+    .where(eq(userConfigTable.ownerId, ownerId))
     .limit(1)
   if (!rows[0]) {
     throw new Error('全局配置未初始化，请先打开 /settings')
@@ -62,6 +65,7 @@ async function loadConfig(db: DB): Promise<GlobalConfig> {
 
 async function loadTargetUsers(
   db: DB,
+  ownerId: string,
   ids: string[] | undefined,
 ): Promise<User[]> {
   if (ids && ids.length > 0) {
@@ -70,6 +74,7 @@ async function loadTargetUsers(
       .from(usersTable)
       .where(
         and(
+          eq(usersTable.ownerId, ownerId),
           inArray(usersTable.id, ids),
           eq(usersTable.isDeleted, 0),
           eq(usersTable.enabled, true),
@@ -79,7 +84,13 @@ async function loadTargetUsers(
   return db
     .select()
     .from(usersTable)
-    .where(and(eq(usersTable.isDeleted, 0), eq(usersTable.enabled, true)))
+    .where(
+      and(
+        eq(usersTable.ownerId, ownerId),
+        eq(usersTable.isDeleted, 0),
+        eq(usersTable.enabled, true),
+      ),
+    )
 }
 
 async function loadUserExtras(db: DB, userId: string) {
@@ -105,26 +116,35 @@ async function loadUserExtras(db: DB, userId: string) {
 
 async function loadTemplate(
   db: DB,
+  ownerId: string,
   code: string,
 ): Promise<Template | undefined> {
   if (!code) return undefined
   const rows = await db
     .select()
     .from(templatesTable)
-    .where(and(eq(templatesTable.code, code), eq(templatesTable.isDeleted, 0)))
+    .where(
+      and(
+        eq(templatesTable.ownerId, ownerId),
+        eq(templatesTable.code, code),
+        eq(templatesTable.isDeleted, 0),
+      ),
+    )
     .limit(1)
   return rows[0]
 }
 
 export async function runPush(input: RunPushInput): Promise<RunPushResult> {
   const db = await getDb(input.env)
-  const config = await loadConfig(db)
-  const targets = await loadTargetUsers(db, input.userIds)
+  const { ownerId } = input
+  const config = await loadConfig(db, ownerId)
+  const targets = await loadTargetUsers(db, ownerId, input.userIds)
 
   const batchId = String(genid.nextId())
   const startedAt = new Date()
   await db.insert(pushBatches).values({
     id: batchId,
+    ownerId,
     trigger: input.trigger,
     status: 'running',
     totalCount: targets.length,
@@ -218,7 +238,7 @@ interface ProcessArgs {
   db: DB
   batchId: string
   user: User
-  config: GlobalConfig
+  config: UserConfig
   accessToken: string | null
   accessTokenError?: string
 }
@@ -230,7 +250,7 @@ async function processUser(args: ProcessArgs): Promise<PerUserResult> {
 
   try {
     const { festivals, customDates } = await loadUserExtras(db, user.id)
-    const template = await loadTemplate(db, user.templateCode)
+    const template = await loadTemplate(db, config.ownerId, user.templateCode)
     if (!template) {
       throw new Error(
         `未找到模板 (templateCode=${user.templateCode || '未设置'})`,
@@ -287,6 +307,7 @@ async function processUser(args: ProcessArgs): Promise<PerUserResult> {
 
     await db.insert(pushLogs).values({
       id: logId,
+      ownerId: config.ownerId,
       batchId,
       userId: user.id,
       templateCode: user.templateCode,
@@ -317,6 +338,7 @@ async function processUser(args: ProcessArgs): Promise<PerUserResult> {
 
     await db.insert(pushLogs).values({
       id: logId,
+      ownerId: config.ownerId,
       batchId,
       userId: user.id,
       templateCode: user.templateCode,

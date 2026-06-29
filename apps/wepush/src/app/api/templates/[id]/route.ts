@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import * as z from 'zod'
 import { templates } from '@/database/schema'
+import { requireSession } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 
 const patchSchema = z
@@ -13,22 +14,30 @@ const patchSchema = z
   })
   .strict()
 
-async function loadOne(id: string) {
+async function loadOne(id: string, ownerId: string) {
   const db = await getDb()
   const rows = await db
     .select()
     .from(templates)
-    .where(and(eq(templates.id, id), eq(templates.isDeleted, 0)))
+    .where(
+      and(
+        eq(templates.id, id),
+        eq(templates.ownerId, ownerId),
+        eq(templates.isDeleted, 0),
+      ),
+    )
     .limit(1)
   return rows[0]
 }
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireSession(req)
+  if (!auth.ok) return auth.response
   const { id } = await params
-  const row = await loadOne(id)
+  const row = await loadOne(id, auth.user.id)
   if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(row)
 }
@@ -37,8 +46,11 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireSession(req)
+  if (!auth.ok) return auth.response
+  const ownerId = auth.user.id
   const { id } = await params
-  const existing = await loadOne(id)
+  const existing = await loadOne(id, ownerId)
   if (!existing) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
@@ -59,6 +71,7 @@ export async function PATCH(
       .from(templates)
       .where(
         and(
+          eq(templates.ownerId, ownerId),
           eq(templates.code, parsed.data.code),
           eq(templates.isDeleted, 0),
           ne(templates.id, id),
@@ -73,17 +86,25 @@ export async function PATCH(
     }
   }
 
-  await db.update(templates).set(parsed.data).where(eq(templates.id, id))
-  const fresh = await loadOne(id)
+  await db
+    .update(templates)
+    .set(parsed.data)
+    .where(and(eq(templates.id, id), eq(templates.ownerId, ownerId)))
+  const fresh = await loadOne(id, ownerId)
   return NextResponse.json(fresh)
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireSession(req)
+  if (!auth.ok) return auth.response
   const { id } = await params
   const db = await getDb()
-  await db.update(templates).set({ isDeleted: 1 }).where(eq(templates.id, id))
+  await db
+    .update(templates)
+    .set({ isDeleted: 1 })
+    .where(and(eq(templates.id, id), eq(templates.ownerId, auth.user.id)))
   return NextResponse.json({ ok: true })
 }

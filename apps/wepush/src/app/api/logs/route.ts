@@ -2,6 +2,7 @@ import { and, desc, eq, gte, lte, sql } from 'drizzle-orm'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { pushLogs, users } from '@/database/schema'
+import { requireSession } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 
 const STATUS_VALUES = new Set(['success', 'failed'])
@@ -13,6 +14,9 @@ function parseInt(value: string | null, fallback: number): number {
 }
 
 export async function GET(request: NextRequest) {
+  const auth = await requireSession(request)
+  if (!auth.ok) return auth.response
+
   const sp = request.nextUrl.searchParams
   const userId = sp.get('userId') || undefined
   const status = sp.get('status') || undefined
@@ -22,7 +26,10 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(Math.max(parseInt(sp.get('limit'), 50), 1), 200)
   const offset = Math.max(parseInt(sp.get('offset'), 0), 0)
 
-  const filters = [eq(pushLogs.isDeleted, 0)]
+  const filters = [
+    eq(pushLogs.ownerId, auth.user.id),
+    eq(pushLogs.isDeleted, 0),
+  ]
   if (userId) filters.push(eq(pushLogs.userId, userId))
   if (status && STATUS_VALUES.has(status)) {
     filters.push(eq(pushLogs.status, status as 'success' | 'failed'))

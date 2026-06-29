@@ -1,8 +1,9 @@
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import * as z from 'zod'
 import { customDates, festivals, users } from '@/database/schema'
+import { requireSession } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 import { genid } from '@/lib/genid'
 
@@ -35,13 +36,22 @@ const createSchema = z.object({
   customDates: z.array(customDateSchema).default([]),
 })
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const auth = await requireSession(request)
+  if (!auth.ok) return auth.response
+
   const db = await getDb()
-  const rows = await db.select().from(users).where(eq(users.isDeleted, 0))
+  const rows = await db
+    .select()
+    .from(users)
+    .where(and(eq(users.ownerId, auth.user.id), eq(users.isDeleted, 0)))
   return NextResponse.json(rows)
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireSession(request)
+  if (!auth.ok) return auth.response
+
   const parsed = createSchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) {
     return NextResponse.json(
@@ -54,7 +64,7 @@ export async function POST(request: NextRequest) {
   const id = String(genid.nextId())
   const { festivals: fests, customDates: dates, ...userValues } = parsed.data
 
-  await db.insert(users).values({ id, ...userValues })
+  await db.insert(users).values({ id, ownerId: auth.user.id, ...userValues })
 
   if (fests.length > 0) {
     await db

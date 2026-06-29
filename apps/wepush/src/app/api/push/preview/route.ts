@@ -5,10 +5,11 @@ import * as z from 'zod'
 import {
   customDates,
   festivals,
-  globalConfig,
   templates,
+  userConfig,
   users,
 } from '@/database/schema'
+import { requireSession } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 import { aggregateUserData } from '@/services/push/aggregate'
 import { renderTemplate } from '@/services/template/render'
@@ -26,6 +27,10 @@ const bodySchema = z
   .strict()
 
 export async function POST(request: NextRequest) {
+  const auth = await requireSession(request)
+  if (!auth.ok) return auth.response
+  const ownerId = auth.user.id
+
   const parsed = bodySchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) {
     return NextResponse.json(
@@ -38,8 +43,8 @@ export async function POST(request: NextRequest) {
 
   const [configRow] = await db
     .select()
-    .from(globalConfig)
-    .where(eq(globalConfig.id, 1))
+    .from(userConfig)
+    .where(eq(userConfig.ownerId, ownerId))
     .limit(1)
   if (!configRow) {
     return NextResponse.json(
@@ -51,7 +56,13 @@ export async function POST(request: NextRequest) {
   const [user] = await db
     .select()
     .from(users)
-    .where(and(eq(users.id, parsed.data.userId), eq(users.isDeleted, 0)))
+    .where(
+      and(
+        eq(users.id, parsed.data.userId),
+        eq(users.ownerId, ownerId),
+        eq(users.isDeleted, 0),
+      ),
+    )
     .limit(1)
   if (!user) {
     return NextResponse.json({ error: '用户不存在' }, { status: 404 })
@@ -77,7 +88,13 @@ export async function POST(request: NextRequest) {
     const [row] = await db
       .select()
       .from(templates)
-      .where(and(eq(templates.code, code), eq(templates.isDeleted, 0)))
+      .where(
+        and(
+          eq(templates.ownerId, ownerId),
+          eq(templates.code, code),
+          eq(templates.isDeleted, 0),
+        ),
+      )
       .limit(1)
     if (!row) {
       return NextResponse.json(

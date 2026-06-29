@@ -1,13 +1,16 @@
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { pushLogs, users } from '@/database/schema'
+import { requireSession } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireSession(req)
+  if (!auth.ok) return auth.response
   const { id } = await params
   const db = await getDb()
   const [row] = await db
@@ -28,7 +31,7 @@ export async function GET(
     })
     .from(pushLogs)
     .leftJoin(users, eq(users.id, pushLogs.userId))
-    .where(eq(pushLogs.id, id))
+    .where(and(eq(pushLogs.id, id), eq(pushLogs.ownerId, auth.user.id)))
     .limit(1)
   if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(row)

@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { pushBatches, pushLogs } from '@/database/schema'
-import { requireBearerOrSameOrigin } from '@/lib/auth'
+import { requireOwner } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 import { runPush } from '@/services/push/runner'
 
@@ -10,8 +10,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const auth = await requireBearerOrSameOrigin(request)
+  const auth = await requireOwner(request)
   if (!auth.ok) return auth.response
+  const { ownerId } = auth
 
   const { id } = await params
   const db = await getDb()
@@ -19,7 +20,7 @@ export async function POST(
   const [batch] = await db
     .select()
     .from(pushBatches)
-    .where(eq(pushBatches.id, id))
+    .where(and(eq(pushBatches.id, id), eq(pushBatches.ownerId, ownerId)))
     .limit(1)
   if (!batch) {
     return NextResponse.json({ error: '批次不存在' }, { status: 404 })
@@ -31,6 +32,7 @@ export async function POST(
     .where(
       and(
         eq(pushLogs.batchId, id),
+        eq(pushLogs.ownerId, ownerId),
         eq(pushLogs.status, 'failed'),
         eq(pushLogs.isDeleted, 0),
       ),
@@ -41,6 +43,6 @@ export async function POST(
     return NextResponse.json({ error: '没有失败记录可重推' }, { status: 400 })
   }
 
-  const result = await runPush({ trigger: 'manual', userIds })
+  const result = await runPush({ ownerId, trigger: 'manual', userIds })
   return NextResponse.json(result)
 }
