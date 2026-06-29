@@ -44,7 +44,7 @@ export default function NewUserPage() {
     onSuccess: ({ id }) => {
       void qc.invalidateQueries({ queryKey: ['users'] })
       toast.success('已创建')
-      router.push(`/users/${id}`)
+      router.push(`/dashboard/users/${id}`)
     },
     onError: (e: Error) => toast.error(e.message),
   })
