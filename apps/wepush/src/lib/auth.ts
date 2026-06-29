@@ -1,7 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { NextResponse } from 'next/server'
 import * as schema from '@/database/schema'
 import { userConfig } from '@/database/schema'
@@ -113,7 +113,9 @@ export async function requireOwner(request: Request): Promise<OwnerResult> {
       const rows = await db
         .select({ ownerId: userConfig.ownerId })
         .from(userConfig)
-        .where(eq(userConfig.pushApiToken, token))
+        .where(
+          and(eq(userConfig.pushApiToken, token), eq(userConfig.isDeleted, 0)),
+        )
         .limit(1)
       if (rows[0]) return { ok: true, ownerId: rows[0].ownerId }
     }
