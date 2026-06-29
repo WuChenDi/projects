@@ -15,11 +15,12 @@
 - 推送触发：UI 手动（单人 / 全部）、HTTP API（Bearer 鉴权）、Worker `scheduled()` 定时
 - 永久推送日志：批次分组、状态/时间/用户筛选、payload 快照、一键重发
 - 数据源探测页 `/debug`：基础天气、Hitokoto、iCIBA 单独调试
-- 密码门（客户端 hash），无登录页，无 session 表
+- 账号登录（**better-auth**，Google / GitHub，登录即注册）；数据按账号隔离(`ownerId`)——每个用户只能看到自己的接收人 / 模板 / 日志 / 配置
 
 ## 技术栈
 
 - **框架**：Next.js 16 App Router + React 19 + TypeScript
+- **鉴权**：`better-auth`（Google / GitHub OAuth,仅社交登录）
 - **UI**：`@cdlab996/ui`（shadcn + Tailwind v4）+ TanStack Query / Form + Zustand
 - **ORM**：Drizzle，双驱动（`libsql` 用于 dev / Turso，`d1` 用于 Cloudflare）
 - **日历**：`react-day-picker`（日期选择）+ `tyme4ts`（公历 / 农历转换）
@@ -47,8 +48,17 @@ pnpm install
 复制 `.env.example`（如有）或新建 `.env`：
 
 ```bash
-# 密码门 —— 必填（非空即开启）
-ACCESS_PASSWORD=change-me
+# better-auth —— 必填。better-auth 签发 cookie / OAuth 跳转用的公开源地址
+#（结尾不要带 /）。dev：http://wepush.localhost:3355
+BETTER_AUTH_URL=http://wepush.localhost:3355
+NEXT_PUBLIC_BETTER_AUTH_URL=http://wepush.localhost:3355
+BETTER_AUTH_SECRET=        # openssl rand -base64 32
+
+# OAuth 提供方 —— 至少配一个
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
 
 # DB 驱动：'libsql'（默认）或 'd1'
 DB_TYPE=libsql
@@ -78,7 +88,20 @@ pnpm cf:remotedb           # 远程 D1
 pnpm dev
 ```
 
-访问 <http://wepush.localhost:3355>。用 `ACCESS_PASSWORD` 解锁，到 `/settings` 配置微信 APP_ID / APP_SECRET。
+访问 <http://wepush.localhost:3355>，用 Google / GitHub 登录后，到 `/settings` 配置微信 APP_ID / APP_SECRET。
+
+### 配置 OAuth 提供方
+
+到各 provider 注册 OAuth 应用，回调地址设为
+`<BETTER_AUTH_URL>/api/auth/callback/{google,github}`：
+
+- **Google**：授权来源(JavaScript origin)填 `<BETTER_AUTH_URL>`，回调 URI 填
+  `<BETTER_AUTH_URL>/api/auth/callback/google`；同意屏的隐私政策填
+  `<BETTER_AUTH_URL>/privacy`、服务条款填 `/terms`。
+- **GitHub**：Homepage 填 `<BETTER_AUTH_URL>`，回调填
+  `<BETTER_AUTH_URL>/api/auth/callback/github`。
+
+同一邮箱用不同 provider 登录会并到同一个账号(同一租户)。
 
 ### 部署到 Cloudflare Workers
 
@@ -87,8 +110,12 @@ pnpm dev
 pnpm exec wrangler d1 create wepush
 # 反注释 wrangler.jsonc 里的 d1_databases 区段，填 database_id
 
-# 2. 注入 secrets（不进 git）
-pnpm exec wrangler secret put ACCESS_PASSWORD
+# 2. 注入 secrets（不进 git）。BETTER_AUTH_URL 放 wrangler.jsonc 的 vars 即可
+pnpm exec wrangler secret put BETTER_AUTH_SECRET
+pnpm exec wrangler secret put GOOGLE_CLIENT_ID
+pnpm exec wrangler secret put GOOGLE_CLIENT_SECRET
+pnpm exec wrangler secret put GITHUB_CLIENT_ID
+pnpm exec wrangler secret put GITHUB_CLIENT_SECRET
 pnpm exec wrangler secret put LIBSQL_AUTH_TOKEN   # 如生产用 Turso
 
 # 3. 迁移远端 DB
@@ -101,17 +128,17 @@ pnpm deploy
 
 ## 安全模型
 
-**单租户、私有部署**，定位为一个使用者用的小工具。
+**多租户** —— 每个账号拥有自己的数据，按 `ownerId` 隔离。
 
-- `ACCESS_PASSWORD` 是 **客户端 UI 密码门**，只能拦浏览器访问，**不是服务端授权**。接收人 / 模板 / 日志 / 配置 API 本身不做密码校验，任何能直连到这些接口的请求都会被放行。
-- **推送相关接口**（`/api/push/run`、`/api/push/retry`）是 *唯一* 在服务端做 `Authorization: Bearer <pushApiToken>` 校验的路由。
-- `GET /api/settings` 已对 `wechatAppSecret` 和 `pushApiToken` 做掩码：明文只在写入或重置时一次性返回。
+- 登录走 **better-auth**（Google / GitHub）。鉴权在服务端：dashboard 由服务端 session 校验把关，**每个** `/api/*` 路由都会再次校验 session(`requireSession`)并把查询限定到当前登录者的 `ownerId`。不再有"客户端密码门"——任何账号都无法读写他人的接收人 / 模板 / 日志 / 配置。
+- **推送接口**（`/api/push/run`、`/api/push/retry`、批次重发）用 `requireOwner`：接受浏览器 session cookie **或** 按 owner 的 `Authorization: Bearer <pushApiToken>`,并限定在该 owner 范围内执行。
+- 每个 owner 在 `user_config` 里有自己的微信凭据、节流 / cron 配置和推送 token。`GET /api/settings` 对 `wechatAppSecret` 和 `pushApiToken` 做掩码：明文只在写入或重置时一次性返回。
 
-**部署要求：** 公网部署必须套一层接入网关 —— Cloudflare Access / Zero Trust、边缘 basic-auth、IP 白名单或私有内网隧道。不要单靠 `ACCESS_PASSWORD` 对公网暴露。
+注册是开放的(任何能完成 Google/GitHub OAuth 的人都能注册账号)。若要限制谁能注册,可在前面套接入网关(Cloudflare Access / Zero Trust、IP 白名单、私有隧道),或在 `getAuth()` 里加邮箱白名单。
 
 ## 推送 API
 
-接收人 / 模板 CRUD 在 API 层没有单独鉴权（详见上面的「安全模型」）。推送与重试要求 Bearer：
+所有 `/api/*` 路由都要求已登录的 session（见「安全模型」）。对外部调用方，推送与重试接口还接受按 owner 的 Bearer token（执行会限定在该 token 所属 owner）：
 
 ```bash
 # 全员推送
@@ -137,7 +164,7 @@ curl -X POST https://<your-domain>/api/push/retry \
 
 ## 定时推送（cron）
 
-`wrangler.jsonc` 默认 `triggers.crons: ["30 23 * * *"]`（UTC，约北京 07:30，可改）。Worker 的 `scheduled()` 处理器每次运行时读 `globalConfig.cronEnabled` + `globalConfig.cronUserIds`，所以从 Settings 页即可临时关闭定时，不用重新部署。
+`wrangler.jsonc` 默认 `triggers.crons: ["30 23 * * *"]`（UTC，约北京 07:30，可改）。Worker 的 `scheduled()` 处理器**按 owner 展开**：扫描每条 `cronEnabled` 的 `user_config`，推送该 owner 的 `cronUserIds`。从 Settings 页即可按账号临时关闭定时，不用重新部署。
 
 ## 模板变量
 
@@ -168,17 +195,18 @@ pnpm gen:cities
 
 ```
 src/
-├── app/                # Next.js App Router（页面 + /api 路由）
-├── components/         # PasswordGate、AppNav、UserForm、TemplateForm、DatePicker 等
-├── database/           # Drizzle schema + 生成的迁移文件
-├── lib/                # db、auth、http、logger、push-client、template-variables
+├── app/                # Next.js App Router：落地页 /、/login、/privacy、/terms、
+│                       #   控制台 /dashboard/*、/api/*（含 /api/auth/[...all]）
+├── components/         # UserForm、TemplateForm、DatePicker、layout/（侧栏、导航）等
+├── database/           # Drizzle schema（better-auth 表 + 业务表）+ 迁移
+├── lib/                # auth（better-auth getAuth/requireSession/requireOwner）、
+│                       #   auth-client、db、http、push-client、template-variables
 ├── services/
 │   ├── channels/wechat.ts        # 微信 access_token + 模板消息
 │   ├── sources/{weather,hitokoto,iciba}.ts
 │   ├── calendar/                 # 公历 + 农历日差计算
 │   ├── template/render.ts        # {{var.DATA}} 替换 + 颜色
-│   └── push/                     # aggregate、runner、scheduled
-├── stores/             # zustand（解锁 token）
+│   └── push/                     # aggregate、runner、scheduled（按 owner）
 └── worker/index.ts     # 自定义 Worker 入口，包装 .open-next/worker.js + scheduled()
 ```
 
