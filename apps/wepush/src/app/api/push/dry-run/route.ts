@@ -5,10 +5,11 @@ import * as z from 'zod'
 import {
   customDates as customDatesTable,
   festivals as festivalsTable,
-  globalConfig,
   templates as templatesTable,
+  userConfig,
   users as usersTable,
 } from '@/database/schema'
+import { requireSession } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 import { aggregateUserData } from '@/services/push/aggregate'
 import { renderTemplate } from '@/services/template/render'
@@ -18,6 +19,10 @@ const bodySchema = z
   .strict()
 
 export async function POST(request: NextRequest) {
+  const auth = await requireSession(request)
+  if (!auth.ok) return auth.response
+  const ownerId = auth.user.id
+
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})))
   if (!parsed.success) {
     return NextResponse.json(
@@ -30,8 +35,8 @@ export async function POST(request: NextRequest) {
 
   const [configRow] = await db
     .select()
-    .from(globalConfig)
-    .where(eq(globalConfig.id, 1))
+    .from(userConfig)
+    .where(eq(userConfig.ownerId, ownerId))
     .limit(1)
   if (!configRow) {
     return NextResponse.json(
@@ -47,6 +52,7 @@ export async function POST(request: NextRequest) {
         .from(usersTable)
         .where(
           and(
+            eq(usersTable.ownerId, ownerId),
             inArray(usersTable.id, userIds),
             eq(usersTable.isDeleted, 0),
             eq(usersTable.enabled, true),
@@ -55,7 +61,13 @@ export async function POST(request: NextRequest) {
     : await db
         .select()
         .from(usersTable)
-        .where(and(eq(usersTable.isDeleted, 0), eq(usersTable.enabled, true)))
+        .where(
+          and(
+            eq(usersTable.ownerId, ownerId),
+            eq(usersTable.isDeleted, 0),
+            eq(usersTable.enabled, true),
+          ),
+        )
 
   const ctx = {
     apiTimeout: configRow.apiTimeout,
@@ -94,6 +106,7 @@ export async function POST(request: NextRequest) {
             .from(templatesTable)
             .where(
               and(
+                eq(templatesTable.ownerId, ownerId),
                 eq(templatesTable.code, user.templateCode),
                 eq(templatesTable.isDeleted, 0),
               ),

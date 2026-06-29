@@ -36,7 +36,7 @@
     "dev:text2img": "turbo dev --filter=./apps/text2img",
     "dev:values": "turbo dev --filter=./apps/values",
     "dev:vidl": "turbo dev --filter=./apps/vidl",
-    "dev:wepush": "turbo dev --filter=./apps/wepush",
+    "dev:wepush": "pnpm --filter ./apps/wepush run dev",
     "dev:flnk": "pnpm --filter ./apps/flnk run dev",
     "preview:text2img": "turbo preview --filter=./apps/text2img",
     "preview:wepush": "turbo preview --filter=./apps/wepush",

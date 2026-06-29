@@ -2,7 +2,8 @@ import { eq } from 'drizzle-orm'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import * as z from 'zod'
-import { globalConfig } from '@/database/schema'
+import { userConfig } from '@/database/schema'
+import { requireSession } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 
 function randomToken() {
@@ -29,25 +30,25 @@ const patchSchema = z
   })
   .strict()
 
-async function loadOrCreate() {
+async function loadOrCreate(ownerId: string) {
   const db = await getDb()
   const rows = await db
     .select()
-    .from(globalConfig)
-    .where(eq(globalConfig.id, 1))
+    .from(userConfig)
+    .where(eq(userConfig.ownerId, ownerId))
     .limit(1)
 
   if (rows[0]) return rows[0]
 
-  await db.insert(globalConfig).values({
-    id: 1,
+  await db.insert(userConfig).values({
+    ownerId,
     pushApiToken: randomToken(),
   })
 
   const fresh = await db
     .select()
-    .from(globalConfig)
-    .where(eq(globalConfig.id, 1))
+    .from(userConfig)
+    .where(eq(userConfig.ownerId, ownerId))
     .limit(1)
   return fresh[0]!
 }
@@ -56,7 +57,7 @@ async function loadOrCreate() {
 // needs the cleartext; secrets remain editable by sending a new non-empty
 // value via PATCH, and pushApiToken is only revealed in the PATCH response
 // when regenerated.
-function maskRow(row: typeof globalConfig.$inferSelect) {
+function maskRow(row: typeof userConfig.$inferSelect) {
   const { wechatAppSecret, pushApiToken, ...rest } = row
   return {
     ...rest,
@@ -67,12 +68,19 @@ function maskRow(row: typeof globalConfig.$inferSelect) {
   }
 }
 
-export async function GET() {
-  const row = await loadOrCreate()
+export async function GET(request: NextRequest) {
+  const auth = await requireSession(request)
+  if (!auth.ok) return auth.response
+
+  const row = await loadOrCreate(auth.user.id)
   return NextResponse.json(maskRow(row))
 }
 
 export async function PATCH(request: NextRequest) {
+  const auth = await requireSession(request)
+  if (!auth.ok) return auth.response
+  const ownerId = auth.user.id
+
   const body = await request.json().catch(() => null)
   const parsed = patchSchema.safeParse(body)
   if (!parsed.success) {
@@ -82,7 +90,7 @@ export async function PATCH(request: NextRequest) {
     )
   }
 
-  await loadOrCreate()
+  await loadOrCreate(ownerId)
 
   const db = await getDb()
   const { regeneratePushApiToken, wechatAppSecret, ...rest } = parsed.data
@@ -96,13 +104,16 @@ export async function PATCH(request: NextRequest) {
   if (regeneratePushApiToken) updates.pushApiToken = randomToken()
 
   if (Object.keys(updates).length > 0) {
-    await db.update(globalConfig).set(updates).where(eq(globalConfig.id, 1))
+    await db
+      .update(userConfig)
+      .set(updates)
+      .where(eq(userConfig.ownerId, ownerId))
   }
 
   const fresh = await db
     .select()
-    .from(globalConfig)
-    .where(eq(globalConfig.id, 1))
+    .from(userConfig)
+    .where(eq(userConfig.ownerId, ownerId))
     .limit(1)
   // Reveal the new token only on the rotate response, so the UI can show /
   // copy it once; subsequent GETs keep it masked.

@@ -1,19 +1,22 @@
-import { desc, eq } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { pushBatches, pushLogs, users } from '@/database/schema'
+import { requireSession } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireSession(req)
+  if (!auth.ok) return auth.response
   const { id } = await params
   const db = await getDb()
   const [batch] = await db
     .select()
     .from(pushBatches)
-    .where(eq(pushBatches.id, id))
+    .where(and(eq(pushBatches.id, id), eq(pushBatches.ownerId, auth.user.id)))
     .limit(1)
   if (!batch) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
@@ -30,7 +33,7 @@ export async function GET(
     })
     .from(pushLogs)
     .leftJoin(users, eq(users.id, pushLogs.userId))
-    .where(eq(pushLogs.batchId, id))
+    .where(and(eq(pushLogs.batchId, id), eq(pushLogs.ownerId, auth.user.id)))
     .orderBy(desc(pushLogs.sentAt))
 
   return NextResponse.json({ batch, logs })
