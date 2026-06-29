@@ -139,7 +139,12 @@ export const userConfig = sqliteTable(
       .default([]),
     ...trackingFields,
   },
-  (table) => [index('idx_user_config_push_api_token').on(table.pushApiToken)],
+  // pushApiToken doubles as a Bearer credential, so it must be unique — a
+  // collision could otherwise resolve to the wrong owner. (loadOrCreate always
+  // seeds a random token, so no two rows share the default empty string.)
+  (table) => [
+    uniqueIndex('uniq_user_config_push_api_token').on(table.pushApiToken),
+  ],
 )
 
 export const templates = sqliteTable(

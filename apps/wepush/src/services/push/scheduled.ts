@@ -27,6 +27,10 @@ export async function runScheduledPush(env: CloudflareEnv): Promise<void> {
       return
     }
 
+    // Sequential on purpose: each owner's runPush already self-throttles to its
+    // WeChat rate limit (sleeps between sends), and tenant count is expected to
+    // be small. If it ever grows enough to risk the Workers execution limit,
+    // switch to bounded concurrency or split across cron invocations / a queue.
     for (const config of configs) {
       const userIds = Array.isArray(config.cronUserIds)
         ? config.cronUserIds

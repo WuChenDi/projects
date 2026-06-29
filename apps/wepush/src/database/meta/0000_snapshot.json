@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "24a79d66-86dc-4e44-b0a6-497ffb267600",
+  "id": "1176169d-e708-4886-baaf-eb28a46e58f0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -982,12 +982,12 @@
         }
       },
       "indexes": {
-        "idx_user_config_push_api_token": {
-          "name": "idx_user_config_push_api_token",
+        "uniq_user_config_push_api_token": {
+          "name": "uniq_user_config_push_api_token",
           "columns": [
             "push_api_token"
           ],
-          "isUnique": false
+          "isUnique": true
         }
       },
       "foreignKeys": {
