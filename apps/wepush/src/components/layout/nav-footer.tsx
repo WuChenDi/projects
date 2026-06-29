@@ -40,7 +40,7 @@ export function NavFooter() {
 
   async function onSignOut() {
     await authClient.signOut()
-    router.replace('/login')
+    router.replace('/')
   }
 
   return (
