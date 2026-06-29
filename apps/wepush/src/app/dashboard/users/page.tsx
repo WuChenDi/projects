@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@cdlab996/ui/components/table'
-import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
+import { IKEmpty } from '@cdlab996/ui/IK'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Eye,
@@ -172,7 +172,7 @@ export default function UsersPage() {
   }
 
   return (
-    <IKPageContainer className="flex-col max-w-6xl mx-auto">
+    <>
       <SubHeader
         title="接收人"
         description="微信测试号订阅者，含城市、纪念日、累计日配置。"
@@ -404,6 +404,6 @@ export default function UsersPage() {
         results={dryRunResults}
         error={dryRun.error?.message}
       />
-    </IKPageContainer>
+    </>
   )
 }

@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@cdlab996/ui/components/table'
-import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
+import { IKEmpty } from '@cdlab996/ui/IK'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FileSearchCorner, Pencil, Plus, RotateCw, Trash2 } from 'lucide-react'
 import Link from 'next/link'
@@ -45,7 +45,7 @@ export default function TemplatesPage() {
   })
 
   return (
-    <IKPageContainer className="flex-col max-w-6xl mx-auto">
+    <>
       <SubHeader
         title="推送模板"
         description="支持 {{variable.DATA}} 模板变量，每位用户通过 code 关联模板。"
@@ -147,6 +147,6 @@ export default function TemplatesPage() {
           </Table>
         </div>
       )}
-    </IKPageContainer>
+    </>
   )
 }

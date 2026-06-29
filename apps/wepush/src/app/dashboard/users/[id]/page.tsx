@@ -2,7 +2,6 @@
 
 import { Button } from '@cdlab996/ui/components/button'
 import { Spinner } from '@cdlab996/ui/components/spinner'
-import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Eye, Send } from 'lucide-react'
 import Link from 'next/link'
@@ -123,7 +122,7 @@ export default function EditUserPage() {
   }
 
   return (
-    <IKPageContainer className="flex-col max-w-6xl mx-auto">
+    <>
       <SubHeader
         title="编辑接收人"
         description={userQ.data.name || userQ.data.id}
@@ -173,6 +172,6 @@ export default function EditUserPage() {
         result={preview.data}
         error={preview.error?.message}
       />
-    </IKPageContainer>
+    </>
   )
 }

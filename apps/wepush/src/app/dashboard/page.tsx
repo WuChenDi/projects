@@ -10,7 +10,8 @@ import {
   CardTitle,
 } from '@cdlab996/ui/components/card'
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
-import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
+import { IKEmpty } from '@cdlab996/ui/IK'
+import CountUp from '@cdlab996/ui/reactbits/CountUp'
 import { useQuery } from '@tanstack/react-query'
 import type { LucideIcon } from 'lucide-react'
 import {
@@ -108,7 +109,8 @@ export default function HomePage() {
 
   const stats: Array<{
     label: string
-    value: string | number
+    value: number | null
+    suffix?: string
     sub: string | null
     alert: boolean
     icon: LucideIcon
@@ -138,10 +140,8 @@ export default function HomePage() {
     },
     {
       label: '24h 成功率',
-      value:
-        data?.logs24h.successRate == null
-          ? '—'
-          : `${data.logs24h.successRate}%`,
+      value: data?.logs24h.successRate ?? null,
+      suffix: '%',
       sub:
         data?.logs24h.successRate != null
           ? data.logs24h.successRate >= 90
@@ -154,7 +154,7 @@ export default function HomePage() {
   ]
 
   return (
-    <IKPageContainer className="flex-col max-w-6xl mx-auto space-y-6">
+    <div className="space-y-6">
       <SubHeader title="wepush" description="微信公众号定时推送控制台">
         <div className="flex items-center gap-2 pt-1">
           <Button
@@ -202,7 +202,14 @@ export default function HomePage() {
                       stat.alert ? 'text-destructive' : ''
                     }`}
                   >
-                    {stat.value}
+                    {stat.value == null ? (
+                      '—'
+                    ) : (
+                      <>
+                        <CountUp to={stat.value} duration={1.2} separator="," />
+                        {stat.suffix}
+                      </>
+                    )}
                   </div>
                   {stat.sub && (
                     <p
@@ -275,6 +282,6 @@ export default function HomePage() {
           )}
         </CardContent>
       </Card>
-    </IKPageContainer>
+    </div>
   )
 }
