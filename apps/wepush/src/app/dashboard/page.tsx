@@ -23,9 +23,20 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { SubHeader } from '@/components/layout/sub-header'
-import { TrendChart } from '@/components/TrendChart'
+
+// recharts is heavy and client-only — load TrendChart on the client (ssr: false)
+// so recharts stays out of the server (Worker) bundle, mirroring how flnk keeps
+// its heaviest client-only visualisations (globe / map) out of SSR.
+const TrendChart = dynamic(
+  () => import('@/components/TrendChart').then((m) => m.TrendChart),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-80 w-full rounded-xl" />,
+  },
+)
 
 interface Overview {
   users: { total: number; enabled: number }
