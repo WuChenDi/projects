@@ -4,7 +4,7 @@
 [![Node](https://img.shields.io/badge/node-%E2%89%A5%2020-brightgreen.svg)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-%E2%89%A5%2010-f69220.svg)](https://pnpm.io/)
 [![Turborepo](https://img.shields.io/badge/built%20with-Turborepo-cc00ff.svg)](https://turbo.build/)
-[![NSL](https://img.shields.io/badge/dev%20proxy-%40nsio%2Fnsl-4a9eff.svg)](https://github.com/dotns/nsl)
+[![NSL](https://img.shields.io/badge/dev%20proxy-%40dotns%2Fnsl-4a9eff.svg)](https://github.com/dotns/nsl)
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
