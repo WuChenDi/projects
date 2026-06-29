@@ -12,6 +12,19 @@
   "footer": {
     "copyright": "Copyright © 2025-PRESENT |"
   },
+  "console": {
+    "callsign": "Signal Capture Deck",
+    "privacy": "Browser-side · Zero upload",
+    "inputTitle": "Input Signal",
+    "inputHint": "Paste a stream URL — capture runs entirely on this device",
+    "channelSingle": "Single",
+    "channelBatch": "Batch",
+    "caps": {
+      "formats": "M3U8 / HLS / MP4",
+      "decrypt": "AES-128 decrypt",
+      "memory": "Near-zero memory"
+    }
+  },
   "tool": {
     "title": "Video Downloader",
     "description": "Supports M3U8/HLS, MP4, and other video formats with range download, streaming, AES decryption, MP4 conversion"

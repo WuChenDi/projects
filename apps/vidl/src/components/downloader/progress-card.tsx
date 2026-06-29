@@ -53,7 +53,9 @@ export function ProgressCard({ actions }: ProgressCardProps) {
   return (
     <Card className="flex flex-col p-4 border-none h-full">
       <CardHeader className="p-0">
-        <CardTitle>{t('progress.title')}</CardTitle>
+        <CardTitle className="deck-label !text-[0.7rem] !text-muted-foreground">
+          {t('progress.title')}
+        </CardTitle>
         {finishList.length > 0 && (
           <CardDescription>
             {t('progress.totalSegments', { count: targetSegment })}
@@ -122,19 +124,11 @@ export function ProgressCard({ actions }: ProgressCardProps) {
                           onClick={() => void actions.retry(index)}
                           disabled={item.status !== 'error'}
                           className={cn(
-                            'aspect-square rounded-md border font-medium',
-                            'text-xs sm:text-sm',
-                            'transition-all duration-150 shadow-sm',
-                            'flex items-center justify-center',
-                            item.status === 'finish' &&
-                              'bg-emerald-600 hover:bg-emerald-700 border-emerald-700 text-white',
-                            item.status === 'error' &&
-                              'bg-red-600 hover:bg-red-700 border-red-700 text-white cursor-pointer hover:scale-105',
-                            item.status === 'downloading' &&
-                              'bg-blue-600 animate-pulse border-blue-700 text-white',
-                            item.status === '' &&
-                              'bg-muted hover:bg-muted/80 border-border text-muted-foreground',
-                            'disabled:cursor-not-allowed disabled:opacity-60',
+                            'seg-block disabled:cursor-not-allowed',
+                            item.status === 'finish' && 'seg-finish',
+                            item.status === 'error' && 'seg-error',
+                            item.status === 'downloading' && 'seg-active',
+                            item.status === '' && 'seg-idle',
                           )}
                         >
                           {index + 1}

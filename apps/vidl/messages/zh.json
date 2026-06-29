@@ -12,6 +12,19 @@
   "footer": {
     "copyright": "Copyright © 2025-PRESENT |"
   },
+  "console": {
+    "callsign": "信号捕获终端",
+    "privacy": "纯浏览器处理 · 零上传",
+    "inputTitle": "输入信号",
+    "inputHint": "粘贴流媒体链接 — 全程在本机捕获",
+    "channelSingle": "单条",
+    "channelBatch": "批量",
+    "caps": {
+      "formats": "M3U8 / HLS / MP4",
+      "decrypt": "AES-128 解密",
+      "memory": "近零内存占用"
+    }
+  },
   "tool": {
     "title": "视频在线下载工具",
     "description": "支持 M3U8/HLS、MP4 等视频格式，范围下载、流式下载、AES 解密、转 MP4"
