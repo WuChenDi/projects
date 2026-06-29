@@ -69,9 +69,6 @@ export const metadata: Metadata = {
       'max-video-preview': -1,
     },
   },
-  icons: {
-    icon: 'https://wcd.pages.dev/logo.png',
-  },
   openGraph: {
     type: 'website',
     locale: 'zh_CN',

@@ -1,5 +1,6 @@
 export * from './client-providers'
 export * from './dashboard-shell'
+export * from './logo'
 export * from './nav-footer'
 export * from './sub-header'
 export * from './theme-provider'
