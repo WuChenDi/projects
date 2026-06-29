@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import * as z from 'zod'
-import { requireBearerOrSameOrigin } from '@/lib/auth'
+import { requireOwner } from '@/lib/auth'
 import { runPush } from '@/services/push/runner'
 
 const bodySchema = z
@@ -12,7 +12,7 @@ const bodySchema = z
   .strict()
 
 export async function POST(request: NextRequest) {
-  const auth = await requireBearerOrSameOrigin(request)
+  const auth = await requireOwner(request)
   if (!auth.ok) return auth.response
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})))
@@ -24,6 +24,10 @@ export async function POST(request: NextRequest) {
   }
 
   const trigger = parsed.data.trigger ?? 'api'
-  const result = await runPush({ trigger, userIds: parsed.data.userIds })
+  const result = await runPush({
+    ownerId: auth.ownerId,
+    trigger,
+    userIds: parsed.data.userIds,
+  })
   return NextResponse.json(result)
 }

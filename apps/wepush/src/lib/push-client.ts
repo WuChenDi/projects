@@ -30,8 +30,9 @@ export interface RunPushOptions {
   trigger?: 'manual' | 'api' | 'cron'
 }
 
-// Same-origin calls from the UI: the server accepts these without Bearer
-// (see requireBearerOrSameOrigin). Bearer is only for external API consumers.
+// Same-origin calls from the UI carry the better-auth session cookie, which the
+// server resolves to the owner (see requireOwner). Bearer is only for external
+// API consumers, who are scoped to the owner that owns the token.
 export async function runPushFromUi(
   options: RunPushOptions,
 ): Promise<RunPushApiResult> {

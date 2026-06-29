@@ -1,13 +1,22 @@
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { DashboardShell } from '@/components/layout'
-import { PasswordGate } from '@/components/PasswordGate'
+import { getAuth } from '@/lib/auth'
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
-  const hasEnvPassword = (process.env.ACCESS_PASSWORD || '').length > 0
+// The whole console is per-request: it reads the better-auth session and the
+// Cloudflare-bound DB, so it must never be statically prerendered (otherwise
+// `getCloudflareContext()` throws at build time).
+export const dynamic = 'force-dynamic'
 
-  return (
-    <PasswordGate hasEnvPassword={hasEnvPassword}>
-      <DashboardShell>{children}</DashboardShell>
-    </PasswordGate>
-  )
+export default async function DashboardLayout({
+  children,
+}: {
+  children: ReactNode
+}) {
+  const auth = await getAuth()
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session) redirect('/login')
+
+  return <DashboardShell>{children}</DashboardShell>
 }

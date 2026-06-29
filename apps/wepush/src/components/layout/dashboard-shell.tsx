@@ -16,12 +16,12 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from '@cdlab996/ui/components/sidebar'
-import { IKFooter } from '@cdlab996/ui/IK'
+import { IKFooter, IKPageContainer } from '@cdlab996/ui/IK'
 import type { LucideIcon } from 'lucide-react'
 import { Bug, FileText, Home, ListChecks, Settings, Users } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { WepushLogo } from '@/components/layout/logo'
 import { NavFooter } from '@/components/layout/nav-footer'
 
 interface NavItem {
@@ -84,14 +84,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 className="flex-1 group-data-[collapsible=icon]:hidden"
               >
                 <Link href="/dashboard">
-                  <Image
-                    src="https://wcd.pages.dev/logo.png"
-                    alt="wepush"
-                    width={24}
-                    height={24}
-                    className="size-6 shrink-0 rounded-full"
-                    unoptimized
-                  />
+                  <WepushLogo className="size-6 shrink-0 text-primary" />
                   <span className="truncate font-semibold">wepush</span>
                 </Link>
               </SidebarMenuButton>
@@ -122,12 +115,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </Sidebar>
 
       <SidebarInset>
-        <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur md:hidden">
+        <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center border-b bg-background/80 px-4 backdrop-blur md:hidden">
           <SidebarTrigger className="-ml-1" />
-          <span className="font-semibold">wepush</span>
         </header>
 
-        {children}
+        <IKPageContainer className="flex-col pt-4 md:pt-6">
+          {children}
+        </IKPageContainer>
         <IKFooter year={new Date().getFullYear()} />
       </SidebarInset>
     </SidebarProvider>

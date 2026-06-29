@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import * as z from 'zod'
 import { customDates, festivals, users } from '@/database/schema'
+import { requireSession } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 import { genid } from '@/lib/genid'
 
@@ -37,12 +38,14 @@ const patchSchema = z
   })
   .strict()
 
-async function loadFull(id: string) {
+async function loadFull(id: string, ownerId: string) {
   const db = await getDb()
   const u = await db
     .select()
     .from(users)
-    .where(and(eq(users.id, id), eq(users.isDeleted, 0)))
+    .where(
+      and(eq(users.id, id), eq(users.ownerId, ownerId), eq(users.isDeleted, 0)),
+    )
     .limit(1)
   if (!u[0]) return null
 
@@ -60,11 +63,13 @@ async function loadFull(id: string) {
 }
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireSession(req)
+  if (!auth.ok) return auth.response
   const { id } = await params
-  const full = await loadFull(id)
+  const full = await loadFull(id, auth.user.id)
   if (!full) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(full)
 }
@@ -73,8 +78,10 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireSession(req)
+  if (!auth.ok) return auth.response
   const { id } = await params
-  const existing = await loadFull(id)
+  const existing = await loadFull(id, auth.user.id)
   if (!existing) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
@@ -116,16 +123,21 @@ export async function PATCH(
     }
   }
 
-  const fresh = await loadFull(id)
+  const fresh = await loadFull(id, auth.user.id)
   return NextResponse.json(fresh)
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireSession(req)
+  if (!auth.ok) return auth.response
   const { id } = await params
   const db = await getDb()
-  await db.update(users).set({ isDeleted: 1 }).where(eq(users.id, id))
+  await db
+    .update(users)
+    .set({ isDeleted: 1 })
+    .where(and(eq(users.id, id), eq(users.ownerId, auth.user.id)))
   return NextResponse.json({ ok: true })
 }

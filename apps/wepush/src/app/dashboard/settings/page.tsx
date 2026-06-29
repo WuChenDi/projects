@@ -8,18 +8,17 @@ import { Label } from '@cdlab996/ui/components/label'
 import { Separator } from '@cdlab996/ui/components/separator'
 import { Skeleton } from '@cdlab996/ui/components/skeleton'
 import { Switch } from '@cdlab996/ui/components/switch'
-import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Copy, RefreshCcw } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { SubHeader } from '@/components/layout'
-import type { GlobalConfig, User } from '@/database/schema'
+import type { User, UserConfig } from '@/database/schema'
 
 // GET /api/settings masks secrets and adds presence flags; PATCH on regenerate
 // returns the full row (so the new pushApiToken can be displayed once).
-type SettingsResponse = GlobalConfig & {
+type SettingsResponse = UserConfig & {
   hasWechatAppSecret?: boolean
   hasPushApiToken?: boolean
 }
@@ -125,7 +124,7 @@ export default function SettingsPage() {
 
   if (isLoading || !data) {
     return (
-      <IKPageContainer className="flex-col max-w-6xl mx-auto">
+      <>
         <div className="mb-8 space-y-2">
           <Skeleton className="h-8 w-24" />
           <Skeleton className="h-4 w-48" />
@@ -139,7 +138,7 @@ export default function SettingsPage() {
             </div>
           ))}
         </div>
-      </IKPageContainer>
+      </>
     )
   }
 
@@ -161,7 +160,7 @@ export default function SettingsPage() {
   const clearCronUsers = () => set('cronUserIds')([])
 
   return (
-    <IKPageContainer className="flex-col max-w-6xl mx-auto">
+    <>
       <SubHeader
         title="全局配置"
         description="微信 / 节流参数 / 推送触发 token"
@@ -358,7 +357,7 @@ export default function SettingsPage() {
           {save.isPending ? '保存中...' : '保存'}
         </Button>
       </div>
-    </IKPageContainer>
+    </>
   )
 }
 

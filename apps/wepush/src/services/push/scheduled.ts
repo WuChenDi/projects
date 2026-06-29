@@ -1,49 +1,69 @@
-import { logger } from '@cdlab996/utils'
 import { eq } from 'drizzle-orm'
-import { globalConfig } from '@/database/schema'
+import { userConfig } from '@/database/schema'
 import { getDb } from '@/lib/db'
 import { runPush } from './runner'
 
 /**
  * Entry point invoked by the Worker `scheduled()` handler.
  *
- * Reads `global_config` to decide whether cron is enabled and which users
- * participate, then triggers a push with `trigger='cron'`. Errors are logged
- * but never thrown — the Worker scheduler retries on its own.
+ * Multi-tenant: scans every owner's `user_config` for `cronEnabled`, then fires
+ * one push per owner using that owner's configured recipient list — each scoped
+ * to its own tenant. Errors are logged per owner but never thrown — the Worker
+ * scheduler retries on its own.
  *
- * `env` is forwarded explicitly because `getCloudflareContext()` is only set
- * up by opennext's fetch wrapper, not in the `scheduled()` execution path.
+ * `env` is forwarded explicitly because `getCloudflareContext()` is only set up
+ * by opennext's fetch wrapper, not in the `scheduled()` execution path.
  */
 export async function runScheduledPush(env: CloudflareEnv): Promise<void> {
   try {
     const db = await getDb(env)
-    const [config] = await db
+    const configs = await db
       .select()
-      .from(globalConfig)
-      .where(eq(globalConfig.id, 1))
-      .limit(1)
-    if (!config) {
-      logger.warn('cron 触发但全局配置未初始化，跳过')
-      return
-    }
-    if (!config.cronEnabled) {
-      logger.info('cron 已禁用，跳过')
-      return
-    }
-    const userIds = Array.isArray(config.cronUserIds) ? config.cronUserIds : []
-    if (userIds.length === 0) {
-      logger.warn('cron 已启用但未配置参与用户，跳过')
+      .from(userConfig)
+      .where(eq(userConfig.cronEnabled, true))
+
+    if (configs.length === 0) {
+      console.info('cron 触发但无启用定时推送的租户，跳过')
       return
     }
 
-    const result = await runPush({ trigger: 'cron', userIds, env })
-    logger.info('cron 推送完成', {
-      batchId: result.batchId,
-      successCount: result.successCount,
-      failedCount: result.failedCount,
-    })
+    // Sequential on purpose: each owner's runPush already self-throttles to its
+    // WeChat rate limit (sleeps between sends), and tenant count is expected to
+    // be small. If it ever grows enough to risk the Workers execution limit,
+    // switch to bounded concurrency or split across cron invocations / a queue.
+    for (const config of configs) {
+      const userIds = Array.isArray(config.cronUserIds)
+        ? config.cronUserIds
+        : []
+      if (userIds.length === 0) {
+        console.warn('cron 已启用但未配置参与用户，跳过', {
+          ownerId: config.ownerId,
+        })
+        continue
+      }
+
+      try {
+        const result = await runPush({
+          ownerId: config.ownerId,
+          trigger: 'cron',
+          userIds,
+          env,
+        })
+        console.info('cron 推送完成', {
+          ownerId: config.ownerId,
+          batchId: result.batchId,
+          successCount: result.successCount,
+          failedCount: result.failedCount,
+        })
+      } catch (error) {
+        console.error('cron 推送失败', {
+          ownerId: config.ownerId,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }
+    }
   } catch (error) {
-    logger.error('cron 推送失败', {
+    console.error('cron 调度失败', {
       error: error instanceof Error ? error.message : String(error),
     })
   }

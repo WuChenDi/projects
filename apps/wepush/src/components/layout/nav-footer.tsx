@@ -4,6 +4,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
@@ -19,10 +20,12 @@ import {
   useSidebar,
 } from '@cdlab996/ui/components/sidebar'
 import { GitHubIcon } from '@cdlab996/ui/icon'
-import { BookOpen, ChevronsUpDown, Palette } from 'lucide-react'
+import { BookOpen, ChevronsUpDown, LogOut, Palette } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
+import { authClient } from '@/lib/auth-client'
 
 const REPO_HREF = 'https://github.com/WuChenDi/projects/tree/main/apps/wepush'
 const DOCS_HREF =
@@ -31,6 +34,14 @@ const DOCS_HREF =
 export function NavFooter() {
   const { isMobile } = useSidebar()
   const { theme, setTheme } = useTheme()
+  const router = useRouter()
+  const { data: session } = authClient.useSession()
+  const user = session?.user
+
+  async function onSignOut() {
+    await authClient.signOut()
+    router.replace('/')
+  }
 
   return (
     <SidebarMenu>
@@ -42,7 +53,7 @@ export function NavFooter() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Image
-                src="https://wcd.pages.dev/logo.png"
+                src={user?.image || 'https://wcd.pages.dev/logo.png'}
                 alt="wepush"
                 width={32}
                 height={32}
@@ -50,9 +61,11 @@ export function NavFooter() {
                 unoptimized
               />
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">wepush</span>
+                <span className="truncate font-semibold">
+                  {user?.name || user?.email || 'wepush'}
+                </span>
                 <span className="truncate text-xs text-muted-foreground">
-                  推送控制台
+                  {user?.email || '推送控制台'}
                 </span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -64,6 +77,14 @@ export function NavFooter() {
             align="end"
             sideOffset={4}
           >
+            {user ? (
+              <>
+                <DropdownMenuLabel className="truncate font-normal text-muted-foreground">
+                  {user.email}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+              </>
+            ) : null}
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 <Palette className="size-4" />
@@ -98,6 +119,16 @@ export function NavFooter() {
                 源码仓库
               </Link>
             </DropdownMenuItem>
+
+            {user ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => void onSignOut()}>
+                  <LogOut className="size-4" />
+                  退出登录
+                </DropdownMenuItem>
+              </>
+            ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

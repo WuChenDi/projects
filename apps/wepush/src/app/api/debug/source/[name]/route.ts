@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
-import { globalConfig } from '@/database/schema'
+import { userConfig } from '@/database/schema'
+import { requireSession } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 import { getHitokoto } from '@/services/sources/hitokoto'
 import { getCiba } from '@/services/sources/iciba'
@@ -15,6 +16,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ name: string }> },
 ) {
+  const auth = await requireSession(request)
+  if (!auth.ok) return auth.response
+
   const { name } = await params
   if (!(SOURCES as readonly string[]).includes(name)) {
     return NextResponse.json(
@@ -29,8 +33,8 @@ export async function GET(
   const db = await getDb()
   const [config] = await db
     .select()
-    .from(globalConfig)
-    .where(eq(globalConfig.id, 1))
+    .from(userConfig)
+    .where(eq(userConfig.ownerId, auth.user.id))
     .limit(1)
   if (!config) {
     return NextResponse.json(

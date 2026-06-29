@@ -20,7 +20,6 @@ import {
   Check,
   CloudSun,
   FileText,
-  FolderGit2,
   Gift,
   Heart,
   KeyRound,
@@ -28,11 +27,12 @@ import {
   ScrollText,
   Send,
   Settings,
+  ShieldCheck,
   Users,
   X,
 } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
+import { WepushLogo } from '@/components/layout/logo'
 import { ThemeToggle } from '@/components/layout/theme-toggle'
 
 const BRAND = 'wepush'
@@ -68,7 +68,7 @@ const FEATURES = [
   {
     icon: KeyRound,
     title: '访问控制',
-    desc: '密码门保护控制台，推送接口由独立 Token 鉴权，配置项安全存储。',
+    desc: '账号登录（Google / GitHub）保护控制台，数据按账号隔离，推送接口由独立 Token 鉴权。',
   },
 ]
 
@@ -164,7 +164,7 @@ const FAQS = [
   },
   {
     q: '数据安全吗？',
-    a: '控制台有密码门，推送接口独立 Token 鉴权，AppSecret 等敏感项在接口返回时自动脱敏。',
+    a: '控制台需账号登录，数据按账号隔离、互不可见；推送接口独立 Token 鉴权，AppSecret 等敏感项在接口返回时自动脱敏。',
   },
 ]
 
@@ -205,12 +205,17 @@ const FOOTER_COLUMNS = [
   {
     title: '资源',
     links: [
-      { label: 'GitHub', href: GITHUB_HREF, icon: Github, external: true },
       {
-        label: '项目主页',
-        href: 'https://github.com/WuChenDi/projects',
-        icon: FolderGit2,
-        external: true,
+        label: '服务条款',
+        href: '/terms',
+        icon: FileText,
+        external: false,
+      },
+      {
+        label: '隐私政策',
+        href: '/privacy',
+        icon: ShieldCheck,
+        external: false,
       },
     ],
   },
@@ -296,14 +301,7 @@ export default function LandingPage() {
       <PageBackground />
       <header className="mx-auto flex h-20 w-full max-w-6xl shrink-0 items-center justify-between gap-2 px-4 md:px-6">
         <Link href="/" className="flex items-center font-semibold">
-          <Image
-            src="https://wcd.pages.dev/logo.png"
-            alt="wepush logo"
-            width={32}
-            height={32}
-            className="mr-2 rounded-full"
-            unoptimized
-          />
+          <WepushLogo className="mr-2 size-6 text-primary" />
           {BRAND}
         </Link>
         <div className="flex items-center gap-2">
@@ -313,7 +311,7 @@ export default function LandingPage() {
               <Github className="size-4" />
             </a>
           </Button>
-          <Button asChild size="sm">
+          <Button asChild>
             <Link href="/dashboard">
               进入控制台
               <ArrowRight className="size-3.5" />
@@ -642,14 +640,7 @@ export default function LandingPage() {
             <div className="flex flex-col justify-between gap-12 py-12 md:flex-row md:py-16">
               <div className="flex max-w-sm flex-col gap-4">
                 <Link href="/" className="flex items-center gap-2">
-                  <Image
-                    src="https://wcd.pages.dev/logo.png"
-                    alt="wepush logo"
-                    width={28}
-                    height={28}
-                    className="rounded-full"
-                    unoptimized
-                  />
+                  <WepushLogo className="size-6 text-primary" />
                   <span className="text-2xl font-semibold tracking-tight">
                     wepush
                   </span>

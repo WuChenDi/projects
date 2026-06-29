@@ -1,4 +1,3 @@
-import { logger } from '@cdlab996/utils'
 import { sleep } from './sleep'
 
 export interface RetryOptions {
@@ -19,7 +18,7 @@ export async function withRetry<T>(
     } catch (error) {
       lastError = error
       if (i === maxRetries) break
-      logger.warn(`${context} 失败，第${i + 1}次重试`, {
+      console.warn(`${context} 失败，第${i + 1}次重试`, {
         error: error instanceof Error ? error.message : String(error),
       })
       await sleep(retryDelay * (i + 1))

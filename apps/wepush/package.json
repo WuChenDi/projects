@@ -39,6 +39,7 @@
     "@libsql/client": "catalog:prod",
     "@tanstack/react-form": "catalog:prod",
     "@tanstack/react-query": "catalog:prod",
+    "better-auth": "catalog:prod",
     "date-fns": "catalog:prod",
     "drizzle-orm": "catalog:prod",
     "lucide-react": "catalog:prod",

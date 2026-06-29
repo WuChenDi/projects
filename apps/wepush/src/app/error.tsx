@@ -1,36 +1,40 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
-import { Card, CardContent, CardHeader } from '@cdlab996/ui/components/card'
-import GradientText from '@cdlab996/ui/reactbits/GradientText'
-import ShinyText from '@cdlab996/ui/reactbits/ShinyText'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
-export default function Error({ reset }: { reset: () => void }) {
+interface ErrorProps {
+  error: Error & { digest?: string }
+  reset: () => void
+}
+
+export default function Error({ error, reset }: ErrorProps) {
+  const router = useRouter()
+
+  useEffect(() => {
+    console.error(error)
+  }, [error])
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-3 sm:p-4 md:p-6">
-      <Card className="w-full max-w-xl mx-auto border-none bg-card/20 backdrop-blur-lg p-4 sm:p-6 md:p-8 transition-all duration-300 rounded-2xl">
-        <CardHeader className="text-center space-y-2 sm:space-y-3">
-          <GradientText className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent flex items-center justify-center gap-2 sm:gap-3">
-            Oh no!
-          </GradientText>
-        </CardHeader>
-
-        <CardContent className="px-2 sm:px-4 space-y-6 sm:space-y-8">
-          <ShinyText
-            text="There was an issue with our storefront. This could be a temporary issue, please try your action again."
-            disabled={false}
-            speed={3}
-            className="text-xs sm:text-sm md:text-base text-gray-600 text-center dark:text-gray-400 font-medium"
-          />
-          <Button
-            onClick={() => reset()}
-            className="w-full text-white transition-all duration-300 shadow-md bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-blue-400/30 hover:shadow-blue-500/40"
-            size="lg"
-          >
-            Try Again
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center text-center">
+      <span className="text-[9rem] leading-none font-extrabold text-foreground/10 select-none tracking-tighter">
+        500
+      </span>
+      <div className="-mt-10 flex flex-col items-center gap-3">
+        <h1 className="text-xl font-medium">出错了</h1>
+        <p className="max-w-sm text-sm text-muted-foreground leading-relaxed">
+          发生了意外错误。你可以重试，或返回首页。
+        </p>
+        <div className="mt-8 flex justify-center gap-2">
+          <Button onClick={reset} variant="default" size="lg">
+            重试
           </Button>
-        </CardContent>
-      </Card>
+          <Button onClick={() => router.push('/')} variant="ghost" size="lg">
+            回到首页
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

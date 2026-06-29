@@ -1,9 +1,15 @@
 import { and, desc, eq, gte, sql } from 'drizzle-orm'
+import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { pushBatches, pushLogs, templates, users } from '@/database/schema'
+import { requireSession } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const auth = await requireSession(request)
+  if (!auth.ok) return auth.response
+  const ownerId = auth.user.id
+
   const db = await getDb()
   const now = new Date()
   const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
@@ -19,24 +25,37 @@ export async function GET() {
     db
       .select({ value: sql<number>`count(*)`.as('value') })
       .from(users)
-      .where(eq(users.isDeleted, 0)),
+      .where(and(eq(users.ownerId, ownerId), eq(users.isDeleted, 0))),
     db
       .select({ value: sql<number>`count(*)`.as('value') })
       .from(users)
-      .where(and(eq(users.isDeleted, 0), eq(users.enabled, true))),
+      .where(
+        and(
+          eq(users.ownerId, ownerId),
+          eq(users.isDeleted, 0),
+          eq(users.enabled, true),
+        ),
+      ),
     db
       .select({ value: sql<number>`count(*)`.as('value') })
       .from(templates)
-      .where(eq(templates.isDeleted, 0)),
-    db
-      .select({ value: sql<number>`count(*)`.as('value') })
-      .from(pushLogs)
-      .where(and(eq(pushLogs.isDeleted, 0), gte(pushLogs.sentAt, dayAgo))),
+      .where(and(eq(templates.ownerId, ownerId), eq(templates.isDeleted, 0))),
     db
       .select({ value: sql<number>`count(*)`.as('value') })
       .from(pushLogs)
       .where(
         and(
+          eq(pushLogs.ownerId, ownerId),
+          eq(pushLogs.isDeleted, 0),
+          gte(pushLogs.sentAt, dayAgo),
+        ),
+      ),
+    db
+      .select({ value: sql<number>`count(*)`.as('value') })
+      .from(pushLogs)
+      .where(
+        and(
+          eq(pushLogs.ownerId, ownerId),
           eq(pushLogs.isDeleted, 0),
           gte(pushLogs.sentAt, dayAgo),
           eq(pushLogs.status, 'success'),
@@ -45,7 +64,9 @@ export async function GET() {
     db
       .select()
       .from(pushBatches)
-      .where(eq(pushBatches.isDeleted, 0))
+      .where(
+        and(eq(pushBatches.ownerId, ownerId), eq(pushBatches.isDeleted, 0)),
+      )
       .orderBy(desc(pushBatches.startedAt))
       .limit(5),
   ])

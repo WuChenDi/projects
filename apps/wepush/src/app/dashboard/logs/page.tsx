@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@cdlab996/ui/components/table'
-import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
+import { IKEmpty } from '@cdlab996/ui/IK'
 import { useQuery } from '@tanstack/react-query'
 import {
   ChevronLeft,
@@ -114,7 +114,7 @@ export default function LogsPage() {
   }
 
   return (
-    <IKPageContainer className="flex-col max-w-6xl mx-auto">
+    <>
       <SubHeader
         title="推送日志"
         description="按时间倒序，所有推送记录持久保留。"
@@ -306,6 +306,6 @@ export default function LogsPage() {
       )}
 
       <LogDetailDrawer logId={openLogId} onClose={() => setOpenLogId(null)} />
-    </IKPageContainer>
+    </>
   )
 }

@@ -2,9 +2,13 @@ import { and, eq, gte } from 'drizzle-orm'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { pushLogs } from '@/database/schema'
+import { requireSession } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
+  const auth = await requireSession(request)
+  if (!auth.ok) return auth.response
+
   const { searchParams } = new URL(request.url)
   const days = Math.min(30, Math.max(1, Number(searchParams.get('days') ?? 7)))
 
@@ -14,7 +18,13 @@ export async function GET(request: NextRequest) {
   const logs = await db
     .select({ status: pushLogs.status, sentAt: pushLogs.sentAt })
     .from(pushLogs)
-    .where(and(eq(pushLogs.isDeleted, 0), gte(pushLogs.sentAt, cutoff)))
+    .where(
+      and(
+        eq(pushLogs.ownerId, auth.user.id),
+        eq(pushLogs.isDeleted, 0),
+        gte(pushLogs.sentAt, cutoff),
+      ),
+    )
 
   // Group by calendar day in CST (UTC+8)
   const byDay = new Map<string, { total: number; success: number }>()

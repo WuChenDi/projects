@@ -2,7 +2,6 @@
 
 import { Button } from '@cdlab996/ui/components/button'
 import { Spinner } from '@cdlab996/ui/components/spinner'
-import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -45,7 +44,7 @@ export default function NewUserPage() {
     onSuccess: ({ id }) => {
       void qc.invalidateQueries({ queryKey: ['users'] })
       toast.success('已创建')
-      router.push(`/users/${id}`)
+      router.push(`/dashboard/users/${id}`)
     },
     onError: (e: Error) => toast.error(e.message),
   })
@@ -59,7 +58,7 @@ export default function NewUserPage() {
   }
 
   return (
-    <IKPageContainer className="flex-col max-w-6xl mx-auto">
+    <>
       <SubHeader title="新建接收人">
         <Link href="/dashboard/users">
           <Button variant="ghost" size="sm">
@@ -74,6 +73,6 @@ export default function NewUserPage() {
         onSubmit={(v) => create.mutate(v)}
         onCancel={() => router.push('/dashboard/users')}
       />
-    </IKPageContainer>
+    </>
   )
 }
