@@ -11,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from '@cdlab996/ui/components/table'
-import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { RotateCcw } from 'lucide-react'
 import Link from 'next/link'
@@ -101,7 +100,7 @@ export default function BatchDetailPage() {
   })
 
   return (
-    <IKPageContainer className="flex-col max-w-6xl mx-auto">
+    <>
       <SubHeader title="推送批次详情" description={`批次 ID: ${id}`}>
         <>
           {data?.batch.failedCount ? (
@@ -242,7 +241,7 @@ export default function BatchDetailPage() {
       )}
 
       <LogDetailDrawer logId={openLogId} onClose={() => setOpenLogId(null)} />
-    </IKPageContainer>
+    </>
   )
 }
 

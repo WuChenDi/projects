@@ -1,7 +1,6 @@
 'use client'
 
 import { Button } from '@cdlab996/ui/components/button'
-import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -39,7 +38,7 @@ export default function NewTemplatePage() {
   })
 
   return (
-    <IKPageContainer className="flex-col max-w-6xl mx-auto">
+    <>
       <SubHeader title="新建模板">
         <Link href="/dashboard/templates">
           <Button variant="ghost" size="sm">
@@ -53,6 +52,6 @@ export default function NewTemplatePage() {
         onSubmit={(value) => create.mutate(value)}
         onCancel={() => router.push('/templates')}
       />
-    </IKPageContainer>
+    </>
   )
 }

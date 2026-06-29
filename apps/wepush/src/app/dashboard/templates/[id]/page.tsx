@@ -2,7 +2,6 @@
 
 import { Button } from '@cdlab996/ui/components/button'
 import { Spinner } from '@cdlab996/ui/components/spinner'
-import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
@@ -62,7 +61,7 @@ export default function EditTemplatePage() {
   }
 
   return (
-    <IKPageContainer className="flex-col max-w-6xl mx-auto">
+    <>
       <SubHeader title="编辑模板" description={data.code}>
         <Link href="/dashboard/templates">
           <Button variant="ghost" size="sm">
@@ -77,6 +76,6 @@ export default function EditTemplatePage() {
         onSubmit={(value) => update.mutate(value)}
         onCancel={() => router.push('/dashboard/templates')}
       />
-    </IKPageContainer>
+    </>
   )
 }

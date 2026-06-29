@@ -11,7 +11,6 @@ import {
   SelectValue,
 } from '@cdlab996/ui/components/select'
 import { Spinner } from '@cdlab996/ui/components/spinner'
-import { IKPageContainer } from '@cdlab996/ui/IK'
 import { useMutation } from '@tanstack/react-query'
 import { Play } from 'lucide-react'
 import { useState } from 'react'
@@ -54,7 +53,7 @@ export default function DebugPage() {
   })
 
   return (
-    <IKPageContainer className="flex-col max-w-6xl mx-auto">
+    <>
       <SubHeader
         title="数据源探测"
         description="直接调用单个外部接口，查看原始返回。"
@@ -115,6 +114,6 @@ export default function DebugPage() {
           </pre>
         </div>
       ) : null}
-    </IKPageContainer>
+    </>
   )
 }
