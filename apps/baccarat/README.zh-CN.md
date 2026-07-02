@@ -12,6 +12,13 @@
 - 每个群组通过 Durable Objects 独立维护游戏状态
 - 游戏历史记录通过 Durable Objects SQLite 持久化存储
 
+## 技术栈
+
+- **框架** — Hono（Cloudflare Workers）
+- **Bot 框架** — Grammy
+- **状态** — Durable Objects（`BaccaratGameRoom`，通过 `new_sqlite_classes` 内嵌 SQLite）
+- **语言** — TypeScript
+
 ## Bot 命令
 
 | 命令 | 说明 |
@@ -128,20 +135,42 @@ Telegram Bot API 令牌。获取方式：
 
 > 如果未设置 `ALLOWED_CHAT_IDS`，Bot 将接受任何群组的请求。
 
-## 开发
+## 快速开始
+
+### 前置条件
+
+- Node.js 20+
+- pnpm
+- 一个 Telegram Bot Token（见上文 [`BOT_TOKEN`](#bot_token)）
+
+### 安装
 
 ```bash
-# 安装依赖
 pnpm install
+```
 
-# 本地开发
+### 本地开发
+
+```bash
 pnpm --filter @cdlab996/baccarat dev
+```
 
-# 部署
+通过 `nsl` 运行 `wrangler dev`，访问地址为 `http://baccarat.localhost:3355`。
+
+### 构建 / 部署
+
+```bash
 pnpm --filter @cdlab996/baccarat deploy
+```
 
-# 设置 Webhook
+运行 `wrangler deploy --minify`。部署完成后，将 Telegram 指向该 worker 的 webhook：
+
+```bash
 curl -X POST https://your-worker.workers.dev/set-webhook \
   -H "Content-Type: application/json" \
   -d '{"url": "https://your-worker.workers.dev/webhook"}'
 ```
+
+## License
+
+[MIT](../../LICENSE) License &copy; 2026-PRESENT [wudi](https://github.com/WuChenDi)

@@ -304,45 +304,22 @@ pnpm install
 Dev servers are proxied by [@dotns/nsl](https://github.com/dotns/nsl) — each app is accessible at `http://<name>.localhost:3355` (name = package name with scope stripped).
 
 ```bash
-pnpm dev                                     # Start all apps (parallel dev)
-pnpm --filter @cdlab996/clearify dev         # → http://clearify.localhost:3355
-pnpm --filter @cdlab996/baccarat dev         # → http://baccarat.localhost:3355
-pnpm --filter @cdlab996/bycut dev            # → http://bycut.localhost:3355
-pnpm --filter @cdlab996/vidl dev             # → http://vidl.localhost:3355
-pnpm --filter @cdlab996/securec dev          # → http://securec.localhost:3355
-pnpm --filter @cdlab996/text2img dev         # → http://text2img.localhost:3355
-pnpm --filter @cdlab996/values dev           # → http://values.localhost:3355
-pnpm --filter @cdlab996/byplay dev           # → http://byplay.localhost:3355
-pnpm --filter @cdlab996/byplay-log dev       # → http://byplay-log.localhost:3355
-pnpm --filter @cdlab996/bytts dev            # → http://bytts.localhost:3355
-pnpm --filter @cdlab996/byshot dev           # → http://byshot.localhost:3355
-pnpm --filter @cdlab996/dropply-web dev      # → http://dropply-web.localhost:3355
-pnpm --filter @cdlab996/flox dev             # → http://flox.localhost:3355
-pnpm --filter @cdlab996/live-user dev        # → http://live-user.localhost:3355
-pnpm --filter @cdlab996/flnk dev             # → http://flnk.localhost:3355
-pnpm --filter @cdlab996/wepush dev           # → http://wepush.localhost:3355
-pnpm --filter @cdlab996/repo-changelog dev   # → http://repo-changelog.localhost:3355
-pnpm build                                   # Build all apps
-pnpm --filter @cdlab996/clearify run build
-pnpm --filter @cdlab996/bycut run build
-pnpm --filter @cdlab996/vidl run build
-pnpm --filter @cdlab996/securec run build
-pnpm --filter @cdlab996/text2img run build
-pnpm --filter @cdlab996/values run build
-pnpm --filter @cdlab996/byplay run build
-pnpm --filter @cdlab996/byplay-log run build
-pnpm --filter @cdlab996/bytts run build
-pnpm --filter @cdlab996/byshot run build
-pnpm --filter @cdlab996/dropply-web run build
-pnpm --filter @cdlab996/flox run build
-pnpm --filter @cdlab996/live-user run build
-pnpm --filter @cdlab996/flnk run build
-pnpm --filter @cdlab996/wepush run build
-pnpm --filter @cdlab996/repo-changelog run build
-pnpm lint                          # Biome lint
-pnpm format                        # Biome format all code
-pnpm clean                         # Clean node_modules / cache / build artifacts
+# Workspace-wide
+pnpm dev                                 # Start all apps (parallel dev)
+pnpm build                               # Build all apps
+pnpm lint                                # Biome lint
+pnpm format                              # Biome format all code
+pnpm clean                               # Wipe node_modules / cache / build artifacts
+
+# Any single app — <name> is the package name with the scope stripped
+pnpm --filter @cdlab996/<name> dev       # → http://<name>.localhost:3355
+pnpm --filter @cdlab996/<name> build
+pnpm --filter @cdlab996/<name> typecheck
 ```
+
+`<name>` matches the package (not always the directory): `securec` (SecureC), `values`
+(value-vision), `dropply-web` / `dropply-api` (dropply). See each app's own README for
+its dev URL, build target, and deploy command.
 
 ## Project Structure
 

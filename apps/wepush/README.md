@@ -195,7 +195,7 @@ pnpm gen:cities
 
 ### Lunar calendar
 
-Each festival has an `isLunar` toggle. Lunar `MM-DD` is converted to the next solar occurrence via `tyme4ts`; display shows the `(农历)` suffix.
+Each festival has an `isLunar` toggle. Lunar `MM-DD` is converted to the next solar occurrence via `tyme4ts`; display shows a lunar-calendar suffix.
 
 ## Project Layout
 

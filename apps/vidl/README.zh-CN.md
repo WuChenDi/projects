@@ -1,10 +1,8 @@
-# 视频下载工具
+# Video Downloader
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
-在线视频下载工具，支持 M3U8/HLS、MP4 等视频格式，提供范围下载、流式下载、AES 解密和 MP4 转码功能。
-
-> 所有视频处理均在浏览器本地完成，不会上传任何数据到服务器。
+纯浏览器端视频下载工具 —— 解析 M3U8/HLS 播放列表和直链视频，解密与转封装全部在浏览器内完成，通过 Streams API 实现近零内存占用。无需上传，无服务端处理。
 
 预览：https://vidl.pages.dev/
 
@@ -13,168 +11,75 @@
 ## 功能特性
 
 - **多格式支持**
-  - M3U8/HLS 播放列表解析与分片下载
-  - 直接下载 MP4、WebM、MKV、AVI、MOV、FLV、WMV、MPEG、TS
+  - M3U8/HLS 播放列表解析（`src/lib/m3u8-parser.ts`），支持按带宽/分辨率选择主播放列表中的变体流
+  - 直接下载 MP4、WebM、MKV、AVI、MOV、FLV、WMV、MPEG、TS（见 `src/lib/video-utils.ts` 中的 `VIDEO_MIME_MAP`）
   - 自动检测 URL 格式，无需手动切换
 
 - **单个 & 批量下载**
   - 单个模式：粘贴一个链接，解析、配置、下载
-  - 批量模式：一次粘贴多个链接，自动解析，逐项配置
-  - 顶部图标一键切换两种模式
+  - 批量模式（`src/lib/batch-utils.ts`）：一次粘贴多个链接，自动解析全部，逐项配置画质/格式/分片范围/文件名，顺序下载并逐项处理错误
 
-- **批量下载**
-  - 粘贴多个链接（每行一个）或使用剪贴板粘贴按钮
-  - 添加到队列后自动解析所有链接
-  - 逐项配置：画质、格式、分片范围、自定义文件名
-  - 批量总进度条 + 每项内联下载进度
-  - 顺序下载，逐项错误处理
+- **范围下载** —— 通过滑块自定义分片范围，并基于采样估算文件大小（`estimateFileSize`）
 
-- **M3U8/HLS 下载**
-  - 一键解析 M3U8 播放列表
-  - 多清晰度选择
-  - 实时下载进度与可视化分片状态
-  - 支持暂停 / 恢复
-  - 失败分片自动重试（指数退避）
-  - 原格式（.ts）或转码 MP4
+- **流式下载（推荐大文件使用）** —— 近零内存占用，通过浏览器 Streams API 边下载边写入磁盘；在不支持的环境（Safari）自动回退为普通（内存）下载
 
-- **范围下载**
-  - 通过滑块自定义分片范围
-  - 根据选择范围估算文件大小
+- **容错能力** —— 暂停/恢复、单分片重试，并发下载数可配置，配合指数退避重试（`src/lib/download-engine.ts` 中的 `downloadTS` worker 池）
 
-- **流式下载（推荐大文件使用）**
-  - 近零内存占用
-  - 边下载边写入磁盘
-  - 支持 .ts 和 MP4 输出
-  - 单个和批量模式均可使用
-  - 需要浏览器支持 Streams API
+- **AES-128 解密**（`src/lib/aes-decryptor.ts`）—— 自动检测 `#EXT-X-KEY`，获取密钥并在转封装前解密每个分片
 
-  > **浏览器兼容性：**
-  >
-  > - Chrome 90+、Edge 90+、Firefox 88+
-  > - Safari 不支持流式下载（自动回退为普通下载）
+- **TS → MP4 转封装** —— 通过 `mux.js` 将下载的 `.ts` 分片转封装为 MP4，全程浏览器端完成，包含音视频轨道合并与时间戳同步
 
-- **下载设置**
-  - 可配置并发下载数（1-20）
-  - 可调节请求超时时间（5-120秒）
-  - 每个分片最大重试次数（0-10）
-  - 重试基础延迟，指数退避（0.5-10秒）
-  - 设置自动保存到 localStorage
+- **跨工具联动** —— 一键跳转到 [byplay](https://byplay.pages.dev/) 预览播放当前视频，并保持当前语言设置
 
-- **自定义文件名**
-  - 下载前可设置自定义输出文件名
-  - 单个和批量模式均可使用
-  - 留空则自动生成文件名
+- **用户体验** —— 带重试功能的分片状态网格、国际化（中文 / 英文）、深色 / 浅色主题、响应式布局
 
-- **AES 解密**
-  - 自动检测 AES-128 加密
-  - 自动获取密钥并解密
-  - 支持标准 HLS 加密格式
+## 技术栈
 
-- **MP4 转码**
-  - 通过 mux.js 实现 TS 到 MP4 转封装
-  - 音视频轨道合并与时间戳同步
-  - 浏览器端转码，无需服务器
-
-- **跨工具联动**
-  - 一键跳转到 [byplay](https://byplay.pages.dev/) 预览播放当前视频
-  - 跳转时保持当前语言设置
-
-- **用户体验**
-  - 点击重试单个失败分片
-  - 进度条 + 详细分片网格
-  - 悬停提示分片详情
-  - 移动端响应式设计
-  - 国际化支持（中文 / 英文）
-  - 深色 / 浅色主题
+- **框架** —— Next.js（App Router）、React、TypeScript
+- **下载管道** —— `mux.js`（TS → MP4 转封装）+ 浏览器 Streams API（`WritableStream`，通过内置的 `StreamSaver.js`）实现近零内存写入
+- **状态管理** —— Zustand（`src/stores/`）
+- **国际化** —— next-intl（en / zh）
+- **UI** —— `@cdlab996/ui`（Tailwind v4、shadcn/ui 组件）
 
 ## 快速开始
 
-### 单个下载
+### 前置条件
 
-1. 打开 [视频下载工具](https://vidl.pages.dev/)
-2. 粘贴视频链接（M3U8、MP4 等）
-3. 点击**解析** — 工具会自动检测格式
-4. M3U8：选择下载方式（普通 / 流式）和格式（TS / MP4）
-5. 直接视频：点击**下载视频**
-6. 文件保存到浏览器默认下载目录
+- Node.js 与 `pnpm`（版本参见仓库根目录）
 
-### 批量下载
+### 安装
 
-1. 点击右上角图标切换到批量模式
-2. 粘贴多个链接（每行一个）或点击剪贴板按钮
-3. 点击**添加到队列** — 所有链接自动解析
-4. 逐项配置：画质、格式、分片范围、文件名
-5. 点击**下载**开始顺序处理
+```bash
+# 在 monorepo 根目录执行
+pnpm install
+```
 
-## 下载方式指南
+### 开发
 
-| 文件大小  | 推荐方式   | 备注               |
-| --------- | ---------- | ------------------ |
-| < 100MB   | 普通下载   | 快速简便           |
-| 100-500MB | 普通或流式 | 根据内存情况选择   |
-| > 500MB   | 流式下载   | 近零内存占用       |
-| 直链      | 直接下载   | 单文件，无需分片   |
+```bash
+pnpm --filter @cdlab996/vidl dev
+```
 
-## 格式指南
+开发地址：`http://vidl.localhost:3355`（通过 `@dotns/nsl`，无需手动查找端口）。
 
-- **原格式（.ts）**：下载更快，文件较大，兼容性好
-- **MP4**：文件更小，兼容性更好，需要额外转码时间
+### 构建 / 部署
 
-## 常见问题
+```bash
+pnpm --filter @cdlab996/vidl build     # next build
+pnpm --filter @cdlab996/vidl build:cf  # @cloudflare/next-on-pages
+```
 
-<details>
-  <summary>为什么下载失败？</summary>
+## 架构
 
-  可能原因：
-  - 视频链接已过期
-  - 视频存在跨域限制
-  - 网络连接不稳定
-  - 浏览器版本过旧
-
-  解决方案：
-  - 确认链接可访问
-  - 尝试其他浏览器
-  - 检查浏览器控制台报错
-</details>
-
-<details>
-  <summary>Safari 无法使用流式下载？</summary>
-
-  Safari 不支持 Streams API 的 `WritableStream`，工具会自动回退为普通下载。建议使用 Chrome、Edge 或 Firefox 以获得最佳体验。
-</details>
-
-<details>
-  <summary>如何下载指定分片？</summary>
-
-  1. 解析完成后，调整范围滑块
-  2. 设置起始和结束分片编号
-  3. 点击下载按钮
-  4. 仅下载选定范围的分片
-</details>
-
-<details>
-  <summary>下载中断怎么办？</summary>
-
-  - 使用暂停 / 恢复按钮继续
-  - 点击红色（失败）分片单独重试
-  - 每 2 秒自动重试（指数退避）
-  - 点击"下载已完成片段"保存部分内容
-</details>
-
-## 浏览器支持
-
-- **基础功能**：所有现代浏览器（Chrome 90+、Firefox 88+、Safari 14+、Edge 90+）
-- **流式下载**：Chrome 90+、Edge 90+、Firefox 88+（Safari 不支持）
-- **推荐**：Chrome / Edge 体验最佳
-
-## 隐私声明
-
-- 所有视频处理均在浏览器本地完成
-- 不会上传任何数据到服务器
-- 不记录或存储任何下载链接
-- 开源可审计
-- 无需注册或登录
+| 路径 | 职责 |
+| --- | --- |
+| `src/lib/download-engine.ts` | `DownloadEngine` 类 —— 编排解析/下载/暂停/重试/取消流程；对分片运行并发 worker 池，支持单次尝试超时和指数退避重试；同时驱动内存模式和流写入模式的完成检测 |
+| `src/lib/m3u8-parser.ts` | 判断主播放列表与媒体播放列表，解析 `#EXT-X-STREAM-INF` 变体流（带宽、分辨率、名称） |
+| `src/lib/aes-decryptor.ts` | `AESDecryptor` —— 独立实现的 AES-128-CBC（密钥扩展 + 分组解密 + PKCS7 去填充），用于解密 HLS 分片 |
+| `src/lib/video-utils.ts` | 共享类型、URL 解析（`applyURL`）、MIME 映射、`fetchData`/`estimateFileSize`，以及 `triggerBrowserDownload`（内存模式下的 Blob 组装） |
+| `src/lib/batch-utils.ts` | `fetchUrlMetadata` —— 将一个 URL（直链视频 / 主播放列表 / 媒体播放列表）解析为分片数和预估大小，供批量模式队列使用 |
+| `src/stores/` | Zustand 状态：`download-store`（单个下载状态）、`batch-store`（批量队列）、`settings-store`（并发数/超时/重试，持久化到 `localStorage`） |
 
 ## 许可证
 
-[MIT](./LICENSE) License &copy; 2025-PRESENT [wudi](https://github.com/WuChenDi)
+[MIT](../../LICENSE) License &copy; 2025-PRESENT [wudi](https://github.com/WuChenDi)
