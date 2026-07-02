@@ -21,7 +21,13 @@ const FIELD = {
   deviceType: 'blob15',
   colo: 'blob16',
   domain: 'blob17',
+  source: 'blob18',
+  type: 'blob19',
 } as const
+
+// Entity kinds carried in blob19 (`type`). Launchpad points are excluded from
+// the link-oriented queries so the two never inflate each other.
+const LAUNCHPAD_TYPES = ['launchpad', 'launchpad_block'] as const
 
 export type Dimension = keyof typeof FIELD
 export const METRIC_DIMENSIONS: Dimension[] = [
@@ -37,6 +43,7 @@ export const METRIC_DIMENSIONS: Dimension[] = [
   'os',
   'browser',
   'browserType',
+  'source',
 ]
 
 // Filter dimensions a request may pin (drill-down). Subset of FIELD.
@@ -88,11 +95,21 @@ export function isConfigured(env: CloudflareEnv): boolean {
   return Boolean(cfAccountId && cfApiToken)
 }
 
-function whereClause(query: StatsQuery): string {
+// `scope` selects the entity family: 'link' excludes launchpad points (so the
+// short-link dashboards never count `/m/<slug>` traffic); 'launchpad' keeps
+// them (the launchpad query splits views vs engagements via the `type` blob).
+function whereClause(
+  query: StatsQuery,
+  scope: 'link' | 'launchpad' = 'link',
+): string {
   const conditions: string[] = ['1=1']
   for (const dim of FILTERABLE) {
     const value = query.filters[dim]
     if (value) conditions.push(`${FIELD[dim]} = '${sanitize(value)}'`)
+  }
+  if (scope === 'link') {
+    const list = LAUNCHPAD_TYPES.map((t) => `'${t}'`).join(', ')
+    conditions.push(`${FIELD.type} NOT IN (${list})`)
   }
   if (query.startAt) {
     conditions.push(
@@ -223,6 +240,31 @@ export function accessExportSql(env: CloudflareEnv, q: StatsQuery): string {
       COUNT(DISTINCT ${FIELD.referer}) - MAX(if(${FIELD.referer} = 'direct', 1, 0)) AS referers
     FROM ${dataset(env)} ${whereClause(q)}
     GROUP BY slug, url ORDER BY views DESC`
+}
+
+// Per-launchpad view + engagement totals. A `launchpad` point is one
+// `/m/<slug>` page load; a `launchpad_block` point is one block/button click.
+// The caller pins the launchpad slug via `q.filters.slug`; the launchpad scope
+// keeps both entity kinds so the two `if()` sums can split them.
+export function launchpadStatsSql(env: CloudflareEnv, q: StatsQuery): string {
+  return `SELECT
+      SUM(if(${FIELD.type} = 'launchpad', _sample_interval, 0)) AS views,
+      SUM(if(${FIELD.type} = 'launchpad_block', _sample_interval, 0)) AS engagements
+    FROM ${dataset(env)} ${whereClause(q, 'launchpad')}`
+}
+
+// Per-block engagement breakdown for the Track tab. A `launchpad_block` point
+// carries the clicked block id in the `url` blob (blob2); group by it. The
+// caller pins the launchpad slug via `q.filters.slug`.
+export function launchpadBlockStatsSql(
+  env: CloudflareEnv,
+  q: StatsQuery,
+  limit: number,
+): string {
+  return `SELECT ${FIELD.url} AS blockId, SUM(_sample_interval) AS count
+    FROM ${dataset(env)} ${whereClause(q, 'launchpad')}
+      AND ${FIELD.type} = 'launchpad_block' AND ${FIELD.url} != ''
+    GROUP BY blockId ORDER BY count DESC LIMIT ${Math.max(1, Math.floor(limit))}`
 }
 
 // Parse StatsQuery (range + drill-down filters) from request search params.

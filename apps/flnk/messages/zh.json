@@ -177,6 +177,7 @@
     "nav": {
       "overview": "概览",
       "links": "链接",
+      "launchpads": "落地页",
       "analytics": "分析",
       "realtime": "实时",
       "check": "健康检查",
@@ -263,7 +264,9 @@
     },
     "qr": {
       "title": "二维码",
-      "download": "下载 PNG"
+      "download": "下载 PNG",
+      "downloadPng": "PNG",
+      "downloadSvg": "SVG"
     },
     "delete": {
       "title": "删除链接？",
@@ -281,6 +284,8 @@
       "random": "随机",
       "aiSlug": "AI 生成",
       "aiOg": "AI 填充",
+      "title": "标题",
+      "titlePlaceholder": "可选显示名称",
       "comment": "备注",
       "commentPlaceholder": "可选备注",
       "tags": "标签",
@@ -291,8 +296,22 @@
         "og": "Open Graph",
         "device": "设备跳转",
         "geo": "地域路由",
-        "utm": "UTM 构建器"
+        "utm": "UTM 构建器",
+        "qr": "二维码"
       },
+      "qrFg": "前景色",
+      "qrBg": "背景色",
+      "qrDot": "点样式",
+      "qrDotRound": "圆点",
+      "qrDotSquare": "方块",
+      "qrCorner": "定位角样式",
+      "qrCornerRound": "圆角",
+      "qrCornerSquare": "直角",
+      "qrErrorLevel": "纠错级别",
+      "qrMargin": "边距",
+      "qrLogo": "Logo",
+      "qrLogoUploaded": "在下方上传图片",
+      "qrLogoClear": "移除 Logo",
       "selectCountry": "国家",
       "utm": {
         "source": "来源 (source)",
@@ -328,6 +347,125 @@
       "aiFailed": "生成短码失败",
       "created": "链接已创建",
       "updated": "链接已更新"
+    }
+  },
+  "launchpads": {
+    "title": "落地页",
+    "subtitle": "托管的个人主页，发布在 /m/<slug>。",
+    "new": "新建落地页",
+    "searchPlaceholder": "搜索落地页…",
+    "clearSearch": "清除搜索",
+    "empty": "还没有落地页",
+    "actions": "操作",
+    "viewList": "列表视图",
+    "viewGrid": "网格视图",
+    "status": {
+      "draft": "草稿",
+      "published": "已发布"
+    },
+    "delete": {
+      "title": "删除落地页",
+      "desc": "确定删除 /m/{slug}？此操作无法撤销。",
+      "cancel": "取消",
+      "confirm": "删除",
+      "success": "落地页已删除"
+    },
+    "build": {
+      "hint": "添加、拖拽排序并启用页面上的区块。",
+      "addBlock": "添加区块",
+      "empty": "还没有区块。添加第一个区块开始构建。",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "toggle": "启用区块",
+      "remove": "删除区块"
+    },
+    "block": {
+      "remove": "删除",
+      "linkSearch": "搜索链接…",
+      "noLinks": "未找到链接",
+      "type": {
+        "header": "头部",
+        "socials": "社交链接",
+        "button": "按钮",
+        "shortlink": "短链接",
+        "image": "图片",
+        "text": "文本",
+        "divider": "分隔线"
+      },
+      "header": {
+        "hint": "显示在页面顶部的个人资料。",
+        "name": "名称",
+        "bio": "简介",
+        "avatar": "头像 URL"
+      },
+      "socials": {
+        "platform": "平台",
+        "add": "添加社交链接"
+      },
+      "button": {
+        "label": "文字",
+        "target": "目标",
+        "url": "外部 URL",
+        "pickLink": "选择链接"
+      },
+      "shortlink": {
+        "add": "添加链接"
+      },
+      "image": {
+        "src": "图片 URL",
+        "link": "链接 URL（可选）"
+      },
+      "text": {
+        "placeholder": "输入一些文本…"
+      },
+      "divider": {
+        "hint": "一条水平分隔线，无需设置。"
+      }
+    },
+    "design": {
+      "preset": "主题预设",
+      "primaryColor": "主色",
+      "customColor": "自定义颜色",
+      "buttonShape": "按钮形状",
+      "presets": {
+        "default": "默认",
+        "midnight": "午夜",
+        "sunset": "日落",
+        "forest": "森林",
+        "rose": "玫瑰",
+        "ocean": "海洋"
+      },
+      "shapes": {
+        "rounded": "圆角",
+        "pill": "胶囊",
+        "square": "直角"
+      }
+    },
+    "editor": {
+      "back": "返回",
+      "notFound": "未找到落地页。",
+      "titlePlaceholder": "未命名落地页",
+      "slugLabel": "公开地址",
+      "slugPlaceholder": "自动",
+      "unsaved": "有未保存的更改",
+      "saveDraft": "保存草稿",
+      "publish": "发布",
+      "preview": "实时预览",
+      "saved": "草稿已保存",
+      "published": "落地页已发布",
+      "tabs": {
+        "build": "构建",
+        "design": "设计",
+        "track": "数据"
+      }
+    },
+    "track": {
+      "saveFirst": "保存落地页后即可查看数据。",
+      "notConfigured": "未配置分析。",
+      "views": "浏览量",
+      "engagements": "互动量",
+      "perBlock": "各区块互动",
+      "noBlocks": "暂无可统计的区块。"
     }
   },
   "analytics": {

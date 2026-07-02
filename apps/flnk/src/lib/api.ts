@@ -1,4 +1,13 @@
-import type { LinkConfig } from '@/database/schema'
+import type {
+  LaunchpadConfig,
+  LaunchpadOg,
+  LaunchpadStatus,
+  LinkConfig,
+} from '@/database/schema'
+import type {
+  CreateLaunchpadInput,
+  EditLaunchpadInput,
+} from '@/schemas/launchpad'
 import type { CreateLinkInput, EditLinkInput } from '@/schemas/link'
 
 // Client-facing link shape — dates are JSON strings over the wire.
@@ -7,6 +16,7 @@ export interface LinkRow {
   slug: string
   domain: string
   url: string
+  title: string
   comment: string
   createdBy: string
   tags: string[]
@@ -127,6 +137,69 @@ export const linkApi = {
       `/api/link/og-ai?url=${encodeURIComponent(url)}${
         locale ? `&locale=${encodeURIComponent(locale)}` : ''
       }`,
+    ),
+}
+
+// Client-facing launchpad shape — dates are JSON strings over the wire.
+export interface LaunchpadRow {
+  id: string
+  slug: string
+  ownerId: string
+  title: string
+  status: LaunchpadStatus
+  config: LaunchpadConfig
+  og: LaunchpadOg
+  expiresAt: string | null
+  createdAt: string
+  updatedAt: string
+  isDeleted: number
+}
+
+export interface LaunchpadStats {
+  configured: boolean
+  views: number
+  engagements: number
+  blocks: { blockId: string; count: number }[]
+}
+
+export const launchpadApi = {
+  list: (params: { limit: number; offset: number; sort: SortKey }) => {
+    const sp = new URLSearchParams({
+      limit: String(params.limit),
+      offset: String(params.offset),
+      sort: params.sort,
+    })
+    return request<{ launchpads: LaunchpadRow[]; total: number }>(
+      `/api/launchpad/list?${sp.toString()}`,
+    )
+  },
+  get: (id: string) =>
+    request<{ launchpad: LaunchpadRow }>(
+      `/api/launchpad/query?id=${encodeURIComponent(id)}`,
+    ),
+  create: (input: CreateLaunchpadInput) =>
+    request<{ launchpad: LaunchpadRow }>('/api/launchpad/create', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  edit: (input: EditLaunchpadInput) =>
+    request<{ launchpad: LaunchpadRow }>('/api/launchpad/edit', {
+      method: 'PUT',
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) =>
+    request<{ ok: true }>('/api/launchpad/delete', {
+      method: 'POST',
+      body: JSON.stringify({ id }),
+    }),
+  publish: (id: string, status: LaunchpadStatus) =>
+    request<{ launchpad: LaunchpadRow }>('/api/launchpad/publish', {
+      method: 'POST',
+      body: JSON.stringify({ id, status }),
+    }),
+  stats: (id: string, startAt: number) =>
+    request<LaunchpadStats>(
+      `/api/launchpad/stats?id=${encodeURIComponent(id)}&startAt=${startAt}`,
     ),
 }
 
