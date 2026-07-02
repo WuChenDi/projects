@@ -126,6 +126,12 @@ pnpm cf:remotedb           # D1
 pnpm deploy
 ```
 
+> **LibSQL on Workers** 依赖 `next.config.ts` 里的 `serverExternalPackages`
+> (`@libsql/client`、`@libsql/hrana-client`、`@libsql/isomorphic-ws`)。这几个包必须
+> 保持 external，wrangler 才能通过 `workerd` export condition 解析它们；去掉会导致
+> OpenNext 构建报错 "Could not resolve @libsql/isomorphic-ws"。参见
+> <https://opennext.js.org/cloudflare/howtos/workerd>。
+
 ## 安全模型
 
 **多租户** —— 每个账号拥有自己的数据，按 `ownerId` 隔离。

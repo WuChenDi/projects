@@ -2,9 +2,7 @@
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
-Online video download tool supporting M3U8/HLS, MP4, and other video formats with range download, streaming, AES decryption, and MP4 conversion.
-
-> All video processing is done locally in the browser. No data is uploaded to any server.
+Pure-browser video downloader — parses M3U8/HLS playlists and direct video links, decrypts, and muxes entirely in the browser, with near-zero memory usage via the Streams API. No upload, no server-side processing.
 
 Preview: https://vidl.pages.dev/
 
@@ -12,169 +10,76 @@ Preview: https://vidl.pages.dev/
 
 ## Features
 
-- **Multi-format Support**
-  - M3U8/HLS playlist parsing and segment download
-  - Direct download for MP4, WebM, MKV, AVI, MOV, FLV, WMV, MPEG, TS
+- **Multi-format support**
+  - M3U8/HLS playlist parsing (`src/lib/m3u8-parser.ts`), including master-playlist variant selection by bandwidth/resolution
+  - Direct download for MP4, WebM, MKV, AVI, MOV, FLV, WMV, MPEG, TS (`VIDEO_MIME_MAP` in `src/lib/video-utils.ts`)
   - Auto-detect URL format — no manual switching needed
 
-- **Single & Batch Download**
-  - Single mode: paste one URL, parse, configure, and download
-  - Batch mode: paste multiple URLs at once, auto-parse all, per-item configuration
-  - Seamless tab switching between modes
+- **Single & batch download**
+  - Single mode: paste one URL, parse, configure, download
+  - Batch mode (`src/lib/batch-utils.ts`): paste multiple URLs at once, auto-parse all, per-item quality/format/range/filename configuration, sequential processing with per-item error handling
 
-- **Batch Download**
-  - Paste multiple URLs (one per line) or use clipboard paste button
-  - Auto-parse all URLs on add to queue
-  - Per-item configuration: quality, format, segment range, custom filename
-  - Overall batch progress bar + per-item inline progress
-  - Sequential download with error handling per item
+- **Range download** — custom segment range via slider, with sampled file-size estimation (`estimateFileSize`)
 
-- **M3U8/HLS Download**
-  - One-click M3U8 playlist parsing
-  - Multi-quality stream selection
-  - Real-time download progress with visual segment status
-  - Pause / resume support
-  - Auto-retry failed segments with exponential backoff
-  - Original format (.ts) or MP4 conversion
+- **Stream download (recommended for large files)** — near-zero memory usage, writes to disk as segments arrive via the browser Streams API; falls back to normal (in-memory) download where unsupported (Safari)
 
-- **Range Download**
-  - Custom segment range via slider
-  - File size estimation based on selected range
+- **Resilience** — pause/resume, per-segment retry, and configurable concurrency with exponential-backoff retry (`downloadTS` worker pool in `src/lib/download-engine.ts`)
 
-- **Stream Download (Recommended for large files)**
-  - Near-zero memory usage
-  - Download and write to disk simultaneously
-  - Supports both .ts and MP4 output
-  - Available in both single and batch modes
-  - Requires browser Streams API support
+- **AES-128 decryption** (`src/lib/aes-decryptor.ts`) — auto-detects `#EXT-X-KEY`, fetches the key, and decrypts each segment before muxing
 
-  > **Browser compatibility:**
-  >
-  > - Chrome 90+, Edge 90+, Firefox 88+
-  > - Safari does not support stream download (falls back to normal download)
+- **TS → MP4 muxing** — transmuxes downloaded `.ts` segments to MP4 via `mux.js`, entirely client-side, with audio/video track and timestamp sync
 
-- **Download Settings**
-  - Configurable concurrent downloads (1-20)
-  - Adjustable request timeout (5-120s)
-  - Max retries per segment (0-10)
-  - Retry base delay with exponential backoff (0.5-10s)
-  - Settings persisted in localStorage
+- **Cross-tool integration** — one-click jump to [byplay](https://byplay.pages.dev/) to preview/play the current video, preserving the active locale
 
-- **Custom Filename**
-  - Set custom output filename before download
-  - Available in both single and batch modes
-  - Auto-generated name as fallback
+- **User experience** — per-segment status grid with retry, i18n (English/Chinese), dark/light theme, responsive layout
 
-- **AES Decryption**
-  - Auto-detect AES-128 encryption
-  - Automatic key fetch and decryption
-  - Standard HLS encryption format support
+## Tech Stack
 
-- **MP4 Conversion**
-  - TS to MP4 transmuxing via mux.js
-  - Audio/video track merging with timestamp sync
-  - Browser-side conversion, no server needed
+- **Framework** — Next.js (App Router), React, TypeScript
+- **Download pipeline** — `mux.js` (TS → MP4 transmuxing) + browser Streams API (`WritableStream`, via a bundled `StreamSaver.js`) for near-zero-memory writes
+- **State** — Zustand (`src/stores/`)
+- **i18n** — next-intl (en / zh)
+- **UI** — `@cdlab996/ui` (Tailwind v4, shadcn/ui primitives)
 
-- **Cross-tool Integration**
-  - One-click jump to [byplay](https://byplay.pages.dev/) to preview/play the current video
-  - Locale is preserved across navigation (en/zh)
+## Getting Started
 
-- **User Experience**
-  - Click to retry individual failed segments
-  - Progress bar + detailed segment grid
-  - Hover tooltips for segment details
-  - Responsive design for mobile
-  - i18n support (English / Chinese)
-  - Dark / light theme
+### Prerequisites
 
-## Quick Start
+- Node.js and `pnpm` (see the repo root for the pinned versions)
 
-### Single Download
+### Install
 
-1. Open the [Video Downloader](https://vidl.pages.dev/)
-2. Paste a video URL (M3U8, MP4, etc.)
-3. Click **Parse** — the tool auto-detects the format
-4. For M3U8: choose download method (Normal / Stream) and format (TS / MP4)
-5. For direct video: click **Download Video**
-6. File saves to your browser's default download directory
+```bash
+# From the monorepo root
+pnpm install
+```
 
-### Batch Download
+### Development
 
-1. Switch to batch mode via the tab icon in the top-right corner
-2. Paste multiple URLs (one per line) or click the clipboard button
-3. Click **Add to Queue** — all URLs are automatically parsed
-4. Configure each item: quality, format, segment range, filename
-5. Click **Download** to start sequential processing
+```bash
+pnpm --filter @cdlab996/vidl dev
+```
 
-## Download Method Guide
+Dev server: `http://vidl.localhost:3355` (via `@dotns/nsl` — no port hunting).
 
-| File Size  | Recommended Method | Notes                        |
-| ---------- | ------------------ | ---------------------------- |
-| < 100MB    | Normal Download    | Fast and simple              |
-| 100-500MB  | Normal or Stream   | Choose based on memory       |
-| > 500MB    | Stream Download    | Near-zero memory usage       |
-| Direct URL | Direct Download    | Single file, no segmentation |
+### Build / Deploy
 
-## Format Guide
+```bash
+pnpm --filter @cdlab996/vidl build     # next build
+pnpm --filter @cdlab996/vidl build:cf  # @cloudflare/next-on-pages
+```
 
-- **Original (.ts)**: Faster download, larger file, good compatibility
-- **MP4**: Smaller file, better compatibility, extra conversion time
+## Architecture
 
-## FAQ
-
-<details>
-  <summary>Why does the download fail?</summary>
-
-  Possible causes:
-  - The video URL has expired
-  - Cross-origin restrictions on the video
-  - Unstable network connection
-  - Outdated browser version
-
-  Solutions:
-  - Verify the URL is accessible
-  - Try a different browser
-  - Check the browser console for errors
-</details>
-
-<details>
-  <summary>Safari cannot use stream download?</summary>
-
-  Safari does not support the Streams API `WritableStream`. The tool automatically falls back to normal download. Use Chrome, Edge, or Firefox for the best experience.
-</details>
-
-<details>
-  <summary>How to download specific segments?</summary>
-
-  1. After parsing, adjust the range slider
-  2. Set the start and end segment numbers
-  3. Click the download button
-  4. Only the selected range will be downloaded
-</details>
-
-<details>
-  <summary>What if the download gets interrupted?</summary>
-
-  - Use the Pause / Resume button to continue
-  - Click red (failed) segments to retry individually
-  - Auto-retry runs every 2 seconds with exponential backoff
-  - Click "Download completed segments" to save partial content
-</details>
-
-## Browser Support
-
-- **Basic features**: All modern browsers (Chrome 90+, Firefox 88+, Safari 14+, Edge 90+)
-- **Stream download**: Chrome 90+, Edge 90+, Firefox 88+ (Safari not supported)
-- **Recommended**: Chrome / Edge for the best experience
-
-## Privacy
-
-- All video processing is done locally in the browser
-- No data is uploaded to any server
-- No download links are logged or stored
-- Open source and auditable
-- No registration or login required
+| Path | Responsibility |
+| --- | --- |
+| `src/lib/download-engine.ts` | `DownloadEngine` class — orchestrates parse/download/pause/retry/cancel; runs a concurrent worker pool per segment with per-attempt timeout and exponential-backoff retry; drives both in-memory and stream-writer completion paths |
+| `src/lib/m3u8-parser.ts` | Detects master vs. media playlists and parses `#EXT-X-STREAM-INF` variants (bandwidth, resolution, name) |
+| `src/lib/aes-decryptor.ts` | `AESDecryptor` — standalone AES-128-CBC implementation (key expansion + block decrypt + PKCS7 unpad) used to decrypt HLS segments |
+| `src/lib/video-utils.ts` | Shared types, URL resolution (`applyURL`), MIME map, `fetchData`/`estimateFileSize`, and `triggerBrowserDownload` (in-memory Blob assembly) |
+| `src/lib/batch-utils.ts` | `fetchUrlMetadata` — resolves a URL (direct video / master playlist / media playlist) to segment count and estimated size for the batch-mode queue |
+| `src/stores/` | Zustand stores: `download-store` (single-download state), `batch-store` (batch queue), `settings-store` (concurrency/timeout/retry, persisted to `localStorage`) |
 
 ## License
 
-[MIT](./LICENSE) License &copy; 2025-PRESENT [wudi](https://github.com/WuChenDi)
+[MIT](../../LICENSE) License &copy; 2025-PRESENT [wudi](https://github.com/WuChenDi)

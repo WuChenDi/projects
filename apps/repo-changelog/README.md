@@ -1,81 +1,78 @@
-# Repository Changelog
+# Repo Changelog
 
-Powerful web-based tool for tracking releases and changelogs from your favorite open source repositories. Monitor multiple GitHub projects in one unified dashboard.
+[English](./README.md) | [中文](./README.zh-CN.md)
 
-⚠️ **Privacy-focused** - All searches and selections are processed in your browser. No data is stored on our servers.
+Track releases and changelogs from multiple GitHub repositories in one unified, browser-processed dashboard — no accounts, no server-side storage of your selections. Built with **Nuxt 4 (Vue 3)** and data sourced from [ungh.cc](https://ungh.cc).
 
 Preview: https://repo-changelog.vercel.app/
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/repo-changelog/index.png)
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/repo-changelog/repos.png)
 
-## ✨ Features
+## Features
 
-### 🔍 **Smart Repository Search**
-- 🎯 Search by repository name (`owner/repo`) or username/organization
-- 🚀 Real-time search with intelligent validation
-- 📊 Sort results by stars, forks, name, or last updated
-- 🏃‍♂️ Runs fully in the browser (no server queries for search logic)
-- 🔒 Privacy-focused
+- **Repository search** (`app/pages/repos.vue`)
+  - Search by individual repository (`owner/repo`), user, or organization
+  - Sort results by stars, forks, name, or last updated
+  - Runs fully client-side against the `ungh.cc` API — no search logic on the server
 
-**Supported Search Types:**
-- Individual repositories: `nuxt/nuxt`, `microsoft/vscode`
-- User repositories: `sindresorhus`, `tj`
-- Organization repositories: `vercel`, `better-auth`
+- **Multi-repository tracking**
+  - Select and manage multiple repositories at once
+  - Selections persist via URL sharing, so a combination of repos can be shared with a link
+  - Favorite groups (`app/composables/useFavoriteGroups.ts`) — named, reusable sets of repos stored client-side via `useStorage`
 
-### 📋 **Multi-Repository Tracking** 
-- 🎨 Select and manage multiple repositories
-- 💾 Persistent selections via URL sharing
-- ⚡ Instant add/remove with visual feedback
-- 📱 Responsive selection interface
-- 🌐 Share repository combinations with others
+- **Unified changelog dashboard** (`app/pages/index.vue`)
+  - Chronological timeline of releases across all selected repositories
+  - Expandable release notes with full markdown rendering via `@nuxtjs/mdc`
+  - Direct links to GitHub releases
 
-### 📰 **Unified Changelog Dashboard**
-- 🚀 Chronological timeline of releases across all selected repos
-- 🎚️ Expandable/collapsible release notes with full markdown rendering
-- 📏 Repository badges and metadata display
-- 💾 Direct links to GitHub releases
-- 🔒 Local processing ensures fast loading
-- 🌐 Beautiful responsive timeline design
+## Tech Stack
 
-**Technologies:**
-- Powered by GitHub API for real-time release data
-- Markdown rendering with [@nuxtjs/mdc](https://github.com/nuxt-content/mdc)
-- Browser-based processing with intelligent caching
+- **Framework** — Nuxt 4, Vue 3
+- **UI** — `@nuxt/ui`
+- **Markdown** — `@nuxtjs/mdc` (highlighting for `diff`, `ts`, `tsx`, `vue`, `css`, `sh`, `js`, `json`)
+- **Composables** — `@vueuse/nuxt`
+- **Rendering** — ISR on `/` with a 60s revalidate window (`routeRules` in `nuxt.config.ts`)
+- **Data source** — [ungh.cc](https://ungh.cc), configurable via the `API_URL` env var (`nuxt.config.ts`)
+- **Deploy target** — Vercel
 
-## 🚀 Quick Start
+> This app is excluded from the root Biome config and manages its own linting/formatting.
+
+## Getting Started
 
 ### Prerequisites
+
 - Node.js 20+
-- Modern browser (Chrome, Firefox, Safari, Edge)
+- pnpm (workspace root)
 
-### Installation & Development
+### Install
 
 ```bash
-# Clone the repository
-git clone https://github.com/WuChenDi/projects.git
-cd projects
-
-# Install dependencies
+# From the monorepo root
 pnpm install
-
-# Start development server
-pnpm dev:repo-changelog
-# Server available at http://localhost:3019
 ```
 
-### Production Build
+### Development
 
 ```bash
-# Build for production
-pnpm --filter repo-changelog run build
-
-# Preview production build
-pnpm --filter repo-changelog run preview
-
-# Deploy to your favorite platform
+pnpm --filter @cdlab996/repo-changelog dev
 ```
 
-## 📜 License
+Dev server available at `http://repo-changelog.localhost:3355` (via `@dotns/nsl`).
 
-[MIT](./LICENSE) License &copy; 2025-PRESENT [wudi](https://github.com/WuChenDi)
+### Build / Deploy
+
+```bash
+# Production build
+pnpm --filter @cdlab996/repo-changelog build
+
+# Static generation
+pnpm --filter @cdlab996/repo-changelog generate
+
+# Preview a production build locally
+pnpm --filter @cdlab996/repo-changelog preview
+```
+
+## License
+
+[MIT](../../LICENSE) License © 2025-PRESENT [wudi](https://github.com/WuChenDi)

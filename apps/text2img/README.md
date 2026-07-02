@@ -1,8 +1,8 @@
-# AI Text-to-Image Tool (Cloudflare AI)
+# text2img
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
-A free online AI text-to-image tool built with Next.js, powered by Cloudflare Workers AI. Supports multiple models including FLUX.1, Stable Diffusion XL, and DreamShaper.
+Free, no-registration AI text-to-image tool — type a prompt, pick a model, get an image. Built with **Next.js (App Router)** and **Cloudflare Workers AI**, deployed via [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare).
 
 Preview: https://text2img.cdlab.workers.dev/
 
@@ -10,19 +10,25 @@ Preview: https://text2img.cdlab.workers.dev/
 
 ## Features
 
-- Multiple AI image generation models (Stable Diffusion XL, FLUX.1, DreamShaper, etc.)
-- Random prompt library
-- Rich parameter configuration (size, steps, guidance scale, random seed, etc.)
-- Dark / light theme toggle
-- Responsive design for mobile
-- Parameter copy function
-- One-click image download
+- **Multi-model generation** (`src/app/api/generate/route.ts`) — routes each request to the right Workers AI binding and input shape per model group
+  - **Black Forest Labs FLUX** (FLUX.2 klein/dev, FLUX.1 schnell), **Stability AI** Stable Diffusion XL, **ByteDance** SDXL Lightning, **Lykon** DreamShaper — see the model table below for the full, current status list
+  - Per-model `prepareInputs` / `processResponse` adapters normalize prompt, size, steps, guidance, seed, and (for FLUX) response parsing across differently-shaped Workers AI outputs
+- **Random prompt library** (`GET /api/prompts`) — one-click random prompt fill
+- **Model catalog** (`GET /api/models`) — model list with provider/group metadata, served from `src/lib/data.ts`
+- **Rich parameter controls** — size, steps, strength, guidance scale, and seed, tunable per generation
+- **Generation history** — results (including in-flight/failed) are tracked in a Zustand store (`src/store/useImageStore.ts`); completed image blobs persist in IndexedDB (`src/lib/storage.ts`) while metadata persists to `localStorage`, so history survives a reload without ever storing the password or source image bytes
+- **Optional password gate** — when `PASSWORDS` is set, the client hashes the password (Argon2id) before sending it; the server verifies the hash against the configured list without the plaintext ever crossing the wire
+- **Dark / light theme toggle**
+- **One-click image download**
 
 ## Tech Stack
 
-- **Framework**: Next.js 16
-- **UI**: shadcn/ui + Tailwind CSS
-- **Data Fetching**: TanStack Query (React Query)
+- **Framework** — Next.js (App Router), React, TypeScript
+- **UI** — shadcn/ui (`@cdlab996/ui`) + Tailwind CSS
+- **Data fetching / mutations** — TanStack Query (`useQuery` for models/prompts, `useMutation` for generation)
+- **State** — Zustand (`useImageStore`, persisted)
+- **Platform** — Cloudflare Workers AI (`AI` binding), deployed via OpenNext
+- **i18n** — next-intl (en / zh)
 
 ## Getting Started
 
@@ -31,80 +37,58 @@ Preview: https://text2img.cdlab.workers.dev/
 - Node.js 20+
 - pnpm
 
-### Install Dependencies
+### Install
 
 ```bash
 pnpm install
 ```
 
-### Configure Environment Variables
+### Development
 
-Copy `.env.example` to `.env.local` and fill in the following:
+```bash
+pnpm --filter @cdlab996/text2img dev
+```
+
+Served at `http://text2img.localhost:3355` via `@dotns/nsl` — no port hunting.
+
+### Configuration
+
+Copy `.env.example` to `.env.local`:
 
 ```bash
 PASSWORDS=
 ```
 
-### Run Development Server
+`PASSWORDS` is a comma-separated list of accepted passwords for the generate endpoint; leave it empty to disable the password gate.
+
+### Build / Deploy
+
+Builds with `@opennextjs/cloudflare`, not the plain Next.js build.
 
 ```bash
-pnpm dev
+pnpm --filter @cdlab996/text2img deploy
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the app.
-
-### Build for Production
-
-```bash
-pnpm build
-pnpm start
-```
-
-## Deployment
-
-### Deploy to Cloudflare Pages
-
-The project is configured with `@opennextjs/cloudflare` and can be deployed to Cloudflare Pages or Workers.
-
-```bash
-pnpm deploy
-```
-
-## Project Structure
-
-```
-.
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── generate/
-│   │   │   ├── models/
-│   │   │   └── prompts/
-│   │   ├── page.tsx
-│   │   └── layout.tsx
-│   ├── components/
-│   │   └── ui/
-│   └── lib/
-│       └── data.ts
-└── public/
-```
+Requires a Cloudflare Workers AI (`AI`) binding — see `wrangler.jsonc`.
 
 ## Supported Models
 
 | Provider | Model | Status |
 | --- | --- | --- |
-| Black Forest Labs | FLUX.2 [klein] 9B | ✅ |
-| Black Forest Labs | FLUX.2 [klein] 4B | ✅ |
-| Black Forest Labs | FLUX.2 [dev] | ✅ |
-| Black Forest Labs | FLUX.1 [schnell] | ✅ |
-| Leonardo AI | Lucid Origin | 🚫 |
-| Leonardo AI | Phoenix 1.0 | 🚫 |
-| ByteDance | Stable Diffusion XL Lightning | ✅ |
-| Lykon | DreamShaper 8 LCM | ✅ |
-| Stability AI | Stable Diffusion XL Base 1.0 | ✅ |
-| Runway ML | Stable Diffusion v1.5 img2img | 🚫 |
-| Runway ML | Stable Diffusion v1.5 Inpainting | 🚫 |
+| Black Forest Labs | FLUX.2 [klein] 9B | enabled |
+| Black Forest Labs | FLUX.2 [klein] 4B | enabled |
+| Black Forest Labs | FLUX.2 [dev] | enabled |
+| Black Forest Labs | FLUX.1 [schnell] | enabled |
+| Leonardo AI | Lucid Origin | disabled |
+| Leonardo AI | Phoenix 1.0 | disabled |
+| ByteDance | Stable Diffusion XL Lightning | enabled |
+| Lykon | DreamShaper 8 LCM | enabled |
+| Stability AI | Stable Diffusion XL Base 1.0 | enabled |
+| Runway ML | Stable Diffusion v1.5 img2img | disabled |
+| Runway ML | Stable Diffusion v1.5 Inpainting | disabled |
 
-## 📜 License
+Disabled models are defined in `src/lib/data.ts` but rejected by `/api/generate` at request time.
 
-[MIT](./LICENSE) License © 2026-PRESENT [wudi](https://github.com/WuChenDi)
+## License
+
+[MIT](../../LICENSE) License © 2026-PRESENT [wudi](https://github.com/WuChenDi)
