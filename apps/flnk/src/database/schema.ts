@@ -46,6 +46,18 @@ export interface LinkConfig {
   // `@cdlab996/utils` hashPasswordFn/verifyPasswordFn); when set, the
   // destination is gated behind a password form.
   passwordHash?: string
+  // Per-link QR style. The QR encodes the link's public `/<slug>?qr=1` URL and
+  // is rendered client-side (never stored as an image). `logo` is an R2 asset
+  // URL (R2 on → upload) or a pasted image URL (R2 off).
+  qr?: {
+    fgColor: string
+    bgColor: string
+    logo?: string
+    dotStyle?: 'dot' | 'square'
+    cornerStyle?: 'rounded' | 'square'
+    errorLevel?: 'L' | 'M' | 'Q' | 'H'
+    margin?: number
+  }
 }
 
 export const links = sqliteTable(
@@ -55,6 +67,10 @@ export const links = sqliteTable(
     slug: text('slug').notNull(),
     domain: text('domain').notNull().default(''),
     url: text('url').notNull(),
+    // Human-readable management display name shown as the primary label in the
+    // dashboard. Distinct from `comment` (free-form note) and `config.title`
+    // (OG title served to social crawlers).
+    title: text('title').notNull().default(''),
     comment: text('comment').notNull().default(''),
     // Email of the signed-in user who created the link (empty for legacy rows).
     createdBy: text('created_by').notNull().default(''),
@@ -75,6 +91,89 @@ export const links = sqliteTable(
   (table) => [
     uniqueIndex('uniq_links_slug_domain').on(table.slug, table.domain),
   ],
+)
+
+// Launchpad page config, stored as a single JSON column. `profile` backs the
+// header block; `theme` drives the page-level look; `blocks` is the ordered
+// content list (array order = render order).
+export interface LaunchpadConfig {
+  profile: {
+    avatar?: string
+    name?: string
+    bio?: string
+  }
+  theme: {
+    preset: string
+    primaryColor: string
+    buttonShape: 'rounded' | 'pill' | 'square'
+  }
+  blocks: LaunchpadBlock[]
+}
+
+// A launchpad content block. Array order = render order; each block carries an
+// `id`, `type`, and `enabled` flag plus type-specific fields. `button`/
+// `shortlink` targets store the LINK ID (reference), never a copied URL, so
+// clicks route through `/<slug>` and reuse the short link's stats + editable
+// destination.
+export type LaunchpadBlock =
+  | { id: string; type: 'header'; enabled: boolean }
+  | {
+      id: string
+      type: 'socials'
+      enabled: boolean
+      items: { platform: string; url: string }[]
+    }
+  | {
+      id: string
+      type: 'button'
+      enabled: boolean
+      label: string
+      target: { kind: 'link'; linkId: string } | { kind: 'url'; url: string }
+    }
+  | { id: string; type: 'shortlink'; enabled: boolean; linkIds: string[] }
+  | { id: string; type: 'image'; enabled: boolean; src: string; link?: string }
+  | { id: string; type: 'text'; enabled: boolean; text: string }
+  | { id: string; type: 'divider'; enabled: boolean }
+
+// Page-level Open Graph metadata for sharing `/m/<slug>`.
+export interface LaunchpadOg {
+  title?: string
+  description?: string
+  image?: string
+}
+
+export type LaunchpadStatus = 'draft' | 'published'
+
+// Default config seeded on a fresh launchpad — empty profile, neutral theme,
+// no blocks. Used as the column default and by the repository on create.
+export const DEFAULT_LAUNCHPAD_CONFIG: LaunchpadConfig = {
+  profile: {},
+  theme: { preset: 'default', primaryColor: '#000000', buttonShape: 'rounded' },
+  blocks: [],
+}
+
+// Hosted marketing / link-in-bio pages, managed in the dashboard and published
+// at `/m/<slug>`. `slug` is globally unique (the public route resolves by URL
+// with no auth context). `ownerId` (= user.id) is stamped on every write but
+// NOT filtered yet — the shared-workspace baseline; isolation flips later via
+// the `scopeToOwner` helper with no schema backfill.
+export const launchpads = sqliteTable(
+  'launchpads',
+  {
+    id: text('id').primaryKey(),
+    slug: text('slug').notNull(),
+    ownerId: text('owner_id').notNull().default(''),
+    title: text('title').notNull().default(''),
+    status: text('status').$type<LaunchpadStatus>().notNull().default('draft'),
+    config: text('config', { mode: 'json' })
+      .$type<LaunchpadConfig>()
+      .notNull()
+      .default(DEFAULT_LAUNCHPAD_CONFIG),
+    og: text('og', { mode: 'json' }).$type<LaunchpadOg>().notNull().default({}),
+    expiresAt: integer('expires_at', { mode: 'timestamp' }),
+    ...trackingFields,
+  },
+  (table) => [uniqueIndex('uniq_launchpads_slug').on(table.slug)],
 )
 
 // Tag dictionary — each tag name exists exactly once and is the single source
@@ -191,6 +290,9 @@ export type NewLink = typeof links.$inferInsert
 
 export type Tag = typeof tags.$inferSelect
 export type NewTag = typeof tags.$inferInsert
+
+export type Launchpad = typeof launchpads.$inferSelect
+export type NewLaunchpad = typeof launchpads.$inferInsert
 
 export type User = typeof user.$inferSelect
 export type Session = typeof session.$inferSelect

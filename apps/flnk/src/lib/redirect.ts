@@ -100,6 +100,9 @@ export function resolveDestination(
     try {
       const target = new URL(dest)
       const incoming = new URLSearchParams(opts.search)
+      // Drop the scan marker — it's an analytics signal, not part of the
+      // destination.
+      incoming.delete('qr')
       incoming.forEach((value, key) => {
         if (!target.searchParams.has(key))
           target.searchParams.append(key, value)

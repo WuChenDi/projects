@@ -514,7 +514,7 @@ export function LinksView() {
   function renderActions(link: LinkRow, shortUrl: string, disabled: boolean) {
     return (
       <div className="flex shrink-0 items-center gap-0.5">
-        <QrPopover url={shortUrl} slug={link.slug}>
+        <QrPopover url={shortUrl} slug={link.slug} qr={link.config.qr}>
           <Button variant="ghost" size="icon" aria-label={t('qr.title')}>
             <QrCode className="size-4" />
           </Button>
@@ -1000,7 +1000,10 @@ export function LinksView() {
             const shortLabel = shortUrl.replace(/^https?:\/\//, '')
             const disabled = Boolean(link.config.disabled)
             const title =
-              link.config.title?.trim() || hostOf(link.url) || link.slug
+              link.title?.trim() ||
+              link.config.title?.trim() ||
+              hostOf(link.url) ||
+              link.slug
             const count = clicks.get(link.slug) ?? 0
             const isSelected = selected.has(link.id)
             const checkbox = (

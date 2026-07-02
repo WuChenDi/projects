@@ -25,7 +25,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@cdlab996/ui/components/popover'
+import { QRCode } from '@cdlab996/ui/components/qr-code'
 import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@cdlab996/ui/components/select'
 import { Switch } from '@cdlab996/ui/components/switch'
 import { Textarea } from '@cdlab996/ui/components/textarea'
 import { cn } from '@cdlab996/ui/lib/utils'
@@ -39,8 +47,22 @@ import { CountrySelect } from '@/components/dashboard/links/country-select'
 import { TagCombobox } from '@/components/dashboard/links/tag-combobox'
 import type { LinkRow } from '@/lib/api'
 import { configApi, linkApi, uploadApi } from '@/lib/api'
-import { dateLocale } from '@/lib/format'
+import { buildShortUrl, dateLocale } from '@/lib/format'
 import type { CreateLinkInput } from '@/schemas/link'
+
+// QR defaults — kept in sync with the popover so an uncustomized link renders
+// the same code in both places (and `buildPayload` can omit a default `qr`).
+type QrDot = 'dot' | 'square'
+type QrCorner = 'rounded' | 'square'
+type QrErrorLevel = 'L' | 'M' | 'Q' | 'H'
+const QR_DEFAULTS = {
+  fgColor: '#0f172a',
+  bgColor: '#ffffff',
+  dotStyle: 'dot' as QrDot,
+  cornerStyle: 'rounded' as QrCorner,
+  errorLevel: 'M' as QrErrorLevel,
+  margin: 2,
+}
 
 const SLUG_ALPHABET = '23456789abcdefghjkmnpqrstuvwxyz'
 function randomSlug(length = 6): string {
@@ -70,6 +92,7 @@ function defaultExpiry(): number {
 interface FormState {
   url: string
   slug: string
+  displayTitle: string
   comment: string
   tags: string[]
   expiresAt: number | null
@@ -83,6 +106,13 @@ interface FormState {
   redirectWithQuery: boolean
   unsafe: boolean
   geo: GeoRow[]
+  qrFg: string
+  qrBg: string
+  qrDot: QrDot
+  qrCorner: QrCorner
+  qrError: QrErrorLevel
+  qrMargin: number
+  qrLogo: string
 }
 
 function initialState(existing?: LinkRow): FormState {
@@ -90,6 +120,7 @@ function initialState(existing?: LinkRow): FormState {
   return {
     url: existing?.url ?? '',
     slug: existing?.slug ?? '',
+    displayTitle: existing?.title ?? '',
     comment: existing?.comment ?? '',
     tags: existing?.tags ?? [],
     expiresAt: existing
@@ -109,7 +140,28 @@ function initialState(existing?: LinkRow): FormState {
     geo: c.geo
       ? Object.entries(c.geo).map(([country, url]) => geoRow(country, url))
       : [],
+    qrFg: c.qr?.fgColor ?? QR_DEFAULTS.fgColor,
+    qrBg: c.qr?.bgColor ?? QR_DEFAULTS.bgColor,
+    qrDot: c.qr?.dotStyle ?? QR_DEFAULTS.dotStyle,
+    qrCorner: c.qr?.cornerStyle ?? QR_DEFAULTS.cornerStyle,
+    qrError: c.qr?.errorLevel ?? QR_DEFAULTS.errorLevel,
+    qrMargin: c.qr?.margin ?? QR_DEFAULTS.margin,
+    qrLogo: c.qr?.logo ?? '',
   }
+}
+
+// A QR config is only persisted when it differs from the defaults — otherwise
+// every link would carry a redundant `qr` block.
+function isCustomQr(f: FormState): boolean {
+  return (
+    f.qrFg !== QR_DEFAULTS.fgColor ||
+    f.qrBg !== QR_DEFAULTS.bgColor ||
+    f.qrDot !== QR_DEFAULTS.dotStyle ||
+    f.qrCorner !== QR_DEFAULTS.cornerStyle ||
+    f.qrError !== QR_DEFAULTS.errorLevel ||
+    f.qrMargin !== QR_DEFAULTS.margin ||
+    f.qrLogo.trim() !== ''
+  )
 }
 
 function buildPayload(f: FormState): CreateLinkInput {
@@ -129,10 +181,22 @@ function buildPayload(f: FormState): CreateLinkInput {
       return acc
     }, {})
   if (Object.keys(geo).length) config.geo = geo
+  if (isCustomQr(f)) {
+    config.qr = {
+      fgColor: f.qrFg,
+      bgColor: f.qrBg,
+      dotStyle: f.qrDot,
+      cornerStyle: f.qrCorner,
+      errorLevel: f.qrError,
+      margin: f.qrMargin,
+      ...(f.qrLogo.trim() ? { logo: f.qrLogo.trim() } : {}),
+    }
+  }
 
   return {
     url: f.url.trim(),
     slug: f.slug.trim() || undefined,
+    title: f.displayTitle.trim() || undefined,
     comment: f.comment.trim() || undefined,
     tags: f.tags,
     expiresAt: f.expiresAt ?? null,
@@ -293,6 +357,10 @@ function EditorForm({
   }
 
   const expiryDate = form.expiresAt ? new Date(form.expiresAt) : undefined
+  const qrPreviewUrl = buildShortUrl(
+    form.slug.trim() || 'example',
+    existing?.domain ?? '',
+  )
 
   return (
     <form
@@ -343,6 +411,16 @@ function EditorForm({
           onChange={(e) => set('slug', e.target.value)}
           placeholder={t('slugPlaceholder')}
           autoComplete="off"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="displayTitle">{t('title')}</Label>
+        <Input
+          id="displayTitle"
+          value={form.displayTitle}
+          onChange={(e) => set('displayTitle', e.target.value)}
+          placeholder={t('titlePlaceholder')}
         />
       </div>
 
@@ -499,6 +577,137 @@ function EditorForm({
           </AccordionContent>
         </AccordionItem>
 
+        <AccordionItem value="qr">
+          <AccordionTrigger>{t('section.qr')}</AccordionTrigger>
+          <AccordionContent className="space-y-4 px-1">
+            <div className="flex justify-center">
+              <QRCode
+                value={qrPreviewUrl}
+                type="canvas"
+                size={160}
+                fgColor={form.qrFg}
+                bgColor={form.qrBg}
+                dotType={form.qrDot}
+                finderType={form.qrCorner}
+                errorLevel={form.qrError}
+                marginSize={form.qrMargin}
+                icon={form.qrLogo || undefined}
+                bordered
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <ColorField
+                label={t('qrFg')}
+                value={form.qrFg}
+                onChange={(v) => set('qrFg', v)}
+              />
+              <ColorField
+                label={t('qrBg')}
+                value={form.qrBg}
+                onChange={(v) => set('qrBg', v)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>{t('qrDot')}</Label>
+                <Select
+                  value={form.qrDot}
+                  onValueChange={(v) => set('qrDot', v as QrDot)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dot">{t('qrDotRound')}</SelectItem>
+                    <SelectItem value="square">{t('qrDotSquare')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('qrCorner')}</Label>
+                <Select
+                  value={form.qrCorner}
+                  onValueChange={(v) => set('qrCorner', v as QrCorner)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rounded">
+                      {t('qrCornerRound')}
+                    </SelectItem>
+                    <SelectItem value="square">
+                      {t('qrCornerSquare')}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('qrErrorLevel')}</Label>
+                <Select
+                  value={form.qrError}
+                  onValueChange={(v) => set('qrError', v as QrErrorLevel)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="L">L (7%)</SelectItem>
+                    <SelectItem value="M">M (15%)</SelectItem>
+                    <SelectItem value="Q">Q (25%)</SelectItem>
+                    <SelectItem value="H">H (30%)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="qr-margin">{t('qrMargin')}</Label>
+                <Input
+                  id="qr-margin"
+                  type="number"
+                  min={0}
+                  max={16}
+                  value={form.qrMargin}
+                  onChange={(e) =>
+                    set(
+                      'qrMargin',
+                      Math.max(0, Math.min(16, Number(e.target.value) || 0)),
+                    )
+                  }
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="qr-logo">{t('qrLogo')}</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="qr-logo"
+                  value={form.qrLogo}
+                  onChange={(e) => set('qrLogo', e.target.value)}
+                  placeholder={r2Enabled ? t('qrLogoUploaded') : 'https://…'}
+                  disabled={r2Enabled}
+                />
+                {form.qrLogo && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={t('qrLogoClear')}
+                    onClick={() => set('qrLogo', '')}
+                  >
+                    <X className="size-4" />
+                  </Button>
+                )}
+              </div>
+              {r2Enabled && (
+                <ImageUploader
+                  slug={form.slug}
+                  onUploaded={(url) => set('qrLogo', url)}
+                />
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
         <AccordionItem value="device">
           <AccordionTrigger>{t('section.device')}</AccordionTrigger>
           <AccordionContent className="space-y-4 px-1">
@@ -609,6 +818,38 @@ function SwitchField({
     <div className="flex items-center justify-between">
       <Label className="font-normal">{label}</Label>
       <Switch checked={checked} onCheckedChange={onChange} />
+    </div>
+  )
+}
+
+// Native color swatch paired with a hex text input. The swatch always yields a
+// valid `#rrggbb`; the text input lets the user type/paste a hex.
+function ColorField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <div className="flex gap-2">
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-label={label}
+          className="size-9 shrink-0 cursor-pointer rounded-md border bg-transparent p-1"
+        />
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="font-mono"
+        />
+      </div>
     </div>
   )
 }

@@ -8,6 +8,20 @@
       "when": 1782634345516,
       "tag": "0000_many_rockslide",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1782746098902,
+      "tag": "0001_left_mentor",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782787073744,
+      "tag": "0002_reflective_reptil",
+      "breakpoints": true
     }
   ]
 }

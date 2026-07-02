@@ -34,6 +34,15 @@ export function buildShortUrl(slug: string, domain: string): string {
   return `/${slug}`
 }
 
+// Public URL for a launchpad's `/m/<slug>` page. Single-domain deploy, so the
+// current browser origin is the host (falls back to a relative path on the
+// server).
+export function buildLaunchpadUrl(slug: string): string {
+  if (typeof window !== 'undefined')
+    return `${window.location.origin}/m/${slug}`
+  return `/m/${slug}`
+}
+
 export function formatDate(value: string | null, locale: string): string {
   if (!value) return '—'
   return format(new Date(value), 'PP', { locale: dateLocale(locale) })
