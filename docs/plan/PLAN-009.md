@@ -1,6 +1,6 @@
 # PLAN-009 flnk — short-link title + QR styling & scan tracking
 
-- **status**: draft
+- **status**: done
 - **createdAt**: 2026-06-29
 - **tasks**: FEAT-021, FEAT-022
 

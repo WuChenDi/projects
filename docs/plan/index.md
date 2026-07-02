@@ -37,5 +37,5 @@ Each plan is a single line linking to its detail file. All detailed information 
 - [ ] [**PLAN-006 Sink P5 — dashboard & link-management enhancements**](PLAN-006.md) `2026-06-25`
 - [x] [**PLAN-007 flnk — make tags functional**](PLAN-007.md) `2026-06-27`
 - [x] [**PLAN-008 flnk — tags as a dictionary table + inline tag-ID column**](PLAN-008.md) `2026-06-28`
-- [ ] [**PLAN-009 flnk — short-link title + QR styling & scan tracking**](PLAN-009.md) `2026-06-29`
-- [ ] [**PLAN-010 flnk — launchpads (marketing pages)**](PLAN-010.md) `2026-06-29`
+- [x] [**PLAN-009 flnk — short-link title + QR styling & scan tracking**](PLAN-009.md) `2026-06-29`
+- [x] [**PLAN-010 flnk — launchpads (marketing pages)**](PLAN-010.md) `2026-06-29`

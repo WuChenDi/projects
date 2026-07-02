@@ -1,6 +1,6 @@
 # PLAN-010 flnk — launchpads (marketing pages)
 
-- **status**: draft
+- **status**: done
 - **createdAt**: 2026-06-29
 - **tasks**: FEAT-023, FEAT-024, FEAT-025
 
