@@ -15,9 +15,15 @@ name: Deploy flnk
 #                               only needed when wrangler.jsonc has
 #                               DB_TYPE=libsql (also used by the migration
 #                               step). Leave unset for d1.
-# One-time Worker secrets NOT managed here (set once via `wrangler secret put`,
-# they persist across deploys): BETTER_AUTH_SECRET, GOOGLE_CLIENT_ID/SECRET,
-# GITHUB_CLIENT_ID/SECRET.
+#   FLNK_BETTER_AUTH_SECRET     Worker runtime secret — better-auth signing key
+#   FLNK_GOOGLE_CLIENT_ID       Worker runtime secret — Google OAuth app
+#   FLNK_GOOGLE_CLIENT_SECRET   Worker runtime secret — Google OAuth app
+#   FLNK_GITHUB_CLIENT_ID       Worker runtime secret — GitHub OAuth app
+#   FLNK_GITHUB_CLIENT_SECRET   Worker runtime secret — GitHub OAuth app
+# The auth secrets were originally set once via `wrangler secret put` and
+# persist on the Worker across deploys — the sync below only overwrites them
+# when the corresponding GitHub secret is set (empty values are skipped), so
+# leaving these unset keeps the current Worker values.
 on:
   workflow_dispatch:
     inputs:
@@ -113,12 +119,22 @@ jobs:
           FLNK_ALLOWED_EMAILS: ${{ secrets.FLNK_ALLOWED_EMAILS }}
           FLNK_CLOUDFLARE_API_TOKEN: ${{ secrets.FLNK_CLOUDFLARE_API_TOKEN }}
           FLNK_LIBSQL_AUTH_TOKEN: ${{ secrets.FLNK_LIBSQL_AUTH_TOKEN }}
+          FLNK_BETTER_AUTH_SECRET: ${{ secrets.FLNK_BETTER_AUTH_SECRET }}
+          FLNK_GOOGLE_CLIENT_ID: ${{ secrets.FLNK_GOOGLE_CLIENT_ID }}
+          FLNK_GOOGLE_CLIENT_SECRET: ${{ secrets.FLNK_GOOGLE_CLIENT_SECRET }}
+          FLNK_GITHUB_CLIENT_ID: ${{ secrets.FLNK_GITHUB_CLIENT_ID }}
+          FLNK_GITHUB_CLIENT_SECRET: ${{ secrets.FLNK_GITHUB_CLIENT_SECRET }}
         run: |
           jq -n '
             [
               {key: "ALLOWED_EMAILS",       value: env.FLNK_ALLOWED_EMAILS},
               {key: "CLOUDFLARE_API_TOKEN", value: env.FLNK_CLOUDFLARE_API_TOKEN},
-              {key: "LIBSQL_AUTH_TOKEN",    value: env.FLNK_LIBSQL_AUTH_TOKEN}
+              {key: "LIBSQL_AUTH_TOKEN",    value: env.FLNK_LIBSQL_AUTH_TOKEN},
+              {key: "BETTER_AUTH_SECRET",   value: env.FLNK_BETTER_AUTH_SECRET},
+              {key: "GOOGLE_CLIENT_ID",     value: env.FLNK_GOOGLE_CLIENT_ID},
+              {key: "GOOGLE_CLIENT_SECRET", value: env.FLNK_GOOGLE_CLIENT_SECRET},
+              {key: "GITHUB_CLIENT_ID",     value: env.FLNK_GITHUB_CLIENT_ID},
+              {key: "GITHUB_CLIENT_SECRET", value: env.FLNK_GITHUB_CLIENT_SECRET}
             ]
             | map(select(.value != null and .value != ""))
             | from_entries
