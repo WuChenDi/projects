@@ -68,7 +68,7 @@
       "binding": "DB",
       "database_name": "flnk",
       "migrations_dir": "./src/database",
-      "database_id": "ab108da9-c8f8-49ff-94d2-ffcab98a1c96"
+      "database_id": "583b3b86-7cf1-435b-ac21-839daf4e6be3"
     }
   ],
   "kv_namespaces": [
