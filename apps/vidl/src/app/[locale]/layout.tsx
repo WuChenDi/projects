@@ -2,28 +2,37 @@
 
 import { Toaster } from '@cdlab996/ui/components/sonner'
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import {
+  Bricolage_Grotesque,
+  IBM_Plex_Mono,
+  IBM_Plex_Sans,
+} from 'next/font/google'
 import { notFound } from 'next/navigation'
 import type { Locale } from 'next-intl'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 
 import '@cdlab996/ui/globals.css'
-import { IKHeader } from '@cdlab996/ui/IK'
-import {
-  ClientProviders,
-  LanguageSelector,
-  ThemeToggle,
-} from '@/components/layout'
+import '../theme.css'
+import { ClientProviders, SiteHeader } from '@/components/layout'
 import { routing } from '@/i18n/routing'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const plexSans = IBM_Plex_Sans({
+  variable: '--font-plex-sans',
+  weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
 })
 
-const geistMono = Geist_Mono({
+// keep the `--font-geist-mono` name so existing `font-mono` utilities resolve
+const plexMono = IBM_Plex_Mono({
   variable: '--font-geist-mono',
+  weight: ['400', '500', '600'],
+  subsets: ['latin'],
+})
+
+const bricolage = Bricolage_Grotesque({
+  variable: '--font-bricolage',
+  weight: ['600', '700', '800'],
   subsets: ['latin'],
 })
 
@@ -324,17 +333,11 @@ export default async function LocaleLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${plexSans.variable} ${plexMono.variable} ${bricolage.variable} antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
           <ClientProviders>
-            <IKHeader
-              brand="Video Downloader"
-              githubHref="https://github.com/WuChenDi/projects/tree/main/apps/vidl"
-            >
-              <LanguageSelector />
-              <ThemeToggle />
-            </IKHeader>
+            <SiteHeader />
             {children}
             <Toaster richColors position="top-center" duration={3000} />
           </ClientProviders>

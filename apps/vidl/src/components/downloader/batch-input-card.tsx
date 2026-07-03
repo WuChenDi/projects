@@ -2,7 +2,6 @@
 
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -21,7 +20,6 @@ import { useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 
 interface BatchInputCardProps {
-  headerAction?: React.ReactNode
   batchText: string
   onBatchTextChange: (text: string) => void
   disabled: boolean
@@ -29,7 +27,6 @@ interface BatchInputCardProps {
 }
 
 export function BatchInputCard({
-  headerAction,
   batchText,
   onBatchTextChange,
   disabled,
@@ -62,9 +59,10 @@ export function BatchInputCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('tool.title')}</CardTitle>
-        <CardDescription>{t('tool.description')}</CardDescription>
-        {headerAction && <CardAction>{headerAction}</CardAction>}
+        <CardTitle className="deck-label !text-[0.7rem] !text-muted-foreground">
+          {t('batch.title')}
+        </CardTitle>
+        <CardDescription>{t('console.inputHint')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <InputGroup>

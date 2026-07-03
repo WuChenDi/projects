@@ -4,7 +4,6 @@ import { Button } from '@cdlab996/ui/components/button'
 import { ButtonGroup } from '@cdlab996/ui/components/button-group'
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -55,7 +54,6 @@ const BYPLAY_URL = 'https://byplay.pages.dev'
 type DownloadFormat = 'ts' | 'mp4' | 'stream-ts' | 'stream-mp4'
 
 interface SourceCardProps {
-  headerAction?: React.ReactNode
   actions: {
     parseM3U8: (url?: string) => Promise<void>
     selectVariant: (variant: any) => Promise<void>
@@ -67,7 +65,7 @@ interface SourceCardProps {
   }
 }
 
-export function SourceCard({ headerAction, actions }: SourceCardProps) {
+export function SourceCard({ actions }: SourceCardProps) {
   const t = useTranslations()
   const locale = useLocale()
 
@@ -112,9 +110,10 @@ export function SourceCard({ headerAction, actions }: SourceCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('tool.title')}</CardTitle>
-        <CardDescription>{t('tool.description')}</CardDescription>
-        {headerAction && <CardAction>{headerAction}</CardAction>}
+        <CardTitle className="deck-label !text-[0.7rem] !text-muted-foreground">
+          {t('console.inputTitle')}
+        </CardTitle>
+        <CardDescription>{t('console.inputHint')}</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">

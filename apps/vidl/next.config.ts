@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
   env: {
     BUILD_TIME: new Date().toLocaleString(),
   },
+  allowedDevOrigins: ['vidl.a.wd.ds.cc'],
   images: {
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],
