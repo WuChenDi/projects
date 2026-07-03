@@ -23,10 +23,10 @@
     //   "d1"     → uses the `DB` binding below
     //   "libsql" → uses LIBSQL_URL + LIBSQL_AUTH_TOKEN (Turso etc.)
     "DB_TYPE": "d1",
-    // LibSQL Configuration (dev / Turso).
-    "LIBSQL_URL": "your-libsql-url",
-    // The authentication token for accessing the LibSQL
-    "LIBSQL_AUTH_TOKEN": "your-libsql-auth-token"
+    // LibSQL Configuration (dev / Turso). The auth token is a SECRET — set
+    // LIBSQL_AUTH_TOKEN via `wrangler secret put LIBSQL_AUTH_TOKEN` (prod) or
+    // `.dev.vars` (local dev, see .dev.vars.example); never commit it here.
+    "LIBSQL_URL": "your-libsql-url"
   },
   // SECRETS — never commit real values. Set them locally in `.dev.vars` and on
   // deploy via `wrangler secret put`:
@@ -37,7 +37,7 @@
       "binding": "DB",
       "database_name": "wepush",
       "migrations_dir": "./src/database",
-      "database_id": "your-d1-database-id"
+      "database_id": "62137fc8-6c80-4907-9ac0-8a59f536621b"
     }
   ],
   // Scheduled push trigger — handled by the `scheduled()` handler in src/worker/index.ts.

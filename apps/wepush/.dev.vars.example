@@ -1,0 +1,14 @@
+# Local dev secrets for `wrangler dev` / OpenNext local bindings.
+# Copy to `.dev.vars` (gitignored) and fill in real values.
+# In production, set each of these via `wrangler secret put <NAME>`.
+
+BETTER_AUTH_SECRET="your-better-auth-secret"
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
+# Only needed when DB_TYPE=libsql. In production LIBSQL_AUTH_TOKEN is a Worker
+# secret synced by .github/workflows/deploy-wepush.yml (GitHub secret
+# WEPUSH_LIBSQL_AUTH_TOKEN).
+LIBSQL_URL="your-libsql-url"
+LIBSQL_AUTH_TOKEN="your-libsql-auth-token"
