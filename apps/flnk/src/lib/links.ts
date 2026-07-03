@@ -236,18 +236,28 @@ export async function visitLimitReached(
 // serves another N visits). `json_set` patches the config in place — the
 // caller's `link` may come from a stale KV copy, so we must not overwrite the
 // whole config with it.
+// Best-effort: a transient D1 error must not turn the redirect path into a
+// 500 — the request still serves not-found, and the next cap hit retries the
+// persist.
 export async function disableLinkOnVisitCap(
   env: CloudflareEnv,
   link: Link,
 ): Promise<void> {
-  const db = await getDb(env)
-  await db
-    .update(links)
-    .set({
-      config: sql`json_set(${links.config}, '$.disabled', json('true'))`,
-      updatedAt: new Date(),
-    })
-    .where(eq(links.id, link.id))
+  try {
+    const db = await getDb(env)
+    await db
+      .update(links)
+      .set({
+        config: sql`json_set(${links.config}, '$.disabled', json('true'))`,
+        updatedAt: new Date(),
+      })
+      .where(eq(links.id, link.id))
+  } catch (error) {
+    logger.warn(
+      'Failed to persist visit-cap disable',
+      error instanceof Error ? error.message : error,
+    )
+  }
 }
 
 // Resolve a link: KV cache → D1 fallback → fill cache. Returns null when the

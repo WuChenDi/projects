@@ -5,12 +5,17 @@ import { logger } from '@/lib/logger'
 const MAX_FAILURES = 5
 const WINDOW_TTL_SECONDS = 600
 
+// Sentinel for requests without a `cf-connecting-ip` header (local dev,
+// non-Cloudflare proxies). Rate limiting fails open for it — a shared bucket
+// would let unrelated clients exhaust each other's attempts.
+const UNKNOWN_IP = 'unknown'
+
 function failureKey(ip: string, slug: string): string {
   return `pwfail:${ip}:${slug}`
 }
 
 export function clientIp(request: Request): string {
-  return request.headers.get('cf-connecting-ip') || 'unknown'
+  return request.headers.get('cf-connecting-ip') || UNKNOWN_IP
 }
 
 // True when this IP has exhausted its failed attempts for the slug. KV errors
@@ -20,6 +25,7 @@ export async function passwordAttemptsExceeded(
   ip: string,
   slug: string,
 ): Promise<boolean> {
+  if (ip === UNKNOWN_IP) return false
   try {
     const raw = await env.KV.get(failureKey(ip, slug))
     return Number(raw ?? 0) >= MAX_FAILURES
@@ -36,6 +42,7 @@ export async function recordPasswordFailure(
   ip: string,
   slug: string,
 ): Promise<void> {
+  if (ip === UNKNOWN_IP) return
   const key = failureKey(ip, slug)
   try {
     const raw = await env.KV.get(key)
