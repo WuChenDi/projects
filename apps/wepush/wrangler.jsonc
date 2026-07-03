@@ -13,15 +13,17 @@
     "directory": ".open-next/assets"
   },
   "vars": {
-    // Public origin better-auth issues cookies / OAuth redirects against. Must
-    // match the deployed URL (dev: http://wepush.localhost:3355).
-    "BETTER_AUTH_URL": "https://wepush.example.workers.dev",
+    // Public origin better-auth issues cookies/redirects against. Must match the
+    // deployed URL (dev: http://wepush.localhost:3355). The auth secret + OAuth
+    // client secrets are SECRETS — set them via `.dev.vars` (local) or
+    // `wrangler secret put` (BETTER_AUTH_SECRET, GOOGLE_CLIENT_ID/SECRET,
+    // GITHUB_CLIENT_ID/SECRET), never commit them here.
+    "BETTER_AUTH_URL": "https://wepush.a.wd.ds.cc",
     // Driver selector — both run on Cloudflare Workers:
     //   "d1"     → uses the `DB` binding below
     //   "libsql" → uses LIBSQL_URL + LIBSQL_AUTH_TOKEN (Turso etc.)
     "DB_TYPE": "d1",
-    // LibSQL Configuration
-    // The URL for connecting to the LibSQL database. Default is a local SQLite file.
+    // LibSQL Configuration (dev / Turso).
     "LIBSQL_URL": "your-libsql-url",
     // The authentication token for accessing the LibSQL
     "LIBSQL_AUTH_TOKEN": "your-libsql-auth-token"

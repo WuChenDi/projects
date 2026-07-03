@@ -177,6 +177,7 @@
     "nav": {
       "overview": "Overview",
       "links": "Links",
+      "launchpads": "Launchpads",
       "analytics": "Analytics",
       "realtime": "Realtime",
       "check": "Health",
@@ -263,7 +264,9 @@
     },
     "qr": {
       "title": "QR code",
-      "download": "Download PNG"
+      "download": "Download PNG",
+      "downloadPng": "PNG",
+      "downloadSvg": "SVG"
     },
     "delete": {
       "title": "Delete link?",
@@ -281,6 +284,8 @@
       "random": "Random",
       "aiSlug": "AI slug",
       "aiOg": "AI fill",
+      "title": "Title",
+      "titlePlaceholder": "Optional display name",
       "comment": "Comment",
       "commentPlaceholder": "Optional note",
       "tags": "Tags",
@@ -291,8 +296,22 @@
         "og": "Open Graph",
         "device": "Device redirect",
         "geo": "Geo routing",
-        "utm": "UTM builder"
+        "utm": "UTM builder",
+        "qr": "QR code"
       },
+      "qrFg": "Foreground",
+      "qrBg": "Background",
+      "qrDot": "Dot style",
+      "qrDotRound": "Round",
+      "qrDotSquare": "Square",
+      "qrCorner": "Corner style",
+      "qrCornerRound": "Rounded",
+      "qrCornerSquare": "Square",
+      "qrErrorLevel": "Error correction",
+      "qrMargin": "Margin",
+      "qrLogo": "Logo",
+      "qrLogoUploaded": "Upload an image below",
+      "qrLogoClear": "Remove logo",
       "selectCountry": "Country",
       "utm": {
         "source": "Source",
@@ -328,6 +347,125 @@
       "aiFailed": "Failed to generate slug",
       "created": "Link created",
       "updated": "Link updated"
+    }
+  },
+  "launchpads": {
+    "title": "Launchpads",
+    "subtitle": "Hosted link-in-bio pages, published at /m/<slug>.",
+    "new": "New launchpad",
+    "searchPlaceholder": "Search launchpads…",
+    "clearSearch": "Clear search",
+    "empty": "No launchpads yet",
+    "actions": "Actions",
+    "viewList": "List view",
+    "viewGrid": "Grid view",
+    "status": {
+      "draft": "Draft",
+      "published": "Published"
+    },
+    "delete": {
+      "title": "Delete launchpad",
+      "desc": "Delete /m/{slug}? This cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "success": "Launchpad deleted"
+    },
+    "build": {
+      "hint": "Add, reorder, and toggle the blocks shown on your page.",
+      "addBlock": "Add block",
+      "empty": "No blocks yet. Add your first block to get started.",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "toggle": "Enable block",
+      "remove": "Remove block"
+    },
+    "block": {
+      "remove": "Remove",
+      "linkSearch": "Search links…",
+      "noLinks": "No links found",
+      "type": {
+        "header": "Header",
+        "socials": "Socials",
+        "button": "Button",
+        "shortlink": "Short link",
+        "image": "Image",
+        "text": "Text",
+        "divider": "Divider"
+      },
+      "header": {
+        "hint": "Profile shown at the top of the page.",
+        "name": "Name",
+        "bio": "Bio",
+        "avatar": "Avatar URL"
+      },
+      "socials": {
+        "platform": "Platform",
+        "add": "Add social"
+      },
+      "button": {
+        "label": "Label",
+        "target": "Destination",
+        "url": "External URL",
+        "pickLink": "Pick a link"
+      },
+      "shortlink": {
+        "add": "Add links"
+      },
+      "image": {
+        "src": "Image URL",
+        "link": "Link URL (optional)"
+      },
+      "text": {
+        "placeholder": "Write some text…"
+      },
+      "divider": {
+        "hint": "A horizontal divider — no settings."
+      }
+    },
+    "design": {
+      "preset": "Theme preset",
+      "primaryColor": "Primary color",
+      "customColor": "Custom color",
+      "buttonShape": "Button shape",
+      "presets": {
+        "default": "Default",
+        "midnight": "Midnight",
+        "sunset": "Sunset",
+        "forest": "Forest",
+        "rose": "Rose",
+        "ocean": "Ocean"
+      },
+      "shapes": {
+        "rounded": "Rounded",
+        "pill": "Pill",
+        "square": "Square"
+      }
+    },
+    "editor": {
+      "back": "Back",
+      "notFound": "Launchpad not found.",
+      "titlePlaceholder": "Untitled launchpad",
+      "slugLabel": "Public URL",
+      "slugPlaceholder": "auto",
+      "unsaved": "Unsaved changes",
+      "saveDraft": "Save draft",
+      "publish": "Publish",
+      "preview": "Live preview",
+      "saved": "Draft saved",
+      "published": "Launchpad published",
+      "tabs": {
+        "build": "Build",
+        "design": "Design",
+        "track": "Track"
+      }
+    },
+    "track": {
+      "saveFirst": "Save the launchpad to see its metrics.",
+      "notConfigured": "Analytics is not configured.",
+      "views": "Views",
+      "engagements": "Engagements",
+      "perBlock": "Per-block engagements",
+      "noBlocks": "No blocks to track yet."
     }
   },
   "analytics": {

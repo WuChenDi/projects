@@ -2,151 +2,70 @@
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
-SecureC 是一个基于 Next.js 的客户端加密工具，使用 XChaCha20-Poly1305 对称加密算法对文件和文本进行安全加解密。借助 `@noble/ciphers` 库实现加密，Argon2id 进行安全的基于密码的密钥派生，支持大文件分块处理，并通过 Web Workers 确保流畅的性能体验。
+纯客户端的文件与文本加密工具——数据永远不会离开浏览器。所有加解密都运行在 **Web Worker** 中，基于 `@cdlab996/cipher`（XChaCha20-Poly1305 + Argon2id，可选 ECIES 公钥模式），因此处理大文件时 UI 线程始终保持响应。
 
 预览：https://securec.pages.dev/
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/og-image.png)
 
-## 功能特性
+## Features
 
-- **多文件批量处理**：一次选择或拖拽多个文件，支持批量加解密，并为每个文件单独显示进度。
-- **文件与文本加密**：使用 XChaCha20-Poly1305 加密任意文件类型或文本消息。
-- **基于密码的安全性**：使用 Argon2id 结合随机盐从密码安全派生加密密钥。
-- **公钥加密**：支持 ECIES（椭圆曲线集成加密方案）进行公钥加密，可选数字签名。
-- **大文件分块**：以 10MB 为单位分块处理大文件，优化内存使用和性能。
-- **Web Worker 性能**：在 Web Worker 中执行加解密，保持 UI 响应流畅。
-- **自动检测**：自动检测已加密的文件（通过魔术字节）和加密文本，并切换到解密模式。
-- **处理历史**：追踪并管理所有加解密操作，支持持久化存储（IndexedDB + localStorage）。
-- **批量操作**：从处理历史中批量下载或删除多个结果。
-- **国际化**：通过 next-intl 完整支持中英文。
-- **进度反馈**：加解密过程中实时更新进度，提升用户体验。
-- **客户端隐私**：所有操作均在本地执行，数据永远不会离开您的设备。
+- **密码模式** — 使用 Argon2id（每次操作随机盐）从密码派生密钥，并用 XChaCha20-Poly1305 加密
+- **公钥模式（ECIES）** — 使用接收方公钥加密，可选数字签名进行身份验证
+- **文件与文本加密** — 加解密任意文件类型或纯文本消息；文本输出为 Base64
+- **大文件流式处理** — 文件以 10MB 为单位分块处理（`streamCrypto.encrypt/decrypt.withPassword`），无论文件多大都能保持内存占用平稳
+- **解密时自动检测模式** — 通过读取加密流的 header（magic bytes）检测已加密文件，粘贴的加密文本同样支持自动检测，并自动切换到解密模式
+- **Web Worker 执行**（`src/workers/cryptoWorker.ts`） — 加解密不会阻塞主线程，进度通过 `postMessage` 实时回传
+- **多文件批量处理** — 可排队处理多个文件，每个文件独立显示进度，支持增量添加/移除
+- **处理历史** — 每次操作都会被追踪并持久化存储：元数据存于 `localStorage`，二进制数据存于 **IndexedDB**（`src/lib/storage.ts`，基于 `@cdlab996/utils` 的 `createIDBStore`）；支持在历史记录中批量下载/删除
+- **国际化** — 通过 next-intl 支持中英文
 
-## 架构
+## Tech Stack
 
-```mermaid
-graph TD
-    A[用户]
-    A -->|交互| B[前端界面]
-    B -->|文件/文本输入| C[PasswordPage]
-    B -->|密码输入| D[PasswordInput]
-    C -->|触发加解密| E[Web Worker]
-    C -->|状态管理| F[Zustand Store + Persist]
-    C -->|文件提示| G[Sonner Toaster]
-    C -->|文本展示| H[Dialog]
-    E -->|分块处理| I[XChaCha20-Poly1305]
-    E -->|密钥派生| J[Argon2id]
-    E -->|公钥加密| K[ECIES]
-    I -->|加密数据| L[数据处理]
-    J -->|密钥| I
-    K -->|加密密钥| I
-    L -->|元数据| M[FileInfo]
-    L -->|文件下载| N[Blob Download]
-    L -->|文本输出| H
-    F -->|处理结果| O[处理历史]
-    F -->|二进制数据| P[IndexedDB 存储]
-    O -->|批量操作| Q[下载/删除]
-    O -->|查看结果| R[结果弹窗]
-    B -->|主题切换| S[Next-Themes]
-    B -->|语言切换| T[next-intl]
-    B -->|错误处理| U[错误页面]
+- **Framework** — Next.js (App Router)、React、TypeScript
+- **加密** — `@cdlab996/cipher`（XChaCha20-Poly1305、Argon2id、ECIES），在 Web Worker 中运行
+- **状态管理** — Zustand（`src/store/useProcessStore.ts`），通过 `zustand/middleware` 持久化
+- **存储** — IndexedDB（`@cdlab996/utils` 的 `createIDBStore`）存储二进制数据，`localStorage` 存储结果元数据
+- **UI** — `@cdlab996/ui`（shadcn/ui 组件）、Tailwind v4、Sonner 通知组件
+- **i18n** — next-intl（en / zh）
 
-    subgraph 前端层
-        B[前端界面]
-        C[PasswordPage]
-        D[PasswordInput]
-        F[Zustand Store + Persist]
-        G[Sonner Toaster]
-        H[Dialog]
-        O[处理历史]
-        Q[批量操作]
-        R[结果弹窗]
-        S[Next-Themes]
-        T[next-intl]
-        U[错误页面]
-    end
+## Getting Started
 
-    subgraph 加密层
-        E[Web Worker]
-        I[XChaCha20-Poly1305]
-        J[Argon2id]
-        K[ECIES]
-    end
+### Prerequisites
 
-    subgraph 数据层
-        L[数据处理]
-        M[FileInfo]
-        N[Blob Download]
-        P[IndexedDB 存储]
-    end
+- Node.js >= 20
+- pnpm >= 10
+
+### Install
+
+```bash
+# 在 monorepo 根目录执行
+pnpm install
 ```
 
-## 使用说明
+### Development
 
-### 加密文件或文本
+```bash
+pnpm --filter @cdlab996/securec dev
+```
 
-1. **选择模式**：
-   - 选择 **文件** 模式上传文件，或选择 **消息** 模式输入文本。
-   - 文件模式：点击上传区域或拖拽一个或多个文件（支持任意类型）。可以继续追加文件，也可以从列表中移除单个文件。
-   - 文本模式：在文本框中输入消息内容。
-2. **输入密码**：
-   - 在密码字段中输入一个安全密码（必填）。
-3. **点击加密**：
-   - 点击"加密"按钮，使用 XChaCha20-Poly1305 对文件或文本进行处理。
-   - 所有选中的文件将依次排队处理，每个文件都有独立的进度卡片。
-   - 文件以 10MB 为单位分块处理；文本作为单个块加密，输出为 Base64。
-   - 处理完成后，结果将显示在处理历史面板中。
-   - 文件：点击历史记录中的"下载"按钮保存加密文件（后缀为 `.enc`）。
-   - 文本：点击"查看"按钮在弹窗中查看加密文本（支持复制和下载）。
+开发服务器运行于 `http://securec.localhost:3355`（通过 `@dotns/nsl`）。
 
-### 解密文件或文本
+### 生成 ECIES 密钥对
 
-1. **选择模式**：
-   - 文件模式：上传 `.enc` 文件，应用会自动检测并切换到解密模式。
-   - 文本模式：粘贴 Base64 编码的加密文本，同样支持自动检测。
-2. **输入密码**：
-   - 输入加密时使用的密码。
-3. **点击解密**：
-   - 点击"解密"按钮对文件或文本进行解密。
-   - 密码正确时，结果将显示在处理历史中。
-   - 文件：解密后的文件可供下载（如有原始扩展名则保留）。
-   - 文本：解密后的消息显示在弹窗中。
-   - 密码错误时，显示"解密失败"错误提示。
+```bash
+pnpm --filter @cdlab996/securec gk
+```
 
-### 管理处理历史
+运行 `scripts/generateKeys.js`——通过助记词派生 BIP32 密钥对（`@scure/bip32` / `@scure/bip39`），并演示两方之间的 ECIES 加解密流程，将公钥打印到控制台。
 
-1. **持久化存储**：
-   - 已完成的结果自动持久化，刷新页面后处理历史仍然保留。
-   - 元数据存储在 localStorage；二进制数据存储在 IndexedDB。
-2. **查看结果**：
-   - 所有加解密操作均记录在处理历史面板中。
-   - 每条记录显示：文件/文本名称、操作类型（加密/解密）、状态、大小和预览图标。
-3. **下载结果**：
-   - 点击单条记录的下载图标进行单独下载。
-   - 点击"全部下载"批量下载所有已完成的结果。
-4. **删除结果**：
-   - 点击移除图标删除单条记录。
-5. **清空全部**：
-   - 点击"清空全部"清除整个处理历史。
+### Build / Deploy
 
-## 安全注意事项
+```bash
+pnpm --filter @cdlab996/securec build      # next build
+pnpm --filter @cdlab996/securec build:cf   # @cloudflare/next-on-pages
+```
 
-- **客户端加密**：所有操作均在本地 Web Worker 中执行，敏感数据（如密码、文件）永远不会离开您的设备。
-- **强加密算法**：使用 XChaCha20-Poly1305 认证加密，256 位密钥，提供最高级别的安全性。
-- **密码安全**：请使用强密码并妥善保存。密码丢失将导致文件或文本无法解密。
-- **密钥派生**：使用 Argon2id 进行基于密码的密钥派生，参数：时间成本 3、内存成本 1280 KiB、并行度 4。
-- **大文件处理**：分块处理（10MB/块）确保高效处理大文件，不会占用过多内存。
-- **随机盐与随机数**：每次加密均使用随机盐（用于 Argon2id）和随机数（用于 XChaCha20-Poly1305），增强安全性。
-- **公钥加密**：可选 ECIES 支持，允许使用接收方的公钥加密，并可附加数字签名进行身份验证。
-- **HTTPS**：生产环境请通过 HTTPS 部署 SecureC，以确保文件上传和下载的安全。
-- **客户端风险**：请确保浏览器未安装可访问密码或文件等敏感数据的恶意软件或扩展程序。
-- **无服务端存储**：由于所有处理均在客户端完成，数据不会存储在服务器上，但用户需自行备份加密文件。
+## License
 
-## 致谢
-
-加密算法来源：https://ns.io/
-
-## 📜 许可证
-
-[MIT](./LICENSE) License © 2025-PRESENT [wudi](https://github.com/WuChenDi)
+[MIT](../../LICENSE) License © 2025-PRESENT [wudi](https://github.com/WuChenDi)

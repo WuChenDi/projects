@@ -4,6 +4,7 @@
 const RESERVED = new Set([
   'dashboard',
   'api',
+  'm',
   '_next',
   '_vercel',
   'assets',

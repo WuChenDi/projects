@@ -51,3 +51,8 @@ Each task is a single line linking to its detail file. All detailed information 
 - [x] [**FEAT-018 Sink — upgrade AI slug quality (few-shot + robust parsing)**](FEAT-018.md) `P3`
 - [x] [**FEAT-019 flnk — make tags functional (server-side filter, multi-tag, batch, overview)**](FEAT-019.md) `P1`
 - [x] [**FEAT-020 flnk — tags as a dictionary table + inline tag-ID column**](FEAT-020.md) `P1`
+- [x] [**FEAT-021 flnk — link display title (management name)**](FEAT-021.md) `P2`
+- [x] [**FEAT-022 flnk — QR code styling + scan-source tracking**](FEAT-022.md) `P2`
+- [x] [**FEAT-023 flnk — launchpads: data model + CRUD API**](FEAT-023.md) `P1`
+- [x] [**FEAT-024 flnk — launchpads: public /m/<slug> render + analytics**](FEAT-024.md) `P1`
+- [x] [**FEAT-025 flnk — launchpads: dashboard editor (Build/Design/Track)**](FEAT-025.md) `P1`

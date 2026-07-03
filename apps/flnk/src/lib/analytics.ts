@@ -45,6 +45,13 @@ interface AccessLog {
   deviceType: string
   colo: string
   domain: string
+  // 'qr' when the visit came from a styled QR (URL carries `?qr=1`), else
+  // 'link' for a plain click.
+  source: string
+  // Entity kind for the data point: 'link' for a short-link redirect,
+  // 'launchpad' for a `/m/<slug>` page view, 'launchpad_block' for a launchpad
+  // block/button click. Append-only blob19 — legacy points lack it (read as '').
+  type: string
   latitude: number
   longitude: number
 }
@@ -55,6 +62,7 @@ export function extractAccessLog(
   slug: string,
   url: string,
   cf: IncomingRequestCfProperties | undefined,
+  type = 'link',
 ): AccessLog {
   const ua = request.headers.get('user-agent') || ''
   const uaResult = new UAParser(ua).getResult()
@@ -77,6 +85,9 @@ export function extractAccessLog(
       .split(',')[0]
       ?.split('-')[0] || 'en'
 
+  const source =
+    new URL(request.url).searchParams.get('qr') === '1' ? 'qr' : 'link'
+
   return {
     slug,
     url,
@@ -95,6 +106,8 @@ export function extractAccessLog(
     deviceType: uaResult.device?.type || 'desktop',
     colo: props.colo || 'Unknown',
     domain: new URL(request.url).hostname,
+    source,
+    type,
     latitude: Number(props.latitude) || 0,
     longitude: Number(props.longitude) || 0,
   }
@@ -153,6 +166,8 @@ export async function writeAccessLog(
         data.deviceType,
         data.colo,
         data.domain,
+        data.source,
+        data.type,
       ],
       doubles: [data.latitude, data.longitude],
     })

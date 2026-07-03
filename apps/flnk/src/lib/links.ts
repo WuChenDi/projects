@@ -664,6 +664,7 @@ export async function createLink(
     id: newId(),
     domain,
     url: input.url,
+    title: input.title ?? '',
     comment: input.comment ?? '',
     createdBy,
     config,
@@ -772,6 +773,7 @@ export async function updateLink(
         slug,
         domain,
         url: input.url ?? current.url,
+        title: input.title ?? current.title,
         comment: input.comment ?? current.comment,
         config,
         // Only rewrite the tag column when the caller supplied tags.
@@ -926,6 +928,7 @@ export async function importLinks(
         slug,
         domain,
         url: item.url,
+        title: item.title ?? '',
         comment: item.comment ?? '',
         config: (item.config ?? {}) as LinkConfig,
         tags: tagNamesByItem[idx]!.map((n) => tagIdByName.get(n)).filter(

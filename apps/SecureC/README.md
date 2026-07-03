@@ -2,7 +2,7 @@
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
-SecureC is a Next.js-based client-side encryption tool designed to securely encrypt and decrypt files and text messages using XChaCha20-Poly1305 symmetric encryption. It leverages the `@noble/ciphers` library for encryption and Argon2id for secure password-based key derivation, supports chunked processing for large files, and ensures smooth performance with Web Workers.
+Client-side file and text encryption — nothing ever leaves the browser. All crypto runs in a **Web Worker** on top of `@cdlab996/cipher` (XChaCha20-Poly1305 + Argon2id, with optional ECIES public-key mode), so the UI thread stays responsive even on large files.
 
 Preview: https://securec.pages.dev/
 
@@ -10,151 +10,62 @@ Preview: https://securec.pages.dev/
 
 ## Features
 
-- **Multi-File Batch Processing**: Select or drag-and-drop multiple files at once for batch encryption/decryption with individual progress tracking.
-- **File and Text Encryption**: Encrypt and decrypt any file type or text messages using XChaCha20-Poly1305.
-- **Password-Based Security**: Securely derive encryption keys from passwords using Argon2id with random salts.
-- **Public Key Encryption**: Support ECIES (Elliptic Curve Integrated Encryption Scheme) for public key encryption with optional digital signatures.
-- **Large File Chunking**: Process large files in 10MB chunks to optimize memory usage and performance.
-- **Web Worker Performance**: Run encryption and decryption in a Web Worker to keep the UI responsive.
-- **Auto-Detection**: Automatically detects encrypted files (by magic bytes) and encrypted text, switching to decrypt mode.
-- **Processing History**: Track and manage all encryption/decryption operations with persistent storage (IndexedDB + localStorage).
-- **Batch Operations**: Download or delete multiple results at once from the processing history.
-- **Internationalization**: Full i18n support with English and Chinese (Simplified) via next-intl.
-- **Progress Feedback**: Real-time progress updates during encryption/decryption for a better user experience.
-- **Client-Side Privacy**: All operations are performed locally, ensuring data never leaves your device.
+- **Password mode** — derive a key from a password with Argon2id (random salt per operation) and encrypt with XChaCha20-Poly1305
+- **Public-key mode (ECIES)** — encrypt to a recipient's public key, with optional digital signatures for authentication
+- **File and text encryption** — encrypt/decrypt any file type or a plain-text message; text output is Base64
+- **Large-file streaming** — files are processed in 10MB chunks (`streamCrypto.encrypt/decrypt.withPassword`) to keep memory usage flat regardless of file size
+- **Auto mode-detect on decrypt** — reads the cipher stream header (magic bytes) to detect an encrypted file, and does the same for pasted encrypted text, switching the UI to decrypt mode automatically
+- **Web Worker execution** (`src/workers/cryptoWorker.ts`) — encryption/decryption never blocks the main thread; progress is streamed back via `postMessage`
+- **Multi-file batch processing** — queue multiple files with per-file progress, add/remove files incrementally
+- **Processing history** — every operation is tracked with persistent storage: metadata in `localStorage`, binary data in **IndexedDB** (`src/lib/storage.ts`, via `@cdlab996/utils`'s `createIDBStore`); batch download/delete from history
+- **Internationalization** — English and Chinese via `next-intl`
 
-## Architecture
+## Tech Stack
 
-```mermaid
-graph TD
-    A[User]
-    A -->|Interaction| B[Frontend Interface]
-    B -->|File/Text Input| C[PasswordPage]
-    B -->|Password Input| D[PasswordInput]
-    C -->|Trigger Encryption/Decryption| E[Web Worker]
-    C -->|State Management| F[Zustand Store + Persist]
-    C -->|File Prompt| G[Sonner Toaster]
-    C -->|Text Display| H[Dialog]
-    E -->|Chunk Processing| I[XChaCha20-Poly1305]
-    E -->|Key Derivation| J[Argon2id]
-    E -->|Public Key Encryption| K[ECIES]
-    I -->|Encrypted Data| L[Data Processing]
-    J -->|Key| I
-    K -->|Encrypted Key| I
-    L -->|Metadata| M[FileInfo]
-    L -->|File Download| N[Blob Download]
-    L -->|Text Output| H
-    F -->|Process Results| O[Processing History]
-    F -->|Binary Data| P[IndexedDB Storage]
-    O -->|Batch Operations| Q[Download/Delete]
-    O -->|View Results| R[Result Dialog]
-    B -->|Theme Switching| S[Next-Themes]
-    B -->|Language Switching| T[next-intl]
-    B -->|Error Handling| U[Error Page]
+- **Framework** — Next.js (App Router), React, TypeScript
+- **Encryption** — `@cdlab996/cipher` (XChaCha20-Poly1305, Argon2id, ECIES), run inside a Web Worker
+- **State** — Zustand (`src/store/useProcessStore.ts`), persisted via `zustand/middleware`
+- **Storage** — IndexedDB (`@cdlab996/utils` `createIDBStore`) for binary payloads, `localStorage` for result metadata
+- **UI** — `@cdlab996/ui` (shadcn/ui primitives), Tailwind v4, Sonner for toasts
+- **i18n** — next-intl (en / zh)
 
-    subgraph Frontend Layer
-        B[Frontend Interface]
-        C[PasswordPage]
-        D[PasswordInput]
-        F[Zustand Store + Persist]
-        G[Sonner Toaster]
-        H[Dialog]
-        O[Processing History]
-        Q[Batch Operations]
-        R[Result Dialog]
-        S[Next-Themes]
-        T[next-intl]
-        U[Error Page]
-    end
+## Getting Started
 
-    subgraph Encryption Layer
-        E[Web Worker]
-        I[XChaCha20-Poly1305]
-        J[Argon2id]
-        K[ECIES]
-    end
+### Prerequisites
 
-    subgraph Data Layer
-        L[Data Processing]
-        M[FileInfo]
-        N[Blob Download]
-        P[IndexedDB Storage]
-    end
+- Node.js >= 20
+- pnpm >= 10
+
+### Install
+
+```bash
+# From the monorepo root
+pnpm install
 ```
 
-## Instructions
+### Development
 
-### Encrypting Files or Text
+```bash
+pnpm --filter @cdlab996/securec dev
+```
 
-1. **Select Mode**:
-   - Choose **File** mode to upload files or **Messages** mode to input text.
-   - For files, click the upload area or drag and drop one or more files (any type supported). You can add more files incrementally, and remove individual files from the list.
-   - For text, enter the message in the provided textarea.
-2. **Enter Password**:
-   - Input a secure password in the password field (required).
-3. **Click Encrypt**:
-   - Click the "Encrypt" button to process the files or text using XChaCha20-Poly1305 encryption.
-   - All selected files are queued and processed sequentially, each with its own progress card.
-   - Files are processed in 10MB chunks; text is encrypted as a single block and output as Base64.
-   - After processing, results appear in the processing history panel.
-   - For files, click the "Download" button in the history to save the encrypted file (`.enc` suffix).
-   - For text, click the "View" button to see the encrypted text in a dialog (with copy/download options).
+Dev server runs at `http://securec.localhost:3355` (via `@dotns/nsl`).
 
-### Decrypting Files or Text
+### Generate ECIES key pairs
 
-1. **Select Mode**:
-   - Choose **File** mode for encrypted files (`.enc`) or **Messages** mode for encrypted text (Base64).
-   - For files, upload the `.enc` file(s). The app automatically detects encrypted content and switches to decrypt mode.
-   - For text, paste the Base64-encoded encrypted text. Auto-detection also works for encrypted text.
-2. **Enter Password**:
-   - Input the same password used for encryption.
-3. **Click Decrypt**:
-   - Click the "Decrypt" button to decrypt the files or text.
-   - If the password is correct, results appear in the processing history.
-   - For files, the decrypted file is available for download (with original extension if available).
-   - For text, the decrypted message is shown in a dialog.
-   - If the password is incorrect, a "Decryption failed" error is displayed.
+```bash
+pnpm --filter @cdlab996/securec gk
+```
 
-### Managing Processing History
+Runs `scripts/generateKeys.js` — derives BIP32 key pairs from mnemonics (`@scure/bip32` / `@scure/bip39`) and demonstrates an ECIES encrypt/decrypt round trip between two parties, printing the public keys to the console.
 
-1. **Persistent Storage**:
-   - Completed results are automatically persisted. Refreshing the page preserves your processing history.
-   - Metadata is stored in localStorage; binary data is stored in IndexedDB.
-2. **View Results**:
-   - All encryption/decryption operations are tracked in the processing history panel.
-   - Each entry shows: file/text name, action (encrypt/decrypt), status, size, and a preview icon.
-3. **Download Results**:
-   - Click the download icon for individual results.
-   - Click "Download All" for batch downloads of all completed results.
-4. **Delete Results**:
-   - Click the remove icon to delete individual results.
-5. **Clear All**:
-   - Click "Clear All" to clear the entire processing history.
+### Build / Deploy
 
-## Security Considerations
+```bash
+pnpm --filter @cdlab996/securec build      # next build
+pnpm --filter @cdlab996/securec build:cf   # @cloudflare/next-on-pages
+```
 
-- **Client-Side Encryption**: All operations are performed locally using Web Workers, ensuring sensitive data (e.g., passwords, files) never leaves your device.
-- **Strong Encryption**: Uses XChaCha20-Poly1305 authenticated encryption with 256-bit keys for maximum security.
-- **Password Security**: Use strong, unique passwords and store them securely. A lost password will prevent decryption of files or text.
-- **Key Derivation**: Argon2id is used for password-based key derivation with configurable parameters (time cost: 3, memory cost: 1280 KiB, parallelism: 4).
-- **Large File Handling**: Chunked processing (10MB chunks) ensures efficient handling of large files without excessive memory usage.
-- **Random Salts and Nonces**: Each encryption uses a random salt (for Argon2id) and nonce (for XChaCha20-Poly1305) to enhance security.
-- **Public Key Encryption**: Optional ECIES support allows encryption to a recipient's public key with optional digital signatures for authentication.
-- **HTTPS**: Deploy SecureC over HTTPS in production to secure file uploads and downloads.
-- **Client-Side Risks**: Ensure your browser is free from malware or extensions that could access sensitive data like passwords or files.
-- **No Server Storage**: Since all processing is client-side, no data is stored on servers, but users must manage their own backups of encrypted files.
+## License
 
-## Thanks
-
-The encryption algorithm is sourced from: https://ns.io/
-
-<!-- - https://pastebin.com/
-- https://defuse.ca/pastebin.htm
-- https://cowtransfer.com/
-- https://www.transfernow.net/en
-- https://github.com/nsiod/share
-- https://about.encl.io/ -->
-
-## 📜 License
-
-[MIT](./LICENSE) License © 2025-PRESENT [wudi](https://github.com/WuChenDi)
+[MIT](../../LICENSE) License © 2025-PRESENT [wudi](https://github.com/WuChenDi)

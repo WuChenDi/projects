@@ -21,6 +21,21 @@ const GeoSchema = z.preprocess(
   ),
 )
 
+// Per-link QR style. `logo` may be an R2 asset path (`/api/asset/…`) or an
+// absolute image URL, so it's a bounded string rather than a strict URL.
+const HexColor = z
+  .string()
+  .regex(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/u, 'Invalid hex color')
+const QrSchema = z.object({
+  fgColor: HexColor,
+  bgColor: HexColor,
+  logo: z.string().trim().max(2048).optional(),
+  dotStyle: z.enum(['dot', 'square']).optional(),
+  cornerStyle: z.enum(['rounded', 'square']).optional(),
+  errorLevel: z.enum(['L', 'M', 'Q', 'H']).optional(),
+  margin: z.number().int().min(0).max(16).optional(),
+})
+
 // Link behaviour config as sent by the dashboard (no passwordHash — the server
 // derives that from the optional plaintext `password` field).
 export const LinkConfigInputSchema = z.object({
@@ -35,6 +50,7 @@ export const LinkConfigInputSchema = z.object({
   unsafe: z.boolean().optional(),
   maxVisits: z.number().int().positive().optional(),
   disabled: z.boolean().optional(),
+  qr: QrSchema.optional(),
 })
 
 const slugField = z
@@ -50,6 +66,8 @@ export const CreateLinkSchema = z.object({
   url: z.url('Please provide a valid URL').max(2048),
   slug: slugField.optional(),
   domain: z.string().trim().max(255).optional(),
+  // Management display name (primary label in the dashboard).
+  title: z.string().trim().max(256).optional(),
   comment: z.string().trim().max(2048).optional(),
   tags: tagsField.optional(),
   // Epoch milliseconds; null/omitted means never expires.
@@ -103,6 +121,7 @@ const ImportConfigSchema = z
     maxVisits: z.number().int().positive().optional(),
     disabled: z.boolean().optional(),
     passwordHash: z.string().optional(),
+    qr: QrSchema.optional(),
   })
   .optional()
 
@@ -112,6 +131,7 @@ export const ImportLinkSchema = z.object({
   slug: z.string().trim().min(1).max(2048),
   domain: z.string().trim().max(255).optional(),
   url: z.url().max(2048),
+  title: z.string().max(256).optional(),
   comment: z.string().max(2048).optional(),
   tags: tagsField.optional(),
   config: ImportConfigSchema,

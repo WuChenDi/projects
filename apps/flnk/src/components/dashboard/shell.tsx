@@ -23,6 +23,7 @@ import {
   BarChart3,
   Database,
   Link2,
+  Rocket,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -44,6 +45,12 @@ interface NavItem {
 const MAIN_ITEMS: NavItem[] = [
   { href: '/dashboard', key: 'overview', icon: BarChart3, exact: true },
   { href: '/dashboard/links', key: 'links', icon: Link2, exact: false },
+  {
+    href: '/dashboard/launchpads',
+    key: 'launchpads',
+    icon: Rocket,
+    exact: false,
+  },
   {
     href: '/dashboard/analytics',
     key: 'analytics',

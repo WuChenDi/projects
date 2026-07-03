@@ -12,6 +12,13 @@ A Telegram Baccarat game bot deployed on Cloudflare Workers with Durable Objects
 - Per-group game isolation via Durable Objects
 - Game history persistence via Durable Objects SQLite
 
+## Tech Stack
+
+- **Framework** — Hono (Cloudflare Workers)
+- **Bot framework** — Grammy
+- **State** — Durable Objects (`BaccaratGameRoom`, embedded SQLite via `new_sqlite_classes`)
+- **Language** — TypeScript
+
 ## Bot Commands
 
 | Command | Description |
@@ -128,20 +135,42 @@ Comma-separated list of Telegram group chat IDs that are allowed to use the bot.
 
 > If `ALLOWED_CHAT_IDS` is not set, the bot will accept requests from any group.
 
-## Development
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20+
+- pnpm
+- A Telegram bot token (see [`BOT_TOKEN`](#bot_token) above)
+
+### Install
 
 ```bash
-# Install dependencies
 pnpm install
+```
 
-# Local development
+### Development
+
+```bash
 pnpm --filter @cdlab996/baccarat dev
+```
 
-# Deploy
+Runs `wrangler dev` via `nsl` at `http://baccarat.localhost:3355`.
+
+### Build / Deploy
+
+```bash
 pnpm --filter @cdlab996/baccarat deploy
+```
 
-# Set webhook
+Runs `wrangler deploy --minify`. After deploying, point Telegram at the worker's webhook:
+
+```bash
 curl -X POST https://your-worker.workers.dev/set-webhook \
   -H "Content-Type: application/json" \
   -d '{"url": "https://your-worker.workers.dev/webhook"}'
 ```
+
+## License
+
+[MIT](../../LICENSE) License &copy; 2026-PRESENT [wudi](https://github.com/WuChenDi)

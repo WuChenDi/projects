@@ -14,6 +14,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     slug: l.slug,
     domain: l.domain,
     url: l.url,
+    title: l.title,
     comment: l.comment,
     tags: l.tags,
     config: l.config,
