@@ -10,9 +10,15 @@ name: Deploy wepush
 #                               only needed when wrangler.jsonc has
 #                               DB_TYPE=libsql (also used by the migration
 #                               step). Leave unset for d1.
-# One-time Worker secrets NOT managed here (set once via `wrangler secret put`,
-# they persist across deploys): BETTER_AUTH_SECRET, GOOGLE_CLIENT_ID/SECRET,
-# GITHUB_CLIENT_ID/SECRET.
+#   WEPUSH_BETTER_AUTH_SECRET   Worker runtime secret — better-auth signing key
+#   WEPUSH_GOOGLE_CLIENT_ID     Worker runtime secret — Google OAuth app
+#   WEPUSH_GOOGLE_CLIENT_SECRET Worker runtime secret — Google OAuth app
+#   WEPUSH_GITHUB_CLIENT_ID     Worker runtime secret — GitHub OAuth app
+#   WEPUSH_GITHUB_CLIENT_SECRET Worker runtime secret — GitHub OAuth app
+# The auth secrets are REQUIRED for sign-in to work: they are not vars in
+# wrangler.jsonc, and CI has no local .env, so the deployed Worker only sees
+# them via the post-deploy secret sync below (values live in apps/wepush/.env
+# for local dev).
 on:
   workflow_dispatch:
     inputs:
@@ -106,10 +112,20 @@ jobs:
         working-directory: apps/wepush
         env:
           WEPUSH_LIBSQL_AUTH_TOKEN: ${{ secrets.WEPUSH_LIBSQL_AUTH_TOKEN }}
+          WEPUSH_BETTER_AUTH_SECRET: ${{ secrets.WEPUSH_BETTER_AUTH_SECRET }}
+          WEPUSH_GOOGLE_CLIENT_ID: ${{ secrets.WEPUSH_GOOGLE_CLIENT_ID }}
+          WEPUSH_GOOGLE_CLIENT_SECRET: ${{ secrets.WEPUSH_GOOGLE_CLIENT_SECRET }}
+          WEPUSH_GITHUB_CLIENT_ID: ${{ secrets.WEPUSH_GITHUB_CLIENT_ID }}
+          WEPUSH_GITHUB_CLIENT_SECRET: ${{ secrets.WEPUSH_GITHUB_CLIENT_SECRET }}
         run: |
           jq -n '
             [
-              {key: "LIBSQL_AUTH_TOKEN", value: env.WEPUSH_LIBSQL_AUTH_TOKEN}
+              {key: "LIBSQL_AUTH_TOKEN",    value: env.WEPUSH_LIBSQL_AUTH_TOKEN},
+              {key: "BETTER_AUTH_SECRET",   value: env.WEPUSH_BETTER_AUTH_SECRET},
+              {key: "GOOGLE_CLIENT_ID",     value: env.WEPUSH_GOOGLE_CLIENT_ID},
+              {key: "GOOGLE_CLIENT_SECRET", value: env.WEPUSH_GOOGLE_CLIENT_SECRET},
+              {key: "GITHUB_CLIENT_ID",     value: env.WEPUSH_GITHUB_CLIENT_ID},
+              {key: "GITHUB_CLIENT_SECRET", value: env.WEPUSH_GITHUB_CLIENT_SECRET}
             ]
             | map(select(.value != null and .value != ""))
             | from_entries

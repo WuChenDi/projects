@@ -18,7 +18,7 @@
     // client secrets are SECRETS — set them via `.dev.vars` (local) or
     // `wrangler secret put` (BETTER_AUTH_SECRET, GOOGLE_CLIENT_ID/SECRET,
     // GITHUB_CLIENT_ID/SECRET), never commit them here.
-    "BETTER_AUTH_URL": "https://wepush.a.wd.ds.cc",
+    "BETTER_AUTH_URL": "https://wepush.cdlab.workers.dev",
     // Driver selector — both run on Cloudflare Workers:
     //   "d1"     → uses the `DB` binding below
     //   "libsql" → uses LIBSQL_URL + LIBSQL_AUTH_TOKEN (Turso etc.)
