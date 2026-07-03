@@ -12,9 +12,11 @@
     "binding": "ASSETS",
     "directory": ".open-next/assets"
   },
-  "vars": {
-    "PASSWORDS": ""
-  },
+  // PASSWORDS (comma-separated access passwords for /api/generate; empty =
+  // open access) is credential-valued, so it is NOT a var here: defined as a
+  // var it would shadow the Worker secret on every deploy. Set it via `.env`
+  // (local) or the deploy workflow's secret sync (prod, GitHub secret
+  // TEXT2IMG_PASSWORDS).
   "images": {
     "binding": "IMAGES"
   },

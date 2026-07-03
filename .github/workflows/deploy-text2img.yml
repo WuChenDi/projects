@@ -1,0 +1,81 @@
+name: Deploy text2img
+
+# Manual trigger only — this repo deploys explicitly (CI does not auto-deploy).
+# Run from the Actions tab, optionally choosing a ref to deploy.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN        deploy auth for wrangler/OpenNext
+#   CLOUDFLARE_ACCOUNT_ID       deploy auth for wrangler/OpenNext
+#   TEXT2IMG_PASSWORDS          Worker runtime secret — comma-separated access
+#                               passwords for /api/generate; optional, leave
+#                               unset for open access
+# No database — there is no migrations step; the app only needs the Workers AI
+# + Images bindings declared in wrangler.jsonc.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-text2img
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Cloudflare credentials used by wrangler / OpenNext to deploy the Worker.
+      # Add these as repository secrets (Settings → Secrets and variables → Actions).
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          # Kept in sync with the repo-root .node-version (currently 24).
+          node-version-file: .node-version
+          cache: pnpm
+
+      # Also builds workspace packages via the root `prepare` script.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # `run` is required: `deploy` is also a pnpm built-in command, and
+      # without `run` pnpm invokes the built-in (which demands a target dir)
+      # instead of the package script.
+      - name: Build & deploy
+        run: pnpm --filter @cdlab996/text2img run deploy
+
+      # Sync Worker runtime secrets from GitHub secrets (idempotent, runs every
+      # deploy). Runs AFTER the deploy: a secret cannot be created while the
+      # live Worker still carries a plain-text var of the same name (API error
+      # 10053) — deploying first replaces the binding set from wrangler.jsonc,
+      # which no longer defines PASSWORDS as a var. Empty values are skipped so
+      # an unset GitHub secret never wipes an existing Worker secret.
+      - name: Sync Worker secrets
+        working-directory: apps/text2img
+        env:
+          TEXT2IMG_PASSWORDS: ${{ secrets.TEXT2IMG_PASSWORDS }}
+        run: |
+          jq -n '
+            [
+              {key: "PASSWORDS", value: env.TEXT2IMG_PASSWORDS}
+            ]
+            | map(select(.value != null and .value != ""))
+            | from_entries
+          ' > "$RUNNER_TEMP/text2img-secrets.json"
+          if [ "$(jq 'length' "$RUNNER_TEMP/text2img-secrets.json")" -eq 0 ]; then
+            echo "No Worker secrets provided — skipping sync"
+          else
+            jq 'keys' "$RUNNER_TEMP/text2img-secrets.json"
+            pnpm exec wrangler secret bulk "$RUNNER_TEMP/text2img-secrets.json"
+          fi
+          rm -f "$RUNNER_TEMP/text2img-secrets.json"
