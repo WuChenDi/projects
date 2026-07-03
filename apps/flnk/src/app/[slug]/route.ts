@@ -6,6 +6,7 @@ import { extractAccessLog, writeAccessLog } from '@/lib/analytics'
 import { getConfig } from '@/lib/env'
 import { ogPageHtml, passwordFormHtml, unsafeWarningHtml } from '@/lib/html'
 import {
+  disableLinkOnVisitCap,
   isExpired,
   purgeLink,
   resolveLink,
@@ -57,11 +58,13 @@ async function redirectTo(
   // destination, which answers 405.
   seeOther = false,
 ): Promise<Response> {
-  // Click-limit expiry: over the maxVisits cap → treat like a time-expired link
-  // (purge cache + serve not-found) before redirecting. Increments the counter
-  // on the side-effect path when still under the cap.
+  // Click-limit expiry: over the maxVisits cap → persist the disable to D1
+  // (so the cap survives KV cache expiry/rebuild), then purge the cache and
+  // serve not-found. Increments the counter on the side-effect path when still
+  // under the cap.
   if (await visitLimitReached(env, link, ctx)) {
     logger.info(`Slug visit limit reached: ${slug}`)
+    await disableLinkOnVisitCap(env, link)
     await purgeLink(env, new URL(request.url).hostname, slug)
     return notFound(request, env)
   }

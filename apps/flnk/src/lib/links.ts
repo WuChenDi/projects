@@ -233,6 +233,25 @@ export async function visitLimitReached(
   return false
 }
 
+// Persist the visit-cap hit: mark the link disabled in D1 so the cap survives
+// KV cache expiry/rebuild (otherwise the counter restarts from 0 and the link
+// serves another N visits). `json_set` patches the config in place — the
+// caller's `link` may come from a stale KV copy, so we must not overwrite the
+// whole config with it.
+export async function disableLinkOnVisitCap(
+  env: CloudflareEnv,
+  link: Link,
+): Promise<void> {
+  const db = await getDb(env)
+  await db
+    .update(links)
+    .set({
+      config: sql`json_set(${links.config}, '$.disabled', json('true'))`,
+      updatedAt: new Date(),
+    })
+    .where(eq(links.id, link.id))
+}
+
 // Resolve a link: KV cache → D1 fallback → fill cache. Returns null when the
 // slug doesn't exist (caller handles not-found / expiry).
 export async function resolveLink(
