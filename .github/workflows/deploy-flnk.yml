@@ -51,7 +51,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Kept in sync with the repo-root .node-version (currently 24).
+          node-version-file: .node-version
           cache: pnpm
 
       # Also builds workspace packages via the root `prepare` script.
