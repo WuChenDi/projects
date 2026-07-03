@@ -1,14 +1,50 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { APIError } from 'better-auth/api'
 import { nextCookies } from 'better-auth/next-js'
 import { NextResponse } from 'next/server'
 import * as schema from '@/database/schema'
 import { getDb } from '@/lib/db'
+import { getConfig } from '@/lib/env'
+import { logger } from '@/lib/logger'
 
-// Built per-request: on Cloudflare Workers the D1 binding (and process.env vars)
-// are only populated inside a request, so the auth instance can't live at module
-// top. Cheap enough to construct on each auth call.
+// One-per-isolate reminder that the console is open to any social account.
+let warnedAllowAll = false
+
+// Allow-list gate shared by sign-up (databaseHooks) and requireSession. An
+// empty ALLOWED_EMAILS keeps the historical allow-all behavior.
+function isEmailAllowed(email: string): boolean {
+  const { allowedEmails } = getConfig()
+  if (allowedEmails.length === 0) {
+    if (!warnedAllowAll) {
+      warnedAllowAll = true
+      logger.warn(
+        'ALLOWED_EMAILS is not set — any Google/GitHub account can sign in and gain full access',
+      )
+    }
+    return true
+  }
+  return allowedEmails.includes(email.toLowerCase())
+}
+
+// Memoized per isolate: the instance can't be built at module top (on
+// Cloudflare Workers the D1 binding and process.env vars only exist inside a
+// request), but once built it is safe to reuse — getDb() is keyed-cached and
+// the social creds are stable per deployment.
+let authPromise: ReturnType<typeof buildAuth> | null = null
+
 export async function getAuth() {
+  if (!authPromise) {
+    authPromise = buildAuth().catch((error) => {
+      // Don't cache a failed build (e.g. transient db init error).
+      authPromise = null
+      throw error
+    })
+  }
+  return authPromise
+}
+
+async function buildAuth() {
   const db = await getDb()
 
   const googleEnabled =
@@ -46,6 +82,21 @@ export async function getAuth() {
         },
       }),
     },
+    // Block user creation (first social sign-in) for emails outside the
+    // allow-list — with login == registration this is the sign-up gate.
+    databaseHooks: {
+      user: {
+        create: {
+          before: async (user) => {
+            if (!isEmailAllowed(user.email)) {
+              throw new APIError('FORBIDDEN', {
+                message: 'Sign-up is disabled for this email address',
+              })
+            }
+          },
+        },
+      },
+    },
     plugins: [nextCookies()],
   })
 }
@@ -75,5 +126,17 @@ export async function requireSession(request: Request): Promise<AuthResult> {
       ),
     }
   }
-  return { ok: true, user: session.user as SessionUser }
+  const user = session.user as SessionUser
+  // Defense in depth: sessions created before the allow-list was set (or
+  // before it was tightened) must not keep API access.
+  if (!isEmailAllowed(user.email)) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: 'Access denied: email is not on the allow-list' },
+        { status: 403 },
+      ),
+    }
+  }
+  return { ok: true, user }
 }

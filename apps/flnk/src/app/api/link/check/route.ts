@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import * as z from 'zod'
 import { requireSession } from '@/lib/auth'
 import { MAX_LINKS, runHealthCheck } from '@/lib/health-check'
-import { getLinkById } from '@/lib/links'
+import { getLinkRowsByIds } from '@/lib/links'
 
 // One batch of links to check, with a per-link timeout. The client drives
 // batching (so it can show progress and stop), so each request carries an
@@ -25,12 +25,10 @@ export async function POST(request: Request): Promise<NextResponse> {
   const { env } = getCloudflareContext()
   const { ids, timeout } = parsed.data
 
-  // Re-resolve each id to its stored link server-side — never trust a
+  // Re-resolve the ids to their stored links server-side — never trust a
   // client-supplied destination URL for the server-side fetch (SSRF surface).
-  const found = await Promise.all(ids.map((id) => getLinkById(env, id)))
-  const targets = found
-    .filter((l): l is NonNullable<typeof l> => !!l)
-    .map((l) => ({ id: l.id, slug: l.slug, url: l.url }))
+  const found = await getLinkRowsByIds(env, ids)
+  const targets = found.map((l) => ({ id: l.id, slug: l.slug, url: l.url }))
 
   const results = await runHealthCheck(
     env,

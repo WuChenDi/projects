@@ -18,7 +18,7 @@ import { links, tags } from '@/database/schema'
 import type { DB } from '@/lib/db'
 import { getDb } from '@/lib/db'
 import { getConfig } from '@/lib/env'
-import { genid } from '@/lib/genid'
+import { newId } from '@/lib/genid'
 import { logger } from '@/lib/logger'
 import { isUnsafeUrl } from '@/lib/safe-browsing'
 import { randomSlug, validateSlug } from '@/lib/slug'
@@ -58,9 +58,7 @@ async function upsertTagIds(
   if (unique.length === 0) return new Map()
   await db
     .insert(tags)
-    .values(
-      unique.map((name) => ({ id: String(genid.nextId()), name, createdBy })),
-    )
+    .values(unique.map((name) => ({ id: newId(), name, createdBy })))
     .onConflictDoNothing()
   const rows = await db
     .select({ id: tags.id, name: tags.name })
@@ -233,6 +231,35 @@ export async function visitLimitReached(
   return false
 }
 
+// Persist the visit-cap hit: mark the link disabled in D1 so the cap survives
+// KV cache expiry/rebuild (otherwise the counter restarts from 0 and the link
+// serves another N visits). `json_set` patches the config in place — the
+// caller's `link` may come from a stale KV copy, so we must not overwrite the
+// whole config with it.
+// Best-effort: a transient D1 error must not turn the redirect path into a
+// 500 — the request still serves not-found, and the next cap hit retries the
+// persist.
+export async function disableLinkOnVisitCap(
+  env: CloudflareEnv,
+  link: Link,
+): Promise<void> {
+  try {
+    const db = await getDb(env)
+    await db
+      .update(links)
+      .set({
+        config: sql`json_set(${links.config}, '$.disabled', json('true'))`,
+        updatedAt: new Date(),
+      })
+      .where(eq(links.id, link.id))
+  } catch (error) {
+    logger.warn(
+      'Failed to persist visit-cap disable',
+      error instanceof Error ? error.message : error,
+    )
+  }
+}
+
 // Resolve a link: KV cache → D1 fallback → fill cache. Returns null when the
 // slug doesn't exist (caller handles not-found / expiry).
 export async function resolveLink(
@@ -322,6 +349,21 @@ export async function getLinkById(
   )[0]
   if (!row) return null
   return (await attachTagNames(db, [row]))[0]!
+}
+
+// Batched id lookup for callers that don't need tag names (e.g. health check).
+// Returns raw rows (`tags` holds IDs). Callers keep `ids` within the D1
+// bound-parameter cap (100).
+export async function getLinkRowsByIds(
+  env: CloudflareEnv,
+  ids: string[],
+): Promise<LinkRow[]> {
+  if (ids.length === 0) return []
+  const db = await getDb(env)
+  return db
+    .select()
+    .from(links)
+    .where(and(inArray(links.id, ids), eq(links.isDeleted, 0)))
 }
 
 export type LinkStatus = 'active' | 'disabled' | 'expired'
@@ -498,16 +540,21 @@ export async function bulkTagLinks(
             .limit(1)
         )[0]?.id
   if (!tagId) return 0
-  let updated = 0
-  for (const id of ids) {
-    const current = (
-      await db
+  // One batched select up front (chunked at 100 ids — the D1 bound-parameter
+  // cap); the updates stay per-row because each row's tag array differs.
+  const rows: LinkRow[] = []
+  for (let i = 0; i < ids.length; i += 100) {
+    rows.push(
+      ...(await db
         .select()
         .from(links)
-        .where(and(eq(links.id, id), eq(links.isDeleted, 0)))
-        .limit(1)
-    )[0]
-    if (!current) continue
+        .where(
+          and(inArray(links.id, ids.slice(i, i + 100)), eq(links.isDeleted, 0)),
+        )),
+    )
+  }
+  let updated = 0
+  for (const current of rows) {
     const has = current.tags.includes(tagId)
     let next: string[]
     if (op === 'add') {
@@ -517,14 +564,11 @@ export async function bulkTagLinks(
       if (!has) continue
       next = current.tags.filter((x) => x !== tagId)
     }
-    const row = (
-      await db
-        .update(links)
-        .set({ tags: next, updatedAt: new Date() })
-        .where(eq(links.id, id))
-        .returning()
-    )[0]!
-    await purgeLink(env, row.domain, row.slug)
+    await db
+      .update(links)
+      .set({ tags: next, updatedAt: new Date() })
+      .where(eq(links.id, current.id))
+    await purgeLink(env, current.domain, current.slug)
     updated++
   }
   return updated
@@ -627,7 +671,7 @@ export async function createLink(
   const db = await getDb(env)
   const tagIds = await tagNamesToIds(db, tagNames, createdBy)
   const baseValues: Omit<NewLink, 'slug'> = {
-    id: String(genid.nextId()),
+    id: newId(),
     domain,
     url: input.url,
     title: input.title ?? '',
@@ -805,9 +849,17 @@ export interface ImportReport {
   failedItems: { slug: string; reason: string }[]
 }
 
+// Batch sizing for import. D1 caps bound parameters at 100 per query, so the
+// per-chunk existence select stays at 100 slugs and bulk inserts are split so
+// rows × columns stays under that cap.
+const IMPORT_CHUNK = 100
+const IMPORT_INSERT_BATCH = 8
+
 // Non-destructive import: existing active (slug,domain) is skipped, a
 // soft-deleted one is revived, otherwise inserted. Config (incl. passwordHash)
-// and timestamps are preserved verbatim.
+// and timestamps are preserved verbatim. Processed in chunks: one existence
+// select and one tag-dictionary upsert per chunk, bulk inserts for new rows —
+// only revived soft-deleted rows get a per-row update (their values differ).
 export async function importLinks(
   env: CloudflareEnv,
   items: ImportLinkInput[],
@@ -820,45 +872,95 @@ export async function importLinks(
     failed: 0,
     failedItems: [],
   }
+  // (domain,slug) keys already handled in this run. A later duplicate in the
+  // same payload is skipped — same outcome as the old per-row lookup, which
+  // saw the earlier occurrence as an existing active row.
+  const seen = new Set<string>()
+  const keyOf = (domain: string, slug: string) => `${domain}\n${slug}`
 
-  for (const item of items) {
-    const domain = item.domain?.trim() || ''
-    const rawSlug = item.slug.trim()
-    const slugError = validateSlug(rawSlug)
-    if (slugError) {
-      report.failed++
-      report.failedItems.push({ slug: rawSlug, reason: `slug:${slugError}` })
-      continue
+  for (let i = 0; i < items.length; i += IMPORT_CHUNK) {
+    const chunk = items.slice(i, i + IMPORT_CHUNK)
+
+    // Validate and normalize first so the chunk queries only cover viable rows.
+    const pending: { item: ImportLinkInput; slug: string; domain: string }[] =
+      []
+    for (const item of chunk) {
+      const domain = item.domain?.trim() || ''
+      const rawSlug = item.slug.trim()
+      const slugError = validateSlug(rawSlug)
+      if (slugError) {
+        report.failed++
+        report.failedItems.push({ slug: rawSlug, reason: `slug:${slugError}` })
+        continue
+      }
+      const slug = normalizeSlug(rawSlug, env)
+      if (seen.has(keyOf(domain, slug))) {
+        report.skipped++
+        continue
+      }
+      seen.add(keyOf(domain, slug))
+      pending.push({ item, slug, domain })
     }
-    const slug = normalizeSlug(rawSlug, env)
-    const existing = await findBySlugDomain(env, domain, slug)
-    if (existing && existing.isDeleted === 0) {
-      report.skipped++
-      continue
+    if (pending.length === 0) continue
+
+    // One select per chunk: fetch every row (active or soft-deleted) holding
+    // any of the slugs, then match the domain in JS — the unique index covers
+    // deleted rows too, so skip/revive must see them.
+    const slugs = Array.from(new Set(pending.map((p) => p.slug)))
+    const existingRows = await db
+      .select()
+      .from(links)
+      .where(inArray(links.slug, slugs))
+    const existingByKey = new Map(
+      existingRows.map((r) => [keyOf(r.domain, r.slug), r]),
+    )
+
+    // One tag-dictionary upsert per chunk, then per-item name → id mapping.
+    const tagNamesByItem = pending.map((p) => normalizeTagList(p.item.tags))
+    const tagIdByName = await upsertTagIds(
+      db,
+      Array.from(new Set(tagNamesByItem.flat())),
+      createdBy,
+    )
+
+    const inserts: NewLink[] = []
+    for (const [idx, { item, slug, domain }] of pending.entries()) {
+      const existing = existingByKey.get(keyOf(domain, slug))
+      if (existing && existing.isDeleted === 0) {
+        report.skipped++
+        continue
+      }
+
+      const values: NewLink = {
+        // Always mint a fresh id for new rows — reusing the exported id would
+        // collide with an existing PK when importing into a populated DB.
+        id: existing?.id ?? newId(),
+        slug,
+        domain,
+        url: item.url,
+        title: item.title ?? '',
+        comment: item.comment ?? '',
+        config: (item.config ?? {}) as LinkConfig,
+        tags: tagNamesByItem[idx]!.map((n) => tagIdByName.get(n)).filter(
+          (id): id is string => !!id,
+        ),
+        expiresAt: item.expiresAt ? new Date(item.expiresAt) : null,
+        isDeleted: 0,
+        updatedAt: new Date(),
+        ...(item.createdAt ? { createdAt: new Date(item.createdAt) } : {}),
+      }
+      if (existing) {
+        // Revive a soft-deleted row in place.
+        await db.update(links).set(values).where(eq(links.id, existing.id))
+      } else {
+        inserts.push(values)
+      }
+      report.success++
     }
 
-    const values: NewLink = {
-      // Always mint a fresh id for new rows — reusing the exported id would
-      // collide with an existing PK when importing into a populated DB.
-      id: existing?.id ?? String(genid.nextId()),
-      slug,
-      domain,
-      url: item.url,
-      title: item.title ?? '',
-      comment: item.comment ?? '',
-      config: (item.config ?? {}) as LinkConfig,
-      tags: await tagNamesToIds(db, normalizeTagList(item.tags), createdBy),
-      expiresAt: item.expiresAt ? new Date(item.expiresAt) : null,
-      isDeleted: 0,
-      updatedAt: new Date(),
-      ...(item.createdAt ? { createdAt: new Date(item.createdAt) } : {}),
+    for (let j = 0; j < inserts.length; j += IMPORT_INSERT_BATCH) {
+      await db.insert(links).values(inserts.slice(j, j + IMPORT_INSERT_BATCH))
     }
-    if (existing) {
-      await db.update(links).set(values).where(eq(links.id, existing.id))
-    } else {
-      await db.insert(links).values(values)
-    }
-    report.success++
   }
   return report
 }

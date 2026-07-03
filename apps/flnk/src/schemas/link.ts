@@ -90,7 +90,7 @@ export const DeleteLinkSchema = z.object({
 
 // Add or remove one tag across a batch of links (dashboard bulk action).
 export const BulkTagSchema = z.object({
-  ids: z.array(z.string().min(1)).min(1).max(500),
+  ids: z.array(z.string().min(1)).min(1).max(200),
   tag: z.string().trim().min(1).max(32),
   op: z.enum(['add', 'remove']),
 })
@@ -141,7 +141,7 @@ export const ImportLinkSchema = z.object({
 
 export const ImportDataSchema = z.object({
   version: z.string().optional(),
-  links: z.array(ImportLinkSchema).min(1).max(5000),
+  links: z.array(ImportLinkSchema).min(1).max(1000),
 })
 
 export type ImportLinkInput = z.infer<typeof ImportLinkSchema>

@@ -97,6 +97,8 @@ async function fetchStatus(
       redirect: 'manual',
       signal: controller.signal,
     })
+    // Only the status matters — cancel the body so we never download it.
+    await res.body?.cancel().catch(() => {})
     return {
       status: res.status,
       ok: res.status >= 200 && res.status < 400,

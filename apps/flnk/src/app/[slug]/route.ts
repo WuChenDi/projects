@@ -4,14 +4,21 @@ import type { NextRequest } from 'next/server'
 import type { Link } from '@/database/schema'
 import { extractAccessLog, writeAccessLog } from '@/lib/analytics'
 import { getConfig } from '@/lib/env'
+import { createGateToken, verifyGateToken } from '@/lib/gate-token'
 import { ogPageHtml, passwordFormHtml, unsafeWarningHtml } from '@/lib/html'
 import {
+  disableLinkOnVisitCap,
   isExpired,
   purgeLink,
   resolveLink,
   visitLimitReached,
 } from '@/lib/links'
 import { logger } from '@/lib/logger'
+import {
+  clientIp,
+  passwordAttemptsExceeded,
+  recordPasswordFailure,
+} from '@/lib/rate-limit'
 import {
   isSocialCrawler,
   resolveDestination,
@@ -57,11 +64,13 @@ async function redirectTo(
   // destination, which answers 405.
   seeOther = false,
 ): Promise<Response> {
-  // Click-limit expiry: over the maxVisits cap → treat like a time-expired link
-  // (purge cache + serve not-found) before redirecting. Increments the counter
-  // on the side-effect path when still under the cap.
+  // Click-limit expiry: over the maxVisits cap → persist the disable to D1
+  // (so the cap survives KV cache expiry/rebuild), then purge the cache and
+  // serve not-found. Increments the counter on the side-effect path when still
+  // under the cap.
   if (await visitLimitReached(env, link, ctx)) {
     logger.info(`Slug visit limit reached: ${slug}`)
+    await disableLinkOnVisitCap(env, link)
     await purgeLink(env, new URL(request.url).hostname, slug)
     return notFound(request, env)
   }
@@ -99,7 +108,7 @@ async function afterGate(
   link: Link,
   slug: string,
   ua: string,
-  opts: { unsafeCleared: boolean; password?: string; seeOther?: boolean },
+  opts: { unsafeCleared: boolean; seeOther?: boolean },
 ): Promise<Response> {
   if (link.config.cloaking) {
     return htmlResponse(ogPageHtml(link.url, link.config, { redirect: false }))
@@ -116,7 +125,6 @@ async function afterGate(
     return htmlResponse(
       unsafeWarningHtml(slug, link.url, {
         locale: resolveRedirectLocale(request),
-        password: opts.password,
       }),
     )
   }
@@ -166,9 +174,18 @@ export async function GET(
         passwordFormHtml(slug, false, resolveRedirectLocale(request)),
       )
     }
+    const ip = clientIp(request)
+    if (await passwordAttemptsExceeded(env, ip, slug)) {
+      logger.info(`Password attempts rate-limited for slug: ${slug}`)
+      return new Response('Too many failed password attempts', {
+        status: 429,
+        headers: NO_STORE,
+      })
+    }
     const ok = await verifyPasswordFn(link.config.passwordHash, headerPassword)
     if (!ok) {
       logger.info(`Incorrect x-link-password for slug: ${slug}`)
+      await recordPasswordFailure(env, ip, slug)
       return new Response('Incorrect password', {
         status: 403,
         headers: NO_STORE,
@@ -213,11 +230,47 @@ export async function POST(
   const confirmed = String(form.get('confirm') || '') === 'true'
 
   if (link.config.passwordHash) {
+    // The unsafe-confirm form carries a short-lived signed token instead of the
+    // plaintext password; a valid token counts as password-verified. An
+    // invalid or expired token falls back to the password form.
+    const gateToken = String(form.get('gate') || '')
+    if (gateToken) {
+      if (await verifyGateToken(env, slug, gateToken)) {
+        if (link.config.unsafe && !confirmed) {
+          return htmlResponse(
+            unsafeWarningHtml(slug, link.url, {
+              locale: resolveRedirectLocale(request),
+              gateToken,
+            }),
+          )
+        }
+        return afterGate(request, env, cf, ctx, link, slug, ua, {
+          unsafeCleared: true,
+          seeOther: true,
+        })
+      }
+      logger.info(`Invalid or expired gate token for slug: ${slug}`)
+      return htmlResponse(
+        passwordFormHtml(slug, false, resolveRedirectLocale(request)),
+        401,
+      )
+    }
+
+    const ip = clientIp(request)
+    if (await passwordAttemptsExceeded(env, ip, slug)) {
+      logger.info(`Password attempts rate-limited for slug: ${slug}`)
+      return new Response('Too many failed password attempts', {
+        status: 429,
+        headers: NO_STORE,
+      })
+    }
+
     const password = String(form.get('password') || '')
     const ok = await verifyPasswordFn(link.config.passwordHash, password)
 
     if (!ok) {
       logger.info(`Incorrect password for slug: ${slug}`)
+      await recordPasswordFailure(env, ip, slug)
       return htmlResponse(
         passwordFormHtml(slug, true, resolveRedirectLocale(request)),
         401,
@@ -225,12 +278,13 @@ export async function POST(
     }
 
     // Password verified — an unsafe link still needs an explicit confirmation,
-    // chained from the same submission (the password is re-carried).
+    // chained from the same submission via a signed gate token (the plaintext
+    // password is never echoed back into HTML).
     if (link.config.unsafe && !confirmed) {
       return htmlResponse(
         unsafeWarningHtml(slug, link.url, {
           locale: resolveRedirectLocale(request),
-          password,
+          gateToken: await createGateToken(env, slug),
         }),
       )
     }

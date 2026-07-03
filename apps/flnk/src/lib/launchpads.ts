@@ -9,7 +9,7 @@ import type {
 import { DEFAULT_LAUNCHPAD_CONFIG, launchpads, links } from '@/database/schema'
 import type { SessionUser } from '@/lib/auth'
 import { getDb } from '@/lib/db'
-import { genid } from '@/lib/genid'
+import { newId } from '@/lib/genid'
 import { isExpired, normalizeSlug } from '@/lib/links'
 import { defaultSlug, validateSlug } from '@/lib/slug'
 import type {
@@ -181,7 +181,7 @@ export async function createLaunchpad(
   const { slug, existing } = slugResult
 
   const values: NewLaunchpad = {
-    id: existing?.id ?? String(genid.nextId()),
+    id: existing?.id ?? newId(),
     slug,
     ownerId,
     title: input.title ?? '',

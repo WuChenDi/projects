@@ -844,9 +844,6 @@ importers:
       '@cdlab996/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@cdlab996/genid':
-        specifier: catalog:prod
-        version: 1.4.0
       '@cdlab996/ui':
         specifier: workspace:*
         version: link:../../packages/ui

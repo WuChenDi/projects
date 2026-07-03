@@ -97,6 +97,8 @@ Copy `.env.example` to `.env` and fill in the better-auth + OAuth secrets and yo
 
 ## Environment Variables
 
+Non-secret configuration lives in the `vars` block of `wrangler.jsonc`. Secrets (`BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `GITHUB_CLIENT_ID/SECRET`, `LIBSQL_AUTH_TOKEN`, `CLOUDFLARE_API_TOKEN`) are **never** committed there — set them via `wrangler secret put <NAME>` for production, or copy `.dev.vars.example` to `.dev.vars` (gitignored) for local dev. The runtime reads vars and secrets from the same env object, so no code changes are needed either way.
+
 ### Authentication
 
 | Variable | Default | Description |
@@ -105,6 +107,7 @@ Copy `.env.example` to `.env` and fill in the better-auth + OAuth secrets and yo
 | `BETTER_AUTH_SECRET` | — | Long random string (`openssl rand -base64 32`) |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | — | Google OAuth credentials |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | — | GitHub OAuth credentials |
+| `ALLOWED_EMAILS` | — | Comma-separated, case-insensitive email allow-list. Non-listed accounts cannot sign up or call `/api/*`. Empty = allow any account (a warning is logged) |
 
 ### Database
 
@@ -112,8 +115,8 @@ Copy `.env.example` to `.env` and fill in the better-auth + OAuth secrets and yo
 |---|---|---|
 | `DB_TYPE` | `libsql` | Driver selector — `libsql` (Turso) or `d1` (Cloudflare D1) |
 | `LIBSQL_URL` | `file:./src/database/data.db` | LibSQL URL; a local SQLite file for offline dev |
-| `LIBSQL_AUTH_TOKEN` | — | LibSQL / Turso auth token (set via `wrangler secret put` for deploy) |
-| `CLOUDFLARE_ACCOUNT_ID` / `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_DATABASE_ID` | — | Used by drizzle-kit's `d1-http` driver for remote migrations |
+| `LIBSQL_AUTH_TOKEN` | — | LibSQL / Turso auth token — secret; `wrangler secret put` (prod) or `.dev.vars` (local) |
+| `CLOUDFLARE_ACCOUNT_ID` / `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_DATABASE_ID` | — | Used by drizzle-kit's `d1-http` driver for remote migrations; the API token is a secret — `wrangler secret put` (prod) or `.dev.vars` (local) |
 
 ### Redirect engine
 
@@ -176,7 +179,7 @@ Auth is **better-auth** with Google + GitHub social login only — the first sig
 
 Configure each OAuth app's callback URL as `{BETTER_AUTH_URL}/api/auth/callback/{google|github}`. A provider with no credentials set is simply unavailable; at least one must be configured to log in.
 
-> **Any** Google / GitHub account that signs in gains dashboard access — front it with an additional access layer (Cloudflare Access, IP allow-list, …) if it must stay private.
+> With `ALLOWED_EMAILS` unset, **any** Google / GitHub account that signs in gains dashboard access (a warning is logged). Set `ALLOWED_EMAILS` (comma-separated, case-insensitive) to restrict access: non-listed emails are rejected at first sign-in (user creation is blocked) and existing sessions for non-listed emails get `403` from every `/api/*` route.
 
 ## Deploy
 

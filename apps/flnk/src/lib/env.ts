@@ -27,6 +27,9 @@ export interface FlnkConfig {
   // resolver (e.g. https://family.cloudflare-dns.com/dns-query) returns
   // 0.0.0.0 for blocked hosts.
   safeBrowsingDoh: string
+  // Sign-in email allow-list (comma-separated, case-insensitive; normalized to
+  // lowercase here). Empty = any Google/GitHub account may sign in.
+  allowedEmails: string[]
 }
 
 function num(value: string | undefined, fallback: number): number {
@@ -76,5 +79,9 @@ export function getConfig(env?: CloudflareEnv): FlnkConfig {
     cfAccountId: loose.CLOUDFLARE_ACCOUNT_ID ?? '',
     cfApiToken: loose.CLOUDFLARE_API_TOKEN ?? '',
     safeBrowsingDoh: loose.SAFE_BROWSING_DOH ?? '',
+    allowedEmails: (loose.ALLOWED_EMAILS ?? '')
+      .split(',')
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean),
   }
 }
