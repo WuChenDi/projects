@@ -11,8 +11,6 @@ interface CleanupResult {
   executionTimeMs: number
 }
 
-const BATCH_SIZE = 50
-
 // Soft-delete expired links + purge their KV cache. Driven by the worker's
 // `scheduled()` handler (cron "0 0 * * *").
 export async function cleanupExpiredLinks(
@@ -33,44 +31,28 @@ export async function cleanupExpiredLinks(
     const now = new Date()
 
     const expired = await db
-      .select()
-      .from(links)
+      .update(links)
+      .set({ isDeleted: 1, updatedAt: now })
       .where(and(eq(links.isDeleted, 0), lt(links.expiresAt, now)))
+      .returning({ id: links.id, domain: links.domain, slug: links.slug })
 
-    logger.info(`Found ${expired.length} expired links`)
+    result.deletedCount = expired.length
+    logger.info(`Soft-deleted ${expired.length} expired links`)
     if (expired.length === 0) {
       result.executionTimeMs = Date.now() - startedAt
       return result
     }
 
-    for (let i = 0; i < expired.length; i += BATCH_SIZE) {
-      const batch = expired.slice(i, i + BATCH_SIZE)
-
-      for (const link of batch) {
-        try {
-          await db
-            .update(links)
-            .set({ isDeleted: 1, updatedAt: new Date() })
-            .where(eq(links.id, link.id))
-          result.deletedCount++
-        } catch (error) {
-          const msg = `Failed to soft-delete link ${link.id}: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`
-          logger.error(msg)
-          result.errors.push(msg)
-        }
-
-        try {
-          await env.KV.delete(linkCacheKey(link.domain, link.slug))
-          result.cacheCleanedCount++
-        } catch (error) {
-          const msg = `Cache purge failed for ${link.id}: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`
-          logger.warn(msg)
-          result.errors.push(msg)
-        }
+    for (const link of expired) {
+      try {
+        await env.KV.delete(linkCacheKey(link.domain, link.slug))
+        result.cacheCleanedCount++
+      } catch (error) {
+        const msg = `Cache purge failed for ${link.id}: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+        logger.warn(msg)
+        result.errors.push(msg)
       }
     }
 
