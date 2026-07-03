@@ -2,6 +2,21 @@ name: Deploy flnk
 
 # Manual trigger only — this repo deploys explicitly (CI does not auto-deploy).
 # Run from the Actions tab, optionally choosing a ref to deploy.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN        deploy auth for wrangler/OpenNext
+#   CLOUDFLARE_ACCOUNT_ID       deploy auth for wrangler/OpenNext
+#   FLNK_LIBSQL_AUTH_TOKEN      Worker runtime secret — Turso auth token
+#                               (removed from wrangler.jsonc vars; without it
+#                               the deployed Worker loses DB access)
+#   FLNK_ALLOWED_EMAILS         Worker runtime secret — sign-in allow-list
+#                               (comma-separated; empty keeps open registration)
+#   FLNK_CLOUDFLARE_API_TOKEN   Worker runtime secret — Analytics Engine SQL
+#                               API token (Account Analytics:Read); optional,
+#                               stats endpoints degrade gracefully without it
+# One-time Worker secrets NOT managed here (set once via `wrangler secret put`,
+# they persist across deploys): BETTER_AUTH_SECRET, GOOGLE_CLIENT_ID/SECRET,
+# GITHUB_CLIENT_ID/SECRET.
 on:
   workflow_dispatch:
     inputs:
@@ -49,6 +64,33 @@ jobs:
       - name: Apply D1 migrations (remote)
         if: ${{ inputs.run_migrations }}
         run: pnpm --filter @cdlab996/flnk cf:remotedb
+
+      # Sync Worker runtime secrets from GitHub secrets (idempotent, runs every
+      # deploy). Empty values are skipped so an unset GitHub secret never wipes
+      # an existing Worker secret.
+      - name: Sync Worker secrets
+        working-directory: apps/flnk
+        env:
+          FLNK_LIBSQL_AUTH_TOKEN: ${{ secrets.FLNK_LIBSQL_AUTH_TOKEN }}
+          FLNK_ALLOWED_EMAILS: ${{ secrets.FLNK_ALLOWED_EMAILS }}
+          FLNK_CLOUDFLARE_API_TOKEN: ${{ secrets.FLNK_CLOUDFLARE_API_TOKEN }}
+        run: |
+          jq -n '
+            [
+              {key: "LIBSQL_AUTH_TOKEN",    value: env.FLNK_LIBSQL_AUTH_TOKEN},
+              {key: "ALLOWED_EMAILS",       value: env.FLNK_ALLOWED_EMAILS},
+              {key: "CLOUDFLARE_API_TOKEN", value: env.FLNK_CLOUDFLARE_API_TOKEN}
+            ]
+            | map(select(.value != null and .value != ""))
+            | from_entries
+          ' > "$RUNNER_TEMP/flnk-secrets.json"
+          if [ "$(jq 'length' "$RUNNER_TEMP/flnk-secrets.json")" -eq 0 ]; then
+            echo "No Worker secrets provided — skipping sync"
+          else
+            jq 'keys' "$RUNNER_TEMP/flnk-secrets.json"
+            pnpm exec wrangler secret bulk "$RUNNER_TEMP/flnk-secrets.json"
+          fi
+          rm -f "$RUNNER_TEMP/flnk-secrets.json"
 
       - name: Build & deploy
         run: pnpm --filter @cdlab996/flnk deploy

@@ -9,3 +9,7 @@ GITHUB_CLIENT_ID="your-github-client-id"
 GITHUB_CLIENT_SECRET="your-github-client-secret"
 LIBSQL_AUTH_TOKEN="your-libsql-auth-token"
 CLOUDFLARE_API_TOKEN="your-cloudflare-api-token"
+# Sign-in email allow-list (comma-separated, case-insensitive). Empty = any
+# Google/GitHub account may sign in. In production this is a Worker secret
+# synced by .github/workflows/deploy-flnk.yml (GitHub secret FLNK_ALLOWED_EMAILS).
+ALLOWED_EMAILS="me@example.com"
