@@ -28,10 +28,10 @@
     //   "d1"     → uses the `DB` binding below
     //   "libsql" → uses LIBSQL_URL + LIBSQL_AUTH_TOKEN (Turso etc.)
     "DB_TYPE": "libsql",
-    // LibSQL Configuration (dev / Turso).
+    // LibSQL Configuration (dev / Turso). The auth token is a SECRET — set
+    // LIBSQL_AUTH_TOKEN via `wrangler secret put LIBSQL_AUTH_TOKEN` (prod) or
+    // `.dev.vars` (local dev, see .dev.vars.example); never commit it here.
     "LIBSQL_URL": "your-libsql-url",
-    // The authentication token for accessing the LibSQL
-    "LIBSQL_AUTH_TOKEN": "your-libsql-auth-token",
     // Redirect engine knobs (all optional — defaults shown).
     "REDIRECT_STATUS_CODE": "308",
     "LINK_CACHE_TTL": "60",
@@ -51,8 +51,9 @@
     // Analytics Engine SQL API credentials — required for the dashboard stats
     // queries (the AE binding writes data points, but reading uses the REST SQL
     // API which needs an account id + a token with Account Analytics:Read).
+    // The token is a SECRET — set CLOUDFLARE_API_TOKEN via
+    // `wrangler secret put CLOUDFLARE_API_TOKEN` (prod) or `.dev.vars` (local).
     "CLOUDFLARE_ACCOUNT_ID": "",
-    "CLOUDFLARE_API_TOKEN": "",
     // Health-check Safe Browsing via DoH (empty = disabled). A filtering
     // resolver returns 0.0.0.0 for blocked hosts.
     "SAFE_BROWSING_DOH": "",

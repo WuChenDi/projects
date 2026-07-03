@@ -97,6 +97,8 @@ Copy `.env.example` to `.env` and fill in the better-auth + OAuth secrets and yo
 
 ## Environment Variables
 
+Non-secret configuration lives in the `vars` block of `wrangler.jsonc`. Secrets (`BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `GITHUB_CLIENT_ID/SECRET`, `LIBSQL_AUTH_TOKEN`, `CLOUDFLARE_API_TOKEN`) are **never** committed there — set them via `wrangler secret put <NAME>` for production, or copy `.dev.vars.example` to `.dev.vars` (gitignored) for local dev. The runtime reads vars and secrets from the same env object, so no code changes are needed either way.
+
 ### Authentication
 
 | Variable | Default | Description |
@@ -113,8 +115,8 @@ Copy `.env.example` to `.env` and fill in the better-auth + OAuth secrets and yo
 |---|---|---|
 | `DB_TYPE` | `libsql` | Driver selector — `libsql` (Turso) or `d1` (Cloudflare D1) |
 | `LIBSQL_URL` | `file:./src/database/data.db` | LibSQL URL; a local SQLite file for offline dev |
-| `LIBSQL_AUTH_TOKEN` | — | LibSQL / Turso auth token (set via `wrangler secret put` for deploy) |
-| `CLOUDFLARE_ACCOUNT_ID` / `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_DATABASE_ID` | — | Used by drizzle-kit's `d1-http` driver for remote migrations |
+| `LIBSQL_AUTH_TOKEN` | — | LibSQL / Turso auth token — secret; `wrangler secret put` (prod) or `.dev.vars` (local) |
+| `CLOUDFLARE_ACCOUNT_ID` / `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_DATABASE_ID` | — | Used by drizzle-kit's `d1-http` driver for remote migrations; the API token is a secret — `wrangler secret put` (prod) or `.dev.vars` (local) |
 
 ### Redirect engine
 
