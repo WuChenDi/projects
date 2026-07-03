@@ -1,7 +1,7 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
 import { requireSession } from '@/lib/auth'
-import { genid } from '@/lib/genid'
+import { newId } from '@/lib/genid'
 import { getR2, IMAGE_ALLOWED_TYPES, IMAGE_MAX_SIZE } from '@/lib/r2'
 import { validateSlug } from '@/lib/slug'
 
@@ -38,7 +38,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const ext = file.type.split('/')[1]
-  const key = `og/${slug || 'shared'}/${genid.nextId()}.${ext}`
+  const key = `og/${slug || 'shared'}/${newId()}.${ext}`
   await r2.put(key, await file.arrayBuffer(), {
     httpMetadata: { contentType: file.type },
   })
