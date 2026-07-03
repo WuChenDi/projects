@@ -27,10 +27,24 @@ function isEmailAllowed(email: string): boolean {
   return allowedEmails.includes(email.toLowerCase())
 }
 
-// Built per-request: on Cloudflare Workers the D1 binding (and process.env vars)
-// are only populated inside a request, so the auth instance can't live at module
-// top. Cheap enough to construct on each auth call.
+// Memoized per isolate: the instance can't be built at module top (on
+// Cloudflare Workers the D1 binding and process.env vars only exist inside a
+// request), but once built it is safe to reuse — getDb() is keyed-cached and
+// the social creds are stable per deployment.
+let authPromise: ReturnType<typeof buildAuth> | null = null
+
 export async function getAuth() {
+  if (!authPromise) {
+    authPromise = buildAuth().catch((error) => {
+      // Don't cache a failed build (e.g. transient db init error).
+      authPromise = null
+      throw error
+    })
+  }
+  return authPromise
+}
+
+async function buildAuth() {
   const db = await getDb()
 
   const googleEnabled =
