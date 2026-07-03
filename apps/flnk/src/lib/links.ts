@@ -18,7 +18,7 @@ import { links, tags } from '@/database/schema'
 import type { DB } from '@/lib/db'
 import { getDb } from '@/lib/db'
 import { getConfig } from '@/lib/env'
-import { genid } from '@/lib/genid'
+import { newId } from '@/lib/genid'
 import { logger } from '@/lib/logger'
 import { isUnsafeUrl } from '@/lib/safe-browsing'
 import { randomSlug, validateSlug } from '@/lib/slug'
@@ -58,9 +58,7 @@ async function upsertTagIds(
   if (unique.length === 0) return new Map()
   await db
     .insert(tags)
-    .values(
-      unique.map((name) => ({ id: String(genid.nextId()), name, createdBy })),
-    )
+    .values(unique.map((name) => ({ id: newId(), name, createdBy })))
     .onConflictDoNothing()
   const rows = await db
     .select({ id: tags.id, name: tags.name })
@@ -663,7 +661,7 @@ export async function createLink(
   const db = await getDb(env)
   const tagIds = await tagNamesToIds(db, tagNames, createdBy)
   const baseValues: Omit<NewLink, 'slug'> = {
-    id: String(genid.nextId()),
+    id: newId(),
     domain,
     url: input.url,
     comment: input.comment ?? '',
@@ -924,7 +922,7 @@ export async function importLinks(
       const values: NewLink = {
         // Always mint a fresh id for new rows — reusing the exported id would
         // collide with an existing PK when importing into a populated DB.
-        id: existing?.id ?? String(genid.nextId()),
+        id: existing?.id ?? newId(),
         slug,
         domain,
         url: item.url,
