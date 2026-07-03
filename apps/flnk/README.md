@@ -105,6 +105,7 @@ Copy `.env.example` to `.env` and fill in the better-auth + OAuth secrets and yo
 | `BETTER_AUTH_SECRET` | — | Long random string (`openssl rand -base64 32`) |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | — | Google OAuth credentials |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | — | GitHub OAuth credentials |
+| `ALLOWED_EMAILS` | — | Comma-separated, case-insensitive email allow-list. Non-listed accounts cannot sign up or call `/api/*`. Empty = allow any account (a warning is logged) |
 
 ### Database
 
@@ -176,7 +177,7 @@ Auth is **better-auth** with Google + GitHub social login only — the first sig
 
 Configure each OAuth app's callback URL as `{BETTER_AUTH_URL}/api/auth/callback/{google|github}`. A provider with no credentials set is simply unavailable; at least one must be configured to log in.
 
-> **Any** Google / GitHub account that signs in gains dashboard access — front it with an additional access layer (Cloudflare Access, IP allow-list, …) if it must stay private.
+> With `ALLOWED_EMAILS` unset, **any** Google / GitHub account that signs in gains dashboard access (a warning is logged). Set `ALLOWED_EMAILS` (comma-separated, case-insensitive) to restrict access: non-listed emails are rejected at first sign-in (user creation is blocked) and existing sessions for non-listed emails get `403` from every `/api/*` route.
 
 ## Deploy
 

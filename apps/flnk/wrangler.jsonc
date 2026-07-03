@@ -19,6 +19,11 @@
     // `wrangler secret put` (BETTER_AUTH_SECRET, GOOGLE_CLIENT_ID/SECRET,
     // GITHUB_CLIENT_ID/SECRET), never commit them here.
     "BETTER_AUTH_URL": "https://flnk.a.wd.ds.cc",
+    // Sign-in email allow-list (comma-separated, case-insensitive), e.g.
+    // "me@example.com,teammate@example.com". Non-listed accounts can neither
+    // complete first sign-in nor call /api/* routes. Empty = any Google/GitHub
+    // account may sign in (open registration — a warning is logged).
+    "ALLOWED_EMAILS": "",
     // Driver selector — both run on Cloudflare Workers:
     //   "d1"     → uses the `DB` binding below
     //   "libsql" → uses LIBSQL_URL + LIBSQL_AUTH_TOKEN (Turso etc.)
