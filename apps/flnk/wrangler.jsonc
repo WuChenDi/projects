@@ -29,7 +29,7 @@
     // Driver selector — both run on Cloudflare Workers:
     //   "d1"     → uses the `DB` binding below
     //   "libsql" → uses LIBSQL_URL + LIBSQL_AUTH_TOKEN (Turso etc.)
-    "DB_TYPE": "libsql",
+    "DB_TYPE": "d1",
     // LibSQL Configuration (dev / Turso). The auth token is a SECRET — set
     // LIBSQL_AUTH_TOKEN via `wrangler secret put LIBSQL_AUTH_TOKEN` (prod) or
     // `.dev.vars` (local dev, see .dev.vars.example); never commit it here.
