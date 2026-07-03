@@ -1,16 +1,14 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
 import { requireSession } from '@/lib/auth'
-import { listLinks } from '@/lib/links'
-
-const EXPORT_MAX = 5000
+import { fetchAllLinks } from '@/lib/backup'
 
 export async function GET(request: Request): Promise<NextResponse> {
   const auth = await requireSession(request)
   if (!auth.ok) return auth.response
 
   const { env } = getCloudflareContext()
-  const { links } = await listLinks(env, { limit: EXPORT_MAX, offset: 0 })
+  const { links, truncated } = await fetchAllLinks(env)
   const out = links.map((l) => ({
     id: l.id,
     slug: l.slug,
@@ -28,6 +26,7 @@ export async function GET(request: Request): Promise<NextResponse> {
       version: '1.0',
       exportedAt: new Date().toISOString(),
       count: out.length,
+      truncated,
       links: out,
     },
     { headers: { 'cache-control': 'no-store' } },
