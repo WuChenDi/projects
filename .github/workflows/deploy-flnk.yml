@@ -63,8 +63,11 @@ jobs:
         if: ${{ inputs.run_migrations }}
         run: pnpm --filter @cdlab996/flnk cf:remotedb
 
+      # `run` is required: `deploy` is also a pnpm built-in command, and
+      # without `run` pnpm invokes the built-in (which demands a target dir)
+      # instead of the package script.
       - name: Build & deploy
-        run: pnpm --filter @cdlab996/flnk deploy
+        run: pnpm --filter @cdlab996/flnk run deploy
 
       # Sync Worker runtime secrets from GitHub secrets (idempotent, runs every
       # deploy). Runs AFTER the deploy: a secret cannot be created while the
