@@ -6,9 +6,6 @@ name: Deploy flnk
 # Required repository secrets (Settings → Secrets and variables → Actions):
 #   CLOUDFLARE_API_TOKEN        deploy auth for wrangler/OpenNext
 #   CLOUDFLARE_ACCOUNT_ID       deploy auth for wrangler/OpenNext
-#   FLNK_LIBSQL_AUTH_TOKEN      Worker runtime secret — Turso auth token
-#                               (removed from wrangler.jsonc vars; without it
-#                               the deployed Worker loses DB access)
 #   FLNK_ALLOWED_EMAILS         Worker runtime secret — sign-in allow-list
 #                               (comma-separated; empty keeps open registration)
 #   FLNK_CLOUDFLARE_API_TOKEN   Worker runtime secret — Analytics Engine SQL
@@ -66,19 +63,23 @@ jobs:
         if: ${{ inputs.run_migrations }}
         run: pnpm --filter @cdlab996/flnk cf:remotedb
 
+      - name: Build & deploy
+        run: pnpm --filter @cdlab996/flnk deploy
+
       # Sync Worker runtime secrets from GitHub secrets (idempotent, runs every
-      # deploy). Empty values are skipped so an unset GitHub secret never wipes
-      # an existing Worker secret.
+      # deploy). Runs AFTER the deploy: a secret cannot be created while the
+      # live Worker still carries a plain-text var of the same name (API error
+      # 10053) — deploying first replaces the binding set from wrangler.jsonc,
+      # which no longer defines these as vars. Empty values are skipped so an
+      # unset GitHub secret never wipes an existing Worker secret.
       - name: Sync Worker secrets
         working-directory: apps/flnk
         env:
-          FLNK_LIBSQL_AUTH_TOKEN: ${{ secrets.FLNK_LIBSQL_AUTH_TOKEN }}
           FLNK_ALLOWED_EMAILS: ${{ secrets.FLNK_ALLOWED_EMAILS }}
           FLNK_CLOUDFLARE_API_TOKEN: ${{ secrets.FLNK_CLOUDFLARE_API_TOKEN }}
         run: |
           jq -n '
             [
-              {key: "LIBSQL_AUTH_TOKEN",    value: env.FLNK_LIBSQL_AUTH_TOKEN},
               {key: "ALLOWED_EMAILS",       value: env.FLNK_ALLOWED_EMAILS},
               {key: "CLOUDFLARE_API_TOKEN", value: env.FLNK_CLOUDFLARE_API_TOKEN}
             ]
@@ -92,6 +93,3 @@ jobs:
             pnpm exec wrangler secret bulk "$RUNNER_TEMP/flnk-secrets.json"
           fi
           rm -f "$RUNNER_TEMP/flnk-secrets.json"
-
-      - name: Build & deploy
-        run: pnpm --filter @cdlab996/flnk deploy
