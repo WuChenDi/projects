@@ -60,11 +60,7 @@ export function extractAccessLog(
   const uaResult = new UAParser(ua).getResult()
   const props = cf ?? ({} as Partial<IncomingRequestCfProperties>)
 
-  const ip =
-    request.headers.get('cf-connecting-ip') ||
-    request.headers.get('x-forwarded-for') ||
-    request.headers.get('x-real-ip') ||
-    '0.0.0.0'
+  const ip = request.headers.get('cf-connecting-ip') || '0.0.0.0'
 
   const referer = request.headers.get('referer') || ''
   let refererHostname = 'direct'
@@ -104,9 +100,28 @@ export function extractAccessLog(
   }
 }
 
+// Daily-rotating visitor fingerprint: the raw IP never leaves the request —
+// only hex(SHA-256(`${ip}:${YYYY-MM-DD}`)) truncated to 32 chars is stored,
+// so uniqueness holds within a UTC day but IPs cannot be recovered or
+// correlated across days.
+async function anonymizeIp(ip: string): Promise<string> {
+  const day = new Date().toISOString().slice(0, 10)
+  const digest = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(`${ip}:${day}`),
+  )
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
+    .slice(0, 32)
+}
+
 // Write a single access-log data point to Analytics Engine. Failures never
 // affect the redirect — they are logged and swallowed.
-export function writeAccessLog(env: CloudflareEnv, data: AccessLog): void {
+export async function writeAccessLog(
+  env: CloudflareEnv,
+  data: AccessLog,
+): Promise<void> {
   if (!env.ANALYTICS) {
     logger.warn('Analytics Engine not configured — skipping access log')
     return
@@ -117,13 +132,14 @@ export function writeAccessLog(env: CloudflareEnv, data: AccessLog): void {
   }
 
   try {
+    const visitorId = await anonymizeIp(data.ip)
     env.ANALYTICS.writeDataPoint({
       indexes: [data.slug],
       blobs: [
         data.slug,
         data.url,
         data.ua,
-        data.ip,
+        visitorId,
         data.referer,
         data.country,
         data.region,
