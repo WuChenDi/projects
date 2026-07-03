@@ -55,7 +55,7 @@
     // API which needs an account id + a token with Account Analytics:Read).
     // The token is a SECRET — set CLOUDFLARE_API_TOKEN via
     // `wrangler secret put CLOUDFLARE_API_TOKEN` (prod) or `.dev.vars` (local).
-    "CLOUDFLARE_ACCOUNT_ID": "",
+    "CLOUDFLARE_ACCOUNT_ID": "e604cf9cff8acba07cae37c938bc7479",
     // Health-check Safe Browsing via DoH (empty = disabled). A filtering
     // resolver returns 0.0.0.0 for blocked hosts.
     "SAFE_BROWSING_DOH": "",
