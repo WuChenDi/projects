@@ -239,27 +239,28 @@ export function ogPageHtml(
 }
 
 // Interstitial shown when a link is flagged unsafe. Confirming POSTs back to the
-// slug with `confirm=true` (re-carrying the verified `password` when the link is
-// also password-protected) so the route resolves geo/device targeting and writes
-// the access log instead of bouncing straight to the destination.
+// slug with `confirm=true` (carrying a short-lived signed `gate` token when the
+// link is also password-protected — never the plaintext password) so the route
+// resolves geo/device targeting and writes the access log instead of bouncing
+// straight to the destination.
 export function unsafeWarningHtml(
   slug: string,
   url: string,
-  options: { locale?: string; password?: string } = {},
+  options: { locale?: string; gateToken?: string } = {},
 ): string {
   const safeSlug = escapeHtml(slug)
   const safeUrl = escapeHtml(safeExternalUrl(url))
   const lang = pickLocale(options.locale)
   const s = UNSAFE_STRINGS[lang]
-  const passwordField = options.password
-    ? `<input type="hidden" name="password" value="${escapeHtml(options.password)}" />`
+  const gateField = options.gateToken
+    ? `<input type="hidden" name="gate" value="${escapeHtml(options.gateToken)}" />`
     : ''
   const body = `<form class="card" method="POST" action="/${safeSlug}">
       <h1>${escapeHtml(s.heading!)}</h1>
       <p>${escapeHtml(s.body!)}</p>
       <div class="url">${safeUrl}</div>
       <input type="hidden" name="confirm" value="true" />
-      ${passwordField}
+      ${gateField}
       <button class="btn btn-danger" type="submit">${escapeHtml(s.button!)}</button>
     </form>`
   return interstitialPage(lang, s.title!, body)

@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server'
 import type { Link } from '@/database/schema'
 import { extractAccessLog, writeAccessLog } from '@/lib/analytics'
 import { getConfig } from '@/lib/env'
+import { createGateToken, verifyGateToken } from '@/lib/gate-token'
 import { ogPageHtml, passwordFormHtml, unsafeWarningHtml } from '@/lib/html'
 import {
   disableLinkOnVisitCap,
@@ -107,7 +108,7 @@ async function afterGate(
   link: Link,
   slug: string,
   ua: string,
-  opts: { unsafeCleared: boolean; password?: string; seeOther?: boolean },
+  opts: { unsafeCleared: boolean; seeOther?: boolean },
 ): Promise<Response> {
   if (link.config.cloaking) {
     return htmlResponse(ogPageHtml(link.url, link.config, { redirect: false }))
@@ -124,7 +125,6 @@ async function afterGate(
     return htmlResponse(
       unsafeWarningHtml(slug, link.url, {
         locale: resolveRedirectLocale(request),
-        password: opts.password,
       }),
     )
   }
@@ -230,6 +230,32 @@ export async function POST(
   const confirmed = String(form.get('confirm') || '') === 'true'
 
   if (link.config.passwordHash) {
+    // The unsafe-confirm form carries a short-lived signed token instead of the
+    // plaintext password; a valid token counts as password-verified. An
+    // invalid or expired token falls back to the password form.
+    const gateToken = String(form.get('gate') || '')
+    if (gateToken) {
+      if (await verifyGateToken(env, slug, gateToken)) {
+        if (link.config.unsafe && !confirmed) {
+          return htmlResponse(
+            unsafeWarningHtml(slug, link.url, {
+              locale: resolveRedirectLocale(request),
+              gateToken,
+            }),
+          )
+        }
+        return afterGate(request, env, cf, ctx, link, slug, ua, {
+          unsafeCleared: true,
+          seeOther: true,
+        })
+      }
+      logger.info(`Invalid or expired gate token for slug: ${slug}`)
+      return htmlResponse(
+        passwordFormHtml(slug, false, resolveRedirectLocale(request)),
+        401,
+      )
+    }
+
     const ip = clientIp(request)
     if (await passwordAttemptsExceeded(env, ip, slug)) {
       logger.info(`Password attempts rate-limited for slug: ${slug}`)
@@ -252,12 +278,13 @@ export async function POST(
     }
 
     // Password verified — an unsafe link still needs an explicit confirmation,
-    // chained from the same submission (the password is re-carried).
+    // chained from the same submission via a signed gate token (the plaintext
+    // password is never echoed back into HTML).
     if (link.config.unsafe && !confirmed) {
       return htmlResponse(
         unsafeWarningHtml(slug, link.url, {
           locale: resolveRedirectLocale(request),
-          password,
+          gateToken: await createGateToken(env, slug),
         }),
       )
     }
