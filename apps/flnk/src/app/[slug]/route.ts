@@ -14,6 +14,11 @@ import {
 } from '@/lib/links'
 import { logger } from '@/lib/logger'
 import {
+  clientIp,
+  passwordAttemptsExceeded,
+  recordPasswordFailure,
+} from '@/lib/rate-limit'
+import {
   isSocialCrawler,
   resolveDestination,
   resolveRedirectLocale,
@@ -169,9 +174,18 @@ export async function GET(
         passwordFormHtml(slug, false, resolveRedirectLocale(request)),
       )
     }
+    const ip = clientIp(request)
+    if (await passwordAttemptsExceeded(env, ip, slug)) {
+      logger.info(`Password attempts rate-limited for slug: ${slug}`)
+      return new Response('Too many failed password attempts', {
+        status: 429,
+        headers: NO_STORE,
+      })
+    }
     const ok = await verifyPasswordFn(link.config.passwordHash, headerPassword)
     if (!ok) {
       logger.info(`Incorrect x-link-password for slug: ${slug}`)
+      await recordPasswordFailure(env, ip, slug)
       return new Response('Incorrect password', {
         status: 403,
         headers: NO_STORE,
@@ -216,11 +230,21 @@ export async function POST(
   const confirmed = String(form.get('confirm') || '') === 'true'
 
   if (link.config.passwordHash) {
+    const ip = clientIp(request)
+    if (await passwordAttemptsExceeded(env, ip, slug)) {
+      logger.info(`Password attempts rate-limited for slug: ${slug}`)
+      return new Response('Too many failed password attempts', {
+        status: 429,
+        headers: NO_STORE,
+      })
+    }
+
     const password = String(form.get('password') || '')
     const ok = await verifyPasswordFn(link.config.passwordHash, password)
 
     if (!ok) {
       logger.info(`Incorrect password for slug: ${slug}`)
+      await recordPasswordFailure(env, ip, slug)
       return htmlResponse(
         passwordFormHtml(slug, true, resolveRedirectLocale(request)),
         401,
