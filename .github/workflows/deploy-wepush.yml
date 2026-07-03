@@ -1,0 +1,123 @@
+name: Deploy wepush
+
+# Manual trigger only — this repo deploys explicitly (CI does not auto-deploy).
+# Run from the Actions tab, optionally choosing a ref to deploy.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN        deploy auth for wrangler/OpenNext
+#   CLOUDFLARE_ACCOUNT_ID       deploy auth for wrangler/OpenNext
+#   WEPUSH_LIBSQL_AUTH_TOKEN    Worker runtime secret — Turso/libsql auth token;
+#                               only needed when wrangler.jsonc has
+#                               DB_TYPE=libsql (also used by the migration
+#                               step). Leave unset for d1.
+# One-time Worker secrets NOT managed here (set once via `wrangler secret put`,
+# they persist across deploys): BETTER_AUTH_SECRET, GOOGLE_CLIENT_ID/SECRET,
+# GITHUB_CLIENT_ID/SECRET.
+on:
+  workflow_dispatch:
+    inputs:
+      run_migrations:
+        description: 'Apply remote DB migrations before deploy (d1 or libsql, per wrangler.jsonc DB_TYPE)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-wepush
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Cloudflare credentials used by wrangler / OpenNext to deploy the Worker.
+      # Add these as repository secrets (Settings → Secrets and variables → Actions).
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          # Kept in sync with the repo-root .node-version (currently 24).
+          node-version-file: .node-version
+          cache: pnpm
+
+      # Also builds workspace packages via the root `prepare` script.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Optional: apply migrations to the remote database before deploying.
+      # Branches on the DB_TYPE var committed in wrangler.jsonc:
+      #   d1     → wrangler d1 migrations apply (uses the d1_databases binding)
+      #   libsql → drizzle-kit migrate against the LIBSQL_URL var, authenticated
+      #            with the WEPUSH_LIBSQL_AUTH_TOKEN repository secret
+      - name: Apply database migrations (remote)
+        if: ${{ inputs.run_migrations }}
+        working-directory: apps/wepush
+        env:
+          LIBSQL_AUTH_TOKEN: ${{ secrets.WEPUSH_LIBSQL_AUTH_TOKEN }}
+        run: |
+          db_type=$(grep -oP '"DB_TYPE":\s*"\K[^"]+' wrangler.jsonc)
+          echo "DB_TYPE=$db_type"
+          case "$db_type" in
+            d1)
+              pnpm run cf:remotedb
+              ;;
+            libsql)
+              libsql_url=$(grep -oP '"LIBSQL_URL":\s*"\K[^"]+' wrangler.jsonc)
+              if [ -z "$libsql_url" ] || [ "$libsql_url" = "your-libsql-url" ]; then
+                echo "wrangler.jsonc LIBSQL_URL is unset/placeholder — cannot migrate" >&2
+                exit 1
+              fi
+              if [ -z "$LIBSQL_AUTH_TOKEN" ]; then
+                echo "WEPUSH_LIBSQL_AUTH_TOKEN secret is not set — cannot migrate" >&2
+                exit 1
+              fi
+              DB_TYPE=libsql LIBSQL_URL="$libsql_url" pnpm run db:migrate
+              ;;
+            *)
+              echo "Unknown DB_TYPE in wrangler.jsonc: '$db_type'" >&2
+              exit 1
+              ;;
+          esac
+
+      # `run` is required: `deploy` is also a pnpm built-in command, and
+      # without `run` pnpm invokes the built-in (which demands a target dir)
+      # instead of the package script.
+      - name: Build & deploy
+        run: pnpm --filter @cdlab996/wepush run deploy
+
+      # Sync Worker runtime secrets from GitHub secrets (idempotent, runs every
+      # deploy). Runs AFTER the deploy: a secret cannot be created while the
+      # live Worker still carries a plain-text var of the same name (API error
+      # 10053) — deploying first replaces the binding set from wrangler.jsonc,
+      # which no longer defines LIBSQL_AUTH_TOKEN as a var. Empty values are
+      # skipped so an unset GitHub secret never wipes an existing Worker secret.
+      - name: Sync Worker secrets
+        working-directory: apps/wepush
+        env:
+          WEPUSH_LIBSQL_AUTH_TOKEN: ${{ secrets.WEPUSH_LIBSQL_AUTH_TOKEN }}
+        run: |
+          jq -n '
+            [
+              {key: "LIBSQL_AUTH_TOKEN", value: env.WEPUSH_LIBSQL_AUTH_TOKEN}
+            ]
+            | map(select(.value != null and .value != ""))
+            | from_entries
+          ' > "$RUNNER_TEMP/wepush-secrets.json"
+          if [ "$(jq 'length' "$RUNNER_TEMP/wepush-secrets.json")" -eq 0 ]; then
+            echo "No Worker secrets provided — skipping sync"
+          else
+            jq 'keys' "$RUNNER_TEMP/wepush-secrets.json"
+            pnpm exec wrangler secret bulk "$RUNNER_TEMP/wepush-secrets.json"
+          fi
+          rm -f "$RUNNER_TEMP/wepush-secrets.json"
