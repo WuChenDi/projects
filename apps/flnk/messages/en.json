@@ -372,6 +372,7 @@
     },
     "build": {
       "hint": "Add, reorder, and toggle the blocks shown on your page.",
+      "pinned": "Pinned",
       "addBlock": "Add block",
       "empty": "No blocks yet. Add your first block to get started.",
       "moveUp": "Move up",

@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from '@cdlab996/ui/components/badge'
 import { Button } from '@cdlab996/ui/components/button'
 import { Card } from '@cdlab996/ui/components/card'
 import {
@@ -28,8 +29,11 @@ import {
 } from '@/components/dashboard/launchpads/link-picker'
 import type { LaunchpadBlock, LaunchpadConfig } from '@/database/schema'
 import type { LinkRow } from '@/lib/api'
-import type { BlockType } from './blocks'
+import type { AddableBlockType } from './blocks'
 import { BLOCK_TYPES, newBlock } from './blocks'
+
+// The header is a pinned singleton (edited via HeaderCard), never a list item.
+type ContentBlock = Exclude<LaunchpadBlock, { type: 'header' }>
 
 interface BuildTabProps {
   config: LaunchpadConfig
@@ -39,16 +43,20 @@ interface BuildTabProps {
 
 export function BuildTab({ config, links, onChange }: BuildTabProps) {
   const t = useTranslations('launchpads')
-  const blocks = config.blocks
+  // Legacy 'header' blocks are ignored on read; any block edit writes back the
+  // filtered list, dropping them from config on the next save.
+  const blocks = config.blocks.filter(
+    (b): b is ContentBlock => b.type !== 'header',
+  )
   const [dragIndex, setDragIndex] = useState<number | null>(null)
 
   function setBlocks(next: LaunchpadBlock[]) {
     onChange({ ...config, blocks: next })
   }
-  function addBlock(type: BlockType) {
+  function addBlock(type: AddableBlockType) {
     setBlocks([...blocks, newBlock(type)])
   }
-  function updateBlock(id: string, block: LaunchpadBlock) {
+  function updateBlock(id: string, block: ContentBlock) {
     setBlocks(blocks.map((b) => (b.id === id ? block : b)))
   }
   function removeBlock(id: string) {
@@ -64,6 +72,11 @@ export function BuildTab({ config, links, onChange }: BuildTabProps) {
 
   return (
     <div className="space-y-4">
+      <HeaderCard
+        profile={config.profile}
+        onChange={(profile) => onChange({ ...config, profile })}
+      />
+
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">{t('build.hint')}</p>
         <DropdownMenu>
@@ -148,12 +161,8 @@ export function BuildTab({ config, links, onChange }: BuildTabProps) {
               <div className="p-3">
                 <BlockFields
                   block={block}
-                  config={config}
                   links={links}
                   onChange={(b) => updateBlock(block.id, b)}
-                  onProfileChange={(profile) =>
-                    onChange({ ...config, profile })
-                  }
                 />
               </div>
             </Card>
@@ -164,63 +173,81 @@ export function BuildTab({ config, links, onChange }: BuildTabProps) {
   )
 }
 
+// Fixed profile card pinned above the blocks list — always exactly one, not
+// draggable, removable, or toggleable. The public page shows the header iff
+// any profile field has content, so no enabled switch here.
+function HeaderCard({
+  profile,
+  onChange,
+}: {
+  profile: LaunchpadConfig['profile']
+  onChange: (profile: LaunchpadConfig['profile']) => void
+}) {
+  const t = useTranslations('launchpads')
+
+  return (
+    <Card className="gap-0 overflow-hidden p-0">
+      <div className="flex items-center gap-2 border-b bg-muted/30 px-3 py-2">
+        <span className="flex-1 text-sm font-medium">
+          {t('block.type.header')}
+        </span>
+        <Badge variant="secondary">{t('build.pinned')}</Badge>
+      </div>
+      <div className="space-y-3 p-3">
+        <p className="text-xs text-muted-foreground">
+          {t('block.header.hint')}
+        </p>
+        <Field label={t('block.header.name')}>
+          <Input
+            value={profile.name ?? ''}
+            maxLength={128}
+            onChange={(e) => onChange({ ...profile, name: e.target.value })}
+          />
+        </Field>
+        <Field label={t('block.header.bio')}>
+          <Textarea
+            value={profile.bio ?? ''}
+            maxLength={512}
+            rows={2}
+            onChange={(e) => onChange({ ...profile, bio: e.target.value })}
+          />
+        </Field>
+        <Field label={t('block.header.avatar')}>
+          <div className="flex items-center gap-2">
+            {profile.avatar && (
+              // biome-ignore lint/performance/noImgElement: tiny inline preview of a user-supplied remote URL
+              <img
+                src={profile.avatar}
+                alt=""
+                className="size-8 shrink-0 rounded-full object-cover"
+              />
+            )}
+            <Input
+              value={profile.avatar ?? ''}
+              maxLength={2048}
+              placeholder="https://…"
+              onChange={(e) => onChange({ ...profile, avatar: e.target.value })}
+            />
+          </div>
+        </Field>
+      </div>
+    </Card>
+  )
+}
+
 function BlockFields({
   block,
-  config,
   links,
   onChange,
-  onProfileChange,
 }: {
-  block: LaunchpadBlock
-  config: LaunchpadConfig
+  block: ContentBlock
   links: LinkRow[]
-  onChange: (block: LaunchpadBlock) => void
-  onProfileChange: (profile: LaunchpadConfig['profile']) => void
+  onChange: (block: ContentBlock) => void
 }) {
   const t = useTranslations('launchpads')
   const linkById = new Map(links.map((l) => [l.id, l]))
 
   switch (block.type) {
-    case 'header': {
-      const profile = config.profile
-      return (
-        <div className="space-y-3">
-          <p className="text-xs text-muted-foreground">
-            {t('block.header.hint')}
-          </p>
-          <Field label={t('block.header.name')}>
-            <Input
-              value={profile.name ?? ''}
-              maxLength={128}
-              onChange={(e) =>
-                onProfileChange({ ...profile, name: e.target.value })
-              }
-            />
-          </Field>
-          <Field label={t('block.header.bio')}>
-            <Textarea
-              value={profile.bio ?? ''}
-              maxLength={512}
-              rows={2}
-              onChange={(e) =>
-                onProfileChange({ ...profile, bio: e.target.value })
-              }
-            />
-          </Field>
-          <Field label={t('block.header.avatar')}>
-            <Input
-              value={profile.avatar ?? ''}
-              maxLength={2048}
-              placeholder="https://…"
-              onChange={(e) =>
-                onProfileChange({ ...profile, avatar: e.target.value })
-              }
-            />
-          </Field>
-        </div>
-      )
-    }
-
     case 'socials':
       return (
         <div className="space-y-2">

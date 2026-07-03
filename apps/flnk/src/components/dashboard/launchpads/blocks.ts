@@ -4,9 +4,12 @@ import type { LinkRow } from '@/lib/api'
 
 export type BlockType = LaunchpadBlock['type']
 
+// The header is a pinned singleton edited from the fixed card at the top of
+// the build tab — it is not addable as a content block.
+export type AddableBlockType = Exclude<BlockType, 'header'>
+
 // Add-menu order — mirrors the MVP block set in the spec.
-export const BLOCK_TYPES: BlockType[] = [
-  'header',
+export const BLOCK_TYPES: AddableBlockType[] = [
   'socials',
   'button',
   'shortlink',
@@ -16,11 +19,9 @@ export const BLOCK_TYPES: BlockType[] = [
 ]
 
 // Fresh block of `type` with sensible empty defaults and a unique id.
-export function newBlock(type: BlockType): LaunchpadBlock {
+export function newBlock(type: AddableBlockType): LaunchpadBlock {
   const id = crypto.randomUUID()
   switch (type) {
-    case 'header':
-      return { id, type, enabled: true }
     case 'socials':
       return { id, type, enabled: true, items: [] }
     case 'button':
