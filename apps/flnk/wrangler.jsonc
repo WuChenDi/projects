@@ -23,7 +23,9 @@
     // "me@example.com,teammate@example.com". Non-listed accounts can neither
     // complete first sign-in nor call /api/* routes. Empty = any Google/GitHub
     // account may sign in (open registration — a warning is logged).
-    "ALLOWED_EMAILS": "",
+    // NOT a var: defined here it would shadow the Worker secret on every
+    // deploy. Set it via `.dev.vars` (local) or the deploy workflow's secret
+    // sync (prod, GitHub secret FLNK_ALLOWED_EMAILS).
     // Driver selector — both run on Cloudflare Workers:
     //   "d1"     → uses the `DB` binding below
     //   "libsql" → uses LIBSQL_URL + LIBSQL_AUTH_TOKEN (Turso etc.)
@@ -66,13 +68,13 @@
       "binding": "DB",
       "database_name": "flnk",
       "migrations_dir": "./src/database",
-      "database_id": "your-d1-database-id"
+      "database_id": "ab108da9-c8f8-49ff-94d2-ffcab98a1c96"
     }
   ],
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "your-kv-namespace-id"
+      "id": "89c8b025c0ec45e58c9aa6b17208da63"
     }
   ],
   "ai": {

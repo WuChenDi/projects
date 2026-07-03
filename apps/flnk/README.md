@@ -183,11 +183,13 @@ Configure each OAuth app's callback URL as `{BETTER_AUTH_URL}/api/auth/callback/
 
 ## Deploy
 
-```bash
-pnpm --filter @cdlab996/flnk deploy
-```
+Deploys go through the GitHub Actions workflow **`.github/workflows/deploy-flnk.yml`** (manual `workflow_dispatch` from the Actions tab). The workflow installs dependencies, optionally applies remote D1 migrations, syncs Worker runtime secrets from GitHub repository secrets (`FLNK_LIBSQL_AUTH_TOKEN`, `FLNK_ALLOWED_EMAILS`, `FLNK_CLOUDFLARE_API_TOKEN` — empty values are skipped), then builds and deploys via OpenNext. Deployment-affecting changes (new secrets, migrations, build steps) must be reflected in that workflow.
 
-Requires Cloudflare bindings: `KV`, `AI`, `ANALYTICS` (Analytics Engine), plus the database for the active `DB_TYPE` — the `DB` binding (D1) or `LIBSQL_URL` + `LIBSQL_AUTH_TOKEN` (Turso; set the token via `wrangler secret put LIBSQL_AUTH_TOKEN`, don't commit it). See `wrangler.jsonc`.
+One-time Worker secrets not managed by the workflow (set once, persist across deploys): `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `GITHUB_CLIENT_ID/SECRET` via `wrangler secret put`.
+
+The local fallback (`pnpm --filter @cdlab996/flnk deploy`) still works but skips the secret sync — prefer the workflow.
+
+Requires Cloudflare bindings: `KV`, `AI`, `ANALYTICS` (Analytics Engine), plus the database for the active `DB_TYPE` — the `DB` binding (D1) or `LIBSQL_URL` + `LIBSQL_AUTH_TOKEN` (Turso). See `wrangler.jsonc`.
 
 ## Performance
 
