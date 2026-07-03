@@ -90,6 +90,7 @@ web_modules/
 # cloudflare workers local secrets (wrangler dev)
 .dev.vars
 .dev.vars.*
+!.dev.vars.example
 
 # local libsql / sqlite dev databases (drizzle file: URL)
 *.db
