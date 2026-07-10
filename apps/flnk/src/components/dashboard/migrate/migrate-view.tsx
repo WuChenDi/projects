@@ -1,13 +1,13 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
+} from '@cdlab/ui/components/card'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Archive, Download, FileSpreadsheet, Upload } from 'lucide-react'
 import { useTranslations } from 'next-intl'

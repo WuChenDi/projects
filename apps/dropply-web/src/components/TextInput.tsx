@@ -5,8 +5,8 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@cdlab996/ui/components/accordion'
-import { Button } from '@cdlab996/ui/components/button'
+} from '@cdlab/ui/components/accordion'
+import { Button } from '@cdlab/ui/components/button'
 import {
   InputGroup,
   InputGroupAddon,
@@ -14,7 +14,7 @@ import {
   InputGroupInput,
   InputGroupText,
   InputGroupTextarea,
-} from '@cdlab996/ui/components/input-group'
+} from '@cdlab/ui/components/input-group'
 import { ClipboardPaste, Copy, FileText, Plus, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'

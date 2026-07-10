@@ -1,8 +1,8 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { cn } from '@cdlab996/ui/lib/utils'
-import { formatFileSize } from '@cdlab996/utils'
+import { Button } from '@cdlab/ui/components/button'
+import { cn } from '@cdlab/ui/lib/utils'
+import { formatFileSize } from '@cdlab/utils'
 import { ArrowRight, Download, Eye, RotateCcw, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'

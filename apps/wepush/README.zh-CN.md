@@ -21,7 +21,7 @@
 
 - **框架**：Next.js 16 App Router + React 19 + TypeScript
 - **鉴权**：`better-auth`（Google / GitHub OAuth,仅社交登录）
-- **UI**：`@cdlab996/ui`（shadcn + Tailwind v4）+ TanStack Query / Form + Zustand
+- **UI**：`@cdlab/ui`（shadcn + Tailwind v4）+ TanStack Query / Form + Zustand
 - **ORM**：Drizzle，双驱动（`libsql` 用于 dev / Turso，`d1` 用于 Cloudflare）
 - **日历**：`react-day-picker`（日期选择）+ `tyme4ts`（公历 / 农历转换）
 - **部署**：`@opennextjs/cloudflare` → Cloudflare Workers（支持 cron）

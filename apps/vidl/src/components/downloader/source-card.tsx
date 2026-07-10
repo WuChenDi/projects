@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { ButtonGroup } from '@cdlab996/ui/components/button-group'
+import { Button } from '@cdlab/ui/components/button'
+import { ButtonGroup } from '@cdlab/ui/components/button-group'
 import {
   Card,
   CardAction,
@@ -10,28 +10,28 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Field, FieldTitle } from '@cdlab996/ui/components/field'
-import { Input } from '@cdlab996/ui/components/input'
+} from '@cdlab/ui/components/card'
+import { Field, FieldTitle } from '@cdlab/ui/components/field'
+import { Input } from '@cdlab/ui/components/input'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
   InputGroupText,
-} from '@cdlab996/ui/components/input-group'
-import { Slider } from '@cdlab996/ui/components/slider'
+} from '@cdlab/ui/components/input-group'
+import { Slider } from '@cdlab/ui/components/slider'
 import {
   ToggleGroup,
   ToggleGroupItem,
-} from '@cdlab996/ui/components/toggle-group'
+} from '@cdlab/ui/components/toggle-group'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@cdlab996/ui/components/tooltip'
-import { formatBytes } from '@cdlab996/utils'
+} from '@cdlab/ui/components/tooltip'
+import { formatBytes } from '@cdlab/utils'
 import {
   CircleQuestionMark,
   ClipboardPaste,

@@ -1,6 +1,6 @@
 'use client'
 
-import { IKPageContainer } from '@cdlab996/ui/IK'
+import { IKPageContainer } from '@cdlab/ui/IK'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import {

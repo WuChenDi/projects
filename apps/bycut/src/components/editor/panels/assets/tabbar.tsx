@@ -1,12 +1,12 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@cdlab996/ui/components/tooltip'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/tooltip'
+import { cn } from '@cdlab/ui/lib/utils'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {

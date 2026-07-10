@@ -2,7 +2,7 @@
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
-Client-side file and text encryption — nothing ever leaves the browser. All crypto runs in a **Web Worker** on top of `@cdlab996/cipher` (XChaCha20-Poly1305 + Argon2id, with optional ECIES public-key mode), so the UI thread stays responsive even on large files.
+Client-side file and text encryption — nothing ever leaves the browser. All crypto runs in a **Web Worker** on top of `@cdlab/cipher` (XChaCha20-Poly1305 + Argon2id, with optional ECIES public-key mode), so the UI thread stays responsive even on large files.
 
 Preview: https://securec.pages.dev/
 
@@ -17,16 +17,16 @@ Preview: https://securec.pages.dev/
 - **Auto mode-detect on decrypt** — reads the cipher stream header (magic bytes) to detect an encrypted file, and does the same for pasted encrypted text, switching the UI to decrypt mode automatically
 - **Web Worker execution** (`src/workers/cryptoWorker.ts`) — encryption/decryption never blocks the main thread; progress is streamed back via `postMessage`
 - **Multi-file batch processing** — queue multiple files with per-file progress, add/remove files incrementally
-- **Processing history** — every operation is tracked with persistent storage: metadata in `localStorage`, binary data in **IndexedDB** (`src/lib/storage.ts`, via `@cdlab996/utils`'s `createIDBStore`); batch download/delete from history
+- **Processing history** — every operation is tracked with persistent storage: metadata in `localStorage`, binary data in **IndexedDB** (`src/lib/storage.ts`, via `@cdlab/utils`'s `createIDBStore`); batch download/delete from history
 - **Internationalization** — English and Chinese via `next-intl`
 
 ## Tech Stack
 
 - **Framework** — Next.js (App Router), React, TypeScript
-- **Encryption** — `@cdlab996/cipher` (XChaCha20-Poly1305, Argon2id, ECIES), run inside a Web Worker
+- **Encryption** — `@cdlab/cipher` (XChaCha20-Poly1305, Argon2id, ECIES), run inside a Web Worker
 - **State** — Zustand (`src/store/useProcessStore.ts`), persisted via `zustand/middleware`
-- **Storage** — IndexedDB (`@cdlab996/utils` `createIDBStore`) for binary payloads, `localStorage` for result metadata
-- **UI** — `@cdlab996/ui` (shadcn/ui primitives), Tailwind v4, Sonner for toasts
+- **Storage** — IndexedDB (`@cdlab/utils` `createIDBStore`) for binary payloads, `localStorage` for result metadata
+- **UI** — `@cdlab/ui` (shadcn/ui primitives), Tailwind v4, Sonner for toasts
 - **i18n** — next-intl (en / zh)
 
 ## Getting Started
@@ -46,7 +46,7 @@ pnpm install
 ### Development
 
 ```bash
-pnpm --filter @cdlab996/securec dev
+pnpm --filter @cdlab/securec dev
 ```
 
 Dev server runs at `http://securec.localhost:3355` (via `@dotns/nsl`).
@@ -54,7 +54,7 @@ Dev server runs at `http://securec.localhost:3355` (via `@dotns/nsl`).
 ### Generate ECIES key pairs
 
 ```bash
-pnpm --filter @cdlab996/securec gk
+pnpm --filter @cdlab/securec gk
 ```
 
 Runs `scripts/generateKeys.js` — derives BIP32 key pairs from mnemonics (`@scure/bip32` / `@scure/bip39`) and demonstrates an ECIES encrypt/decrypt round trip between two parties, printing the public keys to the console.
@@ -62,8 +62,8 @@ Runs `scripts/generateKeys.js` — derives BIP32 key pairs from mnemonics (`@scu
 ### Build / Deploy
 
 ```bash
-pnpm --filter @cdlab996/securec build      # next build
-pnpm --filter @cdlab996/securec build:cf   # @cloudflare/next-on-pages
+pnpm --filter @cdlab/securec build      # next build
+pnpm --filter @cdlab/securec build:cf   # @cloudflare/next-on-pages
 ```
 
 ## License

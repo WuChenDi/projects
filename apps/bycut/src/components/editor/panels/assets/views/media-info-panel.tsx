@@ -1,6 +1,6 @@
 'use client'
 
-import { formatBytes } from '@cdlab996/utils'
+import { formatBytes } from '@cdlab/utils'
 import {
   Clock,
   FileType,

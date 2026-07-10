@@ -42,7 +42,7 @@ pnpm install
 ### Development
 
 ```bash
-pnpm --filter @cdlab996/live-user dev
+pnpm --filter @cdlab/live-user dev
 ```
 
 Dev server is available at `http://live-user.localhost:3355` (via `@dotns/nsl` â€” no port hunting).
@@ -50,13 +50,13 @@ Dev server is available at `http://live-user.localhost:3355` (via `@dotns/nsl` â
 Regenerate the Cloudflare bindings types after touching `wrangler.jsonc`:
 
 ```bash
-pnpm --filter @cdlab996/live-user cf-typegen
+pnpm --filter @cdlab/live-user cf-typegen
 ```
 
 ### Build / Deploy
 
 ```bash
-pnpm --filter @cdlab996/live-user deploy
+pnpm --filter @cdlab/live-user deploy
 ```
 
 Runs `wrangler deploy --minify`. Requires the `SITE_MANAGER` Durable Object binding and `account_id` set in `wrangler.jsonc`.

@@ -1,4 +1,4 @@
-import { GitHubIcon } from '@cdlab996/ui/icon'
+import { GitHubIcon } from '@cdlab/ui/icon'
 import { FireExtinguisher, Image, Video } from 'lucide-react'
 import Link from 'next/link'
 import type { ComponentType } from 'react'

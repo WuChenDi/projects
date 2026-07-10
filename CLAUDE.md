@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`@cdlab996/projects-monorepo` — a personal collection of privacy-first web tools sharing a single Turborepo + pnpm workspace. Most apps run **entirely in the browser** with zero server uploads (Transformers.js / FFmpeg.wasm / WebGPU / Web Workers); the few that have a server are Cloudflare Workers (Hono), not traditional Node.
+`@cdlab/projects-monorepo` — a personal collection of privacy-first web tools sharing a single Turborepo + pnpm workspace. Most apps run **entirely in the browser** with zero server uploads (Transformers.js / FFmpeg.wasm / WebGPU / Web Workers); the few that have a server are Cloudflare Workers (Hono), not traditional Node.
 
 Workspace layout:
 
@@ -37,25 +37,25 @@ pnpm clean                                   # bash scripts/clean.sh — wipes n
 pnpm dev:dropply                             # filters apps/dropply-* (web + api together)
 
 # Filter explicitly
-pnpm --filter @cdlab996/<name> dev|build|typecheck|lint
+pnpm --filter @cdlab/<name> dev|build|typecheck|lint
 pnpm --filter ./apps/<dir> dev|build         # path-based filter
 
 # Cloudflare Workers (baccarat, byplay-log, dropply-api, live-user)
-pnpm --filter @cdlab996/<worker> dev         # nsl run wrangler dev
-pnpm --filter @cdlab996/<worker> deploy      # wrangler deploy --minify
-pnpm --filter @cdlab996/<worker> cf-typegen  # regenerate CloudflareBindings type
+pnpm --filter @cdlab/<worker> dev         # nsl run wrangler dev
+pnpm --filter @cdlab/<worker> deploy      # wrangler deploy --minify
+pnpm --filter @cdlab/<worker> cf-typegen  # regenerate CloudflareBindings type
 
 # Drizzle (dropply-api, byplay-log, flnk, wepush)
-pnpm --filter @cdlab996/<worker> db:gen      # generate migration from schema
-pnpm --filter @cdlab996/<worker> db:migrate  # apply (LibSQL)
-pnpm --filter @cdlab996/<worker> cf:localdb  # apply to local D1
-pnpm --filter @cdlab996/<worker> cf:remotedb # apply to remote D1
-pnpm --filter @cdlab996/<worker> db:studio   # drizzle-kit studio (port 3015 / 3018 / 3019 / 3020)
+pnpm --filter @cdlab/<worker> db:gen      # generate migration from schema
+pnpm --filter @cdlab/<worker> db:migrate  # apply (LibSQL)
+pnpm --filter @cdlab/<worker> cf:localdb  # apply to local D1
+pnpm --filter @cdlab/<worker> cf:remotedb # apply to remote D1
+pnpm --filter @cdlab/<worker> db:studio   # drizzle-kit studio (port 3015 / 3018 / 3019 / 3020)
 
 # Workspace package tests (vitest)
-pnpm --filter @cdlab996/utils  test          # one-shot
-pnpm --filter @cdlab996/cipher test:watch
-pnpm --filter @cdlab996/utils  exec vitest run path/to.test.ts -t "name"
+pnpm --filter @cdlab/utils  test          # one-shot
+pnpm --filter @cdlab/cipher test:watch
+pnpm --filter @cdlab/utils  exec vitest run path/to.test.ts -t "name"
 
 # Explicit deploys (CI does NOT auto-deploy)
 pnpm deploy:baccarat | deploy:dropply-api | deploy:live-user | deploy:flnk | deploy:text2img | deploy:wepush
@@ -109,7 +109,7 @@ Entry: `src/index.ts`. Mounts `homeRoutes`, `sdkRoutes`, `wsRoutes`. The fronten
 
 ### Next.js apps
 
-All Next apps share these conventions: `nsl run next dev` for dev, `next build` (or `--webpack` for `clearify`/`flox`), `tsconfig` extends `@cdlab996/tsconfig/nextjs`, i18n via `next-intl` with `messages/{en,zh}.json`, Tailwind v4 via `@cdlab996/ui/globals.css`, shadcn/ui primitives from `@cdlab996/ui/components/*`. `middleware.ts` is the `next-intl` locale middleware unless noted.
+All Next apps share these conventions: `nsl run next dev` for dev, `next build` (or `--webpack` for `clearify`/`flox`), `tsconfig` extends `@cdlab/tsconfig/nextjs`, i18n via `next-intl` with `messages/{en,zh}.json`, Tailwind v4 via `@cdlab/ui/globals.css`, shadcn/ui primitives from `@cdlab/ui/components/*`. `middleware.ts` is the `next-intl` locale middleware unless noted.
 
 #### `flox` — Multi-source video aggregation & playback
 
@@ -150,12 +150,12 @@ Three modes split into separate routes: `/bg` (background removal via Transforme
 
 #### `SecureC` — Client-side file/text encryption
 
-Uses `@cdlab996/cipher` (XChaCha20-Poly1305 + Argon2id + ECIES) and runs all crypto in a Web Worker.
+Uses `@cdlab/cipher` (XChaCha20-Poly1305 + Argon2id + ECIES) and runs all crypto in a Web Worker.
 
 - `src/workers/cryptoWorker.ts` — Posts progress messages back as `{ progress, stage }`. Handles both file-stream mode (10 MB chunks via `streamCrypto`) and text mode (`textCrypto`). Reads cipher header to auto-detect mode on decrypt.
 - `src/store/` — Zustand stores for the crypto session.
 - `src/lib/storage.ts` — IndexedDB-backed history of past operations.
-- `src/scripts/generateKeys.js` (run via `pnpm --filter @cdlab996/securec gk`) — generates ECIES key pairs.
+- `src/scripts/generateKeys.js` (run via `pnpm --filter @cdlab/securec gk`) — generates ECIES key pairs.
 
 #### `dropply-web` — Dropply file sharing frontend (paired with `dropply-api`)
 
@@ -169,14 +169,14 @@ Uses `@cdlab996/cipher` (XChaCha20-Poly1305 + Argon2id + ECIES) and runs all cry
 - `src/app/api/{generate,models,prompts}/` — Edge route handlers; `generate` calls Cloudflare Workers AI with the requested model (FLUX, SDXL, DreamShaper).
 - `src/lib/api.ts` — Frontend client; results streamed/polled back to the UI.
 - TanStack Query for image history/cache.
-- Builds with **OpenNext for Cloudflare** (`@opennextjs/cloudflare`), not `next-on-pages`. Deploys with `pnpm --filter @cdlab996/text2img deploy` (which runs `opennextjs-cloudflare build && deploy`).
+- Builds with **OpenNext for Cloudflare** (`@opennextjs/cloudflare`), not `next-on-pages`. Deploys with `pnpm --filter @cdlab/text2img deploy` (which runs `opennextjs-cloudflare build && deploy`).
 
 #### `wepush` — WeChat test-account template-message console
 
 Multi-tenant console for sending WeChat official-account template messages. Replaces the legacy `ALL_CONFIG` + Qinglong script setup — everything (recipients, templates, push logs, settings) lives in the DB and is editable from the UI. Sign-in is **better-auth** (Google / GitHub social login, login == signup); every row is scoped to its owner (`ownerId`), so each account only ever sees its own data.
 
 - `src/app/` — App Router pages (`/`, `/login`, `/privacy`, `/terms`, dashboard `/dashboard/*`) + `/api/*` route handlers. `/api/auth/[...all]` is the better-auth handler. The dashboard layout is a server component that checks the session and redirects to `/login` when absent; every `/api/*` handler re-checks the session server-side (`requireSession`) and scopes its queries to `ownerId`.
-- `src/database/schema.ts` — Drizzle schema with the shared `trackingFields` block (soft-delete via `isDeleted`). better-auth core tables (`user`/`session`/`account`/`verification`); business tables (`templates`, `users` recipients, `pushBatches`, `pushLogs`) carry `ownerId` → `user.id`, and `templates.code` is unique per owner. The former single-row `global_config` is now `user_config` keyed by `ownerId` (each owner's own WeChat creds, throttle knobs, cron config and push token). Type note: `User`/`NewUser` are the **recipient** rows; the auth user is `AuthUser`. Dual driver (`libsql`/Turso or `d1`) — **both run in production on Workers** — wired via `@cdlab996/db/web` (`src/lib/db.ts` is a thin adapter). `DB_TYPE` switches the dialect (see `drizzle.config.ts`); `LIBSQL_URL` defaults to `file:./src/database/data.db`. Studio runs on port 3020.
+- `src/database/schema.ts` — Drizzle schema with the shared `trackingFields` block (soft-delete via `isDeleted`). better-auth core tables (`user`/`session`/`account`/`verification`); business tables (`templates`, `users` recipients, `pushBatches`, `pushLogs`) carry `ownerId` → `user.id`, and `templates.code` is unique per owner. The former single-row `global_config` is now `user_config` keyed by `ownerId` (each owner's own WeChat creds, throttle knobs, cron config and push token). Type note: `User`/`NewUser` are the **recipient** rows; the auth user is `AuthUser`. Dual driver (`libsql`/Turso or `d1`) — **both run in production on Workers** — wired via `@cdlab/db/web` (`src/lib/db.ts` is a thin adapter). `DB_TYPE` switches the dialect (see `drizzle.config.ts`); `LIBSQL_URL` defaults to `file:./src/database/data.db`. Studio runs on port 3020.
 - `src/services/channels/wechat.ts` — Acquires the WeChat `access_token` and sends template messages.
 - `src/services/sources/{weather,hitokoto,iciba}.ts` — External data sources for template variables (basic weather via `t.weather.itboy.net`, Hitokoto quotes, iCIBA English notes).
 - `src/services/calendar/` — Solar + lunar diff math built on `tyme4ts`. Each festival/anniversary has an `isLunar` toggle; lunar `MM-DD` is converted to the next solar occurrence and rendered with a `(农历)` suffix.
@@ -186,7 +186,7 @@ Multi-tenant console for sending WeChat official-account template messages. Repl
 - `src/lib/auth.ts` — `getAuth()` builds the better-auth instance per request (CF bindings/env only exist inside a request). `requireSession(req)` gates console APIs; `requireOwner(req)` gates the push API and resolves the owner from either the session cookie or a `Authorization: Bearer <pushApiToken>` (the token maps back to its owner). `src/lib/auth-client.ts` is the client (`authClient` — Google/GitHub).
 - `public/data/city-codes.json` — 3240 CMA station codes (9-digit) for the weather city picker; refresh with `pnpm gen:cities`. District-level codes that itboy doesn't index fall back to the city-level code (`xxxxxx01`).
 - **Auth model**: better-auth session (Google/GitHub) gates the whole console — the dashboard layout server-checks it and every console `/api/*` route runs `requireSession` and filters by `ownerId`, so the APIs are **server-authorized** (no more client-only gate). The push API (`/api/push/run`, `/api/push/retry`, batch retry) uses `requireOwner`: a session cookie OR a per-owner `Authorization: Bearer <pushApiToken>` (each owner's `user_config.pushApiToken`, auto-generated on first `/settings` load, re-generable from Settings). `GET /api/settings` masks `wechatAppSecret` and `pushApiToken` — only writable (PATCH) or revealed once on rotate. Same email across Google/GitHub links to one account (`accountLinking.trustedProviders`). Required env/secrets: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (no trailing slash), `GOOGLE_CLIENT_ID/SECRET`, `GITHUB_CLIENT_ID/SECRET`; OAuth callback is `<BETTER_AUTH_URL>/api/auth/callback/{google,github}`.
-- Builds with **OpenNext for Cloudflare** (`@opennextjs/cloudflare`). Deploys with `pnpm --filter @cdlab996/wepush deploy`.
+- Builds with **OpenNext for Cloudflare** (`@opennextjs/cloudflare`). Deploys with `pnpm --filter @cdlab/wepush deploy`.
 
 #### `vidl` — Video downloader
 
@@ -224,7 +224,7 @@ Pure-browser stream download — `mux.js` + Streams API, near-zero memory footpr
 - `src/utils/cachedImages.ts` — Module-level cache around `cloudinary.v2.search.expression('folder:${CLOUDINARY_FOLDER}/*')`. Memoizes across requests within the same isolate; Edge cold-starts refetch.
 - `src/utils/generateBlurPlaceholder.ts` — Fetches an 8px-wide Cloudinary JPEG and inlines it as a base64 data URL using native `Uint8Array` + `btoa()` (no `node:buffer`, so it works on the Edge runtime).
 - `src/components/Gallery.tsx` — Masonry grid (`columns-1 sm:columns-2 xl:columns-3 2xl:columns-4`); clicking a photo pushes `?photoId=N` to open `Modal`.
-- `src/components/Modal.tsx` — Lightbox built on `@cdlab996/ui/components/dialog` (`Dialog` + `DialogPortal` + `DialogOverlay`) plus `radix-ui` `Dialog.Content` for full-screen layout — the wrapper `DialogContent` hardcodes centered-card styling, so the primitive is used directly to satisfy the lightbox layout while still routing through the shared `Dialog` root.
+- `src/components/Modal.tsx` — Lightbox built on `@cdlab/ui/components/dialog` (`Dialog` + `DialogPortal` + `DialogOverlay`) plus `radix-ui` `Dialog.Content` for full-screen layout — the wrapper `DialogContent` hardcodes centered-card styling, so the primitive is used directly to satisfy the lightbox layout while still routing through the shared `Dialog` root.
 - `src/components/SharedModal.tsx` — Image swap with `motion`/`AnimatePresence`, `react-swipeable` for touch, bottom thumbnail strip filtered to ±15 around `index`. All icons are `lucide-react`.
 - `src/utils/useLastViewedPhoto.ts` — Zustand store powering scroll-restore after closing the lightbox.
 - `src/types/react-use-keypress.d.ts` — Local ambient declaration; `react-use-keypress` ships no types.
@@ -242,7 +242,7 @@ Pure-browser stream download — `mux.js` + Streams API, near-zero memory footpr
 
 ### Shared packages
 
-#### `@cdlab996/ui` — Shared React/Tailwind v4 component library
+#### `@cdlab/ui` — Shared React/Tailwind v4 component library
 
 - **No build step** — exposes raw source via subpath exports:
   - `./globals.css` — Tailwind v4 entry (apps import this from their `globals.css`)
@@ -252,16 +252,16 @@ Pure-browser stream download — `mux.js` + Streams API, near-zero memory footpr
   - `./icon/<name>`, `./IK/<name>`, `./reactbits/<name>` → curated icon sets and React Bits effects
   - `./postcss.config` → shared Tailwind PostCSS config
 - **Biome ignores** `src/components/**/*.tsx` and `src/reactbits/**/*.tsx` (3rd-party-derived; don't lint).
-- Consumers add it as `"@cdlab996/ui": "workspace:*"` and import like `import { Button } from '@cdlab996/ui/components/button'`.
+- Consumers add it as `"@cdlab/ui": "workspace:*"` and import like `import { Button } from '@cdlab/ui/components/button'`.
 
-#### `@cdlab996/utils` — Generic utilities
+#### `@cdlab/utils` — Generic utilities
 
 - Built with `tsdown`, tested with `vitest`. Consumers import from `dist/index.mjs`.
 - Modules: `clipboard`, `download`, `format`, `idb-store`, `logger`, `np` (numerical-precision math). All re-exported from `src/index.ts`.
 - `download` exposes `downloadFile` (single file via Blob or URL) and `downloadFilesAsZip` (batch ZIP via dynamic `jszip` import; ZIP naming convention: `{prefix}_yyyyMMdd_HHmmss.zip`, caller only passes prefix).
-- After editing, run `pnpm --filter @cdlab996/utils build` (or `dev --watch`) so consumers see updates.
+- After editing, run `pnpm --filter @cdlab/utils build` (or `dev --watch`) so consumers see updates.
 
-#### `@cdlab996/cipher` — Stream cipher library
+#### `@cdlab/cipher` — Stream cipher library
 
 - XChaCha20-Poly1305 + Argon2id (password mode) and ECIES (public-key mode) — both with a custom stream chunk format (see `header.ts`).
 - Public API:
@@ -273,24 +273,24 @@ Pure-browser stream download — `mux.js` + Streams API, near-zero memory footpr
 - Used by `SecureC` and `dropply-web`.
 - Tested with vitest + happy-dom.
 
-#### `@cdlab996/uncrypto` — Cross-runtime crypto shim
+#### `@cdlab/uncrypto` — Cross-runtime crypto shim
 
 - Two-file package: `crypto.node.ts` (Node `webcrypto`) and `crypto.web.ts` (browser `crypto`). Resolved at build via tsdown.
 - Used wherever code runs in both Workers/browser and Node test runners.
 
-#### `@cdlab996/db` — Shared Drizzle DB factory + query helpers
+#### `@cdlab/db` — Shared Drizzle DB factory + query helpers
 
 Built with `tsdown`. The single source of truth for the dual-driver (`d1` / `libsql`) DB wiring across `dropply-api`, `flnk`, and `wepush` — each app's `src/lib/db.ts` is now a thin adapter over this package (no more divergent hand-rolled `DatabaseManager` / `getDb` copies).
 
 - **Two runtime entries** — pick by the app's bundler, NOT auto-selected (explicit subpaths avoid Hono-on-miniflare picking the wrong client):
-  - `@cdlab996/db/node` → uses `@libsql/client` (Node entry, supports `file:` local SQLite). For plain-wrangler **Hono** workers (`dropply-api`) + Node test runners.
-  - `@cdlab996/db/web` → uses `@libsql/client/web` (pure fetch/ws, bundles under OpenNext esbuild). For **Next.js / OpenNext** apps (`flnk`, `wepush`). Remote Turso only, no `file:`.
+  - `@cdlab/db/node` → uses `@libsql/client` (Node entry, supports `file:` local SQLite). For plain-wrangler **Hono** workers (`dropply-api`) + Node test runners.
+  - `@cdlab/db/web` → uses `@libsql/client/web` (pure fetch/ws, bundles under OpenNext esbuild). For **Next.js / OpenNext** apps (`flnk`, `wepush`). Remote Turso only, no `file:`.
 - `defineDb(schema)` returns a keyed-cached `getDb(env: DbEnv)`; `DbEnv` = `{ DB_TYPE?, DB?, LIBSQL_URL?, LIBSQL_AUTH_TOKEN? }`. `DB_TYPE` ('libsql' default | 'd1') selects the driver. Each app builds `DbEnv` from its own source (Hono `c.env`; OpenNext injected env / `getCloudflareContext()` with `process.env` fallback).
 - Exported `Db<TSchema>` = `BaseSQLiteDatabase<'async', unknown, TSchema>` — driver-agnostic; `.batch` etc. need narrowing.
 - `./utils` (also re-exported from `/node` and `/web`) — `trackingFields` query helpers: `notDeleted`, `withNotDeleted`, `softDelete`, `isNotExpired`, `withNotDeletedAndNotExpired`, `withUpdatedTimestamp`, `isExpired`.
 - `@libsql/client` / `drizzle-orm` are kept **external** in the build so consumers resolve them — critical so the OpenNext apps' `serverExternalPackages` (`@libsql/client`, `@libsql/hrana-client`, `@libsql/isomorphic-ws` in `next.config.ts`) still matches the import and wrangler resolves the libsql chain via the `workerd` export condition.
 
-#### `@cdlab996/tsconfig` — Shared TS configs
+#### `@cdlab/tsconfig` — Shared TS configs
 
 - `base.json` — strict, NodeNext, ES2017. Used by everything.
 - `nextjs.json`, `hono.json`, `react-library.json`, `utils.json` — overlay presets per app type.
@@ -316,7 +316,7 @@ Built with `tsdown`. The single source of truth for the dual-driver (`d1` / `lib
 
 ### Cross-package imports use the workspace protocol
 
-`"@cdlab996/utils": "workspace:*"`. Workspace packages built by tsdown (`utils`, `cipher`, `uncrypto`) ship from `dist/`; if you edit one and the consumer can't resolve a new export, rebuild it (`pnpm --filter <pkg> build`) or run `dev --watch`. `pnpm prepare` (auto-run after install) builds them in topological order.
+`"@cdlab/utils": "workspace:*"`. Workspace packages built by tsdown (`utils`, `cipher`, `uncrypto`) ship from `dist/`; if you edit one and the consumer can't resolve a new export, rebuild it (`pnpm --filter <pkg> build`) or run `dev --watch`. `pnpm prepare` (auto-run after install) builds them in topological order.
 
 ### i18n
 
@@ -326,12 +326,12 @@ Built with `tsdown`. The single source of truth for the dual-driver (`d1` / `lib
 
 ### IDs
 
-- `@cdlab996/genid` (catalog dep) is the standard ID generator across apps.
+- `@cdlab/driftflake` (catalog dep) is the standard ID generator across apps.
 - Database tables in `dropply-api`, `byplay-log`, and `wepush` use UUID v4 (or auto-increment for `playerLogs`). `flnk.links` uses a user-facing `slug` with a `(slug, domain)` composite unique key.
 
 ### Soft delete
 
-Drizzle tables share a `trackingFields` block: `createdAt`, `updatedAt` (auto-updated via `$onUpdateFn`), `isDeleted` (default 0). Never hard-delete; filter with `eq(table.isDeleted, 0)` — or the shared helpers from `@cdlab996/db/utils` (`notDeleted`, `withNotDeleted`, `softDelete`, `isNotExpired`, …).
+Drizzle tables share a `trackingFields` block: `createdAt`, `updatedAt` (auto-updated via `$onUpdateFn`), `isDeleted` (default 0). Never hard-delete; filter with `eq(table.isDeleted, 0)` — or the shared helpers from `@cdlab/db/utils` (`notDeleted`, `withNotDeleted`, `softDelete`, `isNotExpired`, …).
 
 ### API response envelope (Workers)
 

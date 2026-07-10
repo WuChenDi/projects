@@ -1,9 +1,9 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Card, CardContent, CardHeader } from '@cdlab996/ui/components/card'
-import GradientText from '@cdlab996/ui/reactbits/GradientText'
-import ShinyText from '@cdlab996/ui/reactbits/ShinyText'
+import { Button } from '@cdlab/ui/components/button'
+import { Card, CardContent, CardHeader } from '@cdlab/ui/components/card'
+import GradientText from '@cdlab/ui/reactbits/GradientText'
+import ShinyText from '@cdlab/ui/reactbits/ShinyText'
 import { useTranslations } from 'next-intl'
 
 export default function Error({ reset }: { reset: () => void }) {

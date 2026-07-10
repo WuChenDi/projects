@@ -1,8 +1,8 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Tabs, TabsContent } from '@cdlab996/ui/components/tabs'
-import { IKPageContainer } from '@cdlab996/ui/IK'
+import { Button } from '@cdlab/ui/components/button'
+import { Tabs, TabsContent } from '@cdlab/ui/components/tabs'
+import { IKPageContainer } from '@cdlab/ui/IK'
 import { Loader2, X } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'

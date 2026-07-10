@@ -39,7 +39,7 @@ Preview: https://vidl.pages.dev/
 - **Download pipeline** — `mux.js` (TS → MP4 transmuxing) + browser Streams API (`WritableStream`, via a bundled `StreamSaver.js`) for near-zero-memory writes
 - **State** — Zustand (`src/stores/`)
 - **i18n** — next-intl (en / zh)
-- **UI** — `@cdlab996/ui` (Tailwind v4, shadcn/ui primitives)
+- **UI** — `@cdlab/ui` (Tailwind v4, shadcn/ui primitives)
 
 ## Getting Started
 
@@ -57,7 +57,7 @@ pnpm install
 ### Development
 
 ```bash
-pnpm --filter @cdlab996/vidl dev
+pnpm --filter @cdlab/vidl dev
 ```
 
 Dev server: `http://vidl.localhost:3355` (via `@dotns/nsl` — no port hunting).
@@ -65,8 +65,8 @@ Dev server: `http://vidl.localhost:3355` (via `@dotns/nsl` — no port hunting).
 ### Build / Deploy
 
 ```bash
-pnpm --filter @cdlab996/vidl build     # next build
-pnpm --filter @cdlab996/vidl build:cf  # @cloudflare/next-on-pages
+pnpm --filter @cdlab/vidl build     # next build
+pnpm --filter @cdlab/vidl build:cf  # @cloudflare/next-on-pages
 ```
 
 ## Architecture

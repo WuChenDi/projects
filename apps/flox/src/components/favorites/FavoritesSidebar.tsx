@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Drawer,
   DrawerClose,
@@ -8,8 +8,8 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-} from '@cdlab996/ui/components/drawer'
-import { IKConfirmDialog } from '@cdlab996/ui/IK'
+} from '@cdlab/ui/components/drawer'
+import { IKConfirmDialog } from '@cdlab/ui/IK'
 import { TrashIcon, XIcon } from 'lucide-react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useState } from 'react'

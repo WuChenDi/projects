@@ -1,15 +1,15 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Field, FieldTitle } from '@cdlab996/ui/components/field'
-import { Input } from '@cdlab996/ui/components/input'
-import { Progress } from '@cdlab996/ui/components/progress'
-import { Slider } from '@cdlab996/ui/components/slider'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Field, FieldTitle } from '@cdlab/ui/components/field'
+import { Input } from '@cdlab/ui/components/input'
+import { Progress } from '@cdlab/ui/components/progress'
+import { Slider } from '@cdlab/ui/components/slider'
 import {
   ToggleGroup,
   ToggleGroupItem,
-} from '@cdlab996/ui/components/toggle-group'
-import { formatBytes } from '@cdlab996/utils'
+} from '@cdlab/ui/components/toggle-group'
+import { formatBytes } from '@cdlab/utils'
 import { Check, Loader2, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { VariantStream } from '@/lib'

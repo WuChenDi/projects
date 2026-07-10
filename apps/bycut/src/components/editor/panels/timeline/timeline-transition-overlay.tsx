@@ -4,9 +4,9 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@cdlab996/ui/components/popover'
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/popover'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
+import { cn } from '@cdlab/ui/lib/utils'
 import { useCallback, useRef, useState } from 'react'
 import { TIMELINE_CONSTANTS } from '@/constants/timeline-constants'
 import {

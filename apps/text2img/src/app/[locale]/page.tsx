@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { IKPageContainer } from '@cdlab996/ui/IK'
+import { Button } from '@cdlab/ui/components/button'
+import { IKPageContainer } from '@cdlab/ui/IK'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2, Sparkles } from 'lucide-react'
 import { useTranslations } from 'next-intl'

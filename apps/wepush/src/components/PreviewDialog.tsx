@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Dialog,
   DialogContent,
@@ -8,8 +8,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
-import { Spinner } from '@cdlab996/ui/components/spinner'
+} from '@cdlab/ui/components/dialog'
+import { Spinner } from '@cdlab/ui/components/spinner'
 
 export interface PreviewResult {
   templateCode: string

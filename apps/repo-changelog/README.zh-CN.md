@@ -55,7 +55,7 @@ pnpm install
 ### 开发
 
 ```bash
-pnpm --filter @cdlab996/repo-changelog dev
+pnpm --filter @cdlab/repo-changelog dev
 ```
 
 开发服务器地址为 `http://repo-changelog.localhost:3355`（通过 `@dotns/nsl` 提供）。
@@ -64,13 +64,13 @@ pnpm --filter @cdlab996/repo-changelog dev
 
 ```bash
 # 生产构建
-pnpm --filter @cdlab996/repo-changelog build
+pnpm --filter @cdlab/repo-changelog build
 
 # 静态生成
-pnpm --filter @cdlab996/repo-changelog generate
+pnpm --filter @cdlab/repo-changelog generate
 
 # 本地预览生产构建
-pnpm --filter @cdlab996/repo-changelog preview
+pnpm --filter @cdlab/repo-changelog preview
 ```
 
 ## 许可证

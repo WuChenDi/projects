@@ -1,9 +1,9 @@
 {
-  "extends": "@cdlab996/tsconfig/nextjs.json",
+  "extends": "@cdlab/tsconfig/nextjs.json",
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"],
-      "@cdlab996/ui/*": ["../../packages/ui/src/*"]
+      "@cdlab/ui/*": ["../../packages/ui/src/*"]
     },
     "plugins": [
       {

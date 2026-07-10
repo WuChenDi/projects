@@ -1,4 +1,4 @@
-import { IKPageContainer } from '@cdlab996/ui/IK'
+import { IKPageContainer } from '@cdlab/ui/IK'
 import HistorySection from '@/components/history-section'
 import TTSForm from '@/components/tts-form'
 

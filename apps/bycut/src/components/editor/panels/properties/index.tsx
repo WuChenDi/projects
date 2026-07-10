@@ -1,6 +1,6 @@
 'use client'
 
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
 import { useMemo } from 'react'
 import { useElementSelection } from '@/hooks/timeline/element/use-element-selection'
 import { useEditor } from '@/hooks/use-editor'

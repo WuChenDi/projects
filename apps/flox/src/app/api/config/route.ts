@@ -3,7 +3,7 @@
  * Exposes configuration status (never actual values) to the client
  */
 
-import { verifyPasswordFn } from '@cdlab996/utils'
+import { verifyPasswordFn } from '@cdlab/utils'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 

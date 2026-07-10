@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/vidl",
+  "name": "@cdlab/vidl",
   "type": "module",
   "version": "2.0.0",
   "private": true,
@@ -22,9 +22,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@cdlab996/genid": "catalog:prod",
-    "@cdlab996/ui": "workspace:*",
-    "@cdlab996/utils": "workspace:*",
+    "@cdlab/driftflake": "catalog:prod",
+    "@cdlab/ui": "workspace:*",
+    "@cdlab/utils": "workspace:*",
     "@next/third-parties": "catalog:prod",
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",
@@ -41,7 +41,7 @@
     "zustand": "catalog:prod"
   },
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",

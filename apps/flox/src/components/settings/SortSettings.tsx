@@ -6,9 +6,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Label } from '@cdlab996/ui/components/label'
-import { RadioGroup, RadioGroupItem } from '@cdlab996/ui/components/radio-group'
+} from '@cdlab/ui/components/card'
+import { Label } from '@cdlab/ui/components/label'
+import { RadioGroup, RadioGroupItem } from '@cdlab/ui/components/radio-group'
 import { sortOptions } from '@/lib/store/settings-helpers'
 import type { SortOption } from '@/lib/store/settings-store'
 

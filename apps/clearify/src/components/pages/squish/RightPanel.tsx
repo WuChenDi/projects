@@ -1,7 +1,7 @@
 'use client'
 
-import { IKEmpty } from '@cdlab996/ui/IK'
-import { downloadFile } from '@cdlab996/utils'
+import { IKEmpty } from '@cdlab/ui/IK'
+import { downloadFile } from '@cdlab/utils'
 import { CloudUpload } from 'lucide-react'
 import type { ImageFile } from '@/types'
 import { ImageItem } from './ImageItem'

@@ -1,4 +1,4 @@
-# @cdlab996/projects-monorepo
+# @cdlab/projects-monorepo
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-%E2%89%A5%2020-brightgreen.svg)](https://nodejs.org/)
@@ -305,39 +305,39 @@ pnpm install
 
 ```bash
 pnpm dev                                     # 启动所有应用（并行开发）
-pnpm --filter @cdlab996/clearify dev         # → http://clearify.localhost:3355
-pnpm --filter @cdlab996/baccarat dev         # → http://baccarat.localhost:3355
-pnpm --filter @cdlab996/bycut dev            # → http://bycut.localhost:3355
-pnpm --filter @cdlab996/vidl dev             # → http://vidl.localhost:3355
-pnpm --filter @cdlab996/securec dev          # → http://securec.localhost:3355
-pnpm --filter @cdlab996/text2img dev         # → http://text2img.localhost:3355
-pnpm --filter @cdlab996/values dev           # → http://values.localhost:3355
-pnpm --filter @cdlab996/byplay dev           # → http://byplay.localhost:3355
-pnpm --filter @cdlab996/byplay-log dev       # → http://byplay-log.localhost:3355
-pnpm --filter @cdlab996/bytts dev            # → http://bytts.localhost:3355
-pnpm --filter @cdlab996/byshot dev           # → http://byshot.localhost:3355
-pnpm --filter @cdlab996/dropply-web dev      # → http://dropply-web.localhost:3355
-pnpm --filter @cdlab996/flox dev             # → http://flox.localhost:3355
-pnpm --filter @cdlab996/live-user dev        # → http://live-user.localhost:3355
-pnpm --filter @cdlab996/flnk dev             # → http://flnk.localhost:3355
-pnpm --filter @cdlab996/wepush dev           # → http://wepush.localhost:3355
-pnpm --filter @cdlab996/repo-changelog dev   # → http://repo-changelog.localhost:3355
+pnpm --filter @cdlab/clearify dev         # → http://clearify.localhost:3355
+pnpm --filter @cdlab/baccarat dev         # → http://baccarat.localhost:3355
+pnpm --filter @cdlab/bycut dev            # → http://bycut.localhost:3355
+pnpm --filter @cdlab/vidl dev             # → http://vidl.localhost:3355
+pnpm --filter @cdlab/securec dev          # → http://securec.localhost:3355
+pnpm --filter @cdlab/text2img dev         # → http://text2img.localhost:3355
+pnpm --filter @cdlab/values dev           # → http://values.localhost:3355
+pnpm --filter @cdlab/byplay dev           # → http://byplay.localhost:3355
+pnpm --filter @cdlab/byplay-log dev       # → http://byplay-log.localhost:3355
+pnpm --filter @cdlab/bytts dev            # → http://bytts.localhost:3355
+pnpm --filter @cdlab/byshot dev           # → http://byshot.localhost:3355
+pnpm --filter @cdlab/dropply-web dev      # → http://dropply-web.localhost:3355
+pnpm --filter @cdlab/flox dev             # → http://flox.localhost:3355
+pnpm --filter @cdlab/live-user dev        # → http://live-user.localhost:3355
+pnpm --filter @cdlab/flnk dev             # → http://flnk.localhost:3355
+pnpm --filter @cdlab/wepush dev           # → http://wepush.localhost:3355
+pnpm --filter @cdlab/repo-changelog dev   # → http://repo-changelog.localhost:3355
 pnpm build                                   # 构建所有应用
-pnpm --filter @cdlab996/clearify run build
-pnpm --filter @cdlab996/bycut run build
-pnpm --filter @cdlab996/vidl run build
-pnpm --filter @cdlab996/securec run build
-pnpm --filter @cdlab996/text2img run build
-pnpm --filter @cdlab996/values run build
-pnpm --filter @cdlab996/byplay run build
-pnpm --filter @cdlab996/byplay-log run build
-pnpm --filter @cdlab996/bytts run build
-pnpm --filter @cdlab996/byshot run build
-pnpm --filter @cdlab996/dropply-web run build
-pnpm --filter @cdlab996/flox run build
-pnpm --filter @cdlab996/flnk run build
-pnpm --filter @cdlab996/wepush run build
-pnpm --filter @cdlab996/repo-changelog run build
+pnpm --filter @cdlab/clearify run build
+pnpm --filter @cdlab/bycut run build
+pnpm --filter @cdlab/vidl run build
+pnpm --filter @cdlab/securec run build
+pnpm --filter @cdlab/text2img run build
+pnpm --filter @cdlab/values run build
+pnpm --filter @cdlab/byplay run build
+pnpm --filter @cdlab/byplay-log run build
+pnpm --filter @cdlab/bytts run build
+pnpm --filter @cdlab/byshot run build
+pnpm --filter @cdlab/dropply-web run build
+pnpm --filter @cdlab/flox run build
+pnpm --filter @cdlab/flnk run build
+pnpm --filter @cdlab/wepush run build
+pnpm --filter @cdlab/repo-changelog run build
 pnpm lint                          # Biome 代码检查
 pnpm format                        # Biome 格式化全部代码
 pnpm clean                         # 清理 node_modules / 缓存 / 构建产物
@@ -367,11 +367,11 @@ pnpm clean                         # 清理 node_modules / 缓存 / 构建产物
 │   ├── vidl/              # 视频下载工具（M3U8/HLS、MP4 等）
 │   └── wepush/            # 微信测试号模板消息推送控制台
 ├── packages/
-│   ├── cipher/            # 流式加解密库 (@cdlab996/cipher)
-│   ├── tsconfig/          # 共享 TypeScript 配置 (@cdlab996/tsconfig)
-│   ├── ui/                # 共享 UI 组件库 (@cdlab996/ui)
-│   ├── uncrypto/          # 轻量加密工具 (@cdlab996/uncrypto)
-│   └── utils/             # 通用工具函数 (@cdlab996/utils)
+│   ├── cipher/            # 流式加解密库 (@cdlab/cipher)
+│   ├── tsconfig/          # 共享 TypeScript 配置 (@cdlab/tsconfig)
+│   ├── ui/                # 共享 UI 组件库 (@cdlab/ui)
+│   ├── uncrypto/          # 轻量加密工具 (@cdlab/uncrypto)
+│   └── utils/             # 通用工具函数 (@cdlab/utils)
 ├── scripts/
 │   └── clean.sh
 ├── turbo.json

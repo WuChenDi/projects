@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/utils",
+  "name": "@cdlab/utils",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -36,7 +36,7 @@
     "jszip": "catalog:prod"
   },
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
     "jsdom": "catalog:dev",
     "tsdown": "catalog:dev",

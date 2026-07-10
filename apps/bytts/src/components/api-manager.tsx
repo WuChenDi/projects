@@ -1,8 +1,8 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
-import { Checkbox } from '@cdlab996/ui/components/checkbox'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
+import { Checkbox } from '@cdlab/ui/components/checkbox'
 import {
   Dialog,
   DialogClose,
@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@cdlab996/ui/components/dialog'
+} from '@cdlab/ui/components/dialog'
 import {
   Field,
   FieldContent,
@@ -20,14 +20,14 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-} from '@cdlab996/ui/components/field'
-import { Input } from '@cdlab996/ui/components/input'
-import { PasswordInput } from '@cdlab996/ui/components/password-input'
-import { RadioGroup, RadioGroupItem } from '@cdlab996/ui/components/radio-group'
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
-import { Switch } from '@cdlab996/ui/components/switch'
-import { Textarea } from '@cdlab996/ui/components/textarea'
-import { IKConfirmDialog, IKEmpty } from '@cdlab996/ui/IK'
+} from '@cdlab/ui/components/field'
+import { Input } from '@cdlab/ui/components/input'
+import { PasswordInput } from '@cdlab/ui/components/password-input'
+import { RadioGroup, RadioGroupItem } from '@cdlab/ui/components/radio-group'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
+import { Switch } from '@cdlab/ui/components/switch'
+import { Textarea } from '@cdlab/ui/components/textarea'
+import { IKConfirmDialog, IKEmpty } from '@cdlab/ui/IK'
 import { useForm } from '@tanstack/react-form'
 import {
   Copy,

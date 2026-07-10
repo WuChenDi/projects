@@ -7,7 +7,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@cdlab996/ui/components/alert-dialog'
+} from '@cdlab/ui/components/alert-dialog'
 import { OctagonAlert } from 'lucide-react'
 
 interface IKConfirmDialogProps {

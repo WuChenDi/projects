@@ -1,20 +1,20 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
+} from '@cdlab/ui/components/card'
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldTitle,
-} from '@cdlab996/ui/components/field'
-import { Textarea } from '@cdlab996/ui/components/textarea'
+} from '@cdlab/ui/components/field'
+import { Textarea } from '@cdlab/ui/components/textarea'
 import { useTranslations } from 'next-intl'
 import { useCallback } from 'react'
 import type { AdFilterMode, HlsConfig } from '@/hooks/use-hls-player'

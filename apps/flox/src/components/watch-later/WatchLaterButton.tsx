@@ -1,13 +1,13 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@cdlab996/ui/components/tooltip'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/tooltip'
+import { cn } from '@cdlab/ui/lib/utils'
 import { BookmarkIcon } from 'lucide-react'
 import { memo, useCallback, useState } from 'react'
 import {

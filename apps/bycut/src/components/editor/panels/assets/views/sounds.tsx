@@ -1,8 +1,8 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Input } from '@cdlab996/ui/components/input'
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
+import { Button } from '@cdlab/ui/components/button'
+import { Input } from '@cdlab/ui/components/input'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
 import { Pause, Play, Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'

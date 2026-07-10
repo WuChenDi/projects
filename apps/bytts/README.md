@@ -23,7 +23,7 @@ Preview: https://bytts.pages.dev/
 
 - **Framework** — Next.js (App Router), Edge Runtime API routes
 - **Speech backend** — Microsoft Azure Cognitive Services Speech (SSML synthesis), plus any OpenAI-format or Edge-format TTS API added through the API manager
-- **UI** — React 19 + TypeScript, `@cdlab996/ui`, TanStack Form / Query
+- **UI** — React 19 + TypeScript, `@cdlab/ui`, TanStack Form / Query
 - **State** — Zustand (`useApiStore` for providers, `useHistoryStore` for history persistence via IndexedDB + localStorage)
 - **Deployment** — Cloudflare Pages (`@cloudflare/next-on-pages`)
 
@@ -52,10 +52,10 @@ Opens at `http://bytts.localhost:3355` (via `@dotns/nsl`).
 
 ```bash
 # Production build
-pnpm --filter @cdlab996/bytts build
+pnpm --filter @cdlab/bytts build
 
 # Cloudflare Pages build
-pnpm --filter @cdlab996/bytts run build:cf
+pnpm --filter @cdlab/bytts run build:cf
 ```
 
 ## API

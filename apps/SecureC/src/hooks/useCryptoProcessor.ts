@@ -1,8 +1,8 @@
 'use client'
 
-import { detect } from '@cdlab996/cipher'
-import { StatusEnum } from '@cdlab996/ui/IK'
-import { downloadFile } from '@cdlab996/utils'
+import { detect } from '@cdlab/cipher'
+import { StatusEnum } from '@cdlab/ui/IK'
+import { downloadFile } from '@cdlab/utils'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'

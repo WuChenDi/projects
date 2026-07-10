@@ -1,4 +1,4 @@
-# @cdlab996/tsconfig
+# @cdlab/tsconfig
 
 Shared `tsconfig.json` presets for the workspace — each app or package extends one of these instead of hand-rolling its own compiler options.
 
@@ -9,7 +9,7 @@ Add it as a workspace dependency:
 ```json
 {
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*"
+    "@cdlab/tsconfig": "workspace:*"
   }
 }
 ```
@@ -18,7 +18,7 @@ Extend the relevant preset from the consumer's `tsconfig.json` (the package has 
 
 ```json
 {
-  "extends": "@cdlab996/tsconfig/nextjs.json",
+  "extends": "@cdlab/tsconfig/nextjs.json",
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"]

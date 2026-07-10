@@ -6,9 +6,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { IKPageContainer } from '@cdlab996/ui/IK'
-import { logger } from '@cdlab996/utils'
+} from '@cdlab/ui/components/card'
+import { IKPageContainer } from '@cdlab/ui/IK'
+import { logger } from '@cdlab/utils'
 import type { Quality, VideoCodec } from 'mediabunny'
 import {
   ALL_FORMATS,

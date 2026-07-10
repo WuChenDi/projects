@@ -1,14 +1,14 @@
 'use client'
 
-import { Input } from '@cdlab996/ui/components/input'
+import { Input } from '@cdlab/ui/components/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/select'
+import { cn } from '@cdlab/ui/lib/utils'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { memo, useCallback, useMemo, useState } from 'react'

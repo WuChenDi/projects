@@ -1,7 +1,7 @@
 'use client'
 
-import { Card } from '@cdlab996/ui/components/card'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
+import { Card } from '@cdlab/ui/components/card'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
 import { useQuery } from '@tanstack/react-query'
 import { BarChart3, Eye, MousePointerClick } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'

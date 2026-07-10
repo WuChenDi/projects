@@ -43,7 +43,7 @@ export interface LinkConfig {
   // soft-deleting the row.
   disabled?: boolean
   // Argon2id hash of the link password (`<saltHex>:<hashHex>`, via
-  // `@cdlab996/utils` hashPasswordFn/verifyPasswordFn); when set, the
+  // `@cdlab/utils` hashPasswordFn/verifyPasswordFn); when set, the
   // destination is gated behind a password form.
   passwordHash?: string
   // Per-link QR style. The QR encodes the link's public `/<slug>?qr=1` URL and

@@ -1,12 +1,12 @@
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardAction,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { IKEmpty, StatusEnum } from '@cdlab996/ui/IK'
+} from '@cdlab/ui/components/card'
+import { IKEmpty, StatusEnum } from '@cdlab/ui/IK'
 import { Archive, Download, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { ProcessResult } from '@/types'

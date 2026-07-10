@@ -1,14 +1,14 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Separator } from '@cdlab996/ui/components/separator'
-import { Textarea } from '@cdlab996/ui/components/textarea'
+} from '@cdlab/ui/components/card'
+import { Separator } from '@cdlab/ui/components/separator'
+import { Textarea } from '@cdlab/ui/components/textarea'
 import {
   GlobeIcon,
   MaximizeIcon,

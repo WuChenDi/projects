@@ -58,7 +58,7 @@ pnpm install
 ### 本地开发
 
 ```bash
-pnpm --filter @cdlab996/byplay dev
+pnpm --filter @cdlab/byplay dev
 ```
 
 通过 `@dotns/nsl` 运行在 `http://byplay.localhost:3355`。
@@ -66,8 +66,8 @@ pnpm --filter @cdlab996/byplay dev
 ### 构建 / 部署
 
 ```bash
-pnpm --filter @cdlab996/byplay build     # next build
-pnpm --filter @cdlab996/byplay build:cf  # @cloudflare/next-on-pages
+pnpm --filter @cdlab/byplay build     # next build
+pnpm --filter @cdlab/byplay build:cf  # @cloudflare/next-on-pages
 ```
 
 通过 `@cloudflare/next-on-pages` 部署为 Cloudflare Pages 上的 Next.js 应用。

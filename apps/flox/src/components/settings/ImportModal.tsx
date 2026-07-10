@@ -1,22 +1,22 @@
 'use client'
 
-import { Alert, AlertDescription } from '@cdlab996/ui/components/alert'
-import { Button } from '@cdlab996/ui/components/button'
+import { Alert, AlertDescription } from '@cdlab/ui/components/alert'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
-import { Input } from '@cdlab996/ui/components/input'
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
-import { Spinner } from '@cdlab996/ui/components/spinner'
+} from '@cdlab/ui/components/dialog'
+import { Input } from '@cdlab/ui/components/input'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
+import { Spinner } from '@cdlab/ui/components/spinner'
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@cdlab996/ui/components/tabs'
+} from '@cdlab/ui/components/tabs'
 import {
   BellIcon,
   BellOffIcon,

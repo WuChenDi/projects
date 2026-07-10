@@ -1,4 +1,4 @@
-import { createIDBStore } from '@cdlab996/utils'
+import { createIDBStore } from '@cdlab/utils'
 
 // Generated image blobs are persisted in IndexedDB keyed by result id.
 // localStorage only keeps the lightweight metadata (see useImageStore).

@@ -152,7 +152,7 @@ pnpm install
 ### Development
 
 ```bash
-pnpm --filter @cdlab996/baccarat dev
+pnpm --filter @cdlab/baccarat dev
 ```
 
 Runs `wrangler dev` via `nsl` at `http://baccarat.localhost:3355`.
@@ -160,7 +160,7 @@ Runs `wrangler dev` via `nsl` at `http://baccarat.localhost:3355`.
 ### Build / Deploy
 
 ```bash
-pnpm --filter @cdlab996/baccarat deploy
+pnpm --filter @cdlab/baccarat deploy
 ```
 
 Runs `wrangler deploy --minify`. After deploying, point Telegram at the worker's webhook:

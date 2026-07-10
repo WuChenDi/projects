@@ -1,6 +1,6 @@
 'use client'
 
-import { Card } from '@cdlab996/ui/components/card'
+import { Card } from '@cdlab/ui/components/card'
 import { TvIcon } from 'lucide-react'
 
 export function VideoPlayerEmpty() {

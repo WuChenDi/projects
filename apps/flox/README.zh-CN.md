@@ -27,7 +27,7 @@
 ## 技术栈
 
 - **框架** —— Next.js 16（App Router，Edge Runtime API 路由）、React 19、TypeScript
-- **样式** —— Tailwind CSS 4、`@cdlab996/ui`
+- **样式** —— Tailwind CSS 4、`@cdlab/ui`
 - **状态管理** —— Zustand 5（localStorage 持久化）、TanStack Query（搜索 mutation 与流式处理）
 - **播放** —— hls.js（自研引擎）+ 火山引擎 VePlayer，`@dnd-kit` 用于源拖拽排序
 - **部署** —— Cloudflare Pages，通过 `@cloudflare/next-on-pages`
@@ -47,7 +47,7 @@ pnpm install
 ### 开发
 
 ```bash
-pnpm --filter @cdlab996/flox dev
+pnpm --filter @cdlab/flox dev
 # 或在仓库根目录执行
 pnpm dev:flox
 ```
@@ -59,8 +59,8 @@ pnpm dev:flox
 `flox` 使用 **`next build --webpack`**（`build` 脚本）构建——此处不使用 Turbopack。Cloudflare Pages 部署通过 `@cloudflare/next-on-pages` 完成：
 
 ```bash
-pnpm --filter @cdlab996/flox build       # next build --webpack
-pnpm --filter @cdlab996/flox build:cf    # npx @cloudflare/next-on-pages@latest
+pnpm --filter @cdlab/flox build       # next build --webpack
+pnpm --filter @cdlab/flox build:cf    # npx @cloudflare/next-on-pages@latest
 ```
 
 ## 架构

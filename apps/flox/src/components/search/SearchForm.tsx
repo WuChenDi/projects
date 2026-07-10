@@ -1,6 +1,6 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
+import { Badge } from '@cdlab/ui/components/badge'
 import {
   Combobox,
   ComboboxContent,
@@ -9,14 +9,14 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxSeparator,
-} from '@cdlab996/ui/components/combobox'
+} from '@cdlab/ui/components/combobox'
 import {
   InputGroupAddon,
   InputGroupButton,
-} from '@cdlab996/ui/components/input-group'
-import { Progress } from '@cdlab996/ui/components/progress'
-import { Spinner } from '@cdlab996/ui/components/spinner'
-import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
+} from '@cdlab/ui/components/input-group'
+import { Progress } from '@cdlab/ui/components/progress'
+import { Spinner } from '@cdlab/ui/components/spinner'
+import { Tabs, TabsList, TabsTrigger } from '@cdlab/ui/components/tabs'
 import { FilmIcon, HistoryIcon, SearchIcon, XIcon } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchSuggestions } from '@/lib/hooks/useSearchSuggestions'

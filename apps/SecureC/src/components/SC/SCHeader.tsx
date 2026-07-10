@@ -1,7 +1,7 @@
 'use client'
 
-import GradientText from '@cdlab996/ui/reactbits/GradientText'
-import ShinyText from '@cdlab996/ui/reactbits/ShinyText'
+import GradientText from '@cdlab/ui/reactbits/GradientText'
+import ShinyText from '@cdlab/ui/reactbits/ShinyText'
 import { useTranslations } from 'next-intl'
 
 export function SCHeader() {

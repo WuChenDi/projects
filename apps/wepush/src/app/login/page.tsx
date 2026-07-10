@@ -1,11 +1,11 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Field,
   FieldDescription,
   FieldGroup,
-} from '@cdlab996/ui/components/field'
+} from '@cdlab/ui/components/field'
 import Link from 'next/link'
 import { useState } from 'react'
 import { WepushLogo } from '@/components/layout/logo'

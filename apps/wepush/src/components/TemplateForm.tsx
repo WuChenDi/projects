@@ -1,18 +1,18 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
-import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
+import { Input } from '@cdlab/ui/components/input'
+import { Label } from '@cdlab/ui/components/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
-import { Separator } from '@cdlab996/ui/components/separator'
-import { Textarea } from '@cdlab996/ui/components/textarea'
+} from '@cdlab/ui/components/select'
+import { Separator } from '@cdlab/ui/components/separator'
+import { Textarea } from '@cdlab/ui/components/textarea'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Eye, Send } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'

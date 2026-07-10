@@ -1,4 +1,4 @@
-import type { StatusEnum } from '@cdlab996/ui/IK'
+import type { StatusEnum } from '@cdlab/ui/IK'
 
 export interface FileInfo {
   name: string

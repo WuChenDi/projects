@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/db",
+  "name": "@cdlab/db",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -33,7 +33,7 @@
     "drizzle-orm": "catalog:prod"
   },
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@cloudflare/workers-types": "catalog:dev",
     "@types/node": "catalog:dev",
     "tsdown": "catalog:dev",

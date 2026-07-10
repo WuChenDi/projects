@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import { ChevronLeftIcon, CircleAlertIcon, RefreshCwIcon } from 'lucide-react'
 
 interface VideoPlayerErrorProps {

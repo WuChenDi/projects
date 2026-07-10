@@ -61,7 +61,7 @@ pnpm install
 ### Development
 
 ```bash
-pnpm --filter @cdlab996/bycut dev
+pnpm --filter @cdlab/bycut dev
 ```
 
 Opens at `http://bycut.localhost:3355` (routed through `@dotns/nsl` — no port hunting).
@@ -69,8 +69,8 @@ Opens at `http://bycut.localhost:3355` (routed through `@dotns/nsl` — no port 
 ### Build / Deploy
 
 ```bash
-pnpm --filter @cdlab996/bycut build     # next build
-pnpm --filter @cdlab996/bycut build:cf  # @cloudflare/next-on-pages, for a Cloudflare Pages deploy
+pnpm --filter @cdlab/bycut build     # next build
+pnpm --filter @cdlab/bycut build:cf  # @cloudflare/next-on-pages, for a Cloudflare Pages deploy
 ```
 
 ## Architecture

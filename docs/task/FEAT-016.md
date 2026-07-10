@@ -50,4 +50,4 @@ See PLAN-006 §FEAT-016. KV is eventually consistent → limit is approximate
   redirects.
 - Editor — "Max visits" number field beside the expiry picker.
 - i18n — `links.form.maxVisits` / `maxVisitsPlaceholder` (en/zh).
-- Verified: `pnpm --filter @cdlab996/sink build` (exit 0) + biome clean.
+- Verified: `pnpm --filter @cdlab/sink build` (exit 0) + biome clean.

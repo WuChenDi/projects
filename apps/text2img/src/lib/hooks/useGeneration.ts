@@ -1,4 +1,4 @@
-import { hashPasswordFn } from '@cdlab996/utils'
+import { hashPasswordFn } from '@cdlab/utils'
 import { useMutation } from '@tanstack/react-query'
 import { useTranslations } from 'next-intl'
 import { useCallback, useRef } from 'react'

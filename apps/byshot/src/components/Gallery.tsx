@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { IKFooter, IKPageContainer } from '@cdlab996/ui/IK'
+import { Button } from '@cdlab/ui/components/button'
+import { IKFooter, IKPageContainer } from '@cdlab/ui/IK'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'

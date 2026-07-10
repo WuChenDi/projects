@@ -55,7 +55,7 @@ pnpm install
 ### Development
 
 ```bash
-pnpm --filter @cdlab996/repo-changelog dev
+pnpm --filter @cdlab/repo-changelog dev
 ```
 
 Dev server available at `http://repo-changelog.localhost:3355` (via `@dotns/nsl`).
@@ -64,13 +64,13 @@ Dev server available at `http://repo-changelog.localhost:3355` (via `@dotns/nsl`
 
 ```bash
 # Production build
-pnpm --filter @cdlab996/repo-changelog build
+pnpm --filter @cdlab/repo-changelog build
 
 # Static generation
-pnpm --filter @cdlab996/repo-changelog generate
+pnpm --filter @cdlab/repo-changelog generate
 
 # Preview a production build locally
-pnpm --filter @cdlab996/repo-changelog preview
+pnpm --filter @cdlab/repo-changelog preview
 ```
 
 ## License

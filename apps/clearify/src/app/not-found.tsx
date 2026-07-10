@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 
 export default function NotFound() {
   const router = useRouter()

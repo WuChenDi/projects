@@ -1,15 +1,15 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Progress } from '@cdlab996/ui/components/progress'
+} from '@cdlab/ui/components/card'
+import { Progress } from '@cdlab/ui/components/progress'
 import { HardDriveDownload, Loader2, Search, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { useBatchActions } from '@/hooks/use-batch-actions'

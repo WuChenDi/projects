@@ -14,8 +14,8 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@cdlab996/ui/components/tooltip'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/tooltip'
+import { cn } from '@cdlab/ui/lib/utils'
 
 export type HeatmapDatum = {
   date: string | Date

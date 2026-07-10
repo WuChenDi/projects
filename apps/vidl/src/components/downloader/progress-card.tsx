@@ -4,9 +4,9 @@ import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from '@cdlab996/ui/components/alert'
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
+} from '@cdlab/ui/components/alert'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardAction,
@@ -14,16 +14,16 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Progress } from '@cdlab996/ui/components/progress'
+} from '@cdlab/ui/components/card'
+import { Progress } from '@cdlab/ui/components/progress'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@cdlab996/ui/components/tooltip'
-import { IKEmpty } from '@cdlab996/ui/IK'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/tooltip'
+import { IKEmpty } from '@cdlab/ui/IK'
+import { cn } from '@cdlab/ui/lib/utils'
 import { Download } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import {

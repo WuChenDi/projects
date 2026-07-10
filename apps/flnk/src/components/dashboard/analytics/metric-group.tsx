@@ -6,21 +6,21 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import type { ChartConfig } from '@cdlab996/ui/components/chart'
+} from '@cdlab/ui/components/card'
+import type { ChartConfig } from '@cdlab/ui/components/chart'
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from '@cdlab996/ui/components/chart'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
+} from '@cdlab/ui/components/chart'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@cdlab996/ui/components/tabs'
-import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
+} from '@cdlab/ui/components/tabs'
+import { IKEmpty } from '@cdlab/ui/IK/IKEmpty'
 import { useQuery } from '@tanstack/react-query'
 import { Inbox } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'

@@ -22,7 +22,7 @@ Paired frontend preview: https://dropply.pages.dev/
 ## Tech Stack
 
 - **Framework** — Hono
-- **Database** — Drizzle ORM over Cloudflare D1 or LibSQL / Turso (selectable via `DB_TYPE`, via `@cdlab996/db/node`)
+- **Database** — Drizzle ORM over Cloudflare D1 or LibSQL / Turso (selectable via `DB_TYPE`, via `@cdlab/db/node`)
 - **Storage** — Cloudflare R2 (`R2_STORAGE` binding), including native multipart upload
 - **Validation** — zod + `@hono/zod-validator`
 - **Email** — Resend (`resend` + `@react-email/components`)
@@ -41,32 +41,32 @@ pnpm install
 
 ```bash
 # Start the dev server on http://dropply-api.localhost:3355 (via nsl)
-pnpm --filter @cdlab996/dropply-api dev
+pnpm --filter @cdlab/dropply-api dev
 ```
 
 ### Type-check Cloudflare bindings
 
 ```bash
-pnpm --filter @cdlab996/dropply-api cf-typegen
+pnpm --filter @cdlab/dropply-api cf-typegen
 ```
 
 ### Database
 
 ```bash
 # Generate a migration from schema.ts
-pnpm --filter @cdlab996/dropply-api db:gen
+pnpm --filter @cdlab/dropply-api db:gen
 
 # Apply pending migrations (LibSQL / Turso)
-pnpm --filter @cdlab996/dropply-api db:migrate
+pnpm --filter @cdlab/dropply-api db:migrate
 
 # Apply migrations to the local D1 database
-pnpm --filter @cdlab996/dropply-api cf:localdb
+pnpm --filter @cdlab/dropply-api cf:localdb
 
 # Apply migrations to the remote D1 database
-pnpm --filter @cdlab996/dropply-api cf:remotedb
+pnpm --filter @cdlab/dropply-api cf:remotedb
 
 # Open Drizzle Studio (port 3015)
-pnpm --filter @cdlab996/dropply-api db:studio
+pnpm --filter @cdlab/dropply-api db:studio
 ```
 
 Copy `.env.example` to `.env` and fill in the database, JWT, TOTP, and Resend settings.
@@ -74,7 +74,7 @@ Copy `.env.example` to `.env` and fill in the database, JWT, TOTP, and Resend se
 ### Deploy
 
 ```bash
-pnpm --filter @cdlab996/dropply-api deploy
+pnpm --filter @cdlab/dropply-api deploy
 ```
 
 Requires the `R2_STORAGE` bucket binding, plus the database for the active `DB_TYPE` — the `DB` binding (D1, currently commented out in `wrangler.jsonc`) or `LIBSQL_URL` + `LIBSQL_AUTH_TOKEN` (Turso). See `wrangler.jsonc`.
@@ -95,9 +95,9 @@ Requires the `R2_STORAGE` bucket binding, plus the database for the active `DB_T
 | `POST /api/email/share` | `routes/email.ts` | Send the retrieval code + file summary via Resend |
 
 - `src/index.ts` — Hono app entry. Wires access logging, `prettyJSON`, `requestId`, and open CORS; mounts all route groups under `/api`; exports the Worker's `scheduled()` handler that drives `cleanupExpiredContent`.
-- `src/lib/jwt.ts` — Hand-rolled HMAC-SHA256 JWT sign/verify (Web Crypto via `@cdlab996/uncrypto`) for the `upload`, `multipart`, and `chest` token types.
+- `src/lib/jwt.ts` — Hand-rolled HMAC-SHA256 JWT sign/verify (Web Crypto via `@cdlab/uncrypto`) for the `upload`, `multipart`, and `chest` token types.
 - `src/lib/totp.ts` — Hand-rolled TOTP (base32 + HMAC-SHA1, 30s step, ±1 window); `TOTP_SECRETS` is a `name:secret,name2:secret2` list, and `verifyAnyTOTP` accepts a match against any configured secret.
-- `src/lib/db.ts` — Thin adapter over `@cdlab996/db/node`'s `defineDb`; `useDrizzle(c)` builds a driver from `c.env` per the app's `DB_TYPE`.
+- `src/lib/db.ts` — Thin adapter over `@cdlab/db/node`'s `defineDb`; `useDrizzle(c)` builds a driver from `c.env` per the app's `DB_TYPE`.
 - `src/cron/cleanup.ts` — `cleanupExpiredContent(env)`, invoked from `scheduled()`; deletes R2 objects then soft-deletes `files` and `sessions` for both expired and stale-incomplete sessions.
 - `src/global.ts` — Sets the global `logger` (winston) and `isDebug` flag, imported for side effects from `index.ts`.
 

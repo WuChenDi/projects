@@ -1,6 +1,6 @@
 'use client'
 
-import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@cdlab/ui/components/tabs'
 import { Lock, Unlock } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { ModeEnum } from '@/types'

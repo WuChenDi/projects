@@ -7,10 +7,10 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { IKPageContainer } from '@cdlab996/ui/IK'
-import type { ZipFileEntry } from '@cdlab996/utils'
-import { downloadFile, downloadFilesAsZip, logger } from '@cdlab996/utils'
+} from '@cdlab/ui/components/card'
+import { IKPageContainer } from '@cdlab/ui/IK'
+import type { ZipFileEntry } from '@cdlab/utils'
+import { downloadFile, downloadFilesAsZip, logger } from '@cdlab/utils'
 import type React from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { useDropzone } from 'react-dropzone'

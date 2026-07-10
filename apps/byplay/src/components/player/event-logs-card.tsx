@@ -1,17 +1,17 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardAction,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
-import { IKEmpty } from '@cdlab996/ui/IK'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/card'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
+import { IKEmpty } from '@cdlab/ui/IK'
+import { cn } from '@cdlab/ui/lib/utils'
 import { ChevronDown } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'

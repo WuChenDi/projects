@@ -22,7 +22,7 @@
 ## Tech Stack
 
 - **框架** — Hono
-- **数据库** — Drizzle ORM，基于 Cloudflare D1 或 LibSQL / Turso（通过 `DB_TYPE` 选择，经由 `@cdlab996/db/node`）
+- **数据库** — Drizzle ORM，基于 Cloudflare D1 或 LibSQL / Turso（通过 `DB_TYPE` 选择，经由 `@cdlab/db/node`）
 - **存储** — Cloudflare R2（`R2_STORAGE` 绑定），支持原生分片上传
 - **校验** — zod + `@hono/zod-validator`
 - **邮件** — Resend（`resend` + `@react-email/components`）
@@ -41,32 +41,32 @@ pnpm install
 
 ```bash
 # 通过 nsl 在 http://dropply-api.localhost:3355 启动开发服务器
-pnpm --filter @cdlab996/dropply-api dev
+pnpm --filter @cdlab/dropply-api dev
 ```
 
 ### Type-check Cloudflare bindings
 
 ```bash
-pnpm --filter @cdlab996/dropply-api cf-typegen
+pnpm --filter @cdlab/dropply-api cf-typegen
 ```
 
 ### Database
 
 ```bash
 # 根据 schema.ts 生成迁移文件
-pnpm --filter @cdlab996/dropply-api db:gen
+pnpm --filter @cdlab/dropply-api db:gen
 
 # 应用待处理的迁移（LibSQL / Turso）
-pnpm --filter @cdlab996/dropply-api db:migrate
+pnpm --filter @cdlab/dropply-api db:migrate
 
 # 将迁移应用到本地 D1 数据库
-pnpm --filter @cdlab996/dropply-api cf:localdb
+pnpm --filter @cdlab/dropply-api cf:localdb
 
 # 将迁移应用到远程 D1 数据库
-pnpm --filter @cdlab996/dropply-api cf:remotedb
+pnpm --filter @cdlab/dropply-api cf:remotedb
 
 # 打开 Drizzle Studio（3015 端口）
-pnpm --filter @cdlab996/dropply-api db:studio
+pnpm --filter @cdlab/dropply-api db:studio
 ```
 
 复制 `.env.example` 为 `.env`，并填入数据库、JWT、TOTP 与 Resend 相关配置。
@@ -74,7 +74,7 @@ pnpm --filter @cdlab996/dropply-api db:studio
 ### Deploy
 
 ```bash
-pnpm --filter @cdlab996/dropply-api deploy
+pnpm --filter @cdlab/dropply-api deploy
 ```
 
 需要绑定 `R2_STORAGE` 桶，以及与当前 `DB_TYPE` 对应的数据库 —— `DB` 绑定（D1，目前在 `wrangler.jsonc` 中处于注释状态）或 `LIBSQL_URL` + `LIBSQL_AUTH_TOKEN`（Turso）。详见 `wrangler.jsonc`。
@@ -95,9 +95,9 @@ pnpm --filter @cdlab996/dropply-api deploy
 | `POST /api/email/share` | `routes/email.ts` | 通过 Resend 发送取件码与文件概览邮件 |
 
 - `src/index.ts` — Hono 应用入口。接入访问日志、`prettyJSON`、`requestId` 及开放 CORS；将全部路由组挂载在 `/api` 下；导出驱动 `cleanupExpiredContent` 的 Worker `scheduled()` 处理器。
-- `src/lib/jwt.ts` — 自研的 HMAC-SHA256 JWT 签发/校验（经由 `@cdlab996/uncrypto` 使用 Web Crypto），覆盖 `upload`、`multipart`、`chest` 三种令牌类型。
+- `src/lib/jwt.ts` — 自研的 HMAC-SHA256 JWT 签发/校验（经由 `@cdlab/uncrypto` 使用 Web Crypto），覆盖 `upload`、`multipart`、`chest` 三种令牌类型。
 - `src/lib/totp.ts` — 自研 TOTP 实现（base32 + HMAC-SHA1，30 秒步长，±1 窗口）；`TOTP_SECRETS` 是 `name:secret,name2:secret2` 形式的列表，`verifyAnyTOTP` 匹配任一已配置密钥即通过。
-- `src/lib/db.ts` — 对 `@cdlab996/db/node` 的 `defineDb` 的薄封装；`useDrizzle(c)` 根据应用的 `DB_TYPE` 从 `c.env` 构建驱动。
+- `src/lib/db.ts` — 对 `@cdlab/db/node` 的 `defineDb` 的薄封装；`useDrizzle(c)` 根据应用的 `DB_TYPE` 从 `c.env` 构建驱动。
 - `src/cron/cleanup.ts` — `cleanupExpiredContent(env)`，由 `scheduled()` 调用；先删除 R2 对象，再对已过期以及长期未完成的 session 及其 `files` 执行软删除。
 - `src/global.ts` — 设置全局 `logger`（winston）和 `isDebug` 标志，在 `index.ts` 中以副作用方式导入。
 

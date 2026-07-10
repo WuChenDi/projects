@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/security/noDangerouslySetInnerHtml: Required for JSON-LD structured data */
 
-import { Toaster } from '@cdlab996/ui/components/sonner'
+import { Toaster } from '@cdlab/ui/components/sonner'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { notFound } from 'next/navigation'
@@ -8,8 +8,8 @@ import type { Locale } from 'next-intl'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 
-import '@cdlab996/ui/globals.css'
-import { IKHeader } from '@cdlab996/ui/IK'
+import '@cdlab/ui/globals.css'
+import { IKHeader } from '@cdlab/ui/IK'
 import {
   ClientProviders,
   LanguageSelector,

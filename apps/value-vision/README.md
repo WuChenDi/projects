@@ -26,7 +26,7 @@ Preview: https://values.pages.dev/
 ## Tech Stack
 
 - **Framework** — Next.js (App Router), React, TypeScript
-- **UI** — `@cdlab996/ui` (shadcn/ui primitives + reactbits effects), Tailwind CSS v4
+- **UI** — `@cdlab/ui` (shadcn/ui primitives + reactbits effects), Tailwind CSS v4
 - **Rate sources** — CoinGecko `simple/price` API (crypto), exchangerate-api.com (fiat)
 - **No backend** — runs entirely client-side; rates are fetched directly from the browser
 
@@ -46,7 +46,7 @@ pnpm install
 ### Development
 
 ```bash
-pnpm --filter @cdlab996/values dev
+pnpm --filter @cdlab/values dev
 ```
 
 Runs at `http://values.localhost:3355` (via `@dotns/nsl` — no port hunting).
@@ -55,10 +55,10 @@ Runs at `http://values.localhost:3355` (via `@dotns/nsl` — no port hunting).
 
 ```bash
 # Production build
-pnpm --filter @cdlab996/values build
+pnpm --filter @cdlab/values build
 
 # Cloudflare Pages build (@cloudflare/next-on-pages)
-pnpm --filter @cdlab996/values build:cf
+pnpm --filter @cdlab/values build:cf
 ```
 
 ## License

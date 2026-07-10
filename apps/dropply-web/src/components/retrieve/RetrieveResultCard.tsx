@@ -1,28 +1,28 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Card } from '@cdlab996/ui/components/card'
+import { Button } from '@cdlab/ui/components/button'
+import { Card } from '@cdlab/ui/components/card'
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
+} from '@cdlab/ui/components/dialog'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupText,
   InputGroupTextarea,
-} from '@cdlab996/ui/components/input-group'
-import { cn } from '@cdlab996/ui/lib/utils'
-import type { ZipFileEntry } from '@cdlab996/utils'
+} from '@cdlab/ui/components/input-group'
+import { cn } from '@cdlab/ui/lib/utils'
+import type { ZipFileEntry } from '@cdlab/utils'
 import {
   copyToClipboard,
   downloadFilesAsZip,
   formatBytes,
-} from '@cdlab996/utils'
+} from '@cdlab/utils'
 import {
   CheckCircle,
   Clock,

@@ -79,7 +79,7 @@ Make a link's traffic reachable in one click.
 Lightweight organization without folders.
 
 - `database/schema.ts` — add `tags: text('tags', { mode: 'json' }).$type<string[]>().notNull().default([])`
-  to `links`. Run `pnpm --filter @cdlab996/sink db:gen` to emit an **incremental**
+  to `links`. Run `pnpm --filter @cdlab/sink db:gen` to emit an **incremental**
   migration (tool-generated). Add `tags` to the `Link` type consumers.
 - `schemas/link.ts` — add `tags: z.array(z.string().trim().min(1).max(32)).max(20).optional()`
   to create/edit/import schemas; thread through `lib/links.ts` create/update.

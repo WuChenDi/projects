@@ -1,13 +1,13 @@
 'use client'
 
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@cdlab996/ui/components/tooltip'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/tooltip'
+import { cn } from '@cdlab/ui/lib/utils'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { toast } from 'sonner'

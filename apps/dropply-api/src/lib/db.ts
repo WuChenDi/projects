@@ -1,11 +1,11 @@
-import { defineDb } from '@cdlab996/db/node'
+import { defineDb } from '@cdlab/db/node'
 import type { Context } from 'hono'
 import * as schema from '@/database/schema'
 import type { CloudflareEnv } from '@/types'
 
 // Re-export the shared factory, types and query helpers so `@/lib` keeps
 // surfacing `notDeleted`, `withNotDeleted`, `softDelete`, etc.
-export * from '@cdlab996/db/node'
+export * from '@cdlab/db/node'
 
 const getDb = defineDb(schema)
 

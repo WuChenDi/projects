@@ -10,16 +10,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@cdlab996/ui/components/alert-dialog'
-import { Button } from '@cdlab996/ui/components/button'
+} from '@cdlab/ui/components/alert-dialog'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardAction,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { CopyButton } from '@cdlab996/ui/components/copy-button'
+} from '@cdlab/ui/components/card'
+import { CopyButton } from '@cdlab/ui/components/copy-button'
 import {
   Dialog,
   DialogContent,
@@ -27,9 +27,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
-import { WaveformPlayer } from '@cdlab996/ui/components/waveform-player'
+} from '@cdlab/ui/components/dialog'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
+import { WaveformPlayer } from '@cdlab/ui/components/waveform-player'
 import {
   IKAssetFailed,
   IKAssetLoading,
@@ -37,9 +37,9 @@ import {
   IKAudioAssetPlayer,
   IKEmpty,
   StatusEnum,
-} from '@cdlab996/ui/IK'
-import type { ZipFileEntry } from '@cdlab996/utils'
-import { downloadFile, downloadFilesAsZip } from '@cdlab996/utils'
+} from '@cdlab/ui/IK'
+import type { ZipFileEntry } from '@cdlab/utils'
+import { downloadFile, downloadFilesAsZip } from '@cdlab/utils'
 import { Download, Eye, History, Loader2, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'

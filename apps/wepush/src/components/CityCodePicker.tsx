@@ -1,13 +1,13 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Input } from '@cdlab996/ui/components/input'
+import { Button } from '@cdlab/ui/components/button'
+import { Input } from '@cdlab/ui/components/input'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@cdlab996/ui/components/popover'
-import { Spinner } from '@cdlab996/ui/components/spinner'
+} from '@cdlab/ui/components/popover'
+import { Spinner } from '@cdlab/ui/components/spinner'
 import { useQuery } from '@tanstack/react-query'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'

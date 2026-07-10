@@ -58,7 +58,7 @@ pnpm install
 ### Development
 
 ```bash
-pnpm --filter @cdlab996/byplay dev
+pnpm --filter @cdlab/byplay dev
 ```
 
 Runs at `http://byplay.localhost:3355` via `@dotns/nsl`.
@@ -66,8 +66,8 @@ Runs at `http://byplay.localhost:3355` via `@dotns/nsl`.
 ### Build / Deploy
 
 ```bash
-pnpm --filter @cdlab996/byplay build     # next build
-pnpm --filter @cdlab996/byplay build:cf  # @cloudflare/next-on-pages
+pnpm --filter @cdlab/byplay build     # next build
+pnpm --filter @cdlab/byplay build:cf  # @cloudflare/next-on-pages
 ```
 
 Deployed as a static-ish Next.js app on Cloudflare Pages via `@cloudflare/next-on-pages`.

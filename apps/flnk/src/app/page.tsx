@@ -1,18 +1,18 @@
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from '@cdlab996/ui/components/input-group'
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
-import { GitHubIcon as Github } from '@cdlab996/ui/icon'
-import { cn } from '@cdlab996/ui/lib/utils'
-import BlurText from '@cdlab996/ui/reactbits/BlurText'
-import CountUp from '@cdlab996/ui/reactbits/CountUp'
-import GradientText from '@cdlab996/ui/reactbits/GradientText'
-import Threads from '@cdlab996/ui/reactbits/Threads'
+} from '@cdlab/ui/components/input-group'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
+import { GitHubIcon as Github } from '@cdlab/ui/icon'
+import { cn } from '@cdlab/ui/lib/utils'
+import BlurText from '@cdlab/ui/reactbits/BlurText'
+import CountUp from '@cdlab/ui/reactbits/CountUp'
+import GradientText from '@cdlab/ui/reactbits/GradientText'
+import Threads from '@cdlab/ui/reactbits/Threads'
 import {
   ArrowRight,
   BarChart3,

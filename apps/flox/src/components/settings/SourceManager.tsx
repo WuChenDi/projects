@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Switch } from '@cdlab996/ui/components/switch'
+import { Button } from '@cdlab/ui/components/button'
+import { Switch } from '@cdlab/ui/components/switch'
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
 import {
   closestCenter,

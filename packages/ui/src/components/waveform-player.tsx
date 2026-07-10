@@ -2,9 +2,9 @@
 
 import { Pause, Play } from 'lucide-react'
 import * as React from 'react'
-import { AudioWaveform } from '@cdlab996/ui/components/audio-waveform'
-import { Button } from '@cdlab996/ui/components/button'
-import { cn } from '@cdlab996/ui/lib/utils'
+import { AudioWaveform } from '@cdlab/ui/components/audio-waveform'
+import { Button } from '@cdlab/ui/components/button'
+import { cn } from '@cdlab/ui/lib/utils'
 
 interface WaveformPlayerProps {
   /**

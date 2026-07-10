@@ -1,8 +1,8 @@
 'use client'
 
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
-import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
-import { IKPageContainer } from '@cdlab996/ui/IK'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
+import { Tabs, TabsList, TabsTrigger } from '@cdlab/ui/components/tabs'
+import { IKPageContainer } from '@cdlab/ui/IK'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Suspense,

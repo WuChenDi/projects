@@ -4,7 +4,7 @@ import {
   Dialog,
   DialogOverlay,
   DialogPortal,
-} from '@cdlab996/ui/components/dialog'
+} from '@cdlab/ui/components/dialog'
 import { useRouter } from 'next/navigation'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import { useState } from 'react'

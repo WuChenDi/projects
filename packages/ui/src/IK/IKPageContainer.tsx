@@ -1,5 +1,5 @@
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
-import { cn } from '@cdlab996/ui/lib/utils'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
+import { cn } from '@cdlab/ui/lib/utils'
 import type React from 'react'
 
 export function IKPageContainer({

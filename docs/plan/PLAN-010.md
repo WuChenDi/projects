@@ -14,7 +14,7 @@ render + analytics (FEAT-024), editor UI (FEAT-025).
 ## Current State
 
 - flnk is Next.js (App Router) on OpenNext/Cloudflare Workers, dual-driver DB via
-  `@cdlab996/db/web`, better-auth (Google/GitHub) — a **shared workspace** keyed
+  `@cdlab/db/web`, better-auth (Google/GitHub) — a **shared workspace** keyed
   by `createdBy` (email), not per-owner isolated.
 - `app/[slug]/route.ts` is the single-segment redirect; `reserve-slug.ts` carves
   out app paths. Analytics Engine writes a positional blob record; R2 is wired

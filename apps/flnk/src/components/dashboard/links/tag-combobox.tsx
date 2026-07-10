@@ -11,7 +11,7 @@ import {
   ComboboxList,
   ComboboxTrigger,
   useComboboxAnchor,
-} from '@cdlab996/ui/components/combobox'
+} from '@cdlab/ui/components/combobox'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 

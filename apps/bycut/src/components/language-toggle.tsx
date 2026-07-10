@@ -1,13 +1,13 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@cdlab996/ui/components/dropdown-menu'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/dropdown-menu'
+import { cn } from '@cdlab/ui/lib/utils'
 import { Check, Languages } from 'lucide-react'
 import { useLocale } from 'next-intl'
 import { usePathname, useRouter } from '@/i18n/navigation'

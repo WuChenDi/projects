@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Spinner } from '@cdlab996/ui/components/spinner'
+import { Button } from '@cdlab/ui/components/button'
+import { Spinner } from '@cdlab/ui/components/spinner'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'

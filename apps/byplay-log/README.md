@@ -38,29 +38,29 @@ pnpm install
 
 ```bash
 # Start the dev server on http://byplay-log.localhost:3355 (via nsl)
-pnpm --filter @cdlab996/byplay-log dev
+pnpm --filter @cdlab/byplay-log dev
 ```
 
 ### Type-check Cloudflare bindings
 
 ```bash
-pnpm --filter @cdlab996/byplay-log cf-typegen
+pnpm --filter @cdlab/byplay-log cf-typegen
 ```
 
 ### Database
 
 ```bash
 # Generate a migration from schema.ts
-pnpm --filter @cdlab996/byplay-log db:gen
+pnpm --filter @cdlab/byplay-log db:gen
 
 # Apply migrations to the local D1 database
-pnpm --filter @cdlab996/byplay-log cf:localdb
+pnpm --filter @cdlab/byplay-log cf:localdb
 
 # Apply migrations to the remote D1 database
-pnpm --filter @cdlab996/byplay-log cf:remotedb
+pnpm --filter @cdlab/byplay-log cf:remotedb
 
 # Open Drizzle Studio (port 3018)
-pnpm --filter @cdlab996/byplay-log db:studio
+pnpm --filter @cdlab/byplay-log db:studio
 ```
 
 Copy `.env.example` to `.env` and fill in the database credentials for your `DB_TYPE`.
@@ -68,7 +68,7 @@ Copy `.env.example` to `.env` and fill in the database credentials for your `DB_
 ### Deploy
 
 ```bash
-pnpm --filter @cdlab996/byplay-log deploy
+pnpm --filter @cdlab/byplay-log deploy
 ```
 
 Requires a Cloudflare D1 database bound as `DB` (see `wrangler.jsonc`), or `LIBSQL_URL` + `LIBSQL_AUTH_TOKEN` if `DB_TYPE=libsql`.

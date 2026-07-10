@@ -5,9 +5,9 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from '@cdlab996/ui/components/context-menu'
-import { ScrollArea, ScrollBar } from '@cdlab996/ui/components/scroll-area'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/context-menu'
+import { ScrollArea, ScrollBar } from '@cdlab/ui/components/scroll-area'
+import { cn } from '@cdlab/ui/lib/utils'
 import type { LucideIcon } from 'lucide-react'
 import {
   ClipboardPaste,

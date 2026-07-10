@@ -1,4 +1,4 @@
-import { downloadFile } from '@cdlab996/utils'
+import { downloadFile } from '@cdlab/utils'
 
 // ============================================================
 // Shared Types

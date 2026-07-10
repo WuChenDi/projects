@@ -7,24 +7,24 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import type { ChartConfig } from '@cdlab996/ui/components/chart'
+} from '@cdlab/ui/components/card'
+import type { ChartConfig } from '@cdlab/ui/components/chart'
 import {
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-} from '@cdlab996/ui/components/chart'
+} from '@cdlab/ui/components/chart'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
-import { IKEmpty } from '@cdlab996/ui/IK'
+} from '@cdlab/ui/components/select'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
+import { IKEmpty } from '@cdlab/ui/IK'
 import { useQuery } from '@tanstack/react-query'
 import { BarChart2 } from 'lucide-react'
 import { useState } from 'react'

@@ -1,14 +1,14 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@cdlab996/ui/components/dropdown-menu'
-import { GitHubIcon } from '@cdlab996/ui/icon'
+} from '@cdlab/ui/components/dropdown-menu'
+import { GitHubIcon } from '@cdlab/ui/icon'
 import {
   BookmarkIcon,
   ChevronLeftIcon,

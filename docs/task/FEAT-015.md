@@ -11,7 +11,7 @@ Add lightweight tag-based organization to links (today only a free-text
 `comment` exists).
 
 - `database/schema.ts` — add a `tags` JSON column (`string[]`, default `[]`) to
-  `links`; emit an **incremental** migration via `pnpm --filter @cdlab996/sink
+  `links`; emit an **incremental** migration via `pnpm --filter @cdlab/sink
   db:gen` (tool-generated, never hand-edited).
 - `schemas/link.ts` — add a bounded `tags` array to create/edit/import; thread
   through `lib/links.ts`.

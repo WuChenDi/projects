@@ -1,14 +1,14 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from '@cdlab996/ui/components/input-group'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/input-group'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
+import { cn } from '@cdlab/ui/lib/utils'
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
 import {
   closestCenter,

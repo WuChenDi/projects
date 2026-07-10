@@ -1,6 +1,6 @@
 'use client'
 
-import { XIcon } from '@cdlab996/ui/icon/XIcon'
+import { XIcon } from '@cdlab/ui/icon/XIcon'
 import {
   ChevronLeft,
   ChevronRight,

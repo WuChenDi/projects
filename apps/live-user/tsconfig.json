@@ -1,5 +1,5 @@
 {
-  "extends": "@cdlab996/tsconfig/hono.json",
+  "extends": "@cdlab/tsconfig/hono.json",
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext", "webworker"],
     "paths": {

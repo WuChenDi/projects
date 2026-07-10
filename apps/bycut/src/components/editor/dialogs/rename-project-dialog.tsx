@@ -1,14 +1,14 @@
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
-import { Field } from '@cdlab996/ui/components/field'
-import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
+} from '@cdlab/ui/components/dialog'
+import { Field } from '@cdlab/ui/components/field'
+import { Input } from '@cdlab/ui/components/input'
+import { Label } from '@cdlab/ui/components/label'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 

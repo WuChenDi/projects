@@ -1,4 +1,4 @@
-import { logger } from '@cdlab996/utils'
+import { logger } from '@cdlab/utils'
 import type { PreTrainedModel, Processor } from '@huggingface/transformers'
 import {
   AutoModel,

@@ -1,15 +1,15 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Checkbox } from '@cdlab996/ui/components/checkbox'
+import { Button } from '@cdlab/ui/components/button'
+import { Checkbox } from '@cdlab/ui/components/checkbox'
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
-import { Label } from '@cdlab996/ui/components/label'
+} from '@cdlab/ui/components/dialog'
+import { Label } from '@cdlab/ui/components/label'
 import { useEffect, useState } from 'react'
 
 interface ExportModalProps {

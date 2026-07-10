@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@cdlab996/ui/lib/utils'
+import { cn } from '@cdlab/ui/lib/utils'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface IKAudioAssetPlayerProps {

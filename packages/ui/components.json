@@ -11,11 +11,11 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@cdlab996/ui/components",
-    "utils": "@cdlab996/ui/lib/utils",
-    "hooks": "@cdlab996/ui/hooks",
-    "lib": "@cdlab996/ui/lib",
-    "ui": "@cdlab996/ui/components"
+    "components": "@cdlab/ui/components",
+    "utils": "@cdlab/ui/lib/utils",
+    "hooks": "@cdlab/ui/hooks",
+    "lib": "@cdlab/ui/lib",
+    "ui": "@cdlab/ui/components"
   },
   "registries": {
     "@react-bits": "https://reactbits.dev/r/{name}.json",

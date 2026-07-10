@@ -6,9 +6,9 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
-import CountUp from '@cdlab996/ui/reactbits/CountUp'
+} from '@cdlab/ui/components/card'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
+import CountUp from '@cdlab/ui/reactbits/CountUp'
 import { MousePointerClick, Share2, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { Counters } from '@/lib/api'

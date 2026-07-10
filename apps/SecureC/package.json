@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/securec",
+  "name": "@cdlab/securec",
   "type": "module",
   "version": "6.0.2",
   "private": true,
@@ -23,11 +23,11 @@
     "gk": "node ./scripts/generateKeys.js"
   },
   "dependencies": {
-    "@cdlab996/genid": "catalog:prod",
-    "@cdlab996/ui": "workspace:*",
-    "@cdlab996/cipher": "workspace:*",
-    "@cdlab996/uncrypto": "workspace:*",
-    "@cdlab996/utils": "workspace:*",
+    "@cdlab/driftflake": "catalog:prod",
+    "@cdlab/ui": "workspace:*",
+    "@cdlab/cipher": "workspace:*",
+    "@cdlab/uncrypto": "workspace:*",
+    "@cdlab/utils": "workspace:*",
     "@next/third-parties": "catalog:prod",
     "@scure/bip32": "^2.2.0",
     "@scure/bip39": "^2.2.0",
@@ -44,7 +44,7 @@
     "zustand": "catalog:prod"
   },
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",

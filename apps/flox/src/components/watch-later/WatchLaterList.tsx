@@ -1,4 +1,4 @@
-import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
+import { IKEmpty } from '@cdlab/ui/IK/IKEmpty'
 import { InboxIcon } from 'lucide-react'
 import type { WatchLaterItem as WatchLaterItemType } from '@/lib/types'
 import { groupByDate } from '@/lib/utils/format-utils'

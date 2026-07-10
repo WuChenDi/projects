@@ -1,9 +1,9 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { ImageCompare } from '@cdlab996/ui/components/image-compare'
-import { IKEmpty } from '@cdlab996/ui/IK'
-import { cn } from '@cdlab996/ui/lib/utils'
+import { Button } from '@cdlab/ui/components/button'
+import { ImageCompare } from '@cdlab/ui/components/image-compare'
+import { IKEmpty } from '@cdlab/ui/IK'
+import { cn } from '@cdlab/ui/lib/utils'
 import { CloudUpload, Download, Edit2, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import {

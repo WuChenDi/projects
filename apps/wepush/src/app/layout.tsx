@@ -1,8 +1,8 @@
 /** biome-ignore-all lint/security/noDangerouslySetInnerHtml: Required for JSON-LD structured data */
 
-import '@cdlab996/ui/globals.css'
+import '@cdlab/ui/globals.css'
 
-import { Toaster } from '@cdlab996/ui/components/sonner'
+import { Toaster } from '@cdlab/ui/components/sonner'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'

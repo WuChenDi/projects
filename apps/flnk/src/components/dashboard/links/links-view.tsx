@@ -9,48 +9,48 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@cdlab996/ui/components/alert-dialog'
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
-import { Calendar } from '@cdlab996/ui/components/calendar'
-import { Card } from '@cdlab996/ui/components/card'
-import { Checkbox } from '@cdlab996/ui/components/checkbox'
-import { CopyButton } from '@cdlab996/ui/components/copy-button'
+} from '@cdlab/ui/components/alert-dialog'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
+import { Calendar } from '@cdlab/ui/components/calendar'
+import { Card } from '@cdlab/ui/components/card'
+import { Checkbox } from '@cdlab/ui/components/checkbox'
+import { CopyButton } from '@cdlab/ui/components/copy-button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@cdlab996/ui/components/dropdown-menu'
-import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
+} from '@cdlab/ui/components/dropdown-menu'
+import { Input } from '@cdlab/ui/components/input'
+import { Label } from '@cdlab/ui/components/label'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@cdlab996/ui/components/popover'
+} from '@cdlab/ui/components/popover'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
+} from '@cdlab/ui/components/select'
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@cdlab996/ui/components/sheet'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
+} from '@cdlab/ui/components/sheet'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
 import {
   ToggleGroup,
   ToggleGroupItem,
-} from '@cdlab996/ui/components/toggle-group'
-import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/toggle-group'
+import { IKEmpty } from '@cdlab/ui/IK/IKEmpty'
+import { cn } from '@cdlab/ui/lib/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { endOfDay, startOfDay } from 'date-fns'
 import {

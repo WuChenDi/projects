@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { cn } from '@cdlab996/ui/lib/utils'
+import { Button } from '@cdlab/ui/components/button'
+import { cn } from '@cdlab/ui/lib/utils'
 import { ArrowLeft, Command } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useRef, useState } from 'react'

@@ -2,20 +2,20 @@
 
 import * as React from "react";
 import { ChevronRight, ChevronDown, X } from "lucide-react";
-import { cn } from "@cdlab996/ui/lib/utils"
+import { cn } from "@cdlab/ui/lib/utils"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@cdlab996/ui/components/popover";
+} from "@cdlab/ui/components/popover";
 import {
   Drawer,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@cdlab996/ui/components/drawer";
-import { useIsMobile } from "@cdlab996/ui/hooks/use-mobile";
+} from "@cdlab/ui/components/drawer";
+import { useIsMobile } from "@cdlab/ui/hooks/use-mobile";
 
 export interface CascaderOption {
   value: string;

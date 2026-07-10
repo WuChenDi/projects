@@ -1,8 +1,8 @@
 'use client'
 
-import { Field } from '@cdlab996/ui/components/field'
-import { Label } from '@cdlab996/ui/components/label'
-import { Slider } from '@cdlab996/ui/components/slider'
+import { Field } from '@cdlab/ui/components/field'
+import { Label } from '@cdlab/ui/components/label'
+import { Slider } from '@cdlab/ui/components/slider'
 import { useTranslations } from 'next-intl'
 
 // Non-linear steps for better UX: 1-7 daily, then 14, 30, 90, 180, 365

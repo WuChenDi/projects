@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { CheckIcon, CopyIcon } from "lucide-react";
-import { Button } from "@cdlab996/ui/components/button";
-import { cn } from "@cdlab996/ui/lib/utils";
+import { Button } from "@cdlab/ui/components/button";
+import { cn } from "@cdlab/ui/lib/utils";
 
 interface CopyButtonProps extends React.ComponentProps<typeof Button> {
   value?: string;

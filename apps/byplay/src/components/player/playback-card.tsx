@@ -1,26 +1,26 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardAction,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
+} from '@cdlab/ui/components/card'
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldTitle,
-} from '@cdlab996/ui/components/field'
+} from '@cdlab/ui/components/field'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
+} from '@cdlab/ui/components/select'
 import { useTranslations } from 'next-intl'
 import type { HlsConfig, HlsPlayerState } from '@/hooks/use-hls-player'
 import { formatBitrate, SwitchField } from './shared-fields'

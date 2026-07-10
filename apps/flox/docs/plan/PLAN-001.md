@@ -86,7 +86,7 @@ verifiable phases; each phase is a separate commit and can be rolled back.
 
 ### Phase 5 — Cleanup + gates
 - Remove now-unused code introduced by the swap. Biome pass (style conformance). Update CLAUDE.md player section (currently describes the removed VePlayer/FloxPlayer).
-- **Verify**: `pnpm --filter @cdlab996/flox typecheck && lint && build` all pass.
+- **Verify**: `pnpm --filter @cdlab/flox typecheck && lint && build` all pass.
 
 ## Risks
 

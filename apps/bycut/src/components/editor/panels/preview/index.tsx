@@ -1,14 +1,14 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Slider } from '@cdlab996/ui/components/slider'
+import { Button } from '@cdlab/ui/components/button'
+import { Slider } from '@cdlab/ui/components/slider'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@cdlab996/ui/components/tooltip'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/tooltip'
+import { cn } from '@cdlab/ui/lib/utils'
 import {
   Camera,
   Maximize,

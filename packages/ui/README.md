@@ -1,4 +1,4 @@
-# @cdlab996/ui
+# @cdlab/ui
 
 Shared React/Tailwind v4 component library for the workspace — shadcn/ui primitives, hooks, icons, and a handful of React Bits effects, consumed directly from source by every app in the monorepo.
 
@@ -8,7 +8,7 @@ Add it as a workspace dependency:
 
 ```jsonc
 // apps/<app>/package.json
-"@cdlab996/ui": "workspace:*"
+"@cdlab/ui": "workspace:*"
 ```
 
 The package ships **no build step** — every subpath resolves straight to a `.ts`/`.tsx` file under `src/`, so consumers get the source directly (no `dist/`, no compile step to keep in sync).
@@ -17,15 +17,15 @@ Import the Tailwind v4 entry from the app's own global stylesheet:
 
 ```css
 /* apps/<app>/src/app/globals.css */
-@import '@cdlab996/ui/globals.css';
+@import '@cdlab/ui/globals.css';
 ```
 
 Import components, hooks, and utilities by subpath:
 
 ```ts
-import { Button } from '@cdlab996/ui/components/button'
-import { useMobile } from '@cdlab996/ui/hooks/use-mobile'
-import { cn } from '@cdlab996/ui/lib/utils'
+import { Button } from '@cdlab/ui/components/button'
+import { useMobile } from '@cdlab/ui/hooks/use-mobile'
+import { cn } from '@cdlab/ui/lib/utils'
 ```
 
 ## API / Exports

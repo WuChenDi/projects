@@ -1,4 +1,4 @@
-import { subtle } from '@cdlab996/uncrypto'
+import { subtle } from '@cdlab/uncrypto'
 import type {
   ChestJWTPayload,
   MultipartJWTPayload,

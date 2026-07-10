@@ -1,4 +1,4 @@
-import { getRandomValues, subtle } from '@cdlab996/uncrypto'
+import { getRandomValues, subtle } from '@cdlab/uncrypto'
 
 function base32Encode(buffer: Uint8Array): string {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'

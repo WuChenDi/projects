@@ -1,4 +1,4 @@
-# @cdlab996/cipher
+# @cdlab/cipher
 
 Client-side stream cipher library — XChaCha20-Poly1305 encryption with Argon2id password derivation or ECIES public-key exchange, used by `SecureC` and `dropply-web` to encrypt files and text without ever sending plaintext to a server.
 
@@ -7,7 +7,7 @@ Client-side stream cipher library — XChaCha20-Poly1305 encryption with Argon2i
 ```json
 {
   "dependencies": {
-    "@cdlab996/cipher": "workspace:*"
+    "@cdlab/cipher": "workspace:*"
   }
 }
 ```
@@ -15,7 +15,7 @@ Client-side stream cipher library — XChaCha20-Poly1305 encryption with Argon2i
 ### Password mode (Argon2id-derived key)
 
 ```ts
-import { streamCrypto } from '@cdlab996/cipher'
+import { streamCrypto } from '@cdlab/cipher'
 
 const encrypted = await streamCrypto.encrypt.withPassword({
   file, // File
@@ -34,7 +34,7 @@ const { file: decrypted } = await streamCrypto.decrypt.withPassword({
 ### Public-key mode (ECIES, optional signature)
 
 ```ts
-import { streamCrypto } from '@cdlab996/cipher'
+import { streamCrypto } from '@cdlab/cipher'
 
 const encrypted = await streamCrypto.encrypt.withPublicKey({
   file,
@@ -52,7 +52,7 @@ const { file: decrypted, signatureValid } = await streamCrypto.decrypt.withPriva
 ### Text mode
 
 ```ts
-import { textCrypto } from '@cdlab996/cipher'
+import { textCrypto } from '@cdlab/cipher'
 
 const { base64 } = await textCrypto.encrypt('secret message', 'my-password')
 const { text, signatureValid } = await textCrypto.decrypt(base64, 'my-password')
@@ -82,8 +82,8 @@ const { text, signatureValid } = await textCrypto.decrypt(base64, 'my-password')
 - **Do not change** the chunk sizes or Argon2id parameters in `CONFIG` (`src/constants.ts`) without bumping the header/magic-byte version — existing ciphertexts encrypted under the old parameters would become unreadable.
 - Password mode derives the symmetric key with `argon2id` (via `@noble/hashes`); public-key mode wraps a random symmetric key with `eciesjs` and optionally signs the file hash with `secp256k1` (via `@noble/curves`).
 - Consumers: `SecureC` (file/text encryption UI, run in a Web Worker) and `dropply-web` (end-to-end encrypted file sharing).
-- Built with `tsdown` (`pnpm --filter @cdlab996/cipher build`, or `dev` for watch mode) — rebuild after edits so consumers resolve the updated `dist/` output.
-- Tested with `vitest` + `happy-dom` (`pnpm --filter @cdlab996/cipher test`).
+- Built with `tsdown` (`pnpm --filter @cdlab/cipher build`, or `dev` for watch mode) — rebuild after edits so consumers resolve the updated `dist/` output.
+- Tested with `vitest` + `happy-dom` (`pnpm --filter @cdlab/cipher test`).
 
 ## License
 

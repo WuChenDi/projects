@@ -3,15 +3,15 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@cdlab996/ui/components/accordion'
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
-import { IKPageContainer } from '@cdlab996/ui/IK'
-import { GitHubIcon as Github } from '@cdlab996/ui/icon'
-import { cn } from '@cdlab996/ui/lib/utils'
-import BlurText from '@cdlab996/ui/reactbits/BlurText'
-import GradientText from '@cdlab996/ui/reactbits/GradientText'
-import Threads from '@cdlab996/ui/reactbits/Threads'
+} from '@cdlab/ui/components/accordion'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
+import { IKPageContainer } from '@cdlab/ui/IK'
+import { GitHubIcon as Github } from '@cdlab/ui/icon'
+import { cn } from '@cdlab/ui/lib/utils'
+import BlurText from '@cdlab/ui/reactbits/BlurText'
+import GradientText from '@cdlab/ui/reactbits/GradientText'
+import Threads from '@cdlab/ui/reactbits/Threads'
 import {
   AlarmClock,
   ArrowRight,

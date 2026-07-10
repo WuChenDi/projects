@@ -6,7 +6,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
+} from '@cdlab/ui/components/dialog'
 import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useEditor } from '@/hooks/use-editor'

@@ -1,8 +1,8 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { ImageCompare } from '@cdlab996/ui/components/image-compare'
-import { formatFileSize } from '@cdlab996/utils'
+import { Button } from '@cdlab/ui/components/button'
+import { ImageCompare } from '@cdlab/ui/components/image-compare'
+import { formatFileSize } from '@cdlab/utils'
 import { X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { ImageFile } from '@/types'

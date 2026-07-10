@@ -1,4 +1,4 @@
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import { Maximize, Minimize, PictureInPicture, Target } from 'lucide-react'
 
 interface DesktopRightControlsProps {

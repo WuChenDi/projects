@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/bytts",
+  "name": "@cdlab/bytts",
   "version": "0.0.1",
   "private": true,
   "description": "A text-to-speech application built with Next.js and Radix UI",
@@ -21,10 +21,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@cdlab996/genid": "catalog:prod",
-    "@cdlab996/ui": "workspace:*",
-    "@cdlab996/uncrypto": "workspace:*",
-    "@cdlab996/utils": "workspace:*",
+    "@cdlab/driftflake": "catalog:prod",
+    "@cdlab/ui": "workspace:*",
+    "@cdlab/uncrypto": "workspace:*",
+    "@cdlab/utils": "workspace:*",
     "@tanstack/react-form": "catalog:prod",
     "@tanstack/react-query": "catalog:prod",
     "lucide-react": "catalog:prod",
@@ -38,7 +38,7 @@
     "zustand": "catalog:prod"
   },
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",

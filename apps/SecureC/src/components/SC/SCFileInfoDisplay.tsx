@@ -1,4 +1,4 @@
-import { formatFileSize } from '@cdlab996/utils'
+import { formatFileSize } from '@cdlab/utils'
 import { useTranslations } from 'next-intl'
 import type { FileInfo } from '@/types'
 

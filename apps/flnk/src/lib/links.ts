@@ -1,4 +1,4 @@
-import { hashPasswordFn } from '@cdlab996/utils'
+import { hashPasswordFn } from '@cdlab/utils'
 import {
   and,
   desc,

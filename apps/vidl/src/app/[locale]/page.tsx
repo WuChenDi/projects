@@ -5,8 +5,8 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@cdlab996/ui/components/tabs'
-import { IKPageContainer } from '@cdlab996/ui/IK'
+} from '@cdlab/ui/components/tabs'
+import { IKPageContainer } from '@cdlab/ui/IK'
 import { ListPlus, Video } from 'lucide-react'
 import Script from 'next/script'
 import { useTranslations } from 'next-intl'

@@ -1,4 +1,4 @@
-import { logger } from '@cdlab996/utils'
+import { logger } from '@cdlab/utils'
 import { useCallback } from 'react'
 import { decode, encode, getFileType } from '@/lib'
 import type { CompressionOptions, ImageFile, OutputType } from '@/types'

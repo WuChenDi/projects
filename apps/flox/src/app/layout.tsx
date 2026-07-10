@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/security/noDangerouslySetInnerHtml: Required for JSON-LD structured data */
 
-import { Toaster } from '@cdlab996/ui/components/sonner'
+import { Toaster } from '@cdlab/ui/components/sonner'
 import fs from 'fs'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
@@ -8,7 +8,7 @@ import path from 'path'
 import type React from 'react'
 import { Suspense } from 'react'
 
-import '@cdlab996/ui/globals.css'
+import '@cdlab/ui/globals.css'
 import { AdKeywordsInjector } from '@/components/AdKeywordsInjector'
 import { FavoritesSidebar } from '@/components/favorites/FavoritesSidebar'
 import { WatchHistorySidebar } from '@/components/history/WatchHistorySidebar'

@@ -1,5 +1,5 @@
-import { Button } from '@cdlab996/ui/components/button'
-import { Slider } from '@cdlab996/ui/components/slider'
+import { Button } from '@cdlab/ui/components/button'
+import { Slider } from '@cdlab/ui/components/slider'
 import { Volume1, Volume2, VolumeX } from 'lucide-react'
 
 interface DesktopVolumeControlProps {

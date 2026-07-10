@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Dialog,
   DialogContent,
@@ -8,8 +8,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
+} from '@cdlab/ui/components/dialog'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
 import { AlertCircle, CheckCircle2 } from 'lucide-react'
 import type { DryRunUserResult } from '@/lib/push-client'
 

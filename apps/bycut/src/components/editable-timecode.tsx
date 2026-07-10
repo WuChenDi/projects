@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@cdlab996/ui/lib/utils'
+import { cn } from '@cdlab/ui/lib/utils'
 import { useEffect, useRef, useState } from 'react'
 import { formatTimeCode, parseTimeCode } from '@/lib/time'
 import type { TTimeCode } from '@/types/time'

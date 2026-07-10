@@ -2,7 +2,7 @@
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
-纯客户端的文件与文本加密工具——数据永远不会离开浏览器。所有加解密都运行在 **Web Worker** 中，基于 `@cdlab996/cipher`（XChaCha20-Poly1305 + Argon2id，可选 ECIES 公钥模式），因此处理大文件时 UI 线程始终保持响应。
+纯客户端的文件与文本加密工具——数据永远不会离开浏览器。所有加解密都运行在 **Web Worker** 中，基于 `@cdlab/cipher`（XChaCha20-Poly1305 + Argon2id，可选 ECIES 公钥模式），因此处理大文件时 UI 线程始终保持响应。
 
 预览：https://securec.pages.dev/
 
@@ -17,16 +17,16 @@
 - **解密时自动检测模式** — 通过读取加密流的 header（magic bytes）检测已加密文件，粘贴的加密文本同样支持自动检测，并自动切换到解密模式
 - **Web Worker 执行**（`src/workers/cryptoWorker.ts`） — 加解密不会阻塞主线程，进度通过 `postMessage` 实时回传
 - **多文件批量处理** — 可排队处理多个文件，每个文件独立显示进度，支持增量添加/移除
-- **处理历史** — 每次操作都会被追踪并持久化存储：元数据存于 `localStorage`，二进制数据存于 **IndexedDB**（`src/lib/storage.ts`，基于 `@cdlab996/utils` 的 `createIDBStore`）；支持在历史记录中批量下载/删除
+- **处理历史** — 每次操作都会被追踪并持久化存储：元数据存于 `localStorage`，二进制数据存于 **IndexedDB**（`src/lib/storage.ts`，基于 `@cdlab/utils` 的 `createIDBStore`）；支持在历史记录中批量下载/删除
 - **国际化** — 通过 next-intl 支持中英文
 
 ## Tech Stack
 
 - **Framework** — Next.js (App Router)、React、TypeScript
-- **加密** — `@cdlab996/cipher`（XChaCha20-Poly1305、Argon2id、ECIES），在 Web Worker 中运行
+- **加密** — `@cdlab/cipher`（XChaCha20-Poly1305、Argon2id、ECIES），在 Web Worker 中运行
 - **状态管理** — Zustand（`src/store/useProcessStore.ts`），通过 `zustand/middleware` 持久化
-- **存储** — IndexedDB（`@cdlab996/utils` 的 `createIDBStore`）存储二进制数据，`localStorage` 存储结果元数据
-- **UI** — `@cdlab996/ui`（shadcn/ui 组件）、Tailwind v4、Sonner 通知组件
+- **存储** — IndexedDB（`@cdlab/utils` 的 `createIDBStore`）存储二进制数据，`localStorage` 存储结果元数据
+- **UI** — `@cdlab/ui`（shadcn/ui 组件）、Tailwind v4、Sonner 通知组件
 - **i18n** — next-intl（en / zh）
 
 ## Getting Started
@@ -46,7 +46,7 @@ pnpm install
 ### Development
 
 ```bash
-pnpm --filter @cdlab996/securec dev
+pnpm --filter @cdlab/securec dev
 ```
 
 开发服务器运行于 `http://securec.localhost:3355`（通过 `@dotns/nsl`）。
@@ -54,7 +54,7 @@ pnpm --filter @cdlab996/securec dev
 ### 生成 ECIES 密钥对
 
 ```bash
-pnpm --filter @cdlab996/securec gk
+pnpm --filter @cdlab/securec gk
 ```
 
 运行 `scripts/generateKeys.js`——通过助记词派生 BIP32 密钥对（`@scure/bip32` / `@scure/bip39`），并演示两方之间的 ECIES 加解密流程，将公钥打印到控制台。
@@ -62,8 +62,8 @@ pnpm --filter @cdlab996/securec gk
 ### Build / Deploy
 
 ```bash
-pnpm --filter @cdlab996/securec build      # next build
-pnpm --filter @cdlab996/securec build:cf   # @cloudflare/next-on-pages
+pnpm --filter @cdlab/securec build      # next build
+pnpm --filter @cdlab/securec build:cf   # @cloudflare/next-on-pages
 ```
 
 ## License

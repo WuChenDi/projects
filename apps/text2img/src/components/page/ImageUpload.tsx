@@ -4,14 +4,14 @@ import { ImagePlus, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useCallback, useRef } from 'react'
 import { toast } from 'sonner'
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Label } from '@cdlab996/ui/components/label'
+} from '@cdlab/ui/components/card'
+import { Label } from '@cdlab/ui/components/label'
 import type { ModelType } from '@/types'
 
 interface ImageUploadProps {

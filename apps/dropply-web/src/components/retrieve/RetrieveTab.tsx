@@ -1,6 +1,6 @@
 'use client'
 
-import { logger } from '@cdlab996/utils'
+import { logger } from '@cdlab/utils'
 import { useState } from 'react'
 import { RetrieveForm } from '@/components/retrieve/RetrieveForm'
 import { RetrieveResults } from '@/components/retrieve/RetrieveResults'

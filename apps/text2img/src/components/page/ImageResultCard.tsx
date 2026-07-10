@@ -1,5 +1,5 @@
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Dialog,
   DialogContent,
@@ -7,10 +7,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
-import { Separator } from '@cdlab996/ui/components/separator'
-import { IKAssetFailed, IKAssetLoading } from '@cdlab996/ui/IK'
-import { downloadFile } from '@cdlab996/utils'
+} from '@cdlab/ui/components/dialog'
+import { Separator } from '@cdlab/ui/components/separator'
+import { IKAssetFailed, IKAssetLoading } from '@cdlab/ui/IK'
+import { downloadFile } from '@cdlab/utils'
 import { format } from 'date-fns'
 import { Copy, Download, Eye, Trash2 } from 'lucide-react'
 import Image from 'next/image'

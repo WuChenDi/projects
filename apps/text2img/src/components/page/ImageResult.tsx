@@ -1,14 +1,14 @@
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardAction,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { IKEmpty } from '@cdlab996/ui/IK'
-import type { ZipFileEntry } from '@cdlab996/utils'
-import { downloadFile, downloadFilesAsZip } from '@cdlab996/utils'
+} from '@cdlab/ui/components/card'
+import { IKEmpty } from '@cdlab/ui/IK'
+import type { ZipFileEntry } from '@cdlab/utils'
+import { downloadFile, downloadFilesAsZip } from '@cdlab/utils'
 import { Download, ImageOff, Loader2, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'

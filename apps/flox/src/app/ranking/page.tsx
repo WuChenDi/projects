@@ -1,12 +1,12 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
-import { Card } from '@cdlab996/ui/components/card'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
-import { Spinner } from '@cdlab996/ui/components/spinner'
-import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
-import { cn } from '@cdlab996/ui/lib/utils'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
+import { Card } from '@cdlab/ui/components/card'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
+import { Spinner } from '@cdlab/ui/components/spinner'
+import { IKEmpty, IKPageContainer } from '@cdlab/ui/IK'
+import { cn } from '@cdlab/ui/lib/utils'
 import {
   CalendarIcon,
   FilmIcon,

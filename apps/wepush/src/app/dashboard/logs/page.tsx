@@ -1,17 +1,17 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
-import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
+import { Input } from '@cdlab/ui/components/input'
+import { Label } from '@cdlab/ui/components/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
+} from '@cdlab/ui/components/select'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
 import {
   Table,
   TableBody,
@@ -19,8 +19,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@cdlab996/ui/components/table'
-import { IKEmpty } from '@cdlab996/ui/IK'
+} from '@cdlab/ui/components/table'
+import { IKEmpty } from '@cdlab/ui/IK'
 import { useQuery } from '@tanstack/react-query'
 import {
   ChevronLeft,

@@ -1,6 +1,6 @@
-import { Button } from '@cdlab996/ui/components/button'
-import { Progress } from '@cdlab996/ui/components/progress'
-import { formatFileSize } from '@cdlab996/utils'
+import { Button } from '@cdlab/ui/components/button'
+import { Progress } from '@cdlab/ui/components/progress'
+import { formatFileSize } from '@cdlab/utils'
 import { AlertTriangle, FileVideo, Upload } from 'lucide-react'
 import type { RefObject } from 'react'
 

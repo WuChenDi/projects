@@ -1,4 +1,4 @@
-import { Badge } from '@cdlab996/ui/components/badge'
+import { Badge } from '@cdlab/ui/components/badge'
 import { memo, useMemo } from 'react'
 import { getLatencyInfo } from '@/lib/utils/latency'
 

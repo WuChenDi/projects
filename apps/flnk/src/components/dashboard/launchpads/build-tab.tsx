@@ -1,19 +1,19 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
-import { Card } from '@cdlab996/ui/components/card'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
+import { Card } from '@cdlab/ui/components/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@cdlab996/ui/components/dropdown-menu'
-import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
-import { Switch } from '@cdlab996/ui/components/switch'
-import { Textarea } from '@cdlab996/ui/components/textarea'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/dropdown-menu'
+import { Input } from '@cdlab/ui/components/input'
+import { Label } from '@cdlab/ui/components/label'
+import { Switch } from '@cdlab/ui/components/switch'
+import { Textarea } from '@cdlab/ui/components/textarea'
+import { cn } from '@cdlab/ui/lib/utils'
 import {
   ChevronDown,
   ChevronUp,

@@ -1,7 +1,7 @@
 'use client'
 
-import { TooltipProvider } from '@cdlab996/ui/components/tooltip'
-import { IKVersionInfo } from '@cdlab996/ui/IK'
+import { TooltipProvider } from '@cdlab/ui/components/tooltip'
+import { IKVersionInfo } from '@cdlab/ui/IK'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useTheme } from 'next-themes'
 import { useEffect, useMemo, useState } from 'react'
