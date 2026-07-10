@@ -15,7 +15,6 @@ export async function cleanupExpiredContent(
   env: CloudflareEnv,
 ): Promise<CleanupResult> {
   // Create a mock context for database initialization
-  // biome-ignore lint/correctness/useHookAtTopLevel: <explanation>
   const db = useDrizzle({ env } as any)
 
   const currentTime = new Date()

@@ -266,7 +266,6 @@ export function useHlsPlayer() {
         }
 
         if (isAdFilterEnabled) {
-          // biome-ignore lint/suspicious/noExplicitAny: hls.js DefaultConfig.loader is not strictly typed in public API
           const DefaultLoader = (Hls as any).DefaultConfig.loader
           const onFilter = (
             url: string,
@@ -282,18 +281,13 @@ export function useHlsPlayer() {
           }
 
           class AdFilterLoader extends DefaultLoader {
-            // biome-ignore lint/suspicious/noExplicitAny: matches hls.js loader signature
             load(context: any, loaderConfig: any, callbacks: any) {
               if (context.type === 'manifest' || context.type === 'level') {
                 const originalOnSuccess = callbacks.onSuccess
                 callbacks.onSuccess = (
-                  // biome-ignore lint/suspicious/noExplicitAny: hls.js loader callback shape
                   response: any,
-                  // biome-ignore lint/suspicious/noExplicitAny: hls.js loader callback shape
                   loaderStats: any,
-                  // biome-ignore lint/suspicious/noExplicitAny: hls.js loader callback shape
                   ctx: any,
-                  // biome-ignore lint/suspicious/noExplicitAny: hls.js loader callback shape
                   networkDetails: any,
                 ) => {
                   if (typeof response.data === 'string') {
@@ -333,7 +327,6 @@ export function useHlsPlayer() {
               super.load(context, loaderConfig, callbacks)
             }
           }
-          // biome-ignore lint/suspicious/noExplicitAny: loader slot expects an hls.js-internal type
           ;(hlsInitConfig as any).loader = AdFilterLoader
         }
 

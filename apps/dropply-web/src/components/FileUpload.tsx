@@ -46,6 +46,7 @@ function FilePreviewModal({
 
         <div className="overflow-auto max-h-[calc(80vh-56px)]">
           {imageUrl ? (
+            // biome-ignore lint/performance/noImgElement: blob URL preview, next/image cannot optimize
             <img
               src={imageUrl}
               alt={file.name}

@@ -25,7 +25,7 @@ export const useExchangeRates = () => {
     }
   }
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fetch rates once on mount
   useEffect(() => {
     void loadRates()
   }, [])

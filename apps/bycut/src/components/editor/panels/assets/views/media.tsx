@@ -513,14 +513,12 @@ export function MediaView() {
           </div>
         </div>
 
-        {/* biome-ignore lint: deselect on empty space click */}
         <ScrollArea
           className="flex-1 min-h-0 w-full overflow-x-hidden"
           onClick={(event) => {
             if (event.target === event.currentTarget) handleClearSelection()
           }}
         >
-          {/* biome-ignore lint: deselect on empty space click */}
           <div
             className="w-full flex-1 p-2 pt-1"
             onClick={(event) => {

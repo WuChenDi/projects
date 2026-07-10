@@ -53,7 +53,7 @@ function HomeContent() {
   const api = new PocketChestAPI()
 
   // Init: fetch config
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fetch config once on mount
   useEffect(() => {
     api
       .getConfig()

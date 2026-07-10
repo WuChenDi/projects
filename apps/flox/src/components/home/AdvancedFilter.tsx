@@ -1,16 +1,10 @@
 'use client'
 
 import { Button } from '@cdlab/ui/components/button'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@cdlab/ui/components/card'
+import { Card, CardContent } from '@cdlab/ui/components/card'
 import { ToggleGroup, ToggleGroupItem } from '@cdlab/ui/components/toggle-group'
 import {
   ArrowUpDownIcon,
-  ChevronDownIcon,
   FilmIcon,
   GlobeIcon,
   SparklesIcon,

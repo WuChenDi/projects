@@ -27,6 +27,7 @@ export function VideoMetadata({
       <CardContent className="pt-6">
         <div className="flex flex-col sm:flex-row items-start gap-4">
           {videoData?.vod_pic && (
+            // biome-ignore lint/performance/noImgElement: remote poster from third-party video source
             <img
               src={videoData.vod_pic}
               alt={videoData.vod_name}

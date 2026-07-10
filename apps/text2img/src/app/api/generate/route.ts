@@ -93,7 +93,7 @@ const blackForestLabsConfig: ModelConfig = {
     }
   },
   processResponse: (response: any) => {
-    let jsonResponse
+    let jsonResponse: any
 
     if (typeof response === 'object') {
       jsonResponse = response

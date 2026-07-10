@@ -169,6 +169,7 @@ export function FilePreviewModal({
           {blobUrl && !isLoading && !error && (
             <>
               {previewType === 'image' && (
+                // biome-ignore lint/performance/noImgElement: decrypted blob URL, next/image cannot optimize
                 <img
                   src={blobUrl}
                   alt={file.filename}

@@ -9,7 +9,7 @@ import {
   verifyChestJWT,
   withNotDeleted,
 } from '@/lib'
-import type { ApiResponse, CloudflareEnv } from '@/types'
+import type { ApiResponse, ChestJWTPayload, CloudflareEnv } from '@/types'
 
 export const downloadRoutes = new Hono<{ Bindings: CloudflareEnv }>()
 
@@ -42,7 +42,7 @@ downloadRoutes.get(
       )
     }
 
-    let payload
+    let payload: ChestJWTPayload
     try {
       payload = await verifyChestJWT(token, c.env.JWT_SECRET)
     } catch (error) {

@@ -176,7 +176,6 @@ export function useTimelineZoom({
     })
   }, [zoomLevel, editor, tracksScrollRef, rulerScrollRef, minZoom])
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: tracksScrollRef is a stable ref
   const saveScrollPosition = useCallback(() => {
     if (scrollSaveTimeoutRef.current) {
       clearTimeout(scrollSaveTimeoutRef.current)
@@ -195,7 +194,6 @@ export function useTimelineZoom({
     }, 300)
   }, [zoomLevel, editor])
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: refs are stable
   useEffect(() => {
     if (initialScrollLeft === undefined) return
     if (hasRestoredScrollRef.current) return

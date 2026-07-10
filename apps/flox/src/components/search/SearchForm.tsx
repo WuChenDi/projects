@@ -230,6 +230,7 @@ export function SearchForm({
                           className="group/item"
                         >
                           {s.img ? (
+                            // biome-ignore lint/performance/noImgElement: remote thumbnail from third-party video source
                             <img
                               src={s.img}
                               alt=""
