@@ -1,4 +1,4 @@
-import { verifyPasswordFn } from '@cdlab996/utils'
+import { verifyPasswordFn } from '@cdlab/utils'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import type { NextRequest } from 'next/server'
 import type { Link } from '@/database/schema'

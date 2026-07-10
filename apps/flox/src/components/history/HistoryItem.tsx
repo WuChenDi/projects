@@ -1,4 +1,4 @@
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import { TrashIcon } from 'lucide-react'
 import { FavoriteButton } from '@/components/favorites/FavoriteButton'
 import { MediaItemCard } from '@/components/ui/MediaItemCard'

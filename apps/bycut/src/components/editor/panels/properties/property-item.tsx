@@ -1,4 +1,4 @@
-import { cn } from '@cdlab996/ui/lib/utils'
+import { cn } from '@cdlab/ui/lib/utils'
 import { Minus, Plus } from 'lucide-react'
 import { useState } from 'react'
 

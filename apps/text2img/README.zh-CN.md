@@ -24,7 +24,7 @@
 ## 技术栈
 
 - **框架** —— Next.js (App Router)、React、TypeScript
-- **UI** —— shadcn/ui（`@cdlab996/ui`）+ Tailwind CSS
+- **UI** —— shadcn/ui（`@cdlab/ui`）+ Tailwind CSS
 - **数据请求 / 变更** —— TanStack Query（模型/提示词用 `useQuery`，生成用 `useMutation`）
 - **状态管理** —— Zustand（`useImageStore`，持久化）
 - **平台** —— Cloudflare Workers AI（`AI` 绑定），通过 OpenNext 部署
@@ -46,7 +46,7 @@ pnpm install
 ### 开发
 
 ```bash
-pnpm --filter @cdlab996/text2img dev
+pnpm --filter @cdlab/text2img dev
 ```
 
 通过 `@dotns/nsl` 提供服务，地址为 `http://text2img.localhost:3355`，无需手动分配端口。
@@ -66,7 +66,7 @@ PASSWORDS=
 使用 `@opennextjs/cloudflare` 构建，而非原生 Next.js 构建。
 
 ```bash
-pnpm --filter @cdlab996/text2img deploy
+pnpm --filter @cdlab/text2img deploy
 ```
 
 需要 Cloudflare Workers AI（`AI`）绑定，详见 `wrangler.jsonc`。

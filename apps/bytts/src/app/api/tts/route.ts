@@ -1,6 +1,6 @@
 // https://learn.microsoft.com/en-us/azure/ai-services/speech-service/rest-text-to-speech?tabs=streaming
 
-import { randomUUID, subtle } from '@cdlab996/uncrypto'
+import { randomUUID, subtle } from '@cdlab/uncrypto'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 

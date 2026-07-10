@@ -76,14 +76,14 @@ flowchart TD
 pnpm install
 
 # 启动开发服务器，访问 http://flnk.localhost:3355（通过 nsl）
-pnpm --filter @cdlab996/flnk dev
+pnpm --filter @cdlab/flnk dev
 
 # 对 Cloudflare 绑定做类型检查
-pnpm --filter @cdlab996/flnk cf-typegen
+pnpm --filter @cdlab/flnk cf-typegen
 
 # 从 schema.ts 生成迁移，然后打开 Drizzle Studio（端口 3021）
-pnpm --filter @cdlab996/flnk db:gen
-pnpm --filter @cdlab996/flnk db:studio
+pnpm --filter @cdlab/flnk db:gen
+pnpm --filter @cdlab/flnk db:studio
 ```
 
 将 `.env.example` 复制为 `.env`，填入 better-auth + OAuth 密钥以及数据库凭据。
@@ -155,7 +155,7 @@ pnpm --filter @cdlab996/flnk db:studio
   "google": "https://play.google.com/...",
   "title": "Example",
   "description": "An example link",
-  "passwordHash": "<saltHex>:<hashHex> — 见 @cdlab996/utils hashPasswordFn",
+  "passwordHash": "<saltHex>:<hashHex> — 见 @cdlab/utils hashPasswordFn",
   "unsafe": false,
   "redirectWithQuery": true
 }
@@ -174,7 +174,7 @@ pnpm --filter @cdlab996/flnk db:studio
 ## 部署
 
 ```bash
-pnpm --filter @cdlab996/flnk deploy
+pnpm --filter @cdlab/flnk deploy
 ```
 
 需要 Cloudflare 绑定：`KV`、`AI`、`ANALYTICS`（Analytics Engine），以及当前 `DB_TYPE` 对应的数据库 —— `DB` 绑定（D1）或 `LIBSQL_URL` + `LIBSQL_AUTH_TOKEN`（Turso；通过 `wrangler secret put LIBSQL_AUTH_TOKEN` 设置令牌，不要提交）。详见 `wrangler.jsonc`。
@@ -198,7 +198,7 @@ node scripts/bench.mjs \
   --scenario hit,miss,cold
 
 # 或通过 package 脚本
-pnpm --filter @cdlab996/flnk bench -- --url https://flnk.example --slug abc123
+pnpm --filter @cdlab/flnk bench -- --url https://flnk.example --slug abc123
 ```
 
 对比 `miss` 与 `cold` 即可看出负缓存的效果：对同一个不存在 slug 的重复查询，延迟应远低于 cold 的 D1 路径。绝对数值取决于你的区域、D1 位置和网络 —— 请对你自己的实例实测，而非套用固定表格。

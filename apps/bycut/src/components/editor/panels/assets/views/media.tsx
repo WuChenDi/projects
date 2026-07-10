@@ -1,13 +1,13 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from '@cdlab996/ui/components/context-menu'
+} from '@cdlab/ui/components/context-menu'
 import {
   Dialog,
   DialogContent,
@@ -15,29 +15,29 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
+} from '@cdlab/ui/components/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@cdlab996/ui/components/dropdown-menu'
-import { Input } from '@cdlab996/ui/components/input'
+} from '@cdlab/ui/components/dropdown-menu'
+import { Input } from '@cdlab/ui/components/input'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
   InputGroupText,
-} from '@cdlab996/ui/components/input-group'
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
+} from '@cdlab/ui/components/input-group'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@cdlab996/ui/components/tooltip'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/tooltip'
+import { cn } from '@cdlab/ui/lib/utils'
 import type { LucideIcon } from 'lucide-react'
 import {
   ArrowUpDown,

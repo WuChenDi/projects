@@ -1,8 +1,8 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Spinner } from '@cdlab996/ui/components/spinner'
-import { IKEmpty, IKPageContainer } from '@cdlab996/ui/IK'
+import { Button } from '@cdlab/ui/components/button'
+import { Spinner } from '@cdlab/ui/components/spinner'
+import { IKEmpty, IKPageContainer } from '@cdlab/ui/IK'
 import { Search } from 'lucide-react'
 import { Suspense, useEffect, useMemo, useState } from 'react'
 import { PopularFeatures } from '@/components/home/PopularFeatures'

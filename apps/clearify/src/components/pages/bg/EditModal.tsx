@@ -13,17 +13,17 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { useCallback, useEffect, useState } from 'react'
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
-import { Label } from '@cdlab996/ui/components/label'
-import { Slider } from '@cdlab996/ui/components/slider'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
+} from '@cdlab/ui/components/dialog'
+import { Label } from '@cdlab/ui/components/label'
+import { Slider } from '@cdlab/ui/components/slider'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@cdlab/ui/components/tabs'
 import type { BgImageFile } from '@/types'
 
 interface EditModalProps {

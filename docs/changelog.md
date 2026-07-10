@@ -34,7 +34,7 @@ rename/merge/delete (kept the `links.tags` JSON column).
     offers to create it. Inside the vaul Drawer the popup is portaled into the
     drawer content (`[data-slot="drawer-content"]`) instead of `<body>`, otherwise
     it lands outside the drawer's pointer-events/focus scope and items can't be
-    selected; `@cdlab996/ui` `ComboboxContent` now forwards an optional
+    selected; `@cdlab/ui` `ComboboxContent` now forwards an optional
     `container` to its portal.
   - List rows: `TagInlineEditor` (`tag-inline-editor.tsx`) — a "+ Add tag"
     popover (cmdk search + checkbox list of the pool, creatable) toggling tags on
@@ -74,7 +74,7 @@ registration** (no email/password). Backed by the existing Drizzle D1/libsql DB.
   `BETTER_AUTH_SECRET` + client id/secret in `.env`. Caveat: any Google/GitHub
   account can sign in (open access) — add an allowlist later if needed.
 - Login UI: adopted the shadcn `login-04` layout (centered brand + 2-col social
-  button grid, `Field`/`FieldGroup` from `@cdlab996/ui`). Added public Privacy
+  button grid, `Field`/`FieldGroup` from `@cdlab/ui`). Added public Privacy
   Policy + Terms of Service pages at `/dashboard/privacy` + `/dashboard/terms`
   (styled after the ikui pages, content adapted to Sink's actual data
   practices; English text, sibling to `/dashboard/login` so outside the auth
@@ -177,7 +177,7 @@ All open decisions resolved with user (PLAN-001 Annotations): new app
 `apps/sink` (greenfield, not a shortener replace); site-token (env) Bearer
 auth; **multi-domain retained** via `(slug, domain)` composite unique key
 (sha256 hash layer dropped); P1 split P1a→P1b→P1c; default redirect 308;
-wepush frontend stack; `@cdlab996/genid`; Sink AE dimension layout; **i18n
+wepush frontend stack; `@cdlab/driftflake`; Sink AE dimension layout; **i18n
 (en/zh) baked into P1**; WebGL globe + map/heatmap + OpenAPI not built
 (placeholders). Plan still draft pending one multi-domain interpretation
 confirmation, then `proceed` for P1a.
@@ -272,17 +272,17 @@ visitor-controlled analytics dimensions (referer/slug). Fixed (commit
 
 ## 2026-06-14 09:50 [progress]
 
-Refactored the QR dialog to reuse the shared `@cdlab996/ui/components/qr-code`
+Refactored the QR dialog to reuse the shared `@cdlab/ui/components/qr-code`
 component (canvas + `ref.download`) instead of a bespoke `qrcode`/`<img>`
 implementation; removed `qrcode` + `@types/qrcode` from `apps/sink`. Declared
-`@types/qrcode` in `@cdlab996/ui` dependencies so the raw-source component
+`@types/qrcode` in `@cdlab/ui` dependencies so the raw-source component
 typechecks for consumers. Build + biome clean (commit `635db96`).
 
 ## 2026-06-14 10:00 [progress]
 
 Pushed `feat/sink-app` and opened **PR #38**
 (https://github.com/WuChenDi/projects/pull/38) — "feat(sink): rebuild shortener
-as a Sink-like Next.js app (P1)". Includes the untracked `@cdlab996/ui` QRCode
+as a Sink-like Next.js app (P1)". Includes the untracked `@cdlab/ui` QRCode
 component (`b3bb20c`) and a QR scannability fix (`68152d5`: fixed black/white +
 quiet zone). 89 files. P1 (P1a+P1b+P1c) complete; P2/P3 not included.
 
@@ -336,7 +336,7 @@ Still uncommitted.
   editor OG uploader + migrate backup card gated on R2. Binding commented in
   wrangler by default → graceful 503/r2:false; deploy = create bucket + uncomment.
 - P3c editor: ISO country picker (Command combobox, Intl.DisplayNames + flags) +
-  UTM builder. Added `cmdk` to `@cdlab996/ui` (shipped command.tsx needed it).
+  UTM builder. Added `cmdk` to `@cdlab/ui` (shipped command.tsx needed it).
 
 Verified locally: migrate round-trip; R2 both states (off graceful / on full:
 upload→asset→backup, validation, og-prefix guard); editor pages render. Build +

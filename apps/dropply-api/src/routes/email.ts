@@ -1,4 +1,4 @@
-import { formatBytes } from '@cdlab996/utils'
+import { formatBytes } from '@cdlab/utils'
 import { zValidator } from '@hono/zod-validator'
 import { eq } from 'drizzle-orm'
 import { Hono } from 'hono'

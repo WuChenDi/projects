@@ -1,7 +1,7 @@
 'use client'
 
-import { Alert, AlertDescription } from '@cdlab996/ui/components/alert'
-import { Button } from '@cdlab996/ui/components/button'
+import { Alert, AlertDescription } from '@cdlab/ui/components/alert'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Dialog,
   DialogContent,
@@ -9,9 +9,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
-import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
+} from '@cdlab/ui/components/dialog'
+import { Input } from '@cdlab/ui/components/input'
+import { Label } from '@cdlab/ui/components/label'
 import type { VideoSource } from '@/lib/types'
 import { useAddSourceForm } from './hooks/useAddSourceForm'
 

@@ -1,23 +1,23 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { HeatmapCalendar } from '@cdlab996/ui/components/heatmap-calendar'
+} from '@cdlab/ui/components/card'
+import { HeatmapCalendar } from '@cdlab/ui/components/heatmap-calendar'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
-import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
+} from '@cdlab/ui/components/select'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
+import { IKEmpty } from '@cdlab/ui/IK/IKEmpty'
 import { useQuery } from '@tanstack/react-query'
 import { Inbox, X } from 'lucide-react'
 import dynamic from 'next/dynamic'

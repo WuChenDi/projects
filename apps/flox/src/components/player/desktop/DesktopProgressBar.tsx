@@ -1,4 +1,4 @@
-import { Slider } from '@cdlab996/ui/components/slider'
+import { Slider } from '@cdlab/ui/components/slider'
 
 interface DesktopProgressBarProps {
   currentTime: number

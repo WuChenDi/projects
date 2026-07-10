@@ -23,7 +23,7 @@
 
 - **框架** —— Next.js（App Router，Edge Runtime API 路由）
 - **语音后端** —— Microsoft Azure Cognitive Services Speech（SSML 语音合成），并可通过 API 管理器接入任意 OpenAI 格式或 Edge 格式的 TTS API
-- **UI** —— React 19 + TypeScript、`@cdlab996/ui`、TanStack Form / Query
+- **UI** —— React 19 + TypeScript、`@cdlab/ui`、TanStack Form / Query
 - **状态管理** —— Zustand（`useApiStore` 管理提供方配置，`useHistoryStore` 通过 IndexedDB + localStorage 持久化历史记录）
 - **部署** —— Cloudflare Pages（`@cloudflare/next-on-pages`）
 
@@ -52,10 +52,10 @@ pnpm dev:bytts
 
 ```bash
 # 生产构建
-pnpm --filter @cdlab996/bytts build
+pnpm --filter @cdlab/bytts build
 
 # Cloudflare Pages 构建
-pnpm --filter @cdlab996/bytts run build:cf
+pnpm --filter @cdlab/bytts run build:cf
 ```
 
 ## API

@@ -1,4 +1,4 @@
-# @cdlab996/utils
+# @cdlab/utils
 
 Generic browser/Node utilities shared across the workspace's apps — clipboard, file download, byte formatting, IndexedDB key-value storage, timestamped logging, precise decimal arithmetic, and password hashing.
 
@@ -9,7 +9,7 @@ Add as a workspace dependency:
 ```json
 {
   "dependencies": {
-    "@cdlab996/utils": "workspace:*"
+    "@cdlab/utils": "workspace:*"
   }
 }
 ```
@@ -17,7 +17,7 @@ Add as a workspace dependency:
 Import from the package root — it re-exports every module (`src/index.ts`):
 
 ```ts
-import { copyToClipboard, downloadFile, formatBytes, logger } from '@cdlab996/utils'
+import { copyToClipboard, downloadFile, formatBytes, logger } from '@cdlab/utils'
 ```
 
 Consumers resolve `dist/index.mjs` (built by `tsdown`), not `src/`.
@@ -37,8 +37,8 @@ Consumers resolve `dist/index.mjs` (built by `tsdown`), not `src/`.
 ## Notes
 
 - Built with `tsdown`; consumers import from `dist/index.mjs` (types from `dist/index.d.mts`).
-- After editing source, rebuild with `pnpm --filter @cdlab996/utils build` (or `dev` for `tsdown --watch`) so consumers see the change.
-- Tested with `vitest` — `pnpm --filter @cdlab996/utils test` (one-shot) or `test:watch`.
+- After editing source, rebuild with `pnpm --filter @cdlab/utils build` (or `dev` for `tsdown --watch`) so consumers see the change.
+- Tested with `vitest` — `pnpm --filter @cdlab/utils test` (one-shot) or `test:watch`.
 
 ## License
 

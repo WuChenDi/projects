@@ -11,7 +11,7 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-} from '@cdlab996/ui/components/context-menu'
+} from '@cdlab/ui/components/context-menu'
 import {
   ArrowLeftRight,
   AudioLines,

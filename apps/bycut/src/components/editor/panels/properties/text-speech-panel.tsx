@@ -1,14 +1,14 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Checkbox } from '@cdlab996/ui/components/checkbox'
+import { Button } from '@cdlab/ui/components/button'
+import { Checkbox } from '@cdlab/ui/components/checkbox'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
+} from '@cdlab/ui/components/select'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { toast } from 'sonner'

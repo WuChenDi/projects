@@ -1,15 +1,15 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardAction,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/card'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
+import { cn } from '@cdlab/ui/lib/utils'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@cdlab996/ui/components/alert-dialog'
+} from '@cdlab/ui/components/alert-dialog'
 import { AlertCircle, Download, Loader2, Trash2, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { RetrieveResultCard } from '@/components/retrieve/RetrieveResultCard'

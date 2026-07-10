@@ -26,7 +26,7 @@
 ## 技术栈
 
 - **框架** — Next.js（App Router）、React、TypeScript
-- **UI** — `@cdlab996/ui`（shadcn/ui 组件 + reactbits 特效）、Tailwind CSS v4
+- **UI** — `@cdlab/ui`（shadcn/ui 组件 + reactbits 特效）、Tailwind CSS v4
 - **汇率来源** — CoinGecko `simple/price` API（加密货币）、exchangerate-api.com（法币）
 - **无后端** — 完全在客户端运行,汇率直接由浏览器发起请求获取
 
@@ -46,7 +46,7 @@ pnpm install
 ### 开发
 
 ```bash
-pnpm --filter @cdlab996/values dev
+pnpm --filter @cdlab/values dev
 ```
 
 通过 `@dotns/nsl` 运行在 `http://values.localhost:3355`（无需手动寻找端口）。
@@ -55,10 +55,10 @@ pnpm --filter @cdlab996/values dev
 
 ```bash
 # 生产构建
-pnpm --filter @cdlab996/values build
+pnpm --filter @cdlab/values build
 
 # Cloudflare Pages 构建（@cloudflare/next-on-pages）
-pnpm --filter @cdlab996/values build:cf
+pnpm --filter @cdlab/values build:cf
 ```
 
 ## License

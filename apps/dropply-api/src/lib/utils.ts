@@ -1,4 +1,4 @@
-import { getRandomValues, randomUUID } from '@cdlab996/uncrypto'
+import { getRandomValues, randomUUID } from '@cdlab/uncrypto'
 
 // Generate UUID v4
 export function generateUUID(): string {

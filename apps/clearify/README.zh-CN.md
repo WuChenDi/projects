@@ -70,17 +70,17 @@ pnpm install
 
 ```bash
 # 通过 nsl 在 http://clearify.localhost:3355 启动开发服务器
-pnpm --filter @cdlab996/clearify dev
+pnpm --filter @cdlab/clearify dev
 ```
 
 ### 构建 / 部署
 
 ```bash
 # 生产构建（此处不使用 Turbopack —— wasm 与 worker 混合场景需要 webpack）
-pnpm --filter @cdlab996/clearify build
+pnpm --filter @cdlab/clearify build
 
 # 构建 Cloudflare Pages 产物
-pnpm --filter @cdlab996/clearify build:cf
+pnpm --filter @cdlab/clearify build:cf
 ```
 
 ## 架构

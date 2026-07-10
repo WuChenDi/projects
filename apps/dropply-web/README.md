@@ -11,7 +11,7 @@ Preview: https://dropply.pages.dev/
 ## Features
 
 - **Client-side encryption** (`src/lib/crypto.ts`)
-  - Files and text are encrypted with AES-GCM, key derived via Argon2id (`@cdlab996/cipher`), before anything leaves the browser
+  - Files and text are encrypted with AES-GCM, key derived via Argon2id (`@cdlab/cipher`), before anything leaves the browser
   - A 256-bit key is auto-generated (`generateEncryptionKey`) and shared only via the URL fragment (`#key=...`) — never sent to the server; can be customized or regenerated at any time
 
 - **Share** (`src/lib/api.ts` — `PocketChestAPI`)
@@ -34,8 +34,8 @@ Preview: https://dropply.pages.dev/
 ## Tech Stack
 
 - **Framework** — Next.js (App Router), React, TypeScript
-- **Encryption** — `@cdlab996/cipher` (AES-GCM + Argon2id, ECIES), `@cdlab996/uncrypto` (cross-runtime crypto shim)
-- **UI** — `@cdlab996/ui` (shadcn + Tailwind v4), `react-dropzone`, `sonner`
+- **Encryption** — `@cdlab/cipher` (AES-GCM + Argon2id, ECIES), `@cdlab/uncrypto` (cross-runtime crypto shim)
+- **UI** — `@cdlab/ui` (shadcn + Tailwind v4), `react-dropzone`, `sonner`
 - **State** — Zustand (`useShareStore`, `useRetrieveStore`, `useAuthStore`)
 - **i18n** — next-intl (en / zh)
 - **Platform** — Cloudflare Pages via `@cloudflare/next-on-pages`
@@ -63,7 +63,7 @@ pnpm install
 ### Development
 
 ```bash
-pnpm --filter @cdlab996/dropply-web dev
+pnpm --filter @cdlab/dropply-web dev
 ```
 
 Dev server runs at `http://dropply-web.localhost:3355` via `@dotns/nsl`.
@@ -72,10 +72,10 @@ Dev server runs at `http://dropply-web.localhost:3355` via `@dotns/nsl`.
 
 ```bash
 # Next.js production build
-pnpm --filter @cdlab996/dropply-web build
+pnpm --filter @cdlab/dropply-web build
 
 # Build for Cloudflare Pages
-pnpm --filter @cdlab996/dropply-web build:cf
+pnpm --filter @cdlab/dropply-web build:cf
 ```
 
 ## Architecture
@@ -84,7 +84,7 @@ Dropply is split into two apps that must be deployed together: this frontend (`d
 
 | Path | Responsibility |
 |---|---|
-| `src/lib/crypto.ts` | Key generation, URL-fragment encode/decode, file and text encrypt/decrypt (wraps `@cdlab996/cipher`) |
+| `src/lib/crypto.ts` | Key generation, URL-fragment encode/decode, file and text encrypt/decrypt (wraps `@cdlab/cipher`) |
 | `src/lib/api.ts` | `PocketChestAPI` — talks to `dropply-api`: config, chest creation, regular + multipart upload, retrieval, download, email share |
 | `src/store/useShareStore.ts` | Share-tab state (files, text items, expiry, upload progress) |
 | `src/store/useRetrieveStore.ts` | Retrieve-tab state (retrieval code, key, downloaded content) |

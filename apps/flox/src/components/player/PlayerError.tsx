@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Card } from '@cdlab996/ui/components/card'
+import { Button } from '@cdlab/ui/components/button'
+import { Card } from '@cdlab/ui/components/card'
 import { ChevronLeftIcon, CircleAlertIcon, RefreshCwIcon } from 'lucide-react'
 
 interface PlayerErrorProps {

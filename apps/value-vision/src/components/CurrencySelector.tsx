@@ -6,7 +6,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
+} from '@cdlab/ui/components/select'
 import { CURRENCY_CONFIG } from '@/lib/currencies'
 
 interface CurrencySelectorProps {

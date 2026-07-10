@@ -152,7 +152,7 @@ pnpm install
 ### 本地开发
 
 ```bash
-pnpm --filter @cdlab996/baccarat dev
+pnpm --filter @cdlab/baccarat dev
 ```
 
 通过 `nsl` 运行 `wrangler dev`，访问地址为 `http://baccarat.localhost:3355`。
@@ -160,7 +160,7 @@ pnpm --filter @cdlab996/baccarat dev
 ### 构建 / 部署
 
 ```bash
-pnpm --filter @cdlab996/baccarat deploy
+pnpm --filter @cdlab/baccarat deploy
 ```
 
 运行 `wrangler deploy --minify`。部署完成后，将 Telegram 指向该 worker 的 webhook：

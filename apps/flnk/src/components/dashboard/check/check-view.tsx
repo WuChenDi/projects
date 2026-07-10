@@ -1,17 +1,17 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
-import { Progress } from '@cdlab996/ui/components/progress'
+} from '@cdlab/ui/components/card'
+import { Input } from '@cdlab/ui/components/input'
+import { Label } from '@cdlab/ui/components/label'
+import { Progress } from '@cdlab/ui/components/progress'
 import {
   Table,
   TableBody,
@@ -19,9 +19,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@cdlab996/ui/components/table'
-import { Tabs, TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
-import { downloadFile } from '@cdlab996/utils'
+} from '@cdlab/ui/components/table'
+import { Tabs, TabsList, TabsTrigger } from '@cdlab/ui/components/tabs'
+import { downloadFile } from '@cdlab/utils'
 import { Download, Play, RefreshCw, Square, Trash2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRef, useState } from 'react'

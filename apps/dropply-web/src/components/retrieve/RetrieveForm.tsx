@@ -1,14 +1,14 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardContent,
   CardHeader,
-} from '@cdlab996/ui/components/card'
-import { Field, FieldDescription } from '@cdlab996/ui/components/field'
-import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
+} from '@cdlab/ui/components/card'
+import { Field, FieldDescription } from '@cdlab/ui/components/field'
+import { Input } from '@cdlab/ui/components/input'
+import { Label } from '@cdlab/ui/components/label'
 import { CheckCircle, Download, Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { TabSwitcher } from '@/components/TabSwitcher'

@@ -5,15 +5,15 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
+} from '@cdlab/ui/components/card'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
+} from '@cdlab/ui/components/select'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { Globe } from 'lucide-react'

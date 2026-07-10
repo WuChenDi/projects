@@ -1,8 +1,8 @@
 'use client'
 
-import { ColorPicker } from '@cdlab996/ui/components/color-picker'
-import { Input } from '@cdlab996/ui/components/input'
-import { Slider } from '@cdlab996/ui/components/slider'
+import { ColorPicker } from '@cdlab/ui/components/color-picker'
+import { Input } from '@cdlab/ui/components/input'
+import { Slider } from '@cdlab/ui/components/slider'
 import { useTranslations } from 'next-intl'
 import { useReducer, useRef } from 'react'
 import { PanelBaseView } from '@/components/editor/panels/panel-base-view'

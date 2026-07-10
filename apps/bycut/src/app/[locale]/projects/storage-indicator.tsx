@@ -4,10 +4,10 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@cdlab996/ui/components/popover'
-import { Progress } from '@cdlab996/ui/components/progress'
-import { cn } from '@cdlab996/ui/lib/utils'
-import { formatBytes } from '@cdlab996/utils'
+} from '@cdlab/ui/components/popover'
+import { Progress } from '@cdlab/ui/components/progress'
+import { cn } from '@cdlab/ui/lib/utils'
+import { formatBytes } from '@cdlab/utils'
 import { Image, Music, Video } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'

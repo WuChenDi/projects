@@ -42,7 +42,7 @@ pnpm install
 ### 本地开发
 
 ```bash
-pnpm --filter @cdlab996/live-user dev
+pnpm --filter @cdlab/live-user dev
 ```
 
 开发服务器地址为 `http://live-user.localhost:3355`（通过 `@dotns/nsl` 提供，无需手动查找端口）。
@@ -50,13 +50,13 @@ pnpm --filter @cdlab996/live-user dev
 修改 `wrangler.jsonc` 后重新生成 Cloudflare 绑定类型：
 
 ```bash
-pnpm --filter @cdlab996/live-user cf-typegen
+pnpm --filter @cdlab/live-user cf-typegen
 ```
 
 ### 构建 / 部署
 
 ```bash
-pnpm --filter @cdlab996/live-user deploy
+pnpm --filter @cdlab/live-user deploy
 ```
 
 执行 `wrangler deploy --minify`。需要在 `wrangler.jsonc` 中配置好 `SITE_MANAGER` Durable Object 绑定和 `account_id`。

@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/text2img",
+  "name": "@cdlab/text2img",
   "type": "module",
   "version": "1.1.0",
   "private": true,
@@ -24,9 +24,9 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
   },
   "dependencies": {
-    "@cdlab996/genid": "catalog:prod",
-    "@cdlab996/ui": "workspace:*",
-    "@cdlab996/utils": "workspace:*",
+    "@cdlab/driftflake": "catalog:prod",
+    "@cdlab/ui": "workspace:*",
+    "@cdlab/utils": "workspace:*",
     "@tanstack/react-query": "catalog:prod",
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",
@@ -41,7 +41,7 @@
     "zustand": "catalog:prod"
   },
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@opennextjs/cloudflare": "catalog:dev",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",

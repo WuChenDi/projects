@@ -1,25 +1,25 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { ButtonGroup } from '@cdlab996/ui/components/button-group'
-import { Card, CardContent } from '@cdlab996/ui/components/card'
-import { Checkbox } from '@cdlab996/ui/components/checkbox'
+import { Button } from '@cdlab/ui/components/button'
+import { ButtonGroup } from '@cdlab/ui/components/button-group'
+import { Card, CardContent } from '@cdlab/ui/components/card'
+import { Checkbox } from '@cdlab/ui/components/checkbox'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@cdlab996/ui/components/dropdown-menu'
+} from '@cdlab/ui/components/dropdown-menu'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from '@cdlab996/ui/components/input-group'
-import { Label } from '@cdlab996/ui/components/label'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
-import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/input-group'
+import { Label } from '@cdlab/ui/components/label'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
+import { IKEmpty } from '@cdlab/ui/IK/IKEmpty'
+import { cn } from '@cdlab/ui/lib/utils'
 import { format as formatDate } from 'date-fns'
 import {
   ArrowDown,

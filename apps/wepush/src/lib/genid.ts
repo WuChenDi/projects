@@ -1,4 +1,4 @@
-import { GenidOptimized } from '@cdlab996/genid'
+import { GenidOptimized } from '@cdlab/driftflake'
 
 let instance: GenidOptimized | null = null
 

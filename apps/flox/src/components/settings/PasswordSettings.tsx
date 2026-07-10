@@ -4,14 +4,14 @@ import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from '@cdlab996/ui/components/alert'
+} from '@cdlab/ui/components/alert'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
+} from '@cdlab/ui/components/card'
 import { ShieldCheck } from 'lucide-react'
 
 export function PasswordSettings() {

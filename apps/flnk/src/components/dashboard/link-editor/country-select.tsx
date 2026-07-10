@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Command,
   CommandEmpty,
@@ -8,13 +8,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@cdlab996/ui/components/command'
+} from '@cdlab/ui/components/command'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@cdlab996/ui/components/popover'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/popover'
+import { cn } from '@cdlab/ui/lib/utils'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { useLocale } from 'next-intl'
 import { useMemo, useState } from 'react'

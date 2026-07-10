@@ -1,15 +1,15 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
-import { Input } from '@cdlab996/ui/components/input'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
+import { Input } from '@cdlab/ui/components/input'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@cdlab996/ui/components/popover'
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/popover'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
+import { cn } from '@cdlab/ui/lib/utils'
 import { Check, Link2, Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'

@@ -1,6 +1,6 @@
 'use client'
 
-import { TooltipProvider } from '@cdlab996/ui/components/tooltip'
+import { TooltipProvider } from '@cdlab/ui/components/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { ThemeProvider } from '@/components/layout/theme-provider'

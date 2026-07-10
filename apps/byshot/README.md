@@ -27,7 +27,7 @@ Preview: https://byshot.pages.dev/
 - **Image source** — Cloudinary Node SDK (`src/utils/cachedImages.ts` — server-side `cloudinary.v2.search` per request, in-memory cache)
 - **Animation** — `motion` for lightbox transitions, `react-swipeable` for touch, `react-use-keypress` for keyboard
 - **State** — Zustand (last-viewed-photo scroll restore)
-- **UI** — [`@cdlab996/ui`](../../packages/ui) (Dialog primitives + shared Tailwind v4 theme), Tailwind CSS v4
+- **UI** — [`@cdlab/ui`](../../packages/ui) (Dialog primitives + shared Tailwind v4 theme), Tailwind CSS v4
 - **Platform** — Cloudflare Pages via `@cloudflare/next-on-pages`
 
 ## Getting Started
@@ -46,7 +46,7 @@ pnpm install
 ### Development
 
 ```bash
-pnpm --filter @cdlab996/byshot dev
+pnpm --filter @cdlab/byshot dev
 ```
 
 Open `http://byshot.localhost:3355` (routed through `@dotns/nsl`).
@@ -55,10 +55,10 @@ Open `http://byshot.localhost:3355` (routed through `@dotns/nsl`).
 
 ```bash
 # Next.js build
-pnpm --filter @cdlab996/byshot build
+pnpm --filter @cdlab/byshot build
 
 # Cloudflare Pages build
-pnpm --filter @cdlab996/byshot build:cf
+pnpm --filter @cdlab/byshot build:cf
 ```
 
 ## Configuration

@@ -10,8 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@cdlab996/ui/components/alert-dialog'
-import { Button } from '@cdlab996/ui/components/button'
+} from '@cdlab/ui/components/alert-dialog'
+import { Button } from '@cdlab/ui/components/button'
 
 interface Props {
   title: string

@@ -1,14 +1,14 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
+import { Badge } from '@cdlab/ui/components/badge'
 import {
   Field,
   FieldContent,
   FieldDescription,
   FieldTitle,
-} from '@cdlab996/ui/components/field'
-import { Slider } from '@cdlab996/ui/components/slider'
-import { Switch } from '@cdlab996/ui/components/switch'
+} from '@cdlab/ui/components/field'
+import { Slider } from '@cdlab/ui/components/slider'
+import { Switch } from '@cdlab/ui/components/switch'
 import type { HlsLogEntry } from '@/hooks/use-hls-player'
 
 export function SliderField({

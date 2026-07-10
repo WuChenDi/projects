@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardAction,
@@ -9,9 +9,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Cascader } from '@cdlab996/ui/components/cascader'
-import { Field, FieldGroup, FieldTitle } from '@cdlab996/ui/components/field'
+} from '@cdlab/ui/components/card'
+import { Cascader } from '@cdlab/ui/components/cascader'
+import { Field, FieldGroup, FieldTitle } from '@cdlab/ui/components/field'
 import {
   InputGroup,
   InputGroupAddon,
@@ -19,8 +19,8 @@ import {
   InputGroupInput,
   InputGroupText,
   InputGroupTextarea,
-} from '@cdlab996/ui/components/input-group'
-import { Label } from '@cdlab996/ui/components/label'
+} from '@cdlab/ui/components/input-group'
+import { Label } from '@cdlab/ui/components/label'
 import {
   Select,
   SelectContent,
@@ -30,10 +30,10 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
-import { Slider } from '@cdlab996/ui/components/slider'
-import { StatusEnum } from '@cdlab996/ui/IK'
-import { copyToClipboard } from '@cdlab996/utils'
+} from '@cdlab/ui/components/select'
+import { Slider } from '@cdlab/ui/components/slider'
+import { StatusEnum } from '@cdlab/ui/IK'
+import { copyToClipboard } from '@cdlab/utils'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { ClipboardPaste, Copy, Loader2, Timer, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'

@@ -1,13 +1,13 @@
 'use client'
 
-import { AspectRatio } from '@cdlab996/ui/components/aspect-ratio'
-import { Button } from '@cdlab996/ui/components/button'
+import { AspectRatio } from '@cdlab/ui/components/aspect-ratio'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@cdlab996/ui/components/tooltip'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/tooltip'
+import { cn } from '@cdlab/ui/lib/utils'
 import { Plus } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useEffect, useRef, useState } from 'react'

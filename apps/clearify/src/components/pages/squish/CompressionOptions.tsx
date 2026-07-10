@@ -1,10 +1,10 @@
 'use client'
 
-import { Card } from '@cdlab996/ui/components/card'
-import { Field } from '@cdlab996/ui/components/field'
-import { Label } from '@cdlab996/ui/components/label'
-import { Slider } from '@cdlab996/ui/components/slider'
-import { ToggleGroup, ToggleGroupItem } from '@cdlab996/ui/components/toggle-group'
+import { Card } from '@cdlab/ui/components/card'
+import { Field } from '@cdlab/ui/components/field'
+import { Label } from '@cdlab/ui/components/label'
+import { Slider } from '@cdlab/ui/components/slider'
+import { ToggleGroup, ToggleGroupItem } from '@cdlab/ui/components/toggle-group'
 import type {
   CompressionOptions as CompressionOptionsType,
   OutputType,

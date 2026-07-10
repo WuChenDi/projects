@@ -5,20 +5,20 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@cdlab996/ui/components/accordion'
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
-import { Calendar } from '@cdlab996/ui/components/calendar'
-import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
-import { PasswordInput } from '@cdlab996/ui/components/password-input'
+} from '@cdlab/ui/components/accordion'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
+import { Calendar } from '@cdlab/ui/components/calendar'
+import { Input } from '@cdlab/ui/components/input'
+import { Label } from '@cdlab/ui/components/label'
+import { PasswordInput } from '@cdlab/ui/components/password-input'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@cdlab996/ui/components/popover'
-import { Switch } from '@cdlab996/ui/components/switch'
-import { Textarea } from '@cdlab996/ui/components/textarea'
+} from '@cdlab/ui/components/popover'
+import { Switch } from '@cdlab/ui/components/switch'
+import { Textarea } from '@cdlab/ui/components/textarea'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CalendarIcon, Plus, Sparkles, Trash2, Upload, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'

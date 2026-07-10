@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/ui",
+  "name": "@cdlab/ui",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -48,7 +48,7 @@
     "vaul": "catalog:prod"
   },
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@tailwindcss/postcss": "catalog:dev",
     "@types/node": "catalog:dev",
     "@types/qrcode": "catalog:dev",

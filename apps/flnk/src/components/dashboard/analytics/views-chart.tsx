@@ -1,22 +1,22 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
+import { Badge } from '@cdlab/ui/components/badge'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import type { ChartConfig } from '@cdlab996/ui/components/chart'
+} from '@cdlab/ui/components/card'
+import type { ChartConfig } from '@cdlab/ui/components/chart'
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from '@cdlab996/ui/components/chart'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
-import { IKEmpty } from '@cdlab996/ui/IK/IKEmpty'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/chart'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
+import { IKEmpty } from '@cdlab/ui/IK/IKEmpty'
+import { cn } from '@cdlab/ui/lib/utils'
 import { Inbox, TrendingDown, TrendingUp } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'

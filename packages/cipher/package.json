@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/cipher",
+  "name": "@cdlab/cipher",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -31,7 +31,7 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "@cdlab996/uncrypto": "workspace:*",
+    "@cdlab/uncrypto": "workspace:*",
     "@noble/ciphers": "catalog:prod",
     "@noble/curves": "catalog:prod",
     "@noble/hashes": "catalog:prod",
@@ -39,7 +39,7 @@
     "eciesjs": "catalog:prod"
   },
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
     "happy-dom": "^20",
     "jsdom": "catalog:dev",

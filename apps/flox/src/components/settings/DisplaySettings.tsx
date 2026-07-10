@@ -6,16 +6,16 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
+} from '@cdlab/ui/components/card'
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldTitle,
-} from '@cdlab996/ui/components/field'
-import { Separator } from '@cdlab996/ui/components/separator'
-import { Switch } from '@cdlab996/ui/components/switch'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/field'
+import { Separator } from '@cdlab/ui/components/separator'
+import { Switch } from '@cdlab/ui/components/switch'
+import { cn } from '@cdlab/ui/lib/utils'
 import type { SearchDisplayMode } from '@/lib/store/settings-store'
 
 interface DisplaySettingsProps {

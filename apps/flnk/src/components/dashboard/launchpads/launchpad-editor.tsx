@@ -1,15 +1,15 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
-import { Input } from '@cdlab996/ui/components/input'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
+import { Input } from '@cdlab/ui/components/input'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@cdlab996/ui/components/tabs'
+} from '@cdlab/ui/components/tabs'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, ExternalLink, Save, Send, Smartphone } from 'lucide-react'
 import { useRouter } from 'next/navigation'

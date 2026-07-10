@@ -68,7 +68,7 @@ Tags are a **shared pool**; editing must be possible from the list too, not only
 the editor.
 
 - Editor: replace the Enter-to-add chip input with a **multi-select combobox**
-  (`@cdlab996/ui` base-ui `combobox`, chips + dropdown of the shared tag pool,
+  (`@cdlab/ui` base-ui `combobox`, chips + dropdown of the shared tag pool,
   creatable by typing).
 - List rows: inline **"+ Add tag"** popover (search + checkbox list of the shared
   pool, creatable) toggling tags on that single link via the existing

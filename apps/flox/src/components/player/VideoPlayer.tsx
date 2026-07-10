@@ -1,20 +1,20 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
-import { Card } from '@cdlab996/ui/components/card'
-import { Label } from '@cdlab996/ui/components/label'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
+import { Card } from '@cdlab/ui/components/card'
+import { Label } from '@cdlab/ui/components/label'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@cdlab996/ui/components/popover'
-import { Switch } from '@cdlab996/ui/components/switch'
+} from '@cdlab/ui/components/popover'
+import { Switch } from '@cdlab/ui/components/switch'
 import {
   ToggleGroup,
   ToggleGroupItem,
-} from '@cdlab996/ui/components/toggle-group'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/toggle-group'
+import { cn } from '@cdlab/ui/lib/utils'
 import { SettingsIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'

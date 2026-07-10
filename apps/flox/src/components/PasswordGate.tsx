@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardContent,
@@ -8,15 +8,15 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
+} from '@cdlab/ui/components/card'
 import {
   Field,
   FieldDescription,
   FieldGroup,
-} from '@cdlab996/ui/components/field'
-import { PasswordInput } from '@cdlab996/ui/components/password-input'
-import { Spinner } from '@cdlab996/ui/components/spinner'
-import { hashPasswordFn } from '@cdlab996/utils'
+} from '@cdlab/ui/components/field'
+import { PasswordInput } from '@cdlab/ui/components/password-input'
+import { Spinner } from '@cdlab/ui/components/spinner'
+import { hashPasswordFn } from '@cdlab/utils'
 import { useForm } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'

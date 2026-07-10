@@ -1,6 +1,6 @@
 'use client'
 
-import { logger } from '@cdlab996/utils'
+import { logger } from '@cdlab/utils'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { ShareForm } from '@/components/share/ShareForm'

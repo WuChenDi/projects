@@ -30,4 +30,4 @@ Polishing the link editor (UTM + country picker).
 ## Notes
 
 See PLAN-003 §P3c. Country list bundled (code+name), flag derived from code; use
-`@cdlab996/ui` combobox (no heavy dep).
+`@cdlab/ui` combobox (no heavy dep).

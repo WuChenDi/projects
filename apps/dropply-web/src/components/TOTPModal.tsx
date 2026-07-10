@@ -1,7 +1,7 @@
 'use client'
 
-import { Alert, AlertDescription } from '@cdlab996/ui/components/alert'
-import { Button } from '@cdlab996/ui/components/button'
+import { Alert, AlertDescription } from '@cdlab/ui/components/alert'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Dialog,
   DialogContent,
@@ -9,13 +9,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
+} from '@cdlab/ui/components/dialog'
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from '@cdlab996/ui/components/input-otp'
+} from '@cdlab/ui/components/input-otp'
 import { AlertCircle, Loader2, Lock, ShieldCheck } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'

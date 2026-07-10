@@ -1,7 +1,7 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Drawer,
   DrawerContent,
@@ -9,9 +9,9 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-} from '@cdlab996/ui/components/drawer'
-import { Separator } from '@cdlab996/ui/components/separator'
-import { Spinner } from '@cdlab996/ui/components/spinner'
+} from '@cdlab/ui/components/drawer'
+import { Separator } from '@cdlab/ui/components/separator'
+import { Spinner } from '@cdlab/ui/components/spinner'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { toast } from 'sonner'

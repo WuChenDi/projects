@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/byplay-log",
+  "name": "@cdlab/byplay-log",
   "type": "module",
   "version": "0.1.0",
   "private": true,
@@ -27,8 +27,8 @@
     "db:up": "drizzle-kit up"
   },
   "dependencies": {
-    "@cdlab996/uncrypto": "workspace:*",
-    "@cdlab996/utils": "workspace:*",
+    "@cdlab/uncrypto": "workspace:*",
+    "@cdlab/utils": "workspace:*",
     "@hono/zod-validator": "catalog:prod",
     "@libsql/client": "catalog:prod",
     "drizzle-orm": "catalog:prod",
@@ -38,7 +38,7 @@
     "zod": "catalog:prod"
   },
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@cloudflare/workers-types": "catalog:dev",
     "@types/node": "catalog:dev",
     "drizzle-kit": "catalog:dev",

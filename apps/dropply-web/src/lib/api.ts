@@ -1,4 +1,4 @@
-import { downloadFile as downloadFileUtil } from '@cdlab996/utils'
+import { downloadFile as downloadFileUtil } from '@cdlab/utils'
 import type {
   ApiResponse,
   CompleteMultipartUploadResponse,

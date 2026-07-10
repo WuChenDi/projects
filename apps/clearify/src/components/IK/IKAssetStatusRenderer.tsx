@@ -1,4 +1,4 @@
-import { logger } from '@cdlab996/utils'
+import { logger } from '@cdlab/utils'
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
 import type { ImageFile } from '@/types'

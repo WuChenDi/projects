@@ -1,14 +1,14 @@
-import { Button } from '@cdlab996/ui/components/button'
-import { Label } from '@cdlab996/ui/components/label'
-import { Progress } from '@cdlab996/ui/components/progress'
+import { Button } from '@cdlab/ui/components/button'
+import { Label } from '@cdlab/ui/components/label'
+import { Progress } from '@cdlab/ui/components/progress'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
-import { Spinner } from '@cdlab996/ui/components/spinner'
+} from '@cdlab/ui/components/select'
+import { Spinner } from '@cdlab/ui/components/spinner'
 import { useTranslations } from 'next-intl'
 import { useMemo, useRef, useState } from 'react'
 import { PanelBaseView as BaseView } from '@/components/editor/panels/panel-base-view'

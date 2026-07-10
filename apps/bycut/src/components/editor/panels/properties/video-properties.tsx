@@ -1,7 +1,7 @@
 'use client'
 
-import { Input } from '@cdlab996/ui/components/input'
-import { Slider } from '@cdlab996/ui/components/slider'
+import { Input } from '@cdlab/ui/components/input'
+import { Slider } from '@cdlab/ui/components/slider'
 import { useTranslations } from 'next-intl'
 import { useReducer, useRef } from 'react'
 import { PanelBaseView } from '@/components/editor/panels/panel-base-view'

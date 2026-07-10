@@ -18,7 +18,7 @@
 
 ## 1. 项目定位
 
-- 应用名：`wepush`（路径 `apps/wepush`，包名 `@cdlab996/wepush`）
+- 应用名：`wepush`（路径 `apps/wepush`，包名 `@cdlab/wepush`）
 - 取代旧版"环境变量塞 JSON + 青龙脚本"的部署模式：
   - **配置入库**：用户、模板、全局配置全部进 DB，UI 增删改
   - **日志入库**：每次推送结果（成功/失败/payload）持久化，可查可重放
@@ -101,7 +101,7 @@ UI：
 |---|---|---|
 | 框架 | Next.js 15 App Router + React 19 + TypeScript | text2img / flox |
 | 路由 | `app/`（**不分 locale**，中文硬编码） | flox |
-| UI | `@cdlab996/ui` 基础组件（shadcn + Tailwind v4） | flox / text2img |
+| UI | `@cdlab/ui` 基础组件（shadcn + Tailwind v4） | flox / text2img |
 | 状态 | Zustand + TanStack Query | flox |
 | ORM | **Drizzle**（dev：LibSQL 文件；prod：Cloudflare D1） | dropply-api |
 | 校验 | `import * as z from 'zod'` | 一致 |
@@ -113,7 +113,7 @@ UI：
 无登录页、无 session 表，单一访问密码门：
 
 - `ACCESS_PASSWORD` 来自 env（CF Worker → Vars & Secrets）
-- 客户端 `@cdlab996/utils` 的 `hashPasswordFn` 在浏览器算哈希
+- 客户端 `@cdlab/utils` 的 `hashPasswordFn` 在浏览器算哈希
 - `POST /api/config` 把 hash 提交，服务端 `verifyPasswordFn(hash, ACCESS_PASSWORD)` 校验
 - 校验通过后哈希存 `useUnlockStore`（zustand-persist），下次免输入
 - `<PasswordGate hasEnvPassword={...}>` 包根布局，未解锁时只渲染门
@@ -355,7 +355,7 @@ apps/wepush/
 - ✅ 鉴权：flox 式密码门（env + 客户端 hash + zustand），无登录页、无 session
 - ✅ DB：dropply-api 式 Drizzle 双驱动（libsql / d1）
 - ✅ 不分 locale，UI 中文硬编码
-- ✅ UI 用 `@cdlab996/ui` 现有基础组件，**不做 PWA**
+- ✅ UI 用 `@cdlab/ui` 现有基础组件，**不做 PWA**
 
 **不做**：
 - ❌ 课程表

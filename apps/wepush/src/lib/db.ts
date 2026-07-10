@@ -1,5 +1,5 @@
-import type { Db } from '@cdlab996/db/web'
-import { defineDb } from '@cdlab996/db/web'
+import type { Db } from '@cdlab/db/web'
+import { defineDb } from '@cdlab/db/web'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import * as schema from '@/database/schema'
 

@@ -1,7 +1,7 @@
 'use client'
 
-import { TooltipProvider } from '@cdlab996/ui/components/tooltip'
-import { IKVersionInfo } from '@cdlab996/ui/IK'
+import { TooltipProvider } from '@cdlab/ui/components/tooltip'
+import { IKVersionInfo } from '@cdlab/ui/IK'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { ThemeProvider } from '@/components/layout/theme-provider'

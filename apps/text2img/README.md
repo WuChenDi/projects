@@ -24,7 +24,7 @@ Preview: https://text2img.cdlab.workers.dev/
 ## Tech Stack
 
 - **Framework** — Next.js (App Router), React, TypeScript
-- **UI** — shadcn/ui (`@cdlab996/ui`) + Tailwind CSS
+- **UI** — shadcn/ui (`@cdlab/ui`) + Tailwind CSS
 - **Data fetching / mutations** — TanStack Query (`useQuery` for models/prompts, `useMutation` for generation)
 - **State** — Zustand (`useImageStore`, persisted)
 - **Platform** — Cloudflare Workers AI (`AI` binding), deployed via OpenNext
@@ -46,7 +46,7 @@ pnpm install
 ### Development
 
 ```bash
-pnpm --filter @cdlab996/text2img dev
+pnpm --filter @cdlab/text2img dev
 ```
 
 Served at `http://text2img.localhost:3355` via `@dotns/nsl` — no port hunting.
@@ -66,7 +66,7 @@ PASSWORDS=
 Builds with `@opennextjs/cloudflare`, not the plain Next.js build.
 
 ```bash
-pnpm --filter @cdlab996/text2img deploy
+pnpm --filter @cdlab/text2img deploy
 ```
 
 Requires a Cloudflare Workers AI (`AI`) binding — see `wrangler.jsonc`.

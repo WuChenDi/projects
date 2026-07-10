@@ -1,4 +1,4 @@
-import { getRandomValues } from '@cdlab996/uncrypto'
+import { getRandomValues } from '@cdlab/uncrypto'
 import { sha256 } from '@noble/hashes/sha2.js'
 import { CONFIG } from './constants'
 import { InvalidDataError } from './errors'

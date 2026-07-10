@@ -11,13 +11,13 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from '@cdlab996/ui/components/dropdown-menu'
+} from '@cdlab/ui/components/dropdown-menu'
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '@cdlab996/ui/components/sidebar'
+} from '@cdlab/ui/components/sidebar'
 import {
   BookOpen,
   ChevronsUpDown,

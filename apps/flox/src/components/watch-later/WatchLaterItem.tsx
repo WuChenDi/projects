@@ -1,4 +1,4 @@
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import { TrashIcon } from 'lucide-react'
 import { MediaItemCard } from '@/components/ui/MediaItemCard'
 import type { WatchLaterItem as WatchLaterItemType } from '@/lib/types'

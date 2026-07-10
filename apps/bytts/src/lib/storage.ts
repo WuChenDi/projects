@@ -1,4 +1,4 @@
-import { createIDBStore } from '@cdlab996/utils'
+import { createIDBStore } from '@cdlab/utils'
 
 const dbStore = createIDBStore('tts-history-data')
 

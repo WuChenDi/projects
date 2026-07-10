@@ -1,4 +1,4 @@
-import { logger } from '@cdlab996/utils'
+import { logger } from '@cdlab/utils'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { imageStore } from '@/lib/storage'

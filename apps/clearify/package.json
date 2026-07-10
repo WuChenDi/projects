@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/clearify",
+  "name": "@cdlab/clearify",
   "version": "2.1.0",
   "private": true,
   "description": "Powerful web-based tools for your image editing needs",
@@ -21,9 +21,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@cdlab996/genid": "catalog:prod",
-    "@cdlab996/ui": "workspace:*",
-    "@cdlab996/utils": "workspace:*",
+    "@cdlab/driftflake": "catalog:prod",
+    "@cdlab/ui": "workspace:*",
+    "@cdlab/utils": "workspace:*",
     "@huggingface/transformers": "catalog:prod",
     "@jsquash/avif": "^2.1.1",
     "@jsquash/jpeg": "^1.6.0",
@@ -44,7 +44,7 @@
     "zustand": "catalog:prod"
   },
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",

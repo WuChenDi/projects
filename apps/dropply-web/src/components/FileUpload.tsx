@@ -1,14 +1,14 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
-import { cn } from '@cdlab996/ui/lib/utils'
-import { formatBytes } from '@cdlab996/utils'
+} from '@cdlab/ui/components/dialog'
+import { cn } from '@cdlab/ui/lib/utils'
+import { formatBytes } from '@cdlab/utils'
 import { HardDrive, Upload, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useState } from 'react'

@@ -1,16 +1,16 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { CopyButton } from '@cdlab996/ui/components/copy-button'
+import { Button } from '@cdlab/ui/components/button'
+import { CopyButton } from '@cdlab/ui/components/copy-button'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
-import { Label } from '@cdlab996/ui/components/label'
-import { Textarea } from '@cdlab996/ui/components/textarea'
+} from '@cdlab/ui/components/dialog'
+import { Label } from '@cdlab/ui/components/label'
+import { Textarea } from '@cdlab/ui/components/textarea'
 import { Download } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { ProcessResult } from '@/types'

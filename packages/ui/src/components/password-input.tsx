@@ -7,7 +7,7 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@cdlab996/ui/components/input-group"
+} from "@cdlab/ui/components/input-group"
 
 export interface PasswordInputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {

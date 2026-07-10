@@ -1,14 +1,14 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@cdlab996/ui/components/dialog'
-import { copyToClipboard } from '@cdlab996/utils'
+} from '@cdlab/ui/components/dialog'
+import { copyToClipboard } from '@cdlab/utils'
 import { format } from 'date-fns'
 import { Check, Copy } from 'lucide-react'
 import { useTranslations } from 'next-intl'

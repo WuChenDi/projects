@@ -21,7 +21,7 @@ catalogs:
     wrangler: ^4.105.0
   prod:
     '@base-ui/react': ^1.6.0
-    '@cdlab996/genid': ^1.4.0
+    '@cdlab/driftflake': ^2.0.0
     '@hono/zod-validator': ^0.8.0
     '@huggingface/transformers': ^4.2.0
     '@libsql/client': ^0.17.4
@@ -79,3 +79,5 @@ allowBuilds:
   msw: false
   onnxruntime-node: true
   protobufjs: false
+minimumReleaseAgeExclude:
+  - '@cdlab/driftflake@2.0.0'

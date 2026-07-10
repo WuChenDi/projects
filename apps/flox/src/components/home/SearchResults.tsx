@@ -1,13 +1,13 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
+import { Badge } from '@cdlab/ui/components/badge'
 import {
   Card,
   CardAction,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
+} from '@cdlab/ui/components/card'
 import { Globe, Tag } from 'lucide-react'
 import { FilterBadges } from '@/components/search/FilterBadges'
 import { VideoGrid } from '@/components/search/VideoGrid'

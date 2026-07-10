@@ -1,16 +1,16 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Checkbox } from '@cdlab996/ui/components/checkbox'
-import { Label } from '@cdlab996/ui/components/label'
+import { Button } from '@cdlab/ui/components/button'
+import { Checkbox } from '@cdlab/ui/components/checkbox'
+import { Label } from '@cdlab/ui/components/label'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@cdlab996/ui/components/popover'
-import { Progress } from '@cdlab996/ui/components/progress'
-import { RadioGroup, RadioGroupItem } from '@cdlab996/ui/components/radio-group'
-import { downloadFile } from '@cdlab996/utils'
+} from '@cdlab/ui/components/popover'
+import { Progress } from '@cdlab/ui/components/progress'
+import { RadioGroup, RadioGroupItem } from '@cdlab/ui/components/radio-group'
+import { downloadFile } from '@cdlab/utils'
 import { Check, Copy, Download, FolderUp, RotateCcw } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useRef, useState } from 'react'

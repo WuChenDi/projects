@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardContent,
@@ -8,13 +8,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
+} from '@cdlab/ui/components/card'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from '@cdlab996/ui/components/input-group'
+} from '@cdlab/ui/components/input-group'
 import { ClipboardPaste } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useCallback } from 'react'

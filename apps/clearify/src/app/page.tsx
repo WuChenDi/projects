@@ -5,23 +5,23 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@cdlab996/ui/components/accordion'
-import { Button } from '@cdlab996/ui/components/button'
+} from '@cdlab/ui/components/accordion'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { IKPageContainer } from '@cdlab996/ui/IK'
-import { GitHubIcon } from '@cdlab996/ui/icon'
-import { cn } from '@cdlab996/ui/lib/utils'
-import Aurora from '@cdlab996/ui/reactbits/Aurora'
-import GradientText from '@cdlab996/ui/reactbits/GradientText'
-import Particles from '@cdlab996/ui/reactbits/Particles'
-import ShinyText from '@cdlab996/ui/reactbits/ShinyText'
-import SplashCursor from '@cdlab996/ui/reactbits/SplashCursor'
+} from '@cdlab/ui/components/card'
+import { IKPageContainer } from '@cdlab/ui/IK'
+import { GitHubIcon } from '@cdlab/ui/icon'
+import { cn } from '@cdlab/ui/lib/utils'
+import Aurora from '@cdlab/ui/reactbits/Aurora'
+import GradientText from '@cdlab/ui/reactbits/GradientText'
+import Particles from '@cdlab/ui/reactbits/Particles'
+import ShinyText from '@cdlab/ui/reactbits/ShinyText'
+import SplashCursor from '@cdlab/ui/reactbits/SplashCursor'
 import type { LucideIcon } from 'lucide-react'
 import {
   ArrowRight,

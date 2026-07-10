@@ -1,4 +1,4 @@
-import { IKConfirmDialog } from '@cdlab996/ui/IK'
+import { IKConfirmDialog } from '@cdlab/ui/IK'
 import { useTranslations } from 'next-intl'
 
 export function DeleteProjectDialog({

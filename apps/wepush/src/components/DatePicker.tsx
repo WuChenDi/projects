@@ -1,12 +1,12 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Calendar } from '@cdlab996/ui/components/calendar'
+import { Button } from '@cdlab/ui/components/button'
+import { Calendar } from '@cdlab/ui/components/calendar'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@cdlab996/ui/components/popover'
+} from '@cdlab/ui/components/popover'
 import { format, isValid, parse } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { CalendarIcon } from 'lucide-react'

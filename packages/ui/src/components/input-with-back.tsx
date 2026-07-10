@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@cdlab996/ui/components/button";
-import { Input } from "@cdlab996/ui/components/input";
+import { Button } from "@cdlab/ui/components/button";
+import { Input } from "@cdlab/ui/components/input";
 import { ArrowLeft, Search } from "lucide-react";
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";

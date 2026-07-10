@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Dialog,
   DialogContent,
@@ -9,9 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@cdlab996/ui/components/dialog'
-import { Field, FieldTitle } from '@cdlab996/ui/components/field'
-import { Slider } from '@cdlab996/ui/components/slider'
+} from '@cdlab/ui/components/dialog'
+import { Field, FieldTitle } from '@cdlab/ui/components/field'
+import { Slider } from '@cdlab/ui/components/slider'
 import { RotateCcw, Settings2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useSettingsStore } from '@/stores/settings-store'

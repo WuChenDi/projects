@@ -1,5 +1,5 @@
-import { StatusEnum } from '@cdlab996/ui/IK'
-import { logger } from '@cdlab996/utils'
+import { StatusEnum } from '@cdlab/ui/IK'
+import { logger } from '@cdlab/utils'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { dbStore } from '@/lib/storage'

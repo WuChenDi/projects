@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/flnk",
+  "name": "@cdlab/flnk",
   "type": "module",
   "version": "0.1.0",
   "private": true,
@@ -24,9 +24,9 @@
     "db:studio": "drizzle-kit studio --port 3021 --host 0.0.0.0"
   },
   "dependencies": {
-    "@cdlab996/db": "workspace:*",
-    "@cdlab996/ui": "workspace:*",
-    "@cdlab996/utils": "workspace:*",
+    "@cdlab/db": "workspace:*",
+    "@cdlab/ui": "workspace:*",
+    "@cdlab/utils": "workspace:*",
     "@libsql/client": "catalog:prod",
     "@tanstack/react-form": "catalog:prod",
     "@tanstack/react-query": "catalog:prod",
@@ -48,7 +48,7 @@
     "zustand": "catalog:prod"
   },
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@cloudflare/workers-types": "catalog:dev",
     "@opennextjs/cloudflare": "catalog:dev",
     "@types/node": "catalog:dev",

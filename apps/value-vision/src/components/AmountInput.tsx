@@ -1,4 +1,4 @@
-import { Input } from '@cdlab996/ui/components/input'
+import { Input } from '@cdlab/ui/components/input'
 import { CURRENCY_CONFIG } from '@/lib/currencies'
 
 interface AmountInputProps {

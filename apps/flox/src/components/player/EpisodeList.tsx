@@ -1,23 +1,23 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
-import { ButtonGroup } from '@cdlab996/ui/components/button-group'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
+import { ButtonGroup } from '@cdlab/ui/components/button-group'
 import {
   Card,
   CardAction,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { CopyButton } from '@cdlab996/ui/components/copy-button'
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
+} from '@cdlab/ui/components/card'
+import { CopyButton } from '@cdlab/ui/components/copy-button'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@cdlab996/ui/components/tooltip'
-import { IKEmpty } from '@cdlab996/ui/IK'
+} from '@cdlab/ui/components/tooltip'
+import { IKEmpty } from '@cdlab/ui/IK'
 import { ArrowUpDownIcon, DownloadIcon, InboxIcon, ListIcon } from 'lucide-react'
 import { useCallback, useMemo, useRef } from 'react'
 

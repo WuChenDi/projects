@@ -1,17 +1,17 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardAction,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
-import { IKEmpty } from '@cdlab996/ui/IK'
-import CountUp from '@cdlab996/ui/reactbits/CountUp'
+} from '@cdlab/ui/components/card'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
+import { IKEmpty } from '@cdlab/ui/IK'
+import CountUp from '@cdlab/ui/reactbits/CountUp'
 import { useQuery } from '@tanstack/react-query'
 import type { LucideIcon } from 'lucide-react'
 import {

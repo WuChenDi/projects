@@ -6,8 +6,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/select'
+import { cn } from '@cdlab/ui/lib/utils'
 import { CheckCircle } from 'lucide-react'
 import type { ModelStatus, RemovalModel } from '@/types'
 

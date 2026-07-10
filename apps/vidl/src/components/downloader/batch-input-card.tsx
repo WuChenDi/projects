@@ -7,14 +7,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
+} from '@cdlab/ui/components/card'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupText,
   InputGroupTextarea,
-} from '@cdlab996/ui/components/input-group'
+} from '@cdlab/ui/components/input-group'
 import { ClipboardPaste, CornerDownLeft, Link, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useCallback, useMemo } from 'react'

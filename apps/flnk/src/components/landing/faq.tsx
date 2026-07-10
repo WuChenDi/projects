@@ -5,7 +5,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@cdlab996/ui/components/accordion'
+} from '@cdlab/ui/components/accordion'
 
 export function Faq({ items }: { items: { q: string; a: string }[] }) {
   return (

@@ -1,11 +1,11 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   ToggleGroup,
   ToggleGroupItem,
-} from '@cdlab996/ui/components/toggle-group'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/toggle-group'
+import { cn } from '@cdlab/ui/lib/utils'
 import { X } from 'lucide-react'
 import { memo, useCallback, useState } from 'react'
 

@@ -83,14 +83,14 @@ flowchart TD
 pnpm install
 
 # Start the dev server on http://flnk.localhost:3355 (via nsl)
-pnpm --filter @cdlab996/flnk dev
+pnpm --filter @cdlab/flnk dev
 
 # Type-check the Cloudflare bindings
-pnpm --filter @cdlab996/flnk cf-typegen
+pnpm --filter @cdlab/flnk cf-typegen
 
 # Generate a migration from schema.ts, then open Drizzle Studio (port 3021)
-pnpm --filter @cdlab996/flnk db:gen
-pnpm --filter @cdlab996/flnk db:studio
+pnpm --filter @cdlab/flnk db:gen
+pnpm --filter @cdlab/flnk db:studio
 ```
 
 Copy `.env.example` to `.env` and fill in the better-auth + OAuth secrets and your database credentials.
@@ -165,7 +165,7 @@ Insert a row into `links` (`id`, `slug`, `domain`, `url`, optional `config` JSON
   "google": "https://play.google.com/...",
   "title": "Example",
   "description": "An example link",
-  "passwordHash": "<saltHex>:<hashHex> — see @cdlab996/utils hashPasswordFn",
+  "passwordHash": "<saltHex>:<hashHex> — see @cdlab/utils hashPasswordFn",
   "unsafe": false,
   "redirectWithQuery": true
 }
@@ -187,7 +187,7 @@ Deploys go through the GitHub Actions workflow **`.github/workflows/deploy-flnk.
 
 One-time Worker secrets not managed by the workflow (set once, persist across deploys): `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `GITHUB_CLIENT_ID/SECRET` via `wrangler secret put`.
 
-The local fallback (`pnpm --filter @cdlab996/flnk deploy`) still works but skips the secret sync — prefer the workflow.
+The local fallback (`pnpm --filter @cdlab/flnk deploy`) still works but skips the secret sync — prefer the workflow.
 
 Requires Cloudflare bindings: `KV`, `AI`, `ANALYTICS` (Analytics Engine), plus the database for the active `DB_TYPE` — the `DB` binding (D1) or `LIBSQL_URL` + `LIBSQL_AUTH_TOKEN` (Turso). See `wrangler.jsonc`.
 
@@ -210,7 +210,7 @@ node scripts/bench.mjs \
   --scenario hit,miss,cold
 
 # or via the package script
-pnpm --filter @cdlab996/flnk bench -- --url https://flnk.example --slug abc123
+pnpm --filter @cdlab/flnk bench -- --url https://flnk.example --slug abc123
 ```
 
 Comparing `miss` against `cold` shows the negative cache at work: repeated lookups of the same missing slug should resolve well below the cold D1 path. Absolute numbers depend on your region, D1 location, and network — run it against your own instance rather than trusting a fixed table.

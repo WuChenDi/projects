@@ -1,4 +1,4 @@
-# @cdlab996/projects-monorepo
+# @cdlab/projects-monorepo
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-%E2%89%A5%2020-brightgreen.svg)](https://nodejs.org/)
@@ -312,9 +312,9 @@ pnpm format                              # Biome format all code
 pnpm clean                               # Wipe node_modules / cache / build artifacts
 
 # Any single app — <name> is the package name with the scope stripped
-pnpm --filter @cdlab996/<name> dev       # → http://<name>.localhost:3355
-pnpm --filter @cdlab996/<name> build
-pnpm --filter @cdlab996/<name> typecheck
+pnpm --filter @cdlab/<name> dev       # → http://<name>.localhost:3355
+pnpm --filter @cdlab/<name> build
+pnpm --filter @cdlab/<name> typecheck
 ```
 
 `<name>` matches the package (not always the directory): `securec` (SecureC), `values`
@@ -345,11 +345,11 @@ its dev URL, build target, and deploy command.
 │   ├── vidl/              # Video Downloader (M3U8/HLS, MP4, etc.)
 │   └── wepush/            # WeChat Test-Account Template Push Console
 ├── packages/
-│   ├── cipher/            # Stream Cipher Library (@cdlab996/cipher)
-│   ├── tsconfig/          # Shared TypeScript Config (@cdlab996/tsconfig)
-│   ├── ui/                # Shared UI Component Library (@cdlab996/ui)
-│   ├── uncrypto/          # Lightweight Crypto Utilities (@cdlab996/uncrypto)
-│   └── utils/             # Common Utilities (@cdlab996/utils)
+│   ├── cipher/            # Stream Cipher Library (@cdlab/cipher)
+│   ├── tsconfig/          # Shared TypeScript Config (@cdlab/tsconfig)
+│   ├── ui/                # Shared UI Component Library (@cdlab/ui)
+│   ├── uncrypto/          # Lightweight Crypto Utilities (@cdlab/uncrypto)
+│   └── utils/             # Common Utilities (@cdlab/utils)
 ├── scripts/
 │   └── clean.sh
 ├── turbo.json

@@ -1,6 +1,6 @@
 'use client'
 
-import { Checkbox } from '@cdlab996/ui/components/checkbox'
+import { Checkbox } from '@cdlab/ui/components/checkbox'
 import {
   Command,
   CommandEmpty,
@@ -8,12 +8,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@cdlab996/ui/components/command'
+} from '@cdlab/ui/components/command'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@cdlab996/ui/components/popover'
+} from '@cdlab/ui/components/popover'
 import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'

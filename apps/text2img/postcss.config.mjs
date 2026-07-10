@@ -1,1 +1,1 @@
-export { default } from '@cdlab996/ui/postcss.config'
+export { default } from '@cdlab/ui/postcss.config'

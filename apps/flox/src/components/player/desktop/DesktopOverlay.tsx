@@ -1,4 +1,4 @@
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import { Check, Clock, FastForward, Play, SkipBack } from 'lucide-react'
 
 interface DesktopOverlayProps {

@@ -9,7 +9,7 @@
 
 Migrate `apps/shortener` from a Hono Cloudflare Worker into a full-featured
 Next.js application, matching the **wepush** tech stack (Next.js App Router +
-`@opennextjs/cloudflare` + Drizzle + `@cdlab996/ui`) and the **feature set of
+`@opennextjs/cloudflare` + Drizzle + `@cdlab/ui`) and the **feature set of
 Sink** (the Nuxt URL shortener at `tmp/Sink`, used purely as a product/feature
 reference — not a code reference).
 

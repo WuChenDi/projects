@@ -52,7 +52,7 @@ jobs:
       # without `run` pnpm invokes the built-in (which demands a target dir)
       # instead of the package script.
       - name: Build & deploy
-        run: pnpm --filter @cdlab996/text2img run deploy
+        run: pnpm --filter @cdlab/text2img run deploy
 
       # Sync Worker runtime secrets from GitHub secrets (idempotent, runs every
       # deploy). Runs AFTER the deploy: a secret cannot be created while the

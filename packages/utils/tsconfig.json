@@ -1,5 +1,5 @@
 {
-  "extends": "@cdlab996/tsconfig/utils.json",
+  "extends": "@cdlab/tsconfig/utils.json",
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"]

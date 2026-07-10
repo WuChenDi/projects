@@ -1,19 +1,19 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { ColorPicker } from '@cdlab996/ui/components/color-picker'
-// import { FontPicker } from '@cdlab996/ui/components/font-picker'
-import { Input } from '@cdlab996/ui/components/input'
-import { Slider } from '@cdlab996/ui/components/slider'
-import { Switch } from '@cdlab996/ui/components/switch'
+import { Button } from '@cdlab/ui/components/button'
+import { ColorPicker } from '@cdlab/ui/components/color-picker'
+// import { FontPicker } from '@cdlab/ui/components/font-picker'
+import { Input } from '@cdlab/ui/components/input'
+import { Slider } from '@cdlab/ui/components/slider'
+import { Switch } from '@cdlab/ui/components/switch'
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@cdlab996/ui/components/tabs'
-import { Textarea } from '@cdlab996/ui/components/textarea'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/tabs'
+import { Textarea } from '@cdlab/ui/components/textarea'
+import { cn } from '@cdlab/ui/lib/utils'
 import { useTranslations } from 'next-intl'
 import { useReducer, useRef } from 'react'
 import { PanelBaseView } from '@/components/editor/panels/panel-base-view'

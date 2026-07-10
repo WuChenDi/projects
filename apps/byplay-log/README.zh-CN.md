@@ -38,29 +38,29 @@ pnpm install
 
 ```bash
 # 通过 nsl 在 http://byplay-log.localhost:3355 启动开发服务器
-pnpm --filter @cdlab996/byplay-log dev
+pnpm --filter @cdlab/byplay-log dev
 ```
 
 ### Type-check Cloudflare bindings
 
 ```bash
-pnpm --filter @cdlab996/byplay-log cf-typegen
+pnpm --filter @cdlab/byplay-log cf-typegen
 ```
 
 ### Database
 
 ```bash
 # 根据 schema.ts 生成迁移文件
-pnpm --filter @cdlab996/byplay-log db:gen
+pnpm --filter @cdlab/byplay-log db:gen
 
 # 将迁移应用到本地 D1 数据库
-pnpm --filter @cdlab996/byplay-log cf:localdb
+pnpm --filter @cdlab/byplay-log cf:localdb
 
 # 将迁移应用到远程 D1 数据库
-pnpm --filter @cdlab996/byplay-log cf:remotedb
+pnpm --filter @cdlab/byplay-log cf:remotedb
 
 # 打开 Drizzle Studio（3018 端口）
-pnpm --filter @cdlab996/byplay-log db:studio
+pnpm --filter @cdlab/byplay-log db:studio
 ```
 
 复制 `.env.example` 为 `.env`，并根据所选的 `DB_TYPE` 填入数据库凭证。
@@ -68,7 +68,7 @@ pnpm --filter @cdlab996/byplay-log db:studio
 ### Deploy
 
 ```bash
-pnpm --filter @cdlab996/byplay-log deploy
+pnpm --filter @cdlab/byplay-log deploy
 ```
 
 需要绑定 Cloudflare D1 数据库 `DB`（见 `wrangler.jsonc`），若 `DB_TYPE=libsql` 则需要 `LIBSQL_URL` + `LIBSQL_AUTH_TOKEN`。

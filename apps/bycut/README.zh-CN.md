@@ -61,7 +61,7 @@ pnpm install
 ### 开发
 
 ```bash
-pnpm --filter @cdlab996/bycut dev
+pnpm --filter @cdlab/bycut dev
 ```
 
 启动后访问 `http://bycut.localhost:3355`（通过 `@dotns/nsl` 路由，无需手动寻找端口）。
@@ -69,8 +69,8 @@ pnpm --filter @cdlab996/bycut dev
 ### 构建 / 部署
 
 ```bash
-pnpm --filter @cdlab996/bycut build     # next build
-pnpm --filter @cdlab996/bycut build:cf  # @cloudflare/next-on-pages，用于 Cloudflare Pages 部署
+pnpm --filter @cdlab/bycut build     # next build
+pnpm --filter @cdlab/bycut build:cf  # @cloudflare/next-on-pages，用于 Cloudflare Pages 部署
 ```
 
 ## 架构

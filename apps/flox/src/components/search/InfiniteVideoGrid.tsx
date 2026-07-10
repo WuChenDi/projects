@@ -1,7 +1,7 @@
 'use client'
 
-import { cn } from '@cdlab996/ui/lib/utils'
-import { IKEmpty } from '@cdlab996/ui/IK'
+import { cn } from '@cdlab/ui/lib/utils'
+import { IKEmpty } from '@cdlab/ui/IK'
 import { FilmIcon } from 'lucide-react'
 import type { Video } from '@/lib/types'
 import { VideoCardSkeleton } from './VideoCard'

@@ -70,17 +70,17 @@ pnpm install
 
 ```bash
 # Start the dev server on http://clearify.localhost:3355 (via nsl)
-pnpm --filter @cdlab996/clearify dev
+pnpm --filter @cdlab/clearify dev
 ```
 
 ### Build / Deploy
 
 ```bash
 # Production build (Turbopack is not used here — wasm + worker mix requires webpack)
-pnpm --filter @cdlab996/clearify build
+pnpm --filter @cdlab/clearify build
 
 # Build for Cloudflare Pages
-pnpm --filter @cdlab996/clearify build:cf
+pnpm --filter @cdlab/clearify build:cf
 ```
 
 ## Architecture

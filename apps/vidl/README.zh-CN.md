@@ -39,7 +39,7 @@
 - **下载管道** —— `mux.js`（TS → MP4 转封装）+ 浏览器 Streams API（`WritableStream`，通过内置的 `StreamSaver.js`）实现近零内存写入
 - **状态管理** —— Zustand（`src/stores/`）
 - **国际化** —— next-intl（en / zh）
-- **UI** —— `@cdlab996/ui`（Tailwind v4、shadcn/ui 组件）
+- **UI** —— `@cdlab/ui`（Tailwind v4、shadcn/ui 组件）
 
 ## 快速开始
 
@@ -57,7 +57,7 @@ pnpm install
 ### 开发
 
 ```bash
-pnpm --filter @cdlab996/vidl dev
+pnpm --filter @cdlab/vidl dev
 ```
 
 开发地址：`http://vidl.localhost:3355`（通过 `@dotns/nsl`，无需手动查找端口）。
@@ -65,8 +65,8 @@ pnpm --filter @cdlab996/vidl dev
 ### 构建 / 部署
 
 ```bash
-pnpm --filter @cdlab996/vidl build     # next build
-pnpm --filter @cdlab996/vidl build:cf  # @cloudflare/next-on-pages
+pnpm --filter @cdlab/vidl build     # next build
+pnpm --filter @cdlab/vidl build:cf  # @cloudflare/next-on-pages
 ```
 
 ## 架构

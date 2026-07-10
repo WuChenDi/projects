@@ -37,7 +37,7 @@ node runtime, bindings via `getCloudflareContext()` (already used in `lib/db.ts`
   `account`, `verification`) with the exact column names better-auth expects
   (copy from flox schema). Keep existing `links` table untouched.
 - **Migration: regenerate from scratch** (user-approved). Delete the existing
-  `0000_*.sql` + `database/meta/` and run `pnpm --filter @cdlab996/sink db:gen`
+  `0000_*.sql` + `database/meta/` and run `pnpm --filter @cdlab/sink db:gen`
   to emit a single fresh init migration covering `links` + the four auth tables.
   No data preservation needed; the DB is wiped and re-initialized on next deploy.
   Still tool-generated (drizzle-kit), never hand-edited.

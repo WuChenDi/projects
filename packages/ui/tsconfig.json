@@ -1,8 +1,8 @@
 {
-  "extends": "@cdlab996/tsconfig/react-library.json",
+  "extends": "@cdlab/tsconfig/react-library.json",
   "compilerOptions": {
     "paths": {
-      "@cdlab996/ui/*": ["./src/*"]
+      "@cdlab/ui/*": ["./src/*"]
     }
   },
   "include": ["."],

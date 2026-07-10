@@ -1,5 +1,5 @@
 {
-  "extends": "@cdlab996/tsconfig/react-library.json",
+  "extends": "@cdlab/tsconfig/react-library.json",
   "compilerOptions": {
     "outDir": "dist"
   },

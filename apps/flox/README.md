@@ -27,7 +27,7 @@ Preview: https://floxx.pages.dev/
 ## Tech Stack
 
 - **Framework** — Next.js 16 (App Router, Edge Runtime API routes), React 19, TypeScript
-- **Styling** — Tailwind CSS 4, `@cdlab996/ui`
+- **Styling** — Tailwind CSS 4, `@cdlab/ui`
 - **State** — Zustand 5 (localStorage-persisted stores), TanStack Query (search mutation + streaming)
 - **Playback** — hls.js (custom engine) + Volcengine VePlayer, `@dnd-kit` for source reordering
 - **Deploy** — Cloudflare Pages via `@cloudflare/next-on-pages`
@@ -47,7 +47,7 @@ pnpm install
 ### Development
 
 ```bash
-pnpm --filter @cdlab996/flox dev
+pnpm --filter @cdlab/flox dev
 # or from the repo root
 pnpm dev:flox
 ```
@@ -59,8 +59,8 @@ Dev server is reachable at `http://flox.localhost:3355` via `@dotns/nsl` — no 
 `flox` builds with **`next build --webpack`** (`build` script) — Turbopack is not used here. Cloudflare Pages deployment goes through `@cloudflare/next-on-pages`:
 
 ```bash
-pnpm --filter @cdlab996/flox build       # next build --webpack
-pnpm --filter @cdlab996/flox build:cf    # npx @cloudflare/next-on-pages@latest
+pnpm --filter @cdlab/flox build       # next build --webpack
+pnpm --filter @cdlab/flox build:cf    # npx @cloudflare/next-on-pages@latest
 ```
 
 ## Architecture

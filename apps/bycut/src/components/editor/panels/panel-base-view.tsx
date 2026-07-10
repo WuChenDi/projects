@@ -1,12 +1,12 @@
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
-import { Separator } from '@cdlab996/ui/components/separator'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
+import { Separator } from '@cdlab/ui/components/separator'
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@cdlab996/ui/components/tabs'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/tabs'
+import { cn } from '@cdlab/ui/lib/utils'
 
 interface PanelBaseViewProps {
   children?: React.ReactNode

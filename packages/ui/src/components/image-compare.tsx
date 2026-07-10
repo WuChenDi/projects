@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { cn } from '@cdlab996/ui/lib/utils'
+import { cn } from '@cdlab/ui/lib/utils'
 
 export interface ImageCompareProps {
   aspectRatio?: 'taller' | 'wider'

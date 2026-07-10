@@ -1,23 +1,23 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { InputWithBack } from '@cdlab996/ui/components/input-with-back'
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
-import { Separator } from '@cdlab996/ui/components/separator'
-import { Spinner } from '@cdlab996/ui/components/spinner'
+import { Button } from '@cdlab/ui/components/button'
+import { InputWithBack } from '@cdlab/ui/components/input-with-back'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
+import { Separator } from '@cdlab/ui/components/separator'
+import { Spinner } from '@cdlab/ui/components/spinner'
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@cdlab996/ui/components/tabs'
+} from '@cdlab/ui/components/tabs'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@cdlab996/ui/components/tooltip'
-import { cn } from '@cdlab996/ui/lib/utils'
+} from '@cdlab/ui/components/tooltip'
+import { cn } from '@cdlab/ui/lib/utils'
 import {
   ArrowRight,
   Clock,

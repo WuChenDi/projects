@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/uncrypto",
+  "name": "@cdlab/uncrypto",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -44,7 +44,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",

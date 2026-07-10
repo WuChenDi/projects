@@ -15,8 +15,8 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
-} from '@cdlab996/ui/components/sidebar'
-import { IKFooter, IKPageContainer } from '@cdlab996/ui/IK'
+} from '@cdlab/ui/components/sidebar'
+import { IKFooter, IKPageContainer } from '@cdlab/ui/IK'
 import type { LucideIcon } from 'lucide-react'
 import { Bug, FileText, Home, ListChecks, Settings, Users } from 'lucide-react'
 import Link from 'next/link'

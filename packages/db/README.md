@@ -1,4 +1,4 @@
-# @cdlab996/db
+# @cdlab/db
 
 Shared Drizzle DB factory (D1 / LibSQL, dual-driver) and query helpers — the single source of truth for DB wiring across `dropply-api`, `flnk`, and `wepush`; each app's `src/lib/db.ts` is a thin adapter over this package instead of a hand-rolled `DatabaseManager` / `getDb` copy.
 
@@ -8,7 +8,7 @@ Shared Drizzle DB factory (D1 / LibSQL, dual-driver) and query helpers — the s
 // package.json
 {
   "dependencies": {
-    "@cdlab996/db": "workspace:*"
+    "@cdlab/db": "workspace:*"
   }
 }
 ```
@@ -17,17 +17,17 @@ Pick the entry by the app's bundler — it is **not** auto-selected:
 
 ```ts
 // plain-wrangler Hono worker (dropply-api) or a Node test runner
-import { defineDb } from '@cdlab996/db/node'
+import { defineDb } from '@cdlab/db/node'
 
 // Next.js / OpenNext app (flnk, wepush)
-import { defineDb } from '@cdlab996/db/web'
+import { defineDb } from '@cdlab/db/web'
 ```
 
 Bind the factory to the app's schema once, then call the returned `getDb(env)` per request:
 
 ```ts
-import type { Db } from '@cdlab996/db/web'
-import { defineDb } from '@cdlab996/db/web'
+import type { Db } from '@cdlab/db/web'
+import { defineDb } from '@cdlab/db/web'
 import * as schema from '@/database/schema'
 
 export type DB = Db<typeof schema>
@@ -48,8 +48,8 @@ export async function getDb(env: CloudflareEnv): Promise<DB> {
 
 | Entry | Client | Use for |
 | --- | --- | --- |
-| `@cdlab996/db/node` | `@libsql/client` (Node) — supports `file:` local SQLite | Plain-wrangler Hono workers (`dropply-api`) and Node test runners |
-| `@cdlab996/db/web` | `@libsql/client/web` — pure fetch/ws, bundles under OpenNext's esbuild | Next.js / OpenNext apps (`flnk`, `wepush`); remote Turso only, no `file:` support |
+| `@cdlab/db/node` | `@libsql/client` (Node) — supports `file:` local SQLite | Plain-wrangler Hono workers (`dropply-api`) and Node test runners |
+| `@cdlab/db/web` | `@libsql/client/web` — pure fetch/ws, bundles under OpenNext's esbuild | Next.js / OpenNext apps (`flnk`, `wepush`); remote Turso only, no `file:` support |
 
 Both `/node` and `/web` re-export `./utils` and share the same core API:
 
@@ -73,9 +73,9 @@ Re-exported from both `/node` and `/web`. `trackingFields` query helpers built a
 
 ## Notes
 
-- Built with `tsdown` (`pnpm --filter @cdlab996/db build`, or `dev` for `--watch`); entries are `src/node.ts`, `src/web.ts`, `src/utils.ts`, emitted as ESM + CJS with `.d.mts` types (`tsdown.config.ts`).
+- Built with `tsdown` (`pnpm --filter @cdlab/db build`, or `dev` for `--watch`); entries are `src/node.ts`, `src/web.ts`, `src/utils.ts`, emitted as ESM + CJS with `.d.mts` types (`tsdown.config.ts`).
 - `@libsql/client` and `drizzle-orm` are kept **external** in the build so consumers resolve their own copies — this is required for the OpenNext apps' `serverExternalPackages` (`@libsql/client`, `@libsql/hrana-client`, `@libsql/isomorphic-ws` in `next.config.ts`) to keep matching the import, and for wrangler to resolve the libsql chain via the `workerd` export condition.
-- After editing this package, consumers won't see the change until it's rebuilt — run `pnpm --filter @cdlab996/db build` (or `dev --watch`) or let `pnpm prepare` build it as part of `pnpm install`.
+- After editing this package, consumers won't see the change until it's rebuilt — run `pnpm --filter @cdlab/db build` (or `dev --watch`) or let `pnpm prepare` build it as part of `pnpm install`.
 
 ## License
 

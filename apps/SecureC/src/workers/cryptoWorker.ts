@@ -1,4 +1,4 @@
-import { parseStreamHeader, streamCrypto, textCrypto } from '@cdlab996/cipher'
+import { parseStreamHeader, streamCrypto, textCrypto } from '@cdlab/cipher'
 import { clampProgress, generateDownloadFilename } from '@/lib'
 import { ModeEnum } from '@/types'
 

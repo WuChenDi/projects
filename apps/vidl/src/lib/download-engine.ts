@@ -1,4 +1,4 @@
-import { downloadFile, logger } from '@cdlab996/utils'
+import { downloadFile, logger } from '@cdlab/utils'
 import { format } from 'date-fns'
 import type { AesConf, DownloadStore } from '@/stores/download-store'
 import type { DownloadSettings } from '@/stores/settings-store'

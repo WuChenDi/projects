@@ -7,15 +7,15 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import type { ChartConfig } from '@cdlab996/ui/components/chart'
+} from '@cdlab/ui/components/card'
+import type { ChartConfig } from '@cdlab/ui/components/chart'
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from '@cdlab996/ui/components/chart'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
-import CountUp from '@cdlab996/ui/reactbits/CountUp'
+} from '@cdlab/ui/components/chart'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
+import CountUp from '@cdlab/ui/reactbits/CountUp'
 import { useQuery } from '@tanstack/react-query'
 import { Link2, MousePointerClick, Share2, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'

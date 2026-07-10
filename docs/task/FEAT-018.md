@@ -30,7 +30,7 @@ Single file: `apps/sink/src/lib/ai-slug.ts`.
 
 ## Acceptance Criteria
 
-`pnpm --filter @cdlab996/sink typecheck` + biome clean. Sparkles button still
+`pnpm --filter @cdlab/sink typecheck` + biome clean. Sparkles button still
 returns a usable slug; non-JSON model replies now recover a slug instead of
 always randomising; AI-unavailable path still random-fallbacks as before.
 

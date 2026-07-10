@@ -1,14 +1,14 @@
 import { Shuffle } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { Card, CardContent, CardHeader, CardTitle } from '@cdlab996/ui/components/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@cdlab/ui/components/card'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from '@cdlab996/ui/components/input-group'
-import { Label } from '@cdlab996/ui/components/label'
-import { Slider } from '@cdlab996/ui/components/slider'
+} from '@cdlab/ui/components/input-group'
+import { Label } from '@cdlab/ui/components/label'
+import { Slider } from '@cdlab/ui/components/slider'
 
 interface AdvancedOptionsProps {
   width: number

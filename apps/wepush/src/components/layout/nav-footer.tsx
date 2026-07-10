@@ -12,14 +12,14 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from '@cdlab996/ui/components/dropdown-menu'
+} from '@cdlab/ui/components/dropdown-menu'
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '@cdlab996/ui/components/sidebar'
-import { GitHubIcon } from '@cdlab996/ui/icon'
+} from '@cdlab/ui/components/sidebar'
+import { GitHubIcon } from '@cdlab/ui/icon'
 import { BookOpen, ChevronsUpDown, LogOut, Palette } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'

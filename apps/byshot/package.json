@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/byshot",
+  "name": "@cdlab/byshot",
   "type": "module",
   "version": "0.0.1",
   "private": true,
@@ -22,8 +22,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@cdlab996/ui": "workspace:*",
-    "@cdlab996/utils": "workspace:*",
+    "@cdlab/ui": "workspace:*",
+    "@cdlab/utils": "workspace:*",
     "@vercel/analytics": "catalog:prod",
     "cloudinary": "2.10.0",
     "lucide-react": "catalog:prod",
@@ -38,7 +38,7 @@
     "zustand": "catalog:prod"
   },
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",

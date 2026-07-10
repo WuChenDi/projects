@@ -2,7 +2,7 @@ import {
   streamDecryptWithPassword,
   streamEncryptWithPassword,
   textCrypto,
-} from '@cdlab996/cipher'
+} from '@cdlab/cipher'
 
 /**
  * Generate a random 256-bit encryption key, returned as base64url string.

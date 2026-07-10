@@ -1,6 +1,6 @@
 'use client'
 
-import { Separator } from '@cdlab996/ui/components/separator'
+import { Separator } from '@cdlab/ui/components/separator'
 import type { Tab } from '@/stores/assets-panel-store'
 import { useAssetsPanelStore } from '@/stores/assets-panel-store'
 import { TabBar } from './tabbar'

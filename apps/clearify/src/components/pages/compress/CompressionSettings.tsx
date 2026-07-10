@@ -3,17 +3,17 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Field, FieldGroup } from '@cdlab996/ui/components/field'
-import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
+} from '@cdlab/ui/components/card'
+import { Field, FieldGroup } from '@cdlab/ui/components/field'
+import { Input } from '@cdlab/ui/components/input'
+import { Label } from '@cdlab/ui/components/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
+} from '@cdlab/ui/components/select'
 import type { ConversionSettings } from '@/types'
 
 interface CompressionSettingsProps {

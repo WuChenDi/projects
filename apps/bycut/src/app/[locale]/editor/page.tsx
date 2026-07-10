@@ -4,7 +4,7 @@ import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from '@cdlab996/ui/components/resizable'
+} from '@cdlab/ui/components/resizable'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { MigrationDialog } from '@/components/editor/dialogs/migration-dialog'

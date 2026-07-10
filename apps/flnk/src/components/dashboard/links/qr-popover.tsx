@@ -1,13 +1,13 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@cdlab996/ui/components/popover'
-import type { QRCodeHandle } from '@cdlab996/ui/components/qr-code'
-import { QRCode } from '@cdlab996/ui/components/qr-code'
+} from '@cdlab/ui/components/popover'
+import type { QRCodeHandle } from '@cdlab/ui/components/qr-code'
+import { QRCode } from '@cdlab/ui/components/qr-code'
 import { Download } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'

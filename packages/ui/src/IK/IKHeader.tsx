@@ -1,5 +1,5 @@
-import { Button } from '@cdlab996/ui/components/button'
-import { GitHubIcon as Github } from '@cdlab996/ui/icon'
+import { Button } from '@cdlab/ui/components/button'
+import { GitHubIcon as Github } from '@cdlab/ui/icon'
 import { ExternalLinkIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 

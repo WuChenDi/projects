@@ -1,17 +1,17 @@
 import { Dices } from 'lucide-react'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Button } from '@cdlab996/ui/components/button'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardAction,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Label } from '@cdlab996/ui/components/label'
-import { PasswordInput } from '@cdlab996/ui/components/password-input'
+} from '@cdlab/ui/components/card'
+import { Label } from '@cdlab/ui/components/label'
+import { PasswordInput } from '@cdlab/ui/components/password-input'
 import {
   Select,
   SelectContent,
@@ -20,8 +20,8 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
-import { Textarea } from '@cdlab996/ui/components/textarea'
+} from '@cdlab/ui/components/select'
+import { Textarea } from '@cdlab/ui/components/textarea'
 import type { ModelGroup } from '@/types'
 
 interface BasicSettingsProps {

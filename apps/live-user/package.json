@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/live-user",
+  "name": "@cdlab/live-user",
   "type": "module",
   "version": "1.0.0",
   "private": true,
@@ -23,7 +23,7 @@
     "hono": "catalog:prod"
   },
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@cloudflare/workers-types": "catalog:dev",
     "wrangler": "catalog:dev"
   }

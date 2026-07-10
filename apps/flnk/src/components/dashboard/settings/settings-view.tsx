@@ -1,13 +1,13 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
+import { Badge } from '@cdlab/ui/components/badge'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
+} from '@cdlab/ui/components/card'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslations } from 'next-intl'
 import { LocaleSwitcher } from '@/components/layout/locale-switcher'

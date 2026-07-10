@@ -1,18 +1,18 @@
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { Field } from '@cdlab996/ui/components/field'
-import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
-import { PasswordInput } from '@cdlab996/ui/components/password-input'
-import { Textarea } from '@cdlab996/ui/components/textarea'
-import { cn } from '@cdlab996/ui/lib/utils'
-import { formatFileSize } from '@cdlab996/utils'
+} from '@cdlab/ui/components/card'
+import { Field } from '@cdlab/ui/components/field'
+import { Input } from '@cdlab/ui/components/input'
+import { Label } from '@cdlab/ui/components/label'
+import { PasswordInput } from '@cdlab/ui/components/password-input'
+import { Textarea } from '@cdlab/ui/components/textarea'
+import { cn } from '@cdlab/ui/lib/utils'
+import { formatFileSize } from '@cdlab/utils'
 import { FileText, Lock, Unlock, Upload, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { RefObject } from 'react'

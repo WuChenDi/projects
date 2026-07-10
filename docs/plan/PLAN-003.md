@@ -26,7 +26,7 @@ Reuse: `lib/links.ts` (listLinks, upsertLink), `lib/analytics-query.ts`
    config, expiresAt`) wrapped as `{version:'1.0', exportedAt, count, links}`.
    Import upserts by `(slug, domain)`; reports `{success, skipped, failed}`.
 3. **Country picker**: bundle a small ISO-3166 list (code + name) + emoji flag
-   from the code; use `@cdlab996/ui` combobox. No heavy dep.
+   from the code; use `@cdlab/ui` combobox. No heavy dep.
 4. **Image upload**: jpeg/png/webp/gif, max 5MB; R2 key `og/{slug}/{id}.{ext}`;
    served via `GET /api/asset/[...key]`; wired into the editor OG image field.
 

@@ -1,12 +1,12 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
+import { Button } from '@cdlab/ui/components/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@cdlab996/ui/components/dropdown-menu'
+} from '@cdlab/ui/components/dropdown-menu'
 import { Check, LanguagesIcon } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { startTransition, useTransition } from 'react'

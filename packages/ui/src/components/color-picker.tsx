@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { cn } from "@cdlab996/ui/lib/utils";
+import { cn } from "@cdlab/ui/lib/utils";
 import { Input } from "./input";
 
 interface ColorPickerProps {

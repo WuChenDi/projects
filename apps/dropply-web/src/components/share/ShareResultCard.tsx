@@ -1,9 +1,9 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Card } from '@cdlab996/ui/components/card'
-import { cn } from '@cdlab996/ui/lib/utils'
-import { copyToClipboard } from '@cdlab996/utils'
+import { Button } from '@cdlab/ui/components/button'
+import { Card } from '@cdlab/ui/components/card'
+import { cn } from '@cdlab/ui/lib/utils'
+import { copyToClipboard } from '@cdlab/utils'
 import { CheckCircle, Copy, Link2, Mail, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'

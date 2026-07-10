@@ -1,5 +1,5 @@
 {
-  "name": "@cdlab996/repo-changelog",
+  "name": "@cdlab/repo-changelog",
   "type": "module",
   "version": "3.0.0",
   "private": true,
@@ -21,7 +21,7 @@
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
-    "@cdlab996/genid": "catalog:prod",
+    "@cdlab/driftflake": "catalog:prod",
     "@iconify-json/lucide": "^1.2.112",
     "@iconify-json/simple-icons": "^1.2.86",
     "@nuxt/ui": "^4.8.2",
@@ -35,7 +35,7 @@
     "vue": "^3.5.38"
   },
   "devDependencies": {
-    "@cdlab996/tsconfig": "workspace:*",
+    "@cdlab/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
     "tailwindcss": "catalog:dev",
     "typescript": "catalog:dev",

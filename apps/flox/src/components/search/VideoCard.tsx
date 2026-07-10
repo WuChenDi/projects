@@ -1,9 +1,9 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Card } from '@cdlab996/ui/components/card'
-import { Skeleton } from '@cdlab996/ui/components/skeleton'
-import { cn } from '@cdlab996/ui/lib/utils'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Card } from '@cdlab/ui/components/card'
+import { Skeleton } from '@cdlab/ui/components/skeleton'
+import { cn } from '@cdlab/ui/lib/utils'
 import { CalendarIcon, FilmIcon, LayersIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'

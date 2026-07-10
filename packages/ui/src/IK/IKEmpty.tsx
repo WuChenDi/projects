@@ -5,7 +5,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from '@cdlab996/ui/components/empty'
+} from '@cdlab/ui/components/empty'
 import type { LucideIcon } from 'lucide-react'
 import { Download } from 'lucide-react'
 import type { ReactNode } from 'react'

@@ -6,8 +6,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@cdlab996/ui/components/card'
-import { FieldGroup } from '@cdlab996/ui/components/field'
+} from '@cdlab/ui/components/card'
+import { FieldGroup } from '@cdlab/ui/components/field'
 import { useTranslations } from 'next-intl'
 import type { HlsConfig } from '@/hooks/use-hls-player'
 import { SliderField } from './shared-fields'

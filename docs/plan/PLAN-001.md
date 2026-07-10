@@ -33,7 +33,7 @@
   libsql (dev) via `new Function` dynamic import to dodge bundling.
 - API route handlers under `src/app/api/**/route.ts`; zod `safeParse` for
   validation; `NextResponse.json` envelopes.
-- UI: `@cdlab996/ui` (shadcn-react), Tailwind v4, `recharts`, `sonner`,
+- UI: `@cdlab/ui` (shadcn-react), Tailwind v4, `recharts`, `sonner`,
   `next-themes`, TanStack Query, Zustand. Client-side `PasswordGate` + DB
   bearer token for protected mutation endpoints.
 
@@ -63,7 +63,7 @@
 
    ```ts
    links(
-     id,                 // @cdlab996/genid
+     id,                 // @cdlab/driftflake
      slug,               // redirect key; unique per domain (see below)
      domain,             // multi-domain retained (consistent with shortener)
      url, comment,       // searchable real columns (Sink searches slug/url/comment)
@@ -103,7 +103,7 @@ phase boundaries pending user confirmation (see Annotations open items).
   `wrangler.jsonc` with `assets` + bindings + cron.
 - Cron cleanup -> `src/worker/index.ts` `scheduled()` wrapper.
 - Logger -> console-based (drop winston; no FS on Workers).
-- UI -> `@cdlab996/ui` shadcn-react; charts via `recharts` (wepush already
+- UI -> `@cdlab/ui` shadcn-react; charts via `recharts` (wepush already
   uses it) instead of `@unovis`.
 
 ## Feature Inventory (from Sink)
@@ -274,7 +274,7 @@ proposed phase. Checkboxes double as the implementation checklist. `P1` = MVP,
 
 Large. New/changed files across `apps/shortener` (app router pages, API route
 handlers, dashboard components, Drizzle schema + generated migration, worker
-wrapper, wrangler/next/opennext config, package.json). Shared `@cdlab996/ui`
+wrapper, wrangler/next/opennext config, package.json). Shared `@cdlab/ui`
 likely needs a few additional shadcn primitives.
 
 ## Alternatives
@@ -306,7 +306,7 @@ likely needs a few additional shadcn primitives.
 
 ### 2026-06-14 — Decisions resolved (user)
 
-1. **New app** `apps/sink` (`@cdlab996/sink`), alongside the existing
+1. **New app** `apps/sink` (`@cdlab/sink`), alongside the existing
    `apps/shortener` (not a replace). Worker/binding base name `sink`.
 2. **Greenfield** — no production data to migrate; fresh Drizzle schema +
    generated migration; old `hash`/`pages` design not carried over.
@@ -329,9 +329,9 @@ likely needs a few additional shadcn primitives.
 6. **Redirect default status code** = `308`, configurable via
    `redirectStatusCode`.
 7. **Frontend stack** = aligned with wepush: TanStack Query + `@tanstack/
-   react-form` + `@cdlab996/ui` (shadcn-react) + recharts + sonner +
+   react-form` + `@cdlab/ui` (shadcn-react) + recharts + sonner +
    next-themes.
-8. **IDs** = `@cdlab996/genid` for link id; random slug, default length 6,
+8. **IDs** = `@cdlab/driftflake` for link id; random slug, default length 6,
    configurable.
 9. **Analytics Engine** = adopt Sink's dimension layout (16 blobs + 2 doubles,
    plus `domain`); dataset name kept as `shortener_analytics` per approval

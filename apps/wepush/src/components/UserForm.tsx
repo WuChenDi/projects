@@ -1,17 +1,17 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { Input } from '@cdlab996/ui/components/input'
-import { Label } from '@cdlab996/ui/components/label'
+import { Button } from '@cdlab/ui/components/button'
+import { Input } from '@cdlab/ui/components/input'
+import { Label } from '@cdlab/ui/components/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@cdlab996/ui/components/select'
-import { Separator } from '@cdlab996/ui/components/separator'
-import { Switch } from '@cdlab996/ui/components/switch'
+} from '@cdlab/ui/components/select'
+import { Separator } from '@cdlab/ui/components/separator'
+import { Switch } from '@cdlab/ui/components/switch'
 import { Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { CityCodePicker } from '@/components/CityCodePicker'

@@ -1,4 +1,4 @@
-import { logger } from '@cdlab996/utils'
+import { logger } from '@cdlab/utils'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { decode, encode, getFileType } from '@/lib'
 import { useSquishStore } from '@/store/useSquishStore'

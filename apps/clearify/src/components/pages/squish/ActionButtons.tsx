@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { cn } from '@cdlab996/ui/lib/utils'
+import { Button } from '@cdlab/ui/components/button'
+import { cn } from '@cdlab/ui/lib/utils'
 import { Download, FileArchive, Loader2, Trash2 } from 'lucide-react'
 
 interface ActionButtonsProps {

@@ -1,7 +1,7 @@
 'use client'
 
-import { Badge } from '@cdlab996/ui/components/badge'
-import { Card, CardContent } from '@cdlab996/ui/components/card'
+import { Badge } from '@cdlab/ui/components/badge'
+import { Card, CardContent } from '@cdlab/ui/components/card'
 import { CalendarIcon, CheckIcon, GlobeIcon } from 'lucide-react'
 import { FavoriteButton } from '@/components/favorites/FavoriteButton'
 import { WatchLaterButton } from '@/components/watch-later/WatchLaterButton'

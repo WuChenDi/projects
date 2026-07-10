@@ -1,4 +1,4 @@
-import { cn } from '@cdlab996/ui/lib/utils'
+import { cn } from '@cdlab/ui/lib/utils'
 import { useMemo, useSyncExternalStore } from 'react'
 import { FONT_SIZE_SCALE_REFERENCE } from '@/constants/text-constants'
 import { useEditor } from '@/hooks/use-editor'

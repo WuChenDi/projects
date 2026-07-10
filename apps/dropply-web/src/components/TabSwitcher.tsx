@@ -1,4 +1,4 @@
-import { TabsList, TabsTrigger } from '@cdlab996/ui/components/tabs'
+import { TabsList, TabsTrigger } from '@cdlab/ui/components/tabs'
 import { Download, Upload } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 

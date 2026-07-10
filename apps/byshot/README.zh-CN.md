@@ -27,7 +27,7 @@
 - **图片来源** — Cloudinary Node SDK（`src/utils/cachedImages.ts` —— 每次请求服务端调用 `cloudinary.v2.search`，内存缓存）
 - **动画** — `motion` 负责灯箱过渡，`react-swipeable` 负责触屏，`react-use-keypress` 负责键盘
 - **状态管理** — Zustand（最后查看照片的滚动位置记忆）
-- **UI** — [`@cdlab996/ui`](../../packages/ui)（Dialog 组件 + 共享 Tailwind v4 主题），Tailwind CSS v4
+- **UI** — [`@cdlab/ui`](../../packages/ui)（Dialog 组件 + 共享 Tailwind v4 主题），Tailwind CSS v4
 - **部署平台** — Cloudflare Pages（通过 `@cloudflare/next-on-pages`）
 
 ## 快速开始
@@ -46,7 +46,7 @@ pnpm install
 ### 本地开发
 
 ```bash
-pnpm --filter @cdlab996/byshot dev
+pnpm --filter @cdlab/byshot dev
 ```
 
 访问 `http://byshot.localhost:3355`（通过 `@dotns/nsl` 路由）。
@@ -55,10 +55,10 @@ pnpm --filter @cdlab996/byshot dev
 
 ```bash
 # Next.js 构建
-pnpm --filter @cdlab996/byshot build
+pnpm --filter @cdlab/byshot build
 
 # Cloudflare Pages 构建
-pnpm --filter @cdlab996/byshot build:cf
+pnpm --filter @cdlab/byshot build:cf
 ```
 
 ## 配置

@@ -1,8 +1,8 @@
 'use client'
 
-import { Card, CardContent } from '@cdlab996/ui/components/card'
-import { ScrollArea } from '@cdlab996/ui/components/scroll-area'
-import { IKPageContainer } from '@cdlab996/ui/IK'
+import { Card, CardContent } from '@cdlab/ui/components/card'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
+import { IKPageContainer } from '@cdlab/ui/IK'
 import type { Locale } from 'next-intl'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useState } from 'react'

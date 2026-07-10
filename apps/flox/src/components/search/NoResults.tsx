@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@cdlab996/ui/components/button'
-import { IKEmpty } from '@cdlab996/ui/IK'
+import { Button } from '@cdlab/ui/components/button'
+import { IKEmpty } from '@cdlab/ui/IK'
 import { Search } from 'lucide-react'
 
 interface NoResultsProps {

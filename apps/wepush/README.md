@@ -21,7 +21,7 @@ Preview: https://wepush.cdlab.workers.dev/
 
 - **Framework** — Next.js 16 App Router + React 19 + TypeScript
 - **Auth** — `better-auth` (Google / GitHub OAuth, social login only)
-- **UI** — `@cdlab996/ui` (shadcn + Tailwind v4) + TanStack Query / Form + Zustand
+- **UI** — `@cdlab/ui` (shadcn + Tailwind v4) + TanStack Query / Form + Zustand
 - **ORM** — Drizzle, dual driver (`libsql`/Turso or `d1`); both run in production on Workers
 - **Calendar** — `react-day-picker` (date picker) + `tyme4ts` (solar/lunar conversion)
 - **Deployment** — `@opennextjs/cloudflare` → Cloudflare Workers (with cron triggers)
