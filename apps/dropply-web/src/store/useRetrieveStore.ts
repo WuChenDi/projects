@@ -47,10 +47,9 @@ export const useRetrieveStore = create<RetrieveStore>()(
       addResult: (result) => {
         for (const file of result.files) {
           if (file.isText && file.content) {
-            dbStore.set(
-              textContentKey(result.id, file.fileId),
-              file.content,
-            ).catch(console.error)
+            dbStore
+              .set(textContentKey(result.id, file.fileId), file.content)
+              .catch(console.error)
           }
         }
         set((state) => ({

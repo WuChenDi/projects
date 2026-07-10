@@ -12,7 +12,10 @@ export interface BgImageFile {
   processedUrl?: string
 }
 
-export type RemovalModel = 'briaai/RMBG-1.4' | 'wuchendi/MODNet' | 'briaai/RMBG-2.0'
+export type RemovalModel =
+  | 'briaai/RMBG-1.4'
+  | 'wuchendi/MODNet'
+  | 'briaai/RMBG-2.0'
 
 export type ModelStatus = 'ready' | 'unavailable' | 'loading'
 

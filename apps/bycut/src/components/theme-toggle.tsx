@@ -28,9 +28,7 @@ export function ThemeToggle({
         onToggle?.(e)
       }}
     >
-      <Sun
-        className={cn('!size-[1.1rem]', iconClassName)}
-      />
+      <Sun className={cn('!size-[1.1rem]', iconClassName)} />
       <span className="sr-only">{theme === 'dark' ? 'Light' : 'Dark'}</span>
     </Button>
   )

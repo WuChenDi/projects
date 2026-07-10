@@ -252,7 +252,7 @@ export default async function LandingPage() {
 
               {/* Decorative shortener preview */}
               <div className="mx-auto mt-14 w-full max-w-xl rounded-xl border p-2 shadow-sm backdrop-blur">
-                <InputGroup className='border-none'>
+                <InputGroup className="border-none">
                   <InputGroupAddon>
                     <Link2 />
                   </InputGroupAddon>

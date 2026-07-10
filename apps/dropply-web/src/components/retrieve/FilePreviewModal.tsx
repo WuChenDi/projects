@@ -12,15 +12,22 @@ import { formatBytes } from '@cdlab/utils'
 import { Download, Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { PocketChestAPI } from '@/lib'
+import { getFileIcon, PocketChestAPI } from '@/lib'
 import { decryptFile } from '@/lib/crypto'
-import { getFileIcon } from '@/lib'
 import type { RetrievedFile } from '@/store/useRetrieveStore'
 
 type PreviewType = 'image' | 'video' | 'audio' | 'pdf' | 'unsupported'
 
 const IMAGE_EXTS = new Set([
-  'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'avif',
+  'jpg',
+  'jpeg',
+  'png',
+  'gif',
+  'webp',
+  'svg',
+  'bmp',
+  'ico',
+  'avif',
 ])
 const VIDEO_EXTS = new Set(['mp4', 'webm', 'ogg', 'mov'])
 const AUDIO_EXTS = new Set(['mp3', 'wav', 'ogg', 'aac', 'flac', 'm4a', 'wma'])
@@ -40,11 +47,26 @@ function getPreviewType(filename: string): PreviewType {
 }
 
 const EXT_TO_MIME: Record<string, string> = {
-  jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
-  webp: 'image/webp', svg: 'image/svg+xml', bmp: 'image/bmp', ico: 'image/x-icon',
-  avif: 'image/avif', mp4: 'video/mp4', webm: 'video/webm', ogg: 'video/ogg',
-  mov: 'video/quicktime', mp3: 'audio/mpeg', wav: 'audio/wav', aac: 'audio/aac',
-  flac: 'audio/flac', m4a: 'audio/mp4', wma: 'audio/x-ms-wma', pdf: 'application/pdf',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  svg: 'image/svg+xml',
+  bmp: 'image/bmp',
+  ico: 'image/x-icon',
+  avif: 'image/avif',
+  mp4: 'video/mp4',
+  webm: 'video/webm',
+  ogg: 'video/ogg',
+  mov: 'video/quicktime',
+  mp3: 'audio/mpeg',
+  wav: 'audio/wav',
+  aac: 'audio/aac',
+  flac: 'audio/flac',
+  m4a: 'audio/mp4',
+  wma: 'audio/x-ms-wma',
+  pdf: 'application/pdf',
 }
 
 function getMimeFromFilename(filename: string): string {
@@ -95,10 +117,10 @@ export function FilePreviewModal({
     } finally {
       setIsLoading(false)
     }
-  }, [file, chestToken, encryptionKey, t])
+  }, [file, chestToken, encryptionKey, resolvedMime, t])
 
   useEffect(() => {
-    loadPreview()
+    void loadPreview()
     return () => {
       if (blobUrlRef.current) {
         URL.revokeObjectURL(blobUrlRef.current)

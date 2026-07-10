@@ -1,5 +1,21 @@
 'use client'
 
+import { Button } from '@cdlab/ui/components/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@cdlab/ui/components/dialog'
+import { Label } from '@cdlab/ui/components/label'
+import { Slider } from '@cdlab/ui/components/slider'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@cdlab/ui/components/tabs'
 import {
   Check,
   CircleDot,
@@ -13,17 +29,6 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { useCallback, useEffect, useState } from 'react'
-import { Button } from '@cdlab/ui/components/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@cdlab/ui/components/dialog'
-import { Label } from '@cdlab/ui/components/label'
-import { Slider } from '@cdlab/ui/components/slider'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@cdlab/ui/components/tabs'
 import type { BgImageFile } from '@/types'
 
 interface EditModalProps {
@@ -296,8 +301,14 @@ export function EditModal({ image, isOpen, onClose, onSave }: EditModalProps) {
             (259 * (contrastValue + 255)) / (255 * (259 - contrastValue))
           for (let i = 0; i < data.length; i += 4) {
             data[i] = Math.max(0, Math.min(255, factor * (data[i] - 128) + 128))
-            data[i + 1] = Math.max(0, Math.min(255, factor * (data[i + 1] - 128) + 128))
-            data[i + 2] = Math.max(0, Math.min(255, factor * (data[i + 2] - 128) + 128))
+            data[i + 1] = Math.max(
+              0,
+              Math.min(255, factor * (data[i + 1] - 128) + 128),
+            )
+            data[i + 2] = Math.max(
+              0,
+              Math.min(255, factor * (data[i + 2] - 128) + 128),
+            )
           }
           ctx.putImageData(imageData, 0, 0)
           break

@@ -16,9 +16,12 @@ import { useEffect, useState } from 'react'
 const SESSION_UNLOCKED_KEY = 'tts-unlocked'
 
 const getUnlockedState = (canPersist: boolean) => {
-  const sessionUnlocked = sessionStorage.getItem(SESSION_UNLOCKED_KEY) === 'true'
+  const sessionUnlocked =
+    sessionStorage.getItem(SESSION_UNLOCKED_KEY) === 'true'
   if (!canPersist) return sessionUnlocked
-  return sessionUnlocked || localStorage.getItem(SESSION_UNLOCKED_KEY) === 'true'
+  return (
+    sessionUnlocked || localStorage.getItem(SESSION_UNLOCKED_KEY) === 'true'
+  )
 }
 
 export function PasswordGate({
@@ -48,7 +51,10 @@ export function PasswordGate({
     queryFn: async () => {
       const res = await fetch('/api/config')
       if (!res.ok) throw new Error('Failed to fetch config')
-      return res.json() as Promise<{ hasEnvPassword: boolean; persistPassword: boolean }>
+      return res.json() as Promise<{
+        hasEnvPassword: boolean
+        persistPassword: boolean
+      }>
     },
     enabled: isClient,
   })
@@ -69,7 +75,7 @@ export function PasswordGate({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: pwd }),
       })
-      const data = await res.json() as { valid: boolean }
+      const data = (await res.json()) as { valid: boolean }
       if (!data.valid) throw new Error('invalid')
       return data
     },
@@ -113,7 +119,9 @@ export function PasswordGate({
                 setPassword(e.target.value)
                 setError(false)
               }}
-              onKeyDown={(e) => e.key === 'Enter' && !isValidating && password && handleUnlock()}
+              onKeyDown={(e) =>
+                e.key === 'Enter' && !isValidating && password && handleUnlock()
+              }
               placeholder="输入密码..."
               autoFocus
               aria-invalid={error}

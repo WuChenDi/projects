@@ -941,7 +941,10 @@ export class GameEngine {
       String(now.getHours()).padStart(2, '0') +
       String(now.getMinutes()).padStart(2, '0') +
       String(now.getSeconds()).padStart(2, '0')
-    const randomStr = String(Math.floor(Math.random() * 1000000)).padStart(6, '0')
+    const randomStr = String(Math.floor(Math.random() * 1000000)).padStart(
+      6,
+      '0',
+    )
     return `${dateStr}${timeStr}${randomStr}`
   }
 

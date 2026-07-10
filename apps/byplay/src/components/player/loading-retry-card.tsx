@@ -52,9 +52,7 @@ export function LoadingRetryCard({
             max={60}
             step={1}
             unit="s"
-            onChange={(v) =>
-              onUpdateConfig('manifestLoadingTimeOut', v * 1000)
-            }
+            onChange={(v) => onUpdateConfig('manifestLoadingTimeOut', v * 1000)}
           />
           <SliderField
             label={t('levelTimeout')}

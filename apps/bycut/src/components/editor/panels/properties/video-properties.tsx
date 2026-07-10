@@ -141,14 +141,14 @@ export function VideoProperties({
     <div className="flex h-full flex-col">
       <PanelBaseView className="p-0">
         <PropertyGroup
-          title={t("properties.transform")}
+          title={t('properties.transform')}
           hasBorderTop={false}
           collapsible={false}
         >
           <div className="space-y-6">
             {/* Position X */}
             <PropertyItem>
-              <PropertyItemLabel>{t("properties.positionX")}</PropertyItemLabel>
+              <PropertyItemLabel>{t('properties.positionX')}</PropertyItemLabel>
               <PropertyItemValue>
                 <Input
                   type="number"
@@ -215,7 +215,7 @@ export function VideoProperties({
 
             {/* Position Y */}
             <PropertyItem>
-              <PropertyItemLabel>{t("properties.positionY")}</PropertyItemLabel>
+              <PropertyItemLabel>{t('properties.positionY')}</PropertyItemLabel>
               <PropertyItemValue>
                 <Input
                   type="number"
@@ -282,7 +282,7 @@ export function VideoProperties({
 
             {/* Scale */}
             <PropertyItem direction="column">
-              <PropertyItemLabel>{t("properties.scale")}</PropertyItemLabel>
+              <PropertyItemLabel>{t('properties.scale')}</PropertyItemLabel>
               <PropertyItemValue>
                 <div className="flex items-center gap-2">
                   <Slider
@@ -371,7 +371,7 @@ export function VideoProperties({
 
             {/* Rotation */}
             <PropertyItem direction="column">
-              <PropertyItemLabel>{t("properties.rotation")}</PropertyItemLabel>
+              <PropertyItemLabel>{t('properties.rotation')}</PropertyItemLabel>
               <PropertyItemValue>
                 <div className="flex items-center gap-2">
                   <Slider
@@ -458,11 +458,11 @@ export function VideoProperties({
           </div>
         </PropertyGroup>
 
-        <PropertyGroup title={t("editor.appearance")} collapsible={false}>
+        <PropertyGroup title={t('editor.appearance')} collapsible={false}>
           <div className="space-y-6">
             {/* Opacity */}
             <PropertyItem direction="column">
-              <PropertyItemLabel>{t("properties.opacity")}</PropertyItemLabel>
+              <PropertyItemLabel>{t('properties.opacity')}</PropertyItemLabel>
               <PropertyItemValue>
                 <div className="flex items-center gap-2">
                   <Slider
@@ -590,10 +590,12 @@ export function VideoProperties({
         </PropertyGroup>
 
         {isVideoElement && (
-          <PropertyGroup title={t("properties.speed")} collapsible={false}>
+          <PropertyGroup title={t('properties.speed')} collapsible={false}>
             <div className="space-y-6">
               <PropertyItem direction="column">
-                <PropertyItemLabel>{t("properties.playbackSpeed")}</PropertyItemLabel>
+                <PropertyItemLabel>
+                  {t('properties.playbackSpeed')}
+                </PropertyItemLabel>
                 <PropertyItemValue>
                   <div className="flex flex-wrap gap-1.5">
                     {SPEED_PRESETS.map((preset) => {
@@ -636,7 +638,7 @@ export function VideoProperties({
               </PropertyItem>
 
               <PropertyItem>
-                <PropertyItemLabel>{t("common.custom")}</PropertyItemLabel>
+                <PropertyItemLabel>{t('common.custom')}</PropertyItemLabel>
                 <PropertyItemValue>
                   <div className="flex items-center gap-1">
                     <Input

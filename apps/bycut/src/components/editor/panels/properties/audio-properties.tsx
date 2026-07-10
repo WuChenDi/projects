@@ -79,13 +79,13 @@ export function AudioProperties({
     <div className="flex h-full flex-col">
       <PanelBaseView className="p-0">
         <PropertyGroup
-          title={t("properties.volume")}
+          title={t('properties.volume')}
           hasBorderTop={false}
           collapsible={false}
         >
           <div className="space-y-6">
             <PropertyItem direction="column">
-              <PropertyItemLabel>{t("properties.volume")}</PropertyItemLabel>
+              <PropertyItemLabel>{t('properties.volume')}</PropertyItemLabel>
               <PropertyItemValue>
                 <div className="flex items-center gap-2">
                   <Slider
@@ -174,10 +174,12 @@ export function AudioProperties({
           </div>
         </PropertyGroup>
 
-        <PropertyGroup title={t("properties.speed")} collapsible={false}>
+        <PropertyGroup title={t('properties.speed')} collapsible={false}>
           <div className="space-y-6">
             <PropertyItem direction="column">
-              <PropertyItemLabel>{t("properties.playbackSpeed")}</PropertyItemLabel>
+              <PropertyItemLabel>
+                {t('properties.playbackSpeed')}
+              </PropertyItemLabel>
               <PropertyItemValue>
                 <div className="flex flex-wrap gap-1.5">
                   {SPEED_PRESETS.map((preset) => {
@@ -220,7 +222,7 @@ export function AudioProperties({
             </PropertyItem>
 
             <PropertyItem>
-              <PropertyItemLabel>{t("common.custom")}</PropertyItemLabel>
+              <PropertyItemLabel>{t('common.custom')}</PropertyItemLabel>
               <PropertyItemValue>
                 <div className="flex items-center gap-1">
                   <Input

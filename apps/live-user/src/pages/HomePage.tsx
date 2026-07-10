@@ -57,16 +57,12 @@ export const HomePage: FC<HomePageProps> = ({ url }) => {
               </div>
               <div class="param">
                 <span class="param-name">displayElementId</span>
-                <span class="param-desc">
-                  Element ID for online count
-                </span>
+                <span class="param-desc">Element ID for online count</span>
                 <span class="param-default">liveuser</span>
               </div>
               <div class="param">
                 <span class="param-name">totalCountElementId</span>
-                <span class="param-desc">
-                  Element ID for total visits
-                </span>
+                <span class="param-desc">Element ID for total visits</span>
                 <span class="param-default">liveuser_totalvisits</span>
               </div>
               <div class="param">
@@ -94,9 +90,7 @@ export const HomePage: FC<HomePageProps> = ({ url }) => {
         </main>
       </div>
 
-      <script
-        src="/liveuser.js?siteId=official-website&enableTotalCount=true"
-      />
+      <script src="/liveuser.js?siteId=official-website&enableTotalCount=true" />
     </Layout>
   )
 }

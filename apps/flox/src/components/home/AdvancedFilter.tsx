@@ -7,10 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab/ui/components/card'
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from '@cdlab/ui/components/toggle-group'
+import { ToggleGroup, ToggleGroupItem } from '@cdlab/ui/components/toggle-group'
 import {
   ArrowUpDownIcon,
   ChevronDownIcon,

@@ -1,12 +1,10 @@
-import type { TextElement } from "@/types/timeline";
+import type { TextElement } from '@/types/timeline'
 
 export function isBottomAlignedSubtitleText({
-	element,
+  element,
 }: {
-	element: TextElement;
+  element: TextElement
 }): boolean {
-	const normalizedName = element.name.trim().toLowerCase();
-	return (
-		normalizedName === "subtitle" || normalizedName.startsWith("caption ")
-	);
+  const normalizedName = element.name.trim().toLowerCase()
+  return normalizedName === 'subtitle' || normalizedName.startsWith('caption ')
 }

@@ -1,6 +1,6 @@
 import type { Bot, Context } from 'grammy'
-import { formatGameHistory, formatGameInfo } from '@/lib/game-utils'
 import { validateChatId } from '@/handlers/routes'
+import { formatGameHistory, formatGameInfo } from '@/lib/game-utils'
 import type { Config, Env, GameRecord } from '@/types'
 import { BetType } from '@/types'
 

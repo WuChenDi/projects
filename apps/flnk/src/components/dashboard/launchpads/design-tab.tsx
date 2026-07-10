@@ -2,10 +2,7 @@
 
 import { Input } from '@cdlab/ui/components/input'
 import { Label } from '@cdlab/ui/components/label'
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from '@cdlab/ui/components/toggle-group'
+import { ToggleGroup, ToggleGroupItem } from '@cdlab/ui/components/toggle-group'
 import { cn } from '@cdlab/ui/lib/utils'
 import { Check } from 'lucide-react'
 import { useTranslations } from 'next-intl'

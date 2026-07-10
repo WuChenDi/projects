@@ -1,10 +1,6 @@
 'use client'
 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from '@cdlab/ui/components/alert'
+import { Alert, AlertDescription, AlertTitle } from '@cdlab/ui/components/alert'
 import { Badge } from '@cdlab/ui/components/badge'
 import { Button } from '@cdlab/ui/components/button'
 import {

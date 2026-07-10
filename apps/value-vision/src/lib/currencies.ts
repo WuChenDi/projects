@@ -1,4 +1,4 @@
-import { CurrencyCategories } from '@/types/currency'
+import type { CurrencyCategories } from '@/types/currency'
 
 export const CURRENCY_CONFIG: CurrencyCategories = {
   crypto: [

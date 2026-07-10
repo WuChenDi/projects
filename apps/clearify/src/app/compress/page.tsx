@@ -76,13 +76,13 @@ export default function Compress() {
     if (previewRef.current) previewRef.current.src = ''
   }
 
-  // Clean up URLs on unmount
+  // Clean up stale URLs on change and on unmount
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl)
       if (outputUrl) URL.revokeObjectURL(outputUrl)
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [previewUrl, outputUrl])
 
   // Generate preview URL for selected video
   useEffect(() => {

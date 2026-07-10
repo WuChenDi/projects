@@ -136,9 +136,16 @@ export class BaccaratGameRoom {
     }
 
     const config = createConfig(this.env)
-    if (typeof amount !== 'number' || amount <= 0 || amount > config.maxBetAmount) {
+    if (
+      typeof amount !== 'number' ||
+      amount <= 0 ||
+      amount > config.maxBetAmount
+    ) {
       return Response.json(
-        { success: false, error: `Bet amount must be between 1 and ${config.maxBetAmount}` },
+        {
+          success: false,
+          error: `Bet amount must be between 1 and ${config.maxBetAmount}`,
+        },
         { status: 400 },
       )
     }

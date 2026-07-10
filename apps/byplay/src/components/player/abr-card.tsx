@@ -39,9 +39,7 @@ export function AbrCard({ config, onUpdateConfig }: AbrCardProps) {
             max={5000}
             step={100}
             unit=" Kbps"
-            onChange={(v) =>
-              onUpdateConfig('abrEwmaDefaultEstimate', v * 1000)
-            }
+            onChange={(v) => onUpdateConfig('abrEwmaDefaultEstimate', v * 1000)}
           />
           <SliderField
             label={t('bandwidthFactorDown')}

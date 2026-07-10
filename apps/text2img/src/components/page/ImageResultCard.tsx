@@ -73,7 +73,10 @@ export function ImageResultCard({
     const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
     const name =
       models?.find((m) => m.id === result.params.model)?.name || 'ai-image'
-    downloadFile({ data: result.imageUrl, filename: `${name}-${timestamp}.png` })
+    downloadFile({
+      data: result.imageUrl,
+      filename: `${name}-${timestamp}.png`,
+    })
     toast.success(t('card.downloadSuccess'))
   }
 

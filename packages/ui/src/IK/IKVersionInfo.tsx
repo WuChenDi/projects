@@ -8,7 +8,11 @@ interface IKVersionInfoProps {
   buildTime?: string
 }
 
-export function IKVersionInfo({ name, version, buildTime }: IKVersionInfoProps) {
+export function IKVersionInfo({
+  name,
+  version,
+  buildTime,
+}: IKVersionInfoProps) {
   useEffect(() => {
     console.groupCollapsed(`%c ${name}: ${version}`, 'color: #07c160;')
     console.log(

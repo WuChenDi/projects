@@ -47,7 +47,7 @@ export function TextSpeechPanel({
     setIsGenerating(true)
     const toastId = 'tts-generate'
 
-    toast.loading(i18next.t("tts.generating"), { id: toastId })
+    toast.loading(i18next.t('tts.generating'), { id: toastId })
 
     let successCount = 0
     let failCount = 0
@@ -77,10 +77,10 @@ export function TextSpeechPanel({
     }
 
     if (failCount === 0) {
-      toast.success(i18next.t("tts.success"), { id: toastId })
+      toast.success(i18next.t('tts.success'), { id: toastId })
     } else {
       toast.warning(
-        i18next.t("tts.generateResult", {
+        i18next.t('tts.generateResult', {
           success: successCount,
           fail: failCount,
         }),
@@ -94,17 +94,17 @@ export function TextSpeechPanel({
   return (
     <PanelBaseView className="p-0">
       <PropertyGroup
-        title={t("assets.textToSpeech")}
+        title={t('assets.textToSpeech')}
         hasBorderTop={false}
         collapsible={false}
       >
         <div className="space-y-6">
           <PropertyItem direction="column">
-            <PropertyItemLabel>{t("tts.voice")}</PropertyItemLabel>
+            <PropertyItemLabel>{t('tts.voice')}</PropertyItemLabel>
             <PropertyItemValue>
               <Select value={selectedVoice} onValueChange={setSelectedVoice}>
                 <SelectTrigger>
-                  <SelectValue placeholder={t("tts.selectVoice")} />
+                  <SelectValue placeholder={t('tts.selectVoice')} />
                 </SelectTrigger>
                 <SelectContent>
                   {VOICE_PACKS.map((voice) => (
@@ -127,7 +127,7 @@ export function TextSpeechPanel({
               htmlFor="align-text-duration"
               className="cursor-pointer text-sm"
             >
-              {t("properties.alignTextDuration")}
+              {t('properties.alignTextDuration')}
             </label>
           </div>
 
@@ -137,7 +137,7 @@ export function TextSpeechPanel({
             disabled={isGenerating || elementRefs.length === 0}
             onClick={handleGenerate}
           >
-            {isGenerating ? t("common.generating") : t("ai.generateSpeech")}
+            {isGenerating ? t('common.generating') : t('ai.generateSpeech')}
           </Button>
         </div>
       </PropertyGroup>

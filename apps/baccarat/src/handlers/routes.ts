@@ -18,8 +18,7 @@ export function validateChatId(env: Env, chatId: string): boolean {
 function requireApiSecret(c: Context<{ Bindings: Env }>): Response | null {
   const secret = c.env.API_SECRET
   if (!secret) return null // no secret configured, skip check
-  const provided =
-    c.req.header('X-API-Key') || c.req.query('api_key')
+  const provided = c.req.header('X-API-Key') || c.req.query('api_key')
   if (provided !== secret) {
     return c.json({ error: 'Unauthorized' }, 401)
   }

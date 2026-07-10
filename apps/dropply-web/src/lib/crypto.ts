@@ -78,4 +78,3 @@ export async function decryptTextContent(
   const result = await textCrypto.decrypt(encryptedText, password)
   return result.text
 }
-

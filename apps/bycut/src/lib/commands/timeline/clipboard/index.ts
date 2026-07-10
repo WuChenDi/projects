@@ -1,1 +1,1 @@
-export { PasteCommand } from "./paste";
+export { PasteCommand } from './paste'

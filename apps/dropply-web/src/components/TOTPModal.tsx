@@ -65,9 +65,7 @@ export function TOTPModal({
             <ShieldCheck className="size-5 text-primary" />
             <DialogTitle>{t('title')}</DialogTitle>
           </div>
-          <DialogDescription>
-            {t('description')}
-          </DialogDescription>
+          <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
         {error && (
@@ -79,12 +77,7 @@ export function TOTPModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex flex-col items-center gap-2">
-            <InputOTP
-              maxLength={6}
-              value={token}
-              onChange={setToken}
-              autoFocus
-            >
+            <InputOTP maxLength={6} value={token} onChange={setToken} autoFocus>
               <InputOTPGroup>
                 <InputOTPSlot index={0} />
                 <InputOTPSlot index={1} />
@@ -97,9 +90,7 @@ export function TOTPModal({
                 <InputOTPSlot index={5} />
               </InputOTPGroup>
             </InputOTP>
-            <p className="text-xs text-muted-foreground">
-              {t('checkApp')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('checkApp')}</p>
           </div>
 
           <DialogFooter>

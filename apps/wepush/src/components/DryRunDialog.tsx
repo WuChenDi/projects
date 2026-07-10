@@ -21,7 +21,13 @@ interface Props {
   error?: string
 }
 
-export function DryRunDialog({ open, onClose, loading, results, error }: Props) {
+export function DryRunDialog({
+  open,
+  onClose,
+  loading,
+  results,
+  error,
+}: Props) {
   const hasWarnings = results?.some(
     (r) => r.error || Object.keys(r.sourceErrors).length > 0,
   )

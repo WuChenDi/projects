@@ -5,10 +5,7 @@ import { Field, FieldTitle } from '@cdlab/ui/components/field'
 import { Input } from '@cdlab/ui/components/input'
 import { Progress } from '@cdlab/ui/components/progress'
 import { Slider } from '@cdlab/ui/components/slider'
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from '@cdlab/ui/components/toggle-group'
+import { ToggleGroup, ToggleGroupItem } from '@cdlab/ui/components/toggle-group'
 import { formatBytes } from '@cdlab/utils'
 import { Check, Loader2, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'

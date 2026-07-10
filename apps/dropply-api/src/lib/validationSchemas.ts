@@ -25,8 +25,7 @@ export const completeUploadRequestSchema = z.object({
     .number()
     .int('Validity days must be an integer')
     .min(1, 'Validity days must be at least 1')
-    .max(365, 'Validity days must be at most 365'
-    ),
+    .max(365, 'Validity days must be at most 365'),
 })
 
 export const createMultipartUploadRequestSchema = z.object({

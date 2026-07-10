@@ -29,7 +29,12 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'vidl-download-settings',
-      partialize: ({ concurrency, timeoutMs, maxRetries, retryBaseDelayMs }) => ({
+      partialize: ({
+        concurrency,
+        timeoutMs,
+        maxRetries,
+        retryBaseDelayMs,
+      }) => ({
         concurrency,
         timeoutMs,
         maxRetries,

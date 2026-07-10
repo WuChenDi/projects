@@ -70,7 +70,11 @@ function FilePreviewModal({
   )
 }
 
-export function FileUpload({ onFilesChange, files, maxFileSize }: FileUploadProps) {
+export function FileUpload({
+  onFilesChange,
+  files,
+  maxFileSize,
+}: FileUploadProps) {
   const t = useTranslations('fileUpload')
   const [previewFile, setPreviewFile] = useState<File | null>(null)
   const [sizeError, setSizeError] = useState<string | null>(null)
@@ -149,7 +153,9 @@ export function FileUpload({ onFilesChange, files, maxFileSize }: FileUploadProp
             </span>
             {maxFileSize && (
               <span className="text-xs text-muted-foreground">
-                {t('maxFileSize', { limit: formatBytes({ bytes: maxFileSize }) })}
+                {t('maxFileSize', {
+                  limit: formatBytes({ bytes: maxFileSize }),
+                })}
               </span>
             )}
           </div>

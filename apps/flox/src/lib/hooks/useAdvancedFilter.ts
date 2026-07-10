@@ -21,16 +21,44 @@ const DEFAULT_FILTER: FilterState = {
 }
 
 export const GENRE_OPTIONS = [
-  '剧情', '喜剧', '动作', '爱情', '科幻', '动画',
-  '悬疑', '惊悚', '恐怖', '犯罪', '奇幻', '战争',
-  '音乐', '传记', '历史', '家庭', '冒险', '武侠',
-  '纪录片', '短片',
+  '剧情',
+  '喜剧',
+  '动作',
+  '爱情',
+  '科幻',
+  '动画',
+  '悬疑',
+  '惊悚',
+  '恐怖',
+  '犯罪',
+  '奇幻',
+  '战争',
+  '音乐',
+  '传记',
+  '历史',
+  '家庭',
+  '冒险',
+  '武侠',
+  '纪录片',
+  '短片',
 ]
 
 export const COUNTRY_OPTIONS = [
-  '中国大陆', '美国', '中国香港', '日本', '韩国',
-  '中国台湾', '英国', '法国', '德国', '泰国',
-  '印度', '意大利', '西班牙', '加拿大', '澳大利亚',
+  '中国大陆',
+  '美国',
+  '中国香港',
+  '日本',
+  '韩国',
+  '中国台湾',
+  '英国',
+  '法国',
+  '德国',
+  '泰国',
+  '印度',
+  '意大利',
+  '西班牙',
+  '加拿大',
+  '澳大利亚',
 ]
 
 export const SORT_OPTIONS = [
@@ -48,12 +76,50 @@ export interface FilterPreset {
 
 // Static combo presets (these don't exist as single Douban tags)
 const COMBO_PRESETS: FilterPreset[] = [
-  { label: '高分佳作', filter: { sort: 'S', genres: '', countries: '', scoreRange: [8, 10] } },
-  { label: '华语喜剧', filter: { sort: 'T', genres: '喜剧', countries: '中国大陆', scoreRange: [0, 10] } },
-  { label: '欧美科幻', filter: { sort: 'T', genres: '科幻', countries: '美国', scoreRange: [0, 10] } },
-  { label: '日本动画', filter: { sort: 'T', genres: '动画', countries: '日本', scoreRange: [0, 10] } },
-  { label: '韩国爱情', filter: { sort: 'T', genres: '爱情', countries: '韩国', scoreRange: [0, 10] } },
-  { label: '经典悬疑', filter: { sort: 'S', genres: '悬疑', countries: '', scoreRange: [8, 10] } },
+  {
+    label: '高分佳作',
+    filter: { sort: 'S', genres: '', countries: '', scoreRange: [8, 10] },
+  },
+  {
+    label: '华语喜剧',
+    filter: {
+      sort: 'T',
+      genres: '喜剧',
+      countries: '中国大陆',
+      scoreRange: [0, 10],
+    },
+  },
+  {
+    label: '欧美科幻',
+    filter: {
+      sort: 'T',
+      genres: '科幻',
+      countries: '美国',
+      scoreRange: [0, 10],
+    },
+  },
+  {
+    label: '日本动画',
+    filter: {
+      sort: 'T',
+      genres: '动画',
+      countries: '日本',
+      scoreRange: [0, 10],
+    },
+  },
+  {
+    label: '韩国爱情',
+    filter: {
+      sort: 'T',
+      genres: '爱情',
+      countries: '韩国',
+      scoreRange: [0, 10],
+    },
+  },
+  {
+    label: '经典悬疑',
+    filter: { sort: 'S', genres: '悬疑', countries: '', scoreRange: [8, 10] },
+  },
 ]
 
 /**
@@ -63,15 +129,20 @@ const COMBO_PRESETS: FilterPreset[] = [
 function tagToPreset(tag: string): FilterPreset {
   // Sort-like tags
   const sortMap: Record<string, FilterState['sort']> = {
-    '热门': 'T',
-    '最新': 'R',
-    '豆瓣高分': 'S',
-    '经典': 'S',
+    热门: 'T',
+    最新: 'R',
+    豆瓣高分: 'S',
+    经典: 'S',
   }
   if (sortMap[tag]) {
     return {
       label: tag,
-      filter: { sort: sortMap[tag], genres: '', countries: '', scoreRange: [0, 10] },
+      filter: {
+        sort: sortMap[tag],
+        genres: '',
+        countries: '',
+        scoreRange: [0, 10],
+      },
       dynamic: true,
     }
   }
@@ -165,7 +236,10 @@ export function useAdvancedFilter(contentType: 'movie' | 'tv') {
           vod_id: item.id,
           vod_name: item.title,
           vod_pic: item.cover,
-          vod_remarks: item.rate && parseFloat(item.rate) > 0 ? `⭐ ${item.rate}` : undefined,
+          vod_remarks:
+            item.rate && parseFloat(item.rate) > 0
+              ? `⭐ ${item.rate}`
+              : undefined,
           source: 'douban',
           sourceName: '豆瓣',
         }))
