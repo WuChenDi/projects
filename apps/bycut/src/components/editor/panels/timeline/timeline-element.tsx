@@ -191,11 +191,8 @@ export function TimelineElement({
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent className="z-200 w-64">
-        <ActionMenuItem
-          action="split"
-          icon={<Scissors className="size-4" />}
-        >
-          {t("timeline.split")}
+        <ActionMenuItem action="split" icon={<Scissors className="size-4" />}>
+          {t('timeline.split')}
         </ActionMenuItem>
         <CopyMenuItem />
         {canElementHaveAudio(element) && hasAudio && (
@@ -210,7 +207,7 @@ export function TimelineElement({
                 action="detach-audio"
                 icon={<Music className="size-4" />}
               >
-                {t("timeline.detachAudio")}
+                {t('timeline.detachAudio')}
               </ActionMenuItem>
             )}
           </>
@@ -227,10 +224,10 @@ export function TimelineElement({
             icon={<AudioLines className="size-4" />}
           >
             {selectedElements.length > 1
-              ? t("tts.convertCount", {
+              ? t('tts.convertCount', {
                   count: selectedElements.length,
                 })
-              : t("tts.convert")}
+              : t('tts.convert')}
           </ActionMenuItem>
         )}
         {canElementBeHidden(element) && (
@@ -245,7 +242,7 @@ export function TimelineElement({
             action="duplicate-selected"
             icon={<Copy className="size-4" />}
           >
-            {t("common.duplicate")}
+            {t('common.duplicate')}
           </ActionMenuItem>
         )}
         {selectedElements.length === 1 && hasMediaId(element) && (
@@ -254,11 +251,11 @@ export function TimelineElement({
               onClick={(event) => handleRevealInMedia({ event })}
             >
               <Search className="size-4" />
-              {t("timeline.revealMedia")}
+              {t('timeline.revealMedia')}
             </ContextMenuItem>
             <ContextMenuItem disabled>
               <ArrowLeftRight className="size-4" />
-              {t("timeline.replaceMedia")}
+              {t('timeline.replaceMedia')}
             </ContextMenuItem>
           </>
         )}
@@ -331,16 +328,12 @@ function ElementInner({
 
         {canElementBeHidden(element) && element.hidden && (
           <div className="bg-opacity-50 pointer-events-none absolute inset-0 flex items-center justify-center bg-black">
-            <EyeOff
-              className="size-6 text-white"
-            />
+            <EyeOff className="size-6 text-white" />
           </div>
         )}
         {hasAudio && isMuted && (
           <div className="pointer-events-none absolute right-1 bottom-1 flex items-center justify-center rounded bg-black/60 p-0.5">
-            <VolumeX
-              className="size-3.5 text-white"
-            />
+            <VolumeX className="size-3.5 text-white" />
           </div>
         )}
       </button>
@@ -518,11 +511,8 @@ function ElementContent({
 function CopyMenuItem() {
   const t = useTranslations()
   return (
-    <ActionMenuItem
-      action="copy-selected"
-      icon={<Copy className="size-4" />}
-    >
-      {t("common.copy")}
+    <ActionMenuItem action="copy-selected" icon={<Copy className="size-4" />}>
+      {t('common.copy')}
     </ActionMenuItem>
   )
 }
@@ -550,7 +540,7 @@ function MuteMenuItem({
   const t = useTranslations()
   return (
     <ActionMenuItem action="toggle-elements-muted-selected" icon={getIcon()}>
-      {isMuted ? t("common.unmute") : t("common.mute")}
+      {isMuted ? t('common.unmute') : t('common.mute')}
     </ActionMenuItem>
   )
 }
@@ -570,11 +560,7 @@ function VisibilityMenuItem({
     if (isMultipleSelected && isCurrentElementSelected) {
       return <EyeOff className="size-4" />
     }
-    return isHidden ? (
-      <Eye className="size-4" />
-    ) : (
-      <EyeOff className="size-4" />
-    )
+    return isHidden ? <Eye className="size-4" /> : <EyeOff className="size-4" />
   }
 
   const t = useTranslations()
@@ -583,7 +569,7 @@ function VisibilityMenuItem({
       action="toggle-elements-visibility-selected"
       icon={getIcon()}
     >
-      {isHidden ? t("common.show") : t("common.hide")}
+      {isHidden ? t('common.show') : t('common.hide')}
     </ActionMenuItem>
   )
 }
@@ -607,9 +593,12 @@ function DeleteMenuItem({
       icon={<Trash2 className="size-4" />}
     >
       {isMultipleSelected && isCurrentElementSelected
-        ? t("projects.deleteElements", { count: selectedCount })
-        : t("timeline.deleteType", {
-            type: elementType === 'text' ? t("common.textLower") : t("timeline.clip"),
+        ? t('projects.deleteElements', { count: selectedCount })
+        : t('timeline.deleteType', {
+            type:
+              elementType === 'text'
+                ? t('common.textLower')
+                : t('timeline.clip'),
           })}
     </ActionMenuItem>
   )
@@ -663,7 +652,7 @@ function VideoEditSubmenu({
     <ContextMenuSub>
       <ContextMenuSubTrigger>
         <Pencil className="size-4" />
-        {t("editor.basicEdit")}
+        {t('editor.basicEdit')}
       </ContextMenuSubTrigger>
       <ContextMenuSubContent className="w-48">
         <ContextMenuCheckboxItem
@@ -677,7 +666,7 @@ function VideoEditSubmenu({
           }}
         >
           <FlipHorizontal className="size-4" />
-          {t("properties.mirror")}
+          {t('properties.mirror')}
         </ContextMenuCheckboxItem>
         <ContextMenuCheckboxItem
           className="px-4"
@@ -690,7 +679,7 @@ function VideoEditSubmenu({
           }}
         >
           <Undo2 className="size-4" />
-          {t("common.reverse")}
+          {t('common.reverse')}
         </ContextMenuCheckboxItem>
       </ContextMenuSubContent>
     </ContextMenuSub>

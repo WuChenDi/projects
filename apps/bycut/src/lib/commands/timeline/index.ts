@@ -1,3 +1,3 @@
-export * from "./track";
-export * from "./element";
-export * from "./clipboard";
+export * from './clipboard'
+export * from './element'
+export * from './track'

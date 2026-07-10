@@ -1,11 +1,7 @@
 'use client'
 
 import { Button } from '@cdlab/ui/components/button'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from '@cdlab/ui/components/card'
+import { Card, CardContent, CardHeader } from '@cdlab/ui/components/card'
 import { Field, FieldDescription } from '@cdlab/ui/components/field'
 import { Input } from '@cdlab/ui/components/input'
 import { Label } from '@cdlab/ui/components/label'
@@ -53,7 +49,9 @@ export function RetrieveForm({
             id="retrieval-code"
             type="text"
             value={retrievalCode}
-            onChange={(e) => onRetrievalCodeChange(e.target.value.toUpperCase())}
+            onChange={(e) =>
+              onRetrievalCodeChange(e.target.value.toUpperCase())
+            }
             onKeyDown={(e) => e.key === 'Enter' && canSubmit && onRetrieve()}
             placeholder={t('retrievalCodePlaceholder')}
             maxLength={6}
@@ -71,17 +69,11 @@ export function RetrieveForm({
             placeholder={t('encryptionKeyPlaceholder')}
           />
           <FieldDescription>
-            {encryptionKey
-              ? t('keyDetected')
-              : t('pasteKeyHint')}
+            {encryptionKey ? t('keyDetected') : t('pasteKeyHint')}
           </FieldDescription>
         </Field>
 
-        <Button
-          onClick={onRetrieve}
-          disabled={!canSubmit}
-          className="w-full"
-        >
+        <Button onClick={onRetrieve} disabled={!canSubmit} className="w-full">
           {isRetrieving ? (
             <>
               <Loader2 className="size-4 animate-spin" />

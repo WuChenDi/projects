@@ -88,9 +88,7 @@ export default function Home() {
           ? sourceImage
           : undefined,
       mask_b64:
-        currentModelType === 'inpainting' && maskImage
-          ? maskImage
-          : undefined,
+        currentModelType === 'inpainting' && maskImage ? maskImage : undefined,
     }
     handleGenerateClick(params)
   }

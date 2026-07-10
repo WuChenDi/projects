@@ -60,7 +60,9 @@ export const LeftPanel = ({
       isDragReject={isDragReject}
       isDisabled={isModelSwitching}
       isLoading={isLoading}
-      loadingText={isModelSwitching ? 'Switching models...' : 'Loading model...'}
+      loadingText={
+        isModelSwitching ? 'Switching models...' : 'Loading model...'
+      }
       errorText={error?.message}
       errorActions={errorActions}
       acceptedFormats="JPEG, PNG, WebP"

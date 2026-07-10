@@ -53,7 +53,9 @@ export async function runPushFromUi(
   return res.json<RunPushApiResult>()
 }
 
-export async function dryRunFromUi(options: RunPushOptions): Promise<DryRunResponse> {
+export async function dryRunFromUi(
+  options: RunPushOptions,
+): Promise<DryRunResponse> {
   const res = await fetch('/api/push/dry-run', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -83,7 +85,9 @@ export async function retryLogFromUi(logId: string): Promise<RunPushApiResult> {
   return res.json<RunPushApiResult>()
 }
 
-export async function retryBatchFromUi(batchId: string): Promise<RunPushApiResult> {
+export async function retryBatchFromUi(
+  batchId: string,
+): Promise<RunPushApiResult> {
   const res = await fetch(`/api/batches/${batchId}/retry`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

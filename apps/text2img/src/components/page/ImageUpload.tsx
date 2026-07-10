@@ -1,9 +1,5 @@
 'use client'
 
-import { ImagePlus, Trash2 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { useCallback, useRef } from 'react'
-import { toast } from 'sonner'
 import { Button } from '@cdlab/ui/components/button'
 import {
   Card,
@@ -12,6 +8,10 @@ import {
   CardTitle,
 } from '@cdlab/ui/components/card'
 import { Label } from '@cdlab/ui/components/label'
+import { ImagePlus, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { useCallback, useRef } from 'react'
+import { toast } from 'sonner'
 import type { ModelType } from '@/types'
 
 interface ImageUploadProps {
@@ -92,7 +92,7 @@ function DropZone({
     (e: React.DragEvent) => {
       e.preventDefault()
       const file = e.dataTransfer.files[0]
-      if (file) handleFile(file)
+      if (file) void handleFile(file)
     },
     [handleFile],
   )
@@ -100,7 +100,7 @@ function DropZone({
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0]
-      if (file) handleFile(file)
+      if (file) void handleFile(file)
       if (inputRef.current) inputRef.current.value = ''
     },
     [handleFile],
@@ -139,9 +139,7 @@ function DropZone({
           tabIndex={0}
         >
           <ImagePlus className="size-6 text-muted-foreground" />
-          <p className="text-xs text-muted-foreground">
-            {t('dropHint')}
-          </p>
+          <p className="text-xs text-muted-foreground">{t('dropHint')}</p>
           <input
             ref={inputRef}
             type="file"

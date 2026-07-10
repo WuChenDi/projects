@@ -82,10 +82,12 @@ export function createIDBStore<T = ArrayBuffer>(
     },
 
     list: () =>
-      withTransaction<string[]>('readonly', (store) => store.getAllKeys() as IDBRequest<string[]>),
+      withTransaction<string[]>(
+        'readonly',
+        (store) => store.getAllKeys() as IDBRequest<string[]>,
+      ),
 
-    getAll: () =>
-      withTransaction<T[]>('readonly', (store) => store.getAll()),
+    getAll: () => withTransaction<T[]>('readonly', (store) => store.getAll()),
 
     clear: () =>
       withTransaction('readwrite', (store) => {

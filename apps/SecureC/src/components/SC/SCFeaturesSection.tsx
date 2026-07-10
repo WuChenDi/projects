@@ -9,12 +9,7 @@ export function SCFeaturesSection() {
   const [showFeatures, setShowFeatures] = useState(true)
   const t = useTranslations('features')
 
-  const features = [
-    t('aesEncrypt'),
-    t('argon2id'),
-    t('chunked'),
-    t('download'),
-  ]
+  const features = [t('aesEncrypt'), t('argon2id'), t('chunked'), t('download')]
 
   return (
     <Card className="p-0 ">

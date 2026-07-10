@@ -90,8 +90,12 @@ export class TransitionNode extends BaseNode<TransitionNodeParams> {
     const { width, height } = renderer
     const { canvasA, canvasB } = this.ensureOffscreen({ width, height })
 
-    const ctxA = canvasA.getContext('2d') as OffscreenCanvasRenderingContext2D | null
-    const ctxB = canvasB.getContext('2d') as OffscreenCanvasRenderingContext2D | null
+    const ctxA = canvasA.getContext(
+      '2d',
+    ) as OffscreenCanvasRenderingContext2D | null
+    const ctxB = canvasB.getContext(
+      '2d',
+    ) as OffscreenCanvasRenderingContext2D | null
     if (!ctxA || !ctxB) {
       throw new Error('Failed to get offscreen canvas context')
     }

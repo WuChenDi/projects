@@ -1,9 +1,8 @@
 'use client'
 
-import Image from 'next/image'
-
 import { Field } from '@cdlab/ui/components/field'
 import { Label } from '@cdlab/ui/components/label'
+import Image from 'next/image'
 import { sampleImages } from '@/lib'
 
 interface SampleImagesProps {

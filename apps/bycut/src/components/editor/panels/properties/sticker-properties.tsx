@@ -110,13 +110,13 @@ export function StickerProperties({
     <div className="flex h-full flex-col">
       <PanelBaseView className="p-0">
         <PropertyGroup
-          title={t("properties.transform")}
+          title={t('properties.transform')}
           hasBorderTop={false}
           collapsible={false}
         >
           <div className="space-y-6">
             <PropertyItem>
-              <PropertyItemLabel>{t("properties.positionX")}</PropertyItemLabel>
+              <PropertyItemLabel>{t('properties.positionX')}</PropertyItemLabel>
               <PropertyItemValue>
                 <Input
                   type="number"
@@ -182,7 +182,7 @@ export function StickerProperties({
             </PropertyItem>
 
             <PropertyItem>
-              <PropertyItemLabel>{t("properties.positionY")}</PropertyItemLabel>
+              <PropertyItemLabel>{t('properties.positionY')}</PropertyItemLabel>
               <PropertyItemValue>
                 <Input
                   type="number"
@@ -248,7 +248,7 @@ export function StickerProperties({
             </PropertyItem>
 
             <PropertyItem direction="column">
-              <PropertyItemLabel>{t("properties.scale")}</PropertyItemLabel>
+              <PropertyItemLabel>{t('properties.scale')}</PropertyItemLabel>
               <PropertyItemValue>
                 <div className="flex items-center gap-2">
                   <Slider
@@ -336,7 +336,7 @@ export function StickerProperties({
             </PropertyItem>
 
             <PropertyItem direction="column">
-              <PropertyItemLabel>{t("properties.rotation")}</PropertyItemLabel>
+              <PropertyItemLabel>{t('properties.rotation')}</PropertyItemLabel>
               <PropertyItemValue>
                 <div className="flex items-center gap-2">
                   <Slider
@@ -425,10 +425,10 @@ export function StickerProperties({
           </div>
         </PropertyGroup>
 
-        <PropertyGroup title={t("editor.appearance")} collapsible={false}>
+        <PropertyGroup title={t('editor.appearance')} collapsible={false}>
           <div className="space-y-6">
             <PropertyItem direction="column">
-              <PropertyItemLabel>{t("properties.opacity")}</PropertyItemLabel>
+              <PropertyItemLabel>{t('properties.opacity')}</PropertyItemLabel>
               <PropertyItemValue>
                 <div className="flex items-center gap-2">
                   <Slider
@@ -530,7 +530,7 @@ export function StickerProperties({
             </PropertyItem>
 
             <PropertyItem>
-              <PropertyItemLabel>{t("properties.color")}</PropertyItemLabel>
+              <PropertyItemLabel>{t('properties.color')}</PropertyItemLabel>
               <PropertyItemValue>
                 <ColorPicker
                   value={element.color ?? '#000000'}

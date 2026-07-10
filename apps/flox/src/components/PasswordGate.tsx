@@ -9,11 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab/ui/components/card'
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-} from '@cdlab/ui/components/field'
+import { Field, FieldDescription, FieldGroup } from '@cdlab/ui/components/field'
 import { PasswordInput } from '@cdlab/ui/components/password-input'
 import { Spinner } from '@cdlab/ui/components/spinner'
 import { hashPasswordFn } from '@cdlab/utils'

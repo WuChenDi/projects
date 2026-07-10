@@ -20,7 +20,8 @@ import { FavoritesList } from './FavoritesList'
 export function FavoritesSidebar() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const isPremium = pathname === '/premium' || searchParams.get('premium') === '1'
+  const isPremium =
+    pathname === '/premium' || searchParams.get('premium') === '1'
 
   const { favoritesOpen, setFavoritesOpen } = useSidebarStore()
   const { favorites, removeFavorite, clearFavorites } = useFavorites(isPremium)
@@ -47,7 +48,11 @@ export function FavoritesSidebar() {
 
   return (
     <>
-      <Drawer open={favoritesOpen} onOpenChange={setFavoritesOpen} direction="right">
+      <Drawer
+        open={favoritesOpen}
+        onOpenChange={setFavoritesOpen}
+        direction="right"
+      >
         <DrawerContent className="flex flex-col">
           <DrawerHeader className="flex-row items-center justify-between border-b">
             <DrawerTitle>我的收藏</DrawerTitle>
@@ -70,7 +75,9 @@ export function FavoritesSidebar() {
             <DrawerFooter className="border-t">
               <Button
                 variant="outline"
-                onClick={() => setDeleteConfirm({ isOpen: true, isClearAll: true })}
+                onClick={() =>
+                  setDeleteConfirm({ isOpen: true, isClearAll: true })
+                }
                 className="w-full"
               >
                 <TrashIcon className="size-4" />

@@ -1,4 +1,4 @@
-import { Input, ALL_FORMATS, BlobSource, AudioBufferSink } from 'mediabunny'
+import { ALL_FORMATS, AudioBufferSink, BlobSource, Input } from 'mediabunny'
 import { collectAudioMixSources } from '@/lib/media/audio'
 import type { MediaAsset } from '@/types/assets'
 import type { TimelineTrack } from '@/types/timeline'

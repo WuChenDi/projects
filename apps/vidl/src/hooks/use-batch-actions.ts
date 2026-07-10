@@ -137,7 +137,11 @@ export function useBatchActions() {
         const size = await estimateFileSize(segUrls, 1, segUrls.length)
         if (size != null && item.meta) {
           updateItem(item.id, {
-            meta: { ...item.meta, estimatedSize: size, segmentCount: segUrls.length },
+            meta: {
+              ...item.meta,
+              estimatedSize: size,
+              segmentCount: segUrls.length,
+            },
           })
         }
       } catch {

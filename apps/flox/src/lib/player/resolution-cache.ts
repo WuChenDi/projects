@@ -9,7 +9,10 @@ export interface ResolutionCacheEntry {
 
 const CACHE_PREFIX = 'res:'
 
-export function getResolutionCacheKey(source: string, id: string | number): string {
+export function getResolutionCacheKey(
+  source: string,
+  id: string | number,
+): string {
   return `${CACHE_PREFIX}${source}:${id}`
 }
 
@@ -34,7 +37,10 @@ export function setCachedResolution(
 ): void {
   if (typeof window === 'undefined') return
   try {
-    sessionStorage.setItem(getResolutionCacheKey(source, id), JSON.stringify(info))
+    sessionStorage.setItem(
+      getResolutionCacheKey(source, id),
+      JSON.stringify(info),
+    )
   } catch {
     /* ignore sessionStorage failures */
   }

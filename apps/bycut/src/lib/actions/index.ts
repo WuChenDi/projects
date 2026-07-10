@@ -1,3 +1,3 @@
-export * from "./definitions";
-export * from "./types";
-export * from "./registry";
+export * from './definitions'
+export * from './registry'
+export * from './types'

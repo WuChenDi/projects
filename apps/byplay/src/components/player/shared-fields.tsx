@@ -75,11 +75,7 @@ export function SwitchField({
 
 export function LogBadge({ type }: { type: HlsLogEntry['type'] }) {
   const variant =
-    type === 'error'
-      ? 'destructive'
-      : type === 'warn'
-        ? 'outline'
-        : 'secondary'
+    type === 'error' ? 'destructive' : type === 'warn' ? 'outline' : 'secondary'
   return (
     <Badge variant={variant} className="text-[10px] px-1 py-0 font-mono">
       {type.toUpperCase()}

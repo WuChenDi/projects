@@ -37,7 +37,10 @@ export function useSearchCache() {
       const state = queryClient.getQueryState(searchQueryKey(query))
       if (!state?.dataUpdatedAt) return null
       if (Date.now() - state.dataUpdatedAt > SEARCH_STALE_TIME) return null
-      return queryClient.getQueryData<SearchCacheEntry>(searchQueryKey(query)) ?? null
+      return (
+        queryClient.getQueryData<SearchCacheEntry>(searchQueryKey(query)) ??
+        null
+      )
     },
     [queryClient],
   )

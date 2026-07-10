@@ -1,6 +1,7 @@
 'use client'
 
-import Hls, { type HlsConfig as HlsJsConfig } from 'hls.js'
+import type { HlsConfig as HlsJsConfig } from 'hls.js'
+import Hls from 'hls.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AdFilterMode, FilterStats } from '@/lib/m3u8-utils'
 import { filterM3u8Ad } from '@/lib/m3u8-utils'

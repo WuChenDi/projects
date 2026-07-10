@@ -1,6 +1,3 @@
-import { Dices } from 'lucide-react'
-import Image from 'next/image'
-import { useTranslations } from 'next-intl'
 import { Badge } from '@cdlab/ui/components/badge'
 import { Button } from '@cdlab/ui/components/button'
 import {
@@ -22,6 +19,9 @@ import {
   SelectValue,
 } from '@cdlab/ui/components/select'
 import { Textarea } from '@cdlab/ui/components/textarea'
+import { Dices } from 'lucide-react'
+import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import type { ModelGroup } from '@/types'
 
 interface BasicSettingsProps {
@@ -113,7 +113,9 @@ export function BasicSettings({
             <SelectTrigger className="w-full">
               <SelectValue placeholder={t('basic.selectModel')}>
                 <div className="flex items-center gap-2">
-                  {selectedModelData ? selectedModelData.name : t('basic.selectModel')}
+                  {selectedModelData
+                    ? selectedModelData.name
+                    : t('basic.selectModel')}
                 </div>
               </SelectValue>
             </SelectTrigger>
@@ -145,7 +147,10 @@ export function BasicSettings({
                         <span className="font-medium flex items-center gap-1.5">
                           {model.name}
                           {model.type !== 'text2img' && (
-                            <Badge variant="outline" className="text-[10px] px-1 py-0 font-normal">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-1 py-0 font-normal"
+                            >
                               {t(`modelType.${model.type}`)}
                             </Badge>
                           )}

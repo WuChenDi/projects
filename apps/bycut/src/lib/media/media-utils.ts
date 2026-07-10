@@ -1,32 +1,32 @@
-import type { MediaAsset, MediaType } from "@/types/assets";
+import type { MediaAsset, MediaType } from '@/types/assets'
 
-export const SUPPORTS_AUDIO: readonly MediaType[] = ["audio", "video"];
+export const SUPPORTS_AUDIO: readonly MediaType[] = ['audio', 'video']
 
 export function mediaSupportsAudio({
-	media,
+  media,
 }: {
-	media: MediaAsset | null | undefined;
+  media: MediaAsset | null | undefined
 }): boolean {
-	if (!media) return false;
-	return SUPPORTS_AUDIO.includes(media.type);
+  if (!media) return false
+  return SUPPORTS_AUDIO.includes(media.type)
 }
 
 export const getMediaTypeFromFile = ({
-	file,
+  file,
 }: {
-	file: File;
+  file: File
 }): MediaType | null => {
-	const { type } = file;
+  const { type } = file
 
-	if (type.startsWith("image/")) {
-		return "image";
-	}
-	if (type.startsWith("video/")) {
-		return "video";
-	}
-	if (type.startsWith("audio/")) {
-		return "audio";
-	}
+  if (type.startsWith('image/')) {
+    return 'image'
+  }
+  if (type.startsWith('video/')) {
+    return 'video'
+  }
+  if (type.startsWith('audio/')) {
+    return 'audio'
+  }
 
-	return null;
-};
+  return null
+}

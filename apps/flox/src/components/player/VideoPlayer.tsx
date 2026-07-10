@@ -10,10 +10,7 @@ import {
   PopoverTrigger,
 } from '@cdlab/ui/components/popover'
 import { Switch } from '@cdlab/ui/components/switch'
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from '@cdlab/ui/components/toggle-group'
+import { ToggleGroup, ToggleGroupItem } from '@cdlab/ui/components/toggle-group'
 import { cn } from '@cdlab/ui/lib/utils'
 import { SettingsIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'

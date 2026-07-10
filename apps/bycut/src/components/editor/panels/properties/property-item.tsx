@@ -92,19 +92,9 @@ export function PropertyGroup({
             {title}
           </PropertyGroupTitle>
           {isExpanded ? (
-            <Minus
-              className={cn(
-                'size-3',
-                'text-foreground',
-              )}
-            />
+            <Minus className={cn('size-3', 'text-foreground')} />
           ) : (
-            <Plus
-              className={cn(
-                'size-3',
-                'text-muted-foreground',
-              )}
-            />
+            <Plus className={cn('size-3', 'text-muted-foreground')} />
           )}
         </button>
       ) : (

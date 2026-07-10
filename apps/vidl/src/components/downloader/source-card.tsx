@@ -21,10 +21,7 @@ import {
   InputGroupText,
 } from '@cdlab/ui/components/input-group'
 import { Slider } from '@cdlab/ui/components/slider'
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from '@cdlab/ui/components/toggle-group'
+import { ToggleGroup, ToggleGroupItem } from '@cdlab/ui/components/toggle-group'
 import {
   Tooltip,
   TooltipContent,

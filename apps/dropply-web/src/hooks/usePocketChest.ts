@@ -84,7 +84,10 @@ export function usePocketChest() {
                 file.fileId,
                 chestToken,
               )
-              const content = await decryptTextContent(rawContent, encryptionKey)
+              const content = await decryptTextContent(
+                rawContent,
+                encryptionKey,
+              )
               return { ...file, content }
             } else {
               return { ...file }

@@ -20,7 +20,10 @@ interface VPlayerInstance {
 }
 
 interface VPlayer {
-  createVzanPlayer: (elementId: string, config: Record<string, unknown>) => VPlayerInstance
+  createVzanPlayer: (
+    elementId: string,
+    config: Record<string, unknown>,
+  ) => VPlayerInstance
   enableDebug: (enabled: boolean) => void
   setEnableBackgroundPlaying: (enabled: boolean) => void
   setTsSegmentCountThreshold: (count: number) => void

@@ -54,11 +54,7 @@ export function DataSettings({
         </div>
       </CardContent>
       <CardFooter className="flex-col gap-2">
-        <Button
-          variant="destructive"
-          className="w-full"
-          onClick={onReset}
-        >
+        <Button variant="destructive" className="w-full" onClick={onReset}>
           <Trash2 className="size-4" />
           清除所有数据
         </Button>

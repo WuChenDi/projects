@@ -25,7 +25,9 @@ export async function fetchWithRetry(
 
     try {
       if (attempt > 0) {
-        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY * attempt))
+        await new Promise((resolve) =>
+          setTimeout(resolve, RETRY_DELAY * attempt),
+        )
       }
 
       const response = await fetch(url, {

@@ -18,11 +18,7 @@ import {
 } from '@cdlab/ui/components/input-group'
 import { cn } from '@cdlab/ui/lib/utils'
 import type { ZipFileEntry } from '@cdlab/utils'
-import {
-  copyToClipboard,
-  downloadFilesAsZip,
-  formatBytes,
-} from '@cdlab/utils'
+import { copyToClipboard, downloadFilesAsZip, formatBytes } from '@cdlab/utils'
 import {
   CheckCircle,
   Clock,

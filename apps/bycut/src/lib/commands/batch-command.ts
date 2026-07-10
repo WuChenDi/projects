@@ -1,25 +1,25 @@
-import { Command } from "./base-command";
+import { Command } from './base-command'
 
 export class BatchCommand extends Command {
-	constructor(private commands: Command[]) {
-		super();
-	}
+  constructor(private commands: Command[]) {
+    super()
+  }
 
-	execute(): void {
-		for (const command of this.commands) {
-			command.execute();
-		}
-	}
+  execute(): void {
+    for (const command of this.commands) {
+      command.execute()
+    }
+  }
 
-	undo(): void {
-		for (const command of [...this.commands].reverse()) {
-			command.undo();
-		}
-	}
+  undo(): void {
+    for (const command of [...this.commands].reverse()) {
+      command.undo()
+    }
+  }
 
-	redo(): void {
-		for (const command of this.commands) {
-			command.execute();
-		}
-	}
+  redo(): void {
+    for (const command of this.commands) {
+      command.execute()
+    }
+  }
 }
