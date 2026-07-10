@@ -29,7 +29,9 @@ import type {
   CompleteUploadResponse,
   CreateChestResponse,
   CreateMultipartUploadResponse,
+  MultipartJWTPayload,
   UploadFileResponse,
+  UploadJWTPayload,
   UploadPartResponse,
 } from '@/types'
 
@@ -147,7 +149,7 @@ chestRoutes.post(
     }
 
     const token = authHeader.substring(7)
-    let payload
+    let payload: UploadJWTPayload
     try {
       payload = await verifyUploadJWT(token, c.env.JWT_SECRET)
     } catch (error) {
@@ -324,7 +326,7 @@ chestRoutes.post(
     }
 
     const token = authHeader.substring(7)
-    let payload
+    let payload: UploadJWTPayload
     try {
       payload = await verifyUploadJWT(token, c.env.JWT_SECRET)
     } catch (error) {
@@ -442,7 +444,7 @@ chestRoutes.post(
     }
 
     const token = authHeader.substring(7)
-    let payload
+    let payload: UploadJWTPayload
     try {
       payload = await verifyUploadJWT(token, c.env.JWT_SECRET)
     } catch (error) {
@@ -564,7 +566,7 @@ chestRoutes.put(
     }
 
     const token = authHeader.substring(7)
-    let payload
+    let payload: MultipartJWTPayload
     try {
       payload = await verifyMultipartJWT(token, c.env.JWT_SECRET)
     } catch (error) {
@@ -668,7 +670,7 @@ chestRoutes.post(
     }
 
     const token = authHeader.substring(7)
-    let payload
+    let payload: MultipartJWTPayload
     try {
       payload = await verifyMultipartJWT(token, c.env.JWT_SECRET)
     } catch (error) {

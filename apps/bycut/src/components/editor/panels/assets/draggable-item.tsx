@@ -112,7 +112,6 @@ export function DraggableItem({
   return (
     <>
       {variant === 'card' ? (
-        // biome-ignore lint/a11y/useSemanticElements: container wraps draggable content with nested interactive elements
         <div
           ref={dragRef}
           className={cn('group relative', containerClassName ?? 'size-28')}

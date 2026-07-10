@@ -153,7 +153,6 @@ function AssetPreviewPlayer({ asset }: { asset: MediaAsset }) {
   if (asset.type === 'video') {
     return (
       <div className="flex h-full w-full items-center justify-center">
-        {/* biome-ignore lint/a11y/useMediaCaption: preview playback */}
         <video
           key={asset.id}
           src={url}
@@ -168,7 +167,6 @@ function AssetPreviewPlayer({ asset }: { asset: MediaAsset }) {
   if (asset.type === 'image') {
     return (
       <div className="flex h-full w-full items-center justify-center">
-        {/* biome-ignore lint: blob URLs don't work with Next.js Image */}
         <img
           src={url}
           alt={asset.name}
@@ -183,7 +181,6 @@ function AssetPreviewPlayer({ asset }: { asset: MediaAsset }) {
       <div className="flex h-full w-full flex-col items-center justify-center gap-4">
         <Music className="text-muted-foreground size-16" />
         <span className="text-muted-foreground text-sm">{asset.name}</span>
-        {/* biome-ignore lint/a11y/useMediaCaption: preview playback */}
         <audio key={asset.id} src={url} controls autoPlay className="w-64" />
       </div>
     )

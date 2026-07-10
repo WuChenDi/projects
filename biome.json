@@ -48,7 +48,7 @@
           }
         }
       },
-      "recommended": false,
+      "preset": "none",
       "suspicious": {
         "noImplicitAnyLet": "warn",
         "noDuplicateObjectKeys": "warn",

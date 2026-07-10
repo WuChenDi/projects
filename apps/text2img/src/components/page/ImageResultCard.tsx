@@ -102,7 +102,6 @@ export function ImageResultCard({
           )}
 
           {isCompleted && result.imageUrl && (
-            // biome-ignore lint/performance/noImgElement: dynamic image source requires img element
             <img
               src={result.imageUrl}
               alt="Generated"

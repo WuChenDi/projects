@@ -111,7 +111,6 @@ function DropZone({
       <Label>{label}</Label>
       {preview ? (
         <div className="relative group rounded-lg overflow-hidden border">
-          {/* biome-ignore lint/performance/noImgElement: dynamic base64 source */}
           <img
             src={`data:image/png;base64,${preview}`}
             alt={label}

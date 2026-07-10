@@ -1,7 +1,6 @@
 import { base58 } from '@scure/base'
 import { HDKey } from '@scure/bip32'
 import * as bip39 from '@scure/bip39'
-import { wordlist } from '@scure/bip39/wordlists/english'
 import ecies from 'eciesjs'
 
 // eslint-disable-next-line quotes
