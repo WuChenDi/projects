@@ -1,6 +1,6 @@
 # projects-monorepo - Task List
 
-> Updated: 2026-06-14
+> Updated: 2026-07-11
 
 ## Usage
 
@@ -56,3 +56,7 @@ Each task is a single line linking to its detail file. All detailed information 
 - [x] [**FEAT-023 flnk — launchpads: data model + CRUD API**](FEAT-023.md) `P1`
 - [x] [**FEAT-024 flnk — launchpads: public /m/<slug> render + analytics**](FEAT-024.md) `P1`
 - [x] [**FEAT-025 flnk — launchpads: dashboard editor (Build/Design/Track)**](FEAT-025.md) `P1`
+- [ ] [**FEAT-026 bytts — single-page editor shell + timeline render + preview playback**](FEAT-026.md) `P1`
+- [ ] [**FEAT-027 bytts editor — editing interactions (drag/trim/split/undo) + autosave**](FEAT-027.md) `P1`
+- [ ] [**FEAT-028 bytts editor — P0 audio features (fades, gain, mute/solo, silence removal)**](FEAT-028.md) `P1`
+- [ ] [**FEAT-029 bytts editor — export mixdown (mp3/wav) + save to history**](FEAT-029.md) `P1`
