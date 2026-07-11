@@ -57,6 +57,7 @@ export function TimelineEditor() {
   const rulerRef = useRef<HTMLDivElement>(null)
   const tracksContainerRef = useRef<HTMLDivElement>(null)
   const tracksScrollRef = useRef<HTMLDivElement>(null)
+  const labelsScrollRef = useRef<HTMLDivElement>(null)
   const rowsRef = useRef<HTMLDivElement>(null)
   const playheadRef = useRef<HTMLDivElement>(null)
   const activeRef = useRef(false)
@@ -139,6 +140,23 @@ export function TimelineEditor() {
     observer.observe(el)
     return () => observer.disconnect()
   }, [])
+
+  // Keep the fixed label column vertically aligned with the (now vertically
+  // scrollable) track rows. The tracks pane is the scroll source; the label
+  // list mirrors its scrollTop. Re-run on track count changes so a freshly
+  // mounted list starts aligned.
+  useEffect(() => {
+    const source = tracksScrollRef.current
+    const target = labelsScrollRef.current
+    if (!source || !target) return
+    const sync = () => {
+      if (target.scrollTop !== source.scrollTop)
+        target.scrollTop = source.scrollTop
+    }
+    sync()
+    source.addEventListener('scroll', sync, { passive: true })
+    return () => source.removeEventListener('scroll', sync)
+  }, [tracks.length])
 
   const minZoomLevel = getTimelineZoomMin({ duration, containerWidth })
 
@@ -260,11 +278,18 @@ export function TimelineEditor() {
         {/* Track labels column (not horizontally scrolled) */}
         <div className="bg-card flex w-40 shrink-0 flex-col border-r">
           <div className="h-4 shrink-0" />
-          <div className="flex flex-col gap-1 overflow-hidden pt-px">
+          <div
+            ref={labelsScrollRef}
+            className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-hidden pt-px"
+            onWheel={(event) => {
+              if (tracksScrollRef.current)
+                tracksScrollRef.current.scrollTop += event.deltaY
+            }}
+          >
             {tracks.map((track, index) => (
               <div
                 key={track.id}
-                className="flex items-center justify-between gap-1 px-2"
+                className="flex shrink-0 items-center justify-between gap-1 px-2"
                 style={{ height: `${TRACK_HEIGHT}px` }}
               >
                 <div className="flex min-w-0 items-center gap-1.5">
@@ -349,11 +374,11 @@ export function TimelineEditor() {
           />
           <div
             ref={tracksScrollRef}
-            className="size-full overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:h-2.5"
+            className="size-full overflow-auto [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:size-2.5"
             onWheel={handleWheel}
           >
             <div
-              className="relative overflow-hidden"
+              className="relative overflow-x-clip"
               style={{ width: `${dynamicTimelineWidth}px` }}
             >
               <div className="bg-card sticky top-0 z-30">
