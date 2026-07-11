@@ -258,10 +258,10 @@ export default function HistorySection() {
   }, [completedItems])
 
   return (
-    <Card className="flex flex-col p-4 border-none h-full">
-      <CardHeader className="p-0 flex flex-row items-center justify-between">
-        <CardTitle>历史记录</CardTitle>
-        <CardAction className="space-x-2">
+    <Card className="flex min-h-0 h-full flex-col gap-4 p-4">
+      <CardHeader className="p-0 flex flex-row items-center justify-between gap-2">
+        <CardTitle className="min-w-0 truncate">历史记录</CardTitle>
+        <CardAction className="flex shrink-0 items-center gap-2">
           {completedItems.length > 0 && (
             <Button
               size="sm"
@@ -303,13 +303,15 @@ export default function HistorySection() {
           )}
         </CardAction>
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col gap-4 p-0 overflow-hidden">
+      <CardContent className="flex min-h-0 flex-1 flex-col gap-4 p-0 overflow-hidden">
         {history.length > 0 ? (
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 p-0.5 overflow-y-auto">
-            {history.map((item) => (
-              <HistoryCard key={item.id} item={item} />
-            ))}
-          </div>
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(150px,1fr))] p-0.5 pr-2.5">
+              {history.map((item) => (
+                <HistoryCard key={item.id} item={item} />
+              ))}
+            </div>
+          </ScrollArea>
         ) : (
           <IKEmpty
             icon={History}
