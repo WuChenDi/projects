@@ -32,6 +32,7 @@ import {
   getZoomToFit,
 } from '@/editor/lib/zoom-utils'
 import { MediaDropzone } from './media-dropzone'
+import { ExportButton } from './timeline/export-dialog'
 import { SnapIndicator } from './timeline/snap-indicator'
 import { TimelinePlayhead } from './timeline/timeline-playhead'
 import { TimelineRuler } from './timeline/timeline-ruler'
@@ -209,14 +210,17 @@ export function TimelineEditor() {
     >
       <div className="flex items-center justify-between gap-2 border-b px-2 py-1.5">
         <MediaDropzone onFiles={handleLocalFiles} />
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => editor.timeline.addTrackWithHistory()}
-        >
-          <Plus className="size-4" />
-          添加音轨
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => editor.timeline.addTrackWithHistory()}
+          >
+            <Plus className="size-4" />
+            添加音轨
+          </Button>
+          <ExportButton />
+        </div>
       </div>
 
       <TimelineToolbar

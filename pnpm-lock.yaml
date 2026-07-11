@@ -67,6 +67,9 @@ catalogs:
     '@libsql/client':
       specifier: ^0.17.4
       version: 0.17.4
+    '@mediabunny/mp3-encoder':
+      specifier: ^1.50.8
+      version: 1.50.8
     '@next/third-parties':
       specifier: 16.2.10
       version: 16.2.10
@@ -603,6 +606,9 @@ importers:
       '@cdlab/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@mediabunny/mp3-encoder':
+        specifier: catalog:prod
+        version: 1.50.8(mediabunny@1.50.8)
       '@tanstack/react-form':
         specifier: catalog:prod
         version: 1.33.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -612,6 +618,9 @@ importers:
       lucide-react:
         specifier: catalog:prod
         version: 1.24.0(react@19.2.7)
+      mediabunny:
+        specifier: catalog:prod
+        version: 1.50.8
       next:
         specifier: catalog:prod
         version: 16.2.10(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -3087,6 +3096,11 @@ packages:
     resolution: {integrity: sha512-uwPAhccfFJlsfCxMYTwOdVfOz3xqyj8xYL3zJj8f0pb30tLohnnFPhLuqp4/qoEz8sNxe4SESZedcBojRefIzg==}
     engines: {node: '>=18'}
     hasBin: true
+
+  '@mediabunny/mp3-encoder@1.50.8':
+    resolution: {integrity: sha512-eBT/H30tTu8AmZXqZ5RTpJ9VmwVlwednajuOrrWp0GS6cbGXsGMQ60Qvr3ZMIE0QDiadlEzb8/ozR+doP+MC1g==}
+    peerDependencies:
+      mediabunny: ^1.0.0
 
   '@modelcontextprotocol/sdk@1.29.0':
     resolution: {integrity: sha512-zo37mZA9hJWpULgkRpowewez1y6ML5GsXJPY8FI0tBBCd77HEvza4jDqRKOXgHNn867PVGCyTdzqpz0izu5ZjQ==}
@@ -12971,6 +12985,10 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
+
+  '@mediabunny/mp3-encoder@1.50.8(mediabunny@1.50.8)':
+    dependencies:
+      mediabunny: 1.50.8
 
   '@modelcontextprotocol/sdk@1.29.0(zod@3.25.76)':
     dependencies:
