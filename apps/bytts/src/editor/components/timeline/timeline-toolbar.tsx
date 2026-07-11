@@ -3,14 +3,28 @@
 import { Button } from '@cdlab/ui/components/button'
 import { Separator } from '@cdlab/ui/components/separator'
 import { Slider } from '@cdlab/ui/components/slider'
-import { Maximize2, Pause, Play, ZoomIn, ZoomOut } from 'lucide-react'
+import {
+  Copy,
+  Magnet,
+  Maximize2,
+  Pause,
+  Play,
+  Redo2,
+  Scissors,
+  Trash2,
+  Undo2,
+  ZoomIn,
+  ZoomOut,
+} from 'lucide-react'
 import { TIMELINE_CONSTANTS } from '@/editor/constants'
+import { useEditorActions } from '@/editor/hooks/timeline/use-editor-actions'
 import { useEditor } from '@/editor/hooks/use-editor'
 import { formatTimestamp } from '@/editor/lib/time'
+import { useTimelineUiStore } from '@/editor/lib/timeline-ui-store'
 import { sliderToZoom, zoomToSlider } from '@/editor/lib/zoom-utils'
 
-// Lean transport + zoom bar. The split/undo/snap tools from bycut's toolbar
-// belong to later tasks and are omitted.
+// Transport + editing + zoom bar. The split/duplicate/delete/undo/redo tools and
+// the snap toggle route through the same actions the keyboard shortcuts use.
 
 interface TimelineToolbarProps {
   zoomLevel: number
@@ -26,9 +40,17 @@ export function TimelineToolbar({
   setZoomLevel,
 }: TimelineToolbarProps) {
   const editor = useEditor()
+  const actions = useEditorActions()
+  const snappingEnabled = useTimelineUiStore((state) => state.snappingEnabled)
+  const toggleSnapping = useTimelineUiStore((state) => state.toggleSnapping)
+
   const isPlaying = editor.playback.getIsPlaying()
   const currentTime = editor.playback.getCurrentTime()
   const duration = editor.timeline.getTotalDuration()
+  const selectedCount = editor.selection.getSelected().length
+  const hasClips = editor.timeline
+    .getTracks()
+    .some((track) => track.clips.length > 0)
 
   const sliderValue = zoomToSlider({ zoomLevel, minZoom }) * 100
 
@@ -41,7 +63,7 @@ export function TimelineToolbar({
   }
 
   return (
-    <div className="flex h-10 items-center justify-between border-b px-2 py-1">
+    <div className="flex h-10 items-center justify-between gap-2 border-b px-2 py-1">
       <div className="flex items-center gap-2">
         <Button
           variant="ghost"
@@ -60,6 +82,66 @@ export function TimelineToolbar({
           {formatTimestamp({ timeInSeconds: currentTime })} /{' '}
           {formatTimestamp({ timeInSeconds: duration })}
         </span>
+
+        <Separator orientation="vertical" className="mx-1 h-5" />
+
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={actions.split}
+          title="分割 (S)"
+          disabled={!hasClips}
+        >
+          <Scissors className="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={actions.duplicate}
+          title="复制 (Ctrl+D)"
+          disabled={selectedCount === 0}
+        >
+          <Copy className="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={actions.deleteSelected}
+          title="删除 (Delete)"
+          disabled={selectedCount === 0}
+        >
+          <Trash2 className="size-4" />
+        </Button>
+
+        <Separator orientation="vertical" className="mx-1 h-5" />
+
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={actions.undo}
+          title="撤销 (Ctrl+Z)"
+          disabled={!editor.command.canUndo()}
+        >
+          <Undo2 className="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={actions.redo}
+          title="重做 (Shift+Ctrl+Z)"
+          disabled={!editor.command.canRedo()}
+        >
+          <Redo2 className="size-4" />
+        </Button>
+
+        <Button
+          variant={snappingEnabled ? 'secondary' : 'ghost'}
+          size="icon-sm"
+          onClick={toggleSnapping}
+          title={snappingEnabled ? '关闭吸附' : '开启吸附'}
+        >
+          <Magnet className="size-4" />
+        </Button>
       </div>
 
       <div className="flex items-center gap-1">

@@ -53,6 +53,31 @@ export class MediaManager {
     return asset
   }
 
+  /**
+   * Registers an asset whose bytes are already in the media pool (autosave
+   * restore). Skips the decode + persist that `addAsset` does — the duration
+   * comes from the saved snapshot and the blob is read back from IndexedDB.
+   */
+  hydrateAsset({
+    id,
+    name,
+    file,
+    duration,
+  }: {
+    id: string
+    name: string
+    file: File
+    duration: number
+  }): MediaAsset {
+    const existing = this.getAsset({ id })
+    if (existing) return existing
+
+    const asset: MediaAsset = { id, name, file, duration }
+    this.assets = [...this.assets, asset]
+    this.notify()
+    return asset
+  }
+
   subscribe(listener: () => void): () => void {
     this.listeners.add(listener)
     return () => this.listeners.delete(listener)

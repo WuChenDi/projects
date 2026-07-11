@@ -1,19 +1,39 @@
 'use client'
 
-import type { AudioTrack } from '@/editor/types'
+import type { ClipDragState } from '@/editor/hooks/timeline/use-clip-interaction'
+import type { SnapPoint } from '@/editor/hooks/timeline/use-timeline-snapping'
+import type { AudioClip as AudioClipType, AudioTrack } from '@/editor/types'
 import { AudioClip } from './audio-clip'
 
-// One track row. FEAT-026 only renders clips; drag/drop + selection box are
-// FEAT-027.
+// One track row. Renders each clip and forwards the drag/select/trim handlers
+// down from the timeline editor.
 
 interface TimelineTrackContentProps {
   track: AudioTrack
   zoomLevel: number
+  dragState: ClipDragState
+  selectedCount: number
+  onClipMouseDown: (params: {
+    event: React.MouseEvent
+    clip: AudioClipType
+    track: AudioTrack
+  }) => void
+  onClipClick: (params: {
+    event: React.MouseEvent
+    clip: AudioClipType
+    track: AudioTrack
+  }) => void
+  onSnapPointChange: (snapPoint: SnapPoint | null) => void
 }
 
 export function TimelineTrackContent({
   track,
   zoomLevel,
+  dragState,
+  selectedCount,
+  onClipMouseDown,
+  onClipClick,
+  onSnapPointChange,
 }: TimelineTrackContentProps) {
   return (
     <div className="relative h-full min-w-full">
@@ -26,6 +46,11 @@ export function TimelineTrackContent({
             clip={clip}
             track={track}
             zoomLevel={zoomLevel}
+            dragState={dragState}
+            selectedCount={selectedCount}
+            onClipMouseDown={onClipMouseDown}
+            onClipClick={onClipClick}
+            onSnapPointChange={onSnapPointChange}
           />
         ))
       )}
