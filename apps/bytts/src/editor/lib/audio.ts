@@ -32,7 +32,8 @@ export async function decodeAudioDuration({
 
 /**
  * Flattens all non-empty clips across every track into playable sources.
- * Track- and clip-level mute both mark the source `muted` (scheduling skips it).
+ * Track- and clip-level mute both mark the source `muted` (scheduling skips it);
+ * when any track is soloed, non-soloed tracks are silenced regardless of mute.
  */
 export function collectAudioClips({
   tracks,
@@ -45,8 +46,10 @@ export function collectAudioClips({
   const mediaMap = new Map<string, MediaAsset>(
     mediaAssets.map((asset) => [asset.id, asset]),
   )
+  const anySolo = tracks.some((track) => track.solo)
 
   for (const track of tracks) {
+    const trackSilenced = anySolo ? !track.solo : track.muted
     for (const clip of track.clips) {
       if (clip.duration <= 0) continue
 
@@ -61,9 +64,12 @@ export function collectAudioClips({
         duration: clip.duration,
         trimStart: clip.trimStart,
         trimEnd: clip.trimEnd,
-        muted: track.muted || clip.muted,
+        muted: trackSilenced || clip.muted,
         volume: clip.volume,
         playbackRate: 1,
+        fadeIn: clip.fadeIn ?? 0,
+        fadeOut: clip.fadeOut ?? 0,
+        gainDb: clip.gainDb ?? 0,
       })
     }
   }

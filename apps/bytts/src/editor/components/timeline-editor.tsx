@@ -5,6 +5,7 @@ import { cn } from '@cdlab/ui/lib/utils'
 import {
   ChevronDown,
   ChevronUp,
+  Headphones,
   Music,
   Plus,
   Volume2,
@@ -258,6 +259,20 @@ export function TimelineEditor() {
                     title="下移"
                   >
                     <ChevronDown className="size-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      editor.timeline.toggleTrackSolo({ trackId: track.id })
+                    }
+                    title={track.solo ? '取消独奏' : '独奏'}
+                  >
+                    <Headphones
+                      className={cn(
+                        'size-4',
+                        track.solo ? 'text-primary' : 'text-muted-foreground',
+                      )}
+                    />
                   </button>
                   <button
                     type="button"

@@ -1,5 +1,6 @@
 import { EditorCore } from '@/editor/core'
 import type { Command } from '@/editor/core/commands'
+import type { AudioSilenceRange } from '@/editor/lib/audio-silence'
 import type { AudioClip, AudioTrack, ClipRef } from '@/editor/types'
 import { genid } from '@/lib/genid'
 
@@ -161,6 +162,168 @@ export class UpdateClipTrimCommand extends SnapshotCommand {
     }))
 
     editor.timeline.setTracks({ tracks: updatedTracks })
+  }
+}
+
+// --- clip audio (gain / fades / mute) ------------------------------------
+
+export class UpdateClipAudioCommand extends SnapshotCommand {
+  constructor(
+    private clipId: string,
+    private patch: Partial<
+      Pick<AudioClip, 'gainDb' | 'fadeIn' | 'fadeOut' | 'muted'>
+    >,
+  ) {
+    super()
+  }
+
+  execute(): void {
+    const editor = EditorCore.getInstance()
+    this.snapshot(editor)
+
+    const updatedTracks = (this.savedTracks ?? []).map((track) => ({
+      ...track,
+      clips: track.clips.map((clip) =>
+        clip.id === this.clipId ? { ...clip, ...this.patch } : clip,
+      ),
+    }))
+
+    editor.timeline.setTracks({ tracks: updatedTracks })
+  }
+}
+
+// --- track flags (mute / solo) -------------------------------------------
+
+export class SetTrackFlagsCommand extends SnapshotCommand {
+  constructor(
+    private trackId: string,
+    private patch: Partial<Pick<AudioTrack, 'muted' | 'solo'>>,
+  ) {
+    super()
+  }
+
+  execute(): void {
+    const editor = EditorCore.getInstance()
+    this.snapshot(editor)
+
+    const updatedTracks = (this.savedTracks ?? []).map((track) =>
+      track.id === this.trackId ? { ...track, ...this.patch } : track,
+    )
+
+    editor.timeline.setTracks({ tracks: updatedTracks })
+  }
+}
+
+// --- silence removal (split + delete + ripple, one undo step) -------------
+
+export class RemoveSilenceCommand extends SnapshotCommand {
+  constructor(
+    private trackId: string,
+    private clipId: string,
+    private ranges: AudioSilenceRange[],
+  ) {
+    super()
+  }
+
+  execute(): void {
+    const editor = EditorCore.getInstance()
+    this.snapshot(editor)
+
+    const tracks = this.savedTracks ?? []
+    const track = tracks.find((current) => current.id === this.trackId)
+    const clip = track?.clips.find((current) => current.id === this.clipId)
+    if (!track || !clip) return
+
+    // Silent ranges are clip-relative (0..duration). Merge/clamp them, then
+    // build the audible complement as packed sub-clips and ripple every later
+    // clip on the track left by the total removed duration.
+    const sortedRanges = this.ranges
+      .map((range) => ({
+        start: Math.max(0, Math.min(clip.duration, range.start)),
+        end: Math.max(0, Math.min(clip.duration, range.end)),
+      }))
+      .filter((range) => range.end > range.start)
+      .sort((left, right) => left.start - right.start)
+
+    const mergedRanges: AudioSilenceRange[] = []
+    for (const range of sortedRanges) {
+      const last = mergedRanges[mergedRanges.length - 1]
+      if (last && range.start <= last.end) {
+        last.end = Math.max(last.end, range.end)
+      } else {
+        mergedRanges.push({ ...range })
+      }
+    }
+
+    if (mergedRanges.length === 0) return
+
+    // Audible segments = complement of the silent ranges within [0, duration].
+    const audibleSegments: Array<{ from: number; to: number }> = []
+    let cursor = 0
+    for (const range of mergedRanges) {
+      if (range.start > cursor) {
+        audibleSegments.push({ from: cursor, to: range.start })
+      }
+      cursor = range.end
+    }
+    if (cursor < clip.duration) {
+      audibleSegments.push({ from: cursor, to: clip.duration })
+    }
+
+    const totalRemoved = mergedRanges.reduce(
+      (sum, range) => sum + (range.end - range.start),
+      0,
+    )
+    const originalEnd = clip.startTime + clip.duration
+
+    // Pack the audible segments consecutively from the clip's original start.
+    const packedClips: AudioClip[] = []
+    let packedStart = clip.startTime
+    audibleSegments.forEach((segment, index) => {
+      const segmentDuration = segment.to - segment.from
+      if (segmentDuration <= 0) return
+      packedClips.push({
+        ...clip,
+        // Keep the original id on the first surviving segment so selection and
+        // any external reference stay valid; give the rest fresh ids.
+        id: index === 0 ? clip.id : String(genid.nextId()),
+        startTime: packedStart,
+        duration: segmentDuration,
+        trimStart: clip.trimStart + segment.from,
+        trimEnd: clip.trimEnd + (clip.duration - segment.to),
+        fadeIn: index === 0 ? clip.fadeIn : 0,
+        fadeOut: index === audibleSegments.length - 1 ? clip.fadeOut : 0,
+      })
+      packedStart += segmentDuration
+    })
+
+    const updatedTracks = tracks.map((current) => {
+      if (current.id !== this.trackId) return current
+      return {
+        ...current,
+        clips: current.clips.flatMap((existing) => {
+          if (existing.id === this.clipId) return packedClips
+          // Ripple: pull clips that started at/after the edited clip's end left.
+          if (existing.startTime >= originalEnd - 1e-6) {
+            return [
+              {
+                ...existing,
+                startTime: Math.max(0, existing.startTime - totalRemoved),
+              },
+            ]
+          }
+          return [existing]
+        }),
+      }
+    })
+
+    editor.timeline.setTracks({ tracks: updatedTracks })
+    editor.selection.setSelected({
+      clips: packedClips.map((packed) => ({
+        trackId: this.trackId,
+        clipId: packed.id,
+      })),
+    })
   }
 }
 
@@ -408,6 +571,7 @@ export class AddTrackCommand extends SnapshotCommand {
       id: this.trackId,
       name: `音轨 ${tracks.length + 1}`,
       muted: false,
+      solo: false,
       clips: [],
     }
     editor.timeline.setTracks({ tracks: [...tracks, newTrack] })
