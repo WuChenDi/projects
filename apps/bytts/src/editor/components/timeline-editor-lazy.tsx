@@ -12,7 +12,7 @@ export const TimelineEditorLazy = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-full items-center justify-center rounded-sm border">
+      <div className="bg-card flex h-full items-center justify-center rounded-xl">
         <Loader2 className="text-muted-foreground size-5 animate-spin" />
       </div>
     ),

@@ -588,8 +588,12 @@ export class RemoveTrackCommand extends SnapshotCommand {
     this.snapshot(editor)
     const tracks = this.savedTracks ?? []
     if (tracks.length <= 1) return
+    // Renumber remaining tracks so the "音轨 N" suffix stays sequential and
+    // gap-free after a deletion (undo restores the original names via snapshot).
     editor.timeline.setTracks({
-      tracks: tracks.filter((track) => track.id !== this.trackId),
+      tracks: tracks
+        .filter((track) => track.id !== this.trackId)
+        .map((track, index) => ({ ...track, name: `音轨 ${index + 1}` })),
     })
     editor.selection.setSelected({
       clips: editor.selection
