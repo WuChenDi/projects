@@ -39,4 +39,4 @@ Each plan is a single line linking to its detail file. All detailed information 
 - [x] [**PLAN-008 flnk — tags as a dictionary table + inline tag-ID column**](PLAN-008.md) `2026-06-28`
 - [x] [**PLAN-009 flnk — short-link title + QR styling & scan tracking**](PLAN-009.md) `2026-06-29`
 - [x] [**PLAN-010 flnk — launchpads (marketing pages)**](PLAN-010.md) `2026-06-29`
-- [-] [**PLAN-011 bytts — single-page audio timeline editor (generate + edit)**](PLAN-011.md) `2026-07-11`
+- [x] [**PLAN-011 bytts — single-page audio timeline editor (generate + edit)**](PLAN-011.md) `2026-07-11`
