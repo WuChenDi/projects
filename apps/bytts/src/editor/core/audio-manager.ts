@@ -1,6 +1,12 @@
 import type { EditorCore } from '@/editor/core'
 import { collectAudioClips, createAudioContext } from '@/editor/lib/audio'
+import { getFadeGain } from '@/editor/lib/audio-fade'
+import { gainDbToLinear } from '@/editor/lib/audio-gain'
 import type { AudioClipSource } from '@/editor/types'
+
+// Envelope sampling resolution for fade curves scheduled via setValueCurveAtTime.
+const FADE_SAMPLE_STEP_SECONDS = 0.01
+const FADE_MAX_SAMPLES = 2048
 
 // Sample-accurate Web Audio preview. Ported from bycut's audio-manager:
 // buffers are decoded lazily, cached by source key, and scheduled against the
@@ -208,10 +214,13 @@ export class AudioManager {
     node.buffer = buffer
     node.playbackRate.value = rate
 
+    const baseGain = clip.volume * gainDbToLinear(clip.gainDb)
     const clipGain = audioContext.createGain()
-    clipGain.gain.value = clip.volume
+    clipGain.gain.value = baseGain
     node.connect(clipGain)
     clipGain.connect(this.masterGain)
+
+    this.applyFadeEnvelope({ clip, gainParam: clipGain.gain, baseGain })
 
     if (scheduleTime >= audioContext.currentTime) {
       node.start(scheduleTime, sourceOffset, remainingDuration)
@@ -231,6 +240,74 @@ export class AudioManager {
       node.disconnect()
       this.queuedSources.delete(node)
     })
+  }
+
+  /**
+   * Schedules the clip's fade in/out onto its GainNode by sampling the fade
+   * curve into `setValueCurveAtTime` ramps. The two fade regions are scheduled
+   * independently (steady `baseGain` holds in between); when the fades overlap
+   * (fadeIn + fadeOut > duration) a single envelope across the whole clip is
+   * used so the automation windows never collide. Regions already in the past
+   * (mid-clip playback start) are clamped to the context clock.
+   */
+  private applyFadeEnvelope({
+    clip,
+    gainParam,
+    baseGain,
+  }: {
+    clip: AudioClipSource
+    gainParam: AudioParam
+    baseGain: number
+  }): void {
+    const audioContext = this.audioContext
+    if (!audioContext) return
+
+    const { fadeIn, fadeOut, duration } = clip
+    if (fadeIn <= 0 && fadeOut <= 0) return
+    if (baseGain <= 0) return
+
+    const fi = Math.min(fadeIn, duration)
+    const fo = Math.min(fadeOut, duration)
+    const now = audioContext.currentTime
+
+    const toContext = (timelineTime: number): number =>
+      this.playbackStartContextTime + (timelineTime - this.playbackStartTime)
+
+    const scheduleRegion = (regionStart: number, regionEnd: number): void => {
+      const fromCtx = Math.max(now, toContext(clip.startTime + regionStart))
+      const toCtx = toContext(clip.startTime + regionEnd)
+      const durationCtx = toCtx - fromCtx
+      if (durationCtx <= 0) return
+
+      const samples = Math.max(
+        2,
+        Math.min(
+          FADE_MAX_SAMPLES,
+          Math.ceil(durationCtx / FADE_SAMPLE_STEP_SECONDS),
+        ),
+      )
+      const curve = new Float32Array(samples)
+      for (let index = 0; index < samples; index += 1) {
+        const ctxTime = fromCtx + (durationCtx * index) / (samples - 1)
+        const timelineTime =
+          this.playbackStartTime + (ctxTime - this.playbackStartContextTime)
+        const position = timelineTime - clip.startTime
+        curve[index] =
+          baseGain *
+          getFadeGain({ position, duration, fadeIn: fi, fadeOut: fo })
+      }
+      gainParam.setValueCurveAtTime(curve, fromCtx, durationCtx)
+    }
+
+    const fadeOutStart = duration - fo
+    const overlaps = fi > 0 && fo > 0 && fi >= fadeOutStart
+
+    if (overlaps) {
+      scheduleRegion(0, duration)
+      return
+    }
+    if (fi > 0) scheduleRegion(0, fi)
+    if (fo > 0) scheduleRegion(fadeOutStart, duration)
   }
 
   private async getDecodedBuffer({

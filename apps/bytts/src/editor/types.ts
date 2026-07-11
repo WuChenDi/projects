@@ -17,12 +17,20 @@ export interface AudioClip {
   trimEnd: number
   volume: number
   muted: boolean
+  /** Fade-in length in seconds (0..5), applied from the clip's head. */
+  fadeIn: number
+  /** Fade-out length in seconds (0..5), applied to the clip's tail. */
+  fadeOut: number
+  /** Per-clip gain in dB (-60..+12); -60 mutes. Combined with `volume`. */
+  gainDb: number
 }
 
 export interface AudioTrack {
   id: string
   name: string
   muted: boolean
+  /** When any track is soloed, only soloed tracks are audible. */
+  solo: boolean
   clips: AudioClip[]
 }
 
@@ -52,4 +60,7 @@ export interface AudioClipSource {
   muted: boolean
   volume: number
   playbackRate: number
+  fadeIn: number
+  fadeOut: number
+  gainDb: number
 }

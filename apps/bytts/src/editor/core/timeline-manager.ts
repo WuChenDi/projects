@@ -8,11 +8,15 @@ import {
   DuplicateClipsCommand,
   MoveClipCommand,
   PasteClipsCommand,
+  RemoveSilenceCommand,
   RemoveTrackCommand,
   ReorderTracksCommand,
+  SetTrackFlagsCommand,
   SplitClipsCommand,
+  UpdateClipAudioCommand,
   UpdateClipTrimCommand,
 } from '@/editor/core/timeline-commands'
+import type { AudioSilenceRange } from '@/editor/lib/audio-silence'
 import type { AudioClip, AudioTrack, ClipRef } from '@/editor/types'
 import { genid } from '@/lib/genid'
 
@@ -56,6 +60,7 @@ export class TimelineManager {
       id: String(genid.nextId()),
       name: name ?? `音轨 ${this.tracks.length + 1}`,
       muted: false,
+      solo: false,
       clips: [],
     }
     this.tracks = [...this.tracks, track]
@@ -94,6 +99,9 @@ export class TimelineManager {
       trimEnd: 0,
       volume: 1,
       muted: false,
+      fadeIn: 0,
+      fadeOut: 0,
+      gainDb: 0,
     }
 
     this.tracks = this.tracks.map((current) =>
@@ -112,13 +120,6 @@ export class TimelineManager {
         ? track
         : least,
     )
-  }
-
-  toggleTrackMute({ trackId }: { trackId: string }): void {
-    this.tracks = this.tracks.map((track) =>
-      track.id === trackId ? { ...track, muted: !track.muted } : track,
-    )
-    this.notify()
   }
 
   setTracks({ tracks }: { tracks: AudioTrack[] }): void {
@@ -211,6 +212,40 @@ export class TimelineManager {
 
   deleteClips({ clips }: { clips: ClipRef[] }): void {
     this.run(new DeleteClipsCommand(clips))
+  }
+
+  updateClipAudio({
+    clipId,
+    patch,
+  }: {
+    clipId: string
+    patch: Partial<Pick<AudioClip, 'gainDb' | 'fadeIn' | 'fadeOut' | 'muted'>>
+  }): void {
+    this.run(new UpdateClipAudioCommand(clipId, patch))
+  }
+
+  toggleTrackMute({ trackId }: { trackId: string }): void {
+    const track = this.getTrackById({ trackId })
+    if (!track) return
+    this.run(new SetTrackFlagsCommand(trackId, { muted: !track.muted }))
+  }
+
+  toggleTrackSolo({ trackId }: { trackId: string }): void {
+    const track = this.getTrackById({ trackId })
+    if (!track) return
+    this.run(new SetTrackFlagsCommand(trackId, { solo: !track.solo }))
+  }
+
+  removeSilence({
+    trackId,
+    clipId,
+    ranges,
+  }: {
+    trackId: string
+    clipId: string
+    ranges: AudioSilenceRange[]
+  }): void {
+    this.run(new RemoveSilenceCommand(trackId, clipId, ranges))
   }
 
   duplicateClips({ clips }: { clips: ClipRef[] }): ClipRef[] {
