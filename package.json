@@ -2,7 +2,7 @@
   "name": "@cdlab/projects-monorepo",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@11.9.0",
+  "packageManager": "pnpm@11.11.0",
   "description": "A monorepo for my projects.",
   "author": "wudi <wuchendi96@gmail.com>",
   "license": "MIT",
@@ -54,11 +54,11 @@
     "prepare": "turbo run build --filter=./packages/*"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.1",
+    "@biomejs/biome": "2.5.1",
     "@cdlab/tsconfig": "workspace:*",
     "@dotns/nsl": "^0.1.10",
     "@types/node": "catalog:dev",
-    "turbo": "^2.10.0",
+    "turbo": "^2.10.4",
     "typescript": "catalog:dev"
   }
 }

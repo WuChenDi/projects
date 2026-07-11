@@ -21,7 +21,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
-    "grammy": "^1.42.0",
+    "grammy": "^1.44.0",
     "hono": "catalog:prod"
   },
   "devDependencies": {
