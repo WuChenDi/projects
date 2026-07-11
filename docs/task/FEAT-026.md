@@ -1,8 +1,8 @@
 # FEAT-026 bytts — single-page editor shell + timeline render + preview playback
 
-- **status**: pending
+- **status**: done
 - **priority**: P1
-- **owner**: (unassigned)
+- **owner**: L3-6l49clds
 - **createdAt**: 2026-07-11
 
 ## Description
@@ -34,3 +34,18 @@ Building bytts editor shell, timeline render, and preview playback
 
 Plan: PLAN-011. Donor code: bycut `src/components/editor/panels/timeline/`,
 `src/core/managers/{timeline,playback,audio,media,selection,commands}`.
+
+Shipped: self-contained audio-only editor under `apps/bytts/src/editor/**`
+(EditorCore wiring command/timeline/media/selection/playback/audio managers;
+scenes/renderer/project/save dropped). Timeline render layer (ruler, ticks,
+playhead, tracks, audio clips with `@cdlab/ui` canvas waveforms), zoom
+(slider + ctrl/⌘-wheel), click/drag ruler + track seek, multi-track layout.
+Material flow: history "发送到时间线" action (reuses `HistoryItem.audioBlob`
+keyed by history id via a buffered zustand bridge) + local audio drop/browse
+(mp3/wav/m4a/ogg) decoded through `AudioContext.decodeAudioData` into a
+`createIDBStore`-backed media pool. Sample-accurate Web Audio preview
+(play/pause/seek mixing multiple tracks/clips), ported from bycut's
+audio-manager. Editor is lazy-loaded via `next/dynamic` (ssr:false) from
+`app/page.tsx`; TTSForm + HistorySection remain unchanged on the same page.
+Out of 026 (stubbed for later tasks): drag-move/trim/split/select/snap/
+undo-redo/autosave (027), fades/gain/mute-solo/silence (028), export (029).
