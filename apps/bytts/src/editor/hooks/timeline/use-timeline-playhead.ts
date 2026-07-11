@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { DEFAULT_FPS, TIMELINE_CONSTANTS } from '@/editor/constants'
 import { useEditor } from '@/editor/hooks/use-editor'
 import { getSnappedSeekTime } from '@/editor/lib/time'
@@ -36,6 +36,14 @@ export function useTimelinePlayhead({
   const [scrubTime, setScrubTime] = useState<number | null>(null)
   const [isDraggingRuler, setIsDraggingRuler] = useState(false)
   const [hasDraggedRuler, setHasDraggedRuler] = useState(false)
+
+  // Follow-during-playback can be paused by the user: once they scroll away
+  // mid-playback we stop yanking the viewport back to the playhead. Following
+  // resumes when playback (re)starts or a deliberate scrub/seek happens.
+  const followPausedRef = useRef(false)
+  const programmaticScrollRef = useRef(false)
+  const wasPlayingRef = useRef(isPlaying)
+  const wasScrubbingRef = useRef(isScrubbing)
 
   const playheadPosition =
     isScrubbing && scrubTime !== null ? scrubTime : currentTime
@@ -131,8 +139,36 @@ export function useTimelinePlayhead({
     editor,
   ])
 
+  // Resume following whenever playback (re)starts or a deliberate scrub ends.
   useEffect(() => {
-    if (!isPlaying || isScrubbing) return
+    if (
+      (isPlaying && !wasPlayingRef.current) ||
+      (wasScrubbingRef.current && !isScrubbing)
+    ) {
+      followPausedRef.current = false
+    }
+    wasPlayingRef.current = isPlaying
+    wasScrubbingRef.current = isScrubbing
+  }, [isPlaying, isScrubbing])
+
+  // A manual scroll during playback pauses following. Programmatic follow
+  // writes below flag themselves so they don't self-trigger this.
+  useEffect(() => {
+    const el = tracksScrollRef.current
+    if (!el) return
+    const onScroll = () => {
+      if (programmaticScrollRef.current) {
+        programmaticScrollRef.current = false
+        return
+      }
+      if (editor.playback.getIsPlaying()) followPausedRef.current = true
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [tracksScrollRef, editor.playback])
+
+  useEffect(() => {
+    if (!isPlaying || isScrubbing || followPausedRef.current) return
 
     const rulerViewport = rulerScrollRef.current
     const tracksViewport = tracksScrollRef.current
@@ -152,7 +188,10 @@ export function useTimelinePlayhead({
         0,
         Math.min(scrollMaximum, playheadPixels - viewportWidth / 2),
       )
-      rulerViewport.scrollLeft = tracksViewport.scrollLeft = desiredScroll
+      if (Math.abs(rulerViewport.scrollLeft - desiredScroll) > 0.5) {
+        programmaticScrollRef.current = true
+        rulerViewport.scrollLeft = tracksViewport.scrollLeft = desiredScroll
+      }
     }
   }, [
     playheadPosition,
@@ -161,6 +200,7 @@ export function useTimelinePlayhead({
     tracksScrollRef,
     isScrubbing,
     isPlaying,
+    editor.playback,
   ])
 
   return {

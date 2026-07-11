@@ -60,6 +60,9 @@ export function TimelineEditor() {
   const rowsRef = useRef<HTMLDivElement>(null)
   const playheadRef = useRef<HTMLDivElement>(null)
   const activeRef = useRef(false)
+  // Set when a clip is ingested so the next render fits the new content to the
+  // viewport instead of leaving the view zoomed-in with a scrollbar.
+  const fitRequestRef = useRef(false)
 
   const [snapPoint, setSnapPoint] = useState<SnapPoint | null>(null)
 
@@ -83,6 +86,7 @@ export function TimelineEditor() {
           name,
           duration: asset.duration,
         })
+        fitRequestRef.current = true
       } catch (error) {
         console.error('Failed to add audio to timeline:', error)
         toast.error('音频解码失败，请重试')
@@ -123,7 +127,19 @@ export function TimelineEditor() {
     [ingest],
   )
 
-  const containerWidth = tracksContainerRef.current?.clientWidth || 1000
+  // Reactive container width so the timeline refits (and stops overflowing)
+  // whenever the surrounding resizable panel changes size.
+  const [containerWidth, setContainerWidth] = useState(1000)
+  useEffect(() => {
+    const el = tracksContainerRef.current
+    if (!el) return
+    const measure = () => setContainerWidth(el.clientWidth || 1000)
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
   const minZoomLevel = getTimelineZoomMin({ duration, containerWidth })
 
   const { zoomLevel, setZoomLevel, handleWheel } = useTimelineZoom({
@@ -188,10 +204,20 @@ export function TimelineEditor() {
     zoomLevel,
     minZoom: minZoomLevel,
   })
-  const dynamicTimelineWidth = Math.max(
-    contentWidth + paddingPx,
-    containerWidth,
-  )
+  // Only add the trailing scroll padding once the content actually overflows
+  // the viewport; while it fits, pin the width to the container so no
+  // horizontal scrollbar appears.
+  const dynamicTimelineWidth =
+    contentWidth > containerWidth ? contentWidth + paddingPx : containerWidth
+
+  // After a clip is ingested, fit the (now longer) timeline to the viewport so
+  // "send to timeline" lands on a clean fitted view rather than jumping to a
+  // zoomed-in/scrolled state.
+  useEffect(() => {
+    if (!fitRequestRef.current || duration <= 0) return
+    fitRequestRef.current = false
+    setZoomLevel(getZoomToFit({ duration, containerWidth }))
+  }, [duration, containerWidth, setZoomLevel])
 
   const totalTracksHeight =
     tracks.length * TRACK_HEIGHT + Math.max(0, tracks.length - 1) * TRACK_GAP
@@ -199,7 +225,7 @@ export function TimelineEditor() {
   return (
     <section
       ref={sectionRef}
-      className="bg-background relative flex h-full flex-col overflow-hidden rounded-sm border"
+      className="bg-card relative flex h-full flex-col overflow-hidden rounded-xl"
       aria-label="Audio timeline editor"
       onPointerEnter={() => {
         activeRef.current = true
@@ -232,7 +258,7 @@ export function TimelineEditor() {
 
       <div className="relative flex flex-1 overflow-hidden" ref={timelineRef}>
         {/* Track labels column (not horizontally scrolled) */}
-        <div className="bg-background flex w-40 shrink-0 flex-col border-r">
+        <div className="bg-card flex w-40 shrink-0 flex-col border-r">
           <div className="h-4 shrink-0" />
           <div className="flex flex-col gap-1 overflow-hidden pt-px">
             {tracks.map((track, index) => (
@@ -245,7 +271,7 @@ export function TimelineEditor() {
                   <Music className="text-muted-foreground size-3.5 shrink-0" />
                   <span className="truncate text-xs">{track.name}</span>
                 </div>
-                <div className="flex shrink-0 items-center">
+                <div className="flex shrink-0 items-center gap-0.5">
                   <button
                     type="button"
                     className="text-muted-foreground hover:text-foreground disabled:opacity-30"
@@ -323,14 +349,14 @@ export function TimelineEditor() {
           />
           <div
             ref={tracksScrollRef}
-            className="size-full overflow-x-auto overflow-y-hidden"
+            className="size-full overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:h-2.5"
             onWheel={handleWheel}
           >
             <div
-              className="relative"
+              className="relative overflow-hidden"
               style={{ width: `${dynamicTimelineWidth}px` }}
             >
-              <div className="bg-background sticky top-0 z-30">
+              <div className="bg-card sticky top-0 z-30">
                 <TimelineRuler
                   zoomLevel={zoomLevel}
                   dynamicTimelineWidth={dynamicTimelineWidth}
