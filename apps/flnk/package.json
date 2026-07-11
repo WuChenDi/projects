@@ -43,7 +43,7 @@
     "react-simple-maps": "^3.0.0",
     "recharts": "catalog:prod",
     "sonner": "catalog:prod",
-    "ua-parser-js": "^2.0.9",
+    "ua-parser-js": "^2.0.10",
     "zod": "catalog:prod",
     "zustand": "catalog:prod"
   },

@@ -31,10 +31,10 @@
     "@cdlab/uncrypto": "workspace:*",
     "@cdlab/utils": "workspace:*",
     "@hono/zod-validator": "catalog:prod",
-    "@react-email/components": "^1.0.8",
+    "@react-email/components": "^1.0.12",
     "drizzle-orm": "catalog:prod",
     "hono": "catalog:prod",
-    "resend": "^6.9.3",
+    "resend": "^6.17.2",
     "winston": "catalog:prod",
     "winston-daily-rotate-file": "catalog:prod",
     "zod": "catalog:prod"
