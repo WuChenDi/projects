@@ -21,6 +21,7 @@ import {
   InputGroupTextarea,
 } from '@cdlab/ui/components/input-group'
 import { Label } from '@cdlab/ui/components/label'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
 import {
   Select,
   SelectContent,
@@ -380,8 +381,8 @@ export default function TTSForm() {
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card size="sm" className="h-full min-h-0">
+      <CardHeader className="shrink-0">
         <CardTitle>文本转语音</CardTitle>
         <CardDescription>输入文本，选择讲述者，生成语音</CardDescription>
         <CardAction>
@@ -392,189 +393,192 @@ export default function TTSForm() {
           />
         </CardAction>
       </CardHeader>
-      <CardContent>
-        <FieldGroup>
-          {/* API selector */}
-          <Field>
-            <Label>选择 API</Label>
-            <div className="flex gap-2">
-              <Select value={selectedApiId} onValueChange={setSelectedApiId}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>内置</SelectLabel>
-                    {(
-                      Object.entries(BUILTIN_APIS) as [
-                        BuiltinApiId,
-                        (typeof BUILTIN_APIS)[BuiltinApiId],
-                      ][]
-                    )
-                      .filter(([, api]) => api.enabled)
-                      .map(([id, api]) => (
-                        <SelectItem key={id} value={id}>
-                          {api.label}
-                        </SelectItem>
-                      ))}
-                  </SelectGroup>
-                  {Object.keys(customApis).length > 0 && (
-                    <>
-                      <SelectSeparator />
-                      <SelectGroup>
-                        <SelectLabel>自定义</SelectLabel>
-                        {Object.values(customApis).map((api) => (
-                          <SelectItem key={api.id} value={api.id}>
-                            {api.name}
-                            <span className="text-xs text-muted-foreground">
-                              ({api.format === 'openai' ? 'OpenAI' : 'Edge'})
-                            </span>
+      <CardContent className="min-h-0 flex-1 overflow-hidden px-0">
+        <ScrollArea className="h-full">
+          <FieldGroup className="gap-3.5 px-3">
+            {/* API selector */}
+            <Field>
+              <Label>选择 API</Label>
+              <div className="flex gap-2">
+                <Select value={selectedApiId} onValueChange={setSelectedApiId}>
+                  <SelectTrigger size="sm" className="flex-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>内置</SelectLabel>
+                      {(
+                        Object.entries(BUILTIN_APIS) as [
+                          BuiltinApiId,
+                          (typeof BUILTIN_APIS)[BuiltinApiId],
+                        ][]
+                      )
+                        .filter(([, api]) => api.enabled)
+                        .map(([id, api]) => (
+                          <SelectItem key={id} value={id}>
+                            {api.label}
                           </SelectItem>
                         ))}
-                      </SelectGroup>
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          </Field>
+                    </SelectGroup>
+                    {Object.keys(customApis).length > 0 && (
+                      <>
+                        <SelectSeparator />
+                        <SelectGroup>
+                          <SelectLabel>自定义</SelectLabel>
+                          {Object.values(customApis).map((api) => (
+                            <SelectItem key={api.id} value={api.id}>
+                              {api.name}
+                              <span className="text-xs text-muted-foreground">
+                                ({api.format === 'openai' ? 'OpenAI' : 'Edge'})
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </Field>
 
-          {/* Speaker selector */}
-          <Field>
-            <Label>选择语音</Label>
-            {selectedApiId === 'edge-api' ? (
-              <Cascader
-                placeholder="选择语音"
-                className="w-full"
-                allowClear={false}
-                value={
-                  speaker
-                    ? [
-                        speaker.match(/^([a-z]{2,3}-[A-Z]{2,3})/)?.[1] ??
-                          '其他',
-                        speaker,
-                      ]
-                    : []
-                }
-                options={Object.entries(groupSpeakers(edgeSpeakers)).map(
-                  ([group, items]) => ({
-                    value: group,
-                    label: group,
-                    children: items.map(([key, value]) => ({
-                      value: key,
-                      label: value,
-                    })),
-                  }),
-                )}
-                onChange={([, speakerKey]) => {
-                  if (speakerKey) setSpeaker(speakerKey)
-                }}
-              />
-            ) : (
-              <Select value={speaker} onValueChange={setSpeaker}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="选择语音" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.keys(activeSpeakers).length === 0 ? (
-                    <SelectItem value="__empty__" disabled>
-                      请先在 API 管理中配置讲述人
-                    </SelectItem>
-                  ) : (
-                    Object.entries(activeSpeakers).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
+            {/* Speaker selector */}
+            <Field>
+              <Label>选择语音</Label>
+              {selectedApiId === 'edge-api' ? (
+                <Cascader
+                  placeholder="选择语音"
+                  size='sm'
+                  className="w-full"
+                  allowClear={false}
+                  value={
+                    speaker
+                      ? [
+                          speaker.match(/^([a-z]{2,3}-[A-Z]{2,3})/)?.[1] ??
+                            '其他',
+                          speaker,
+                        ]
+                      : []
+                  }
+                  options={Object.entries(groupSpeakers(edgeSpeakers)).map(
+                    ([group, items]) => ({
+                      value: group,
+                      label: group,
+                      children: items.map(([key, value]) => ({
+                        value: key,
+                        label: value,
+                      })),
+                    }),
+                  )}
+                  onChange={([, speakerKey]) => {
+                    if (speakerKey) setSpeaker(speakerKey)
+                  }}
+                />
+              ) : (
+                <Select value={speaker} onValueChange={setSpeaker}>
+                  <SelectTrigger size="sm" className="w-full">
+                    <SelectValue placeholder="选择语音" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(activeSpeakers).length === 0 ? (
+                      <SelectItem value="__empty__" disabled>
+                        请先在 API 管理中配置讲述人
                       </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            )}
-          </Field>
+                    ) : (
+                      Object.entries(activeSpeakers).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              )}
+            </Field>
 
-          <Field>
-            <Label>自定义名称</Label>
-            <InputGroup>
-              <InputGroupInput
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="留空则默认使用文件名"
-                maxLength={100}
-              />
-            </InputGroup>
-          </Field>
+            <Field>
+              <Label>自定义名称</Label>
+              <InputGroup className="h-7">
+                <InputGroupInput
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="留空则默认使用文件名"
+                  maxLength={100}
+                />
+              </InputGroup>
+            </Field>
 
-          <Field>
-            <Label>输入文本</Label>
-            <InputGroup className="h-auto flex-col">
-              <InputGroupAddon
-                align="block-start"
-                className="border-b justify-end"
-              >
-                <InputGroupButton
-                  variant="ghost"
-                  onClick={handlePaste}
-                  title="粘贴"
+            <Field>
+              <Label>输入文本</Label>
+              <InputGroup className="h-auto flex-col">
+                <InputGroupAddon
+                  align="block-start"
+                  className="border-b justify-end"
                 >
-                  <ClipboardPaste />
-                </InputGroupButton>
-                <InputGroupButton
-                  variant="ghost"
-                  onClick={handleCopy}
-                  disabled={!text}
-                  title="复制"
-                >
-                  <Copy />
-                </InputGroupButton>
-                <InputGroupButton
-                  variant="ghost"
-                  onClick={() => setText('')}
-                  disabled={!text}
-                  title="清空"
-                >
-                  <Trash2 />
-                </InputGroupButton>
-              </InputGroupAddon>
+                  <InputGroupButton
+                    variant="ghost"
+                    onClick={handlePaste}
+                    title="粘贴"
+                  >
+                    <ClipboardPaste />
+                  </InputGroupButton>
+                  <InputGroupButton
+                    variant="ghost"
+                    onClick={handleCopy}
+                    disabled={!text}
+                    title="复制"
+                  >
+                    <Copy />
+                  </InputGroupButton>
+                  <InputGroupButton
+                    variant="ghost"
+                    onClick={() => setText('')}
+                    disabled={!text}
+                    title="清空"
+                  >
+                    <Trash2 />
+                  </InputGroupButton>
+                </InputGroupAddon>
 
-              <InputGroupTextarea
-                id="text"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                rows={6}
-                maxLength={maxLength}
-                placeholder="请输入要转换的文本"
-                className="min-h-[120px] bg-card/50"
-              />
-              <InputGroupAddon align="block-end" className="border-t">
-                <InputGroupText className="text-xs text-muted-foreground">
-                  {text.length} / {maxLength} 字符
-                  {isEdgeFormat && '，长文本将自动分段'}
-                </InputGroupText>
-              </InputGroupAddon>
-            </InputGroup>
-          </Field>
+                <InputGroupTextarea
+                  id="text"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  rows={4}
+                  maxLength={maxLength}
+                  placeholder="请输入要转换的文本"
+                  className="min-h-[90px] bg-card/50"
+                />
+                <InputGroupAddon align="block-end" className="border-t">
+                  <InputGroupText className="text-xs text-muted-foreground">
+                    {text.length} / {maxLength} 字符
+                    {isEdgeFormat && '，长文本将自动分段'}
+                  </InputGroupText>
+                </InputGroupAddon>
+              </InputGroup>
+            </Field>
 
-          {/* OpenAI-specific: instructions & audio format */}
-          {!isEdgeFormat && (
-            <>
-              <Field>
-                <Label>语音指令（可选）</Label>
-                <InputGroup className="h-auto">
-                  <InputGroupTextarea
-                    value={instructions}
-                    onChange={(e) => setInstructions(e.target.value)}
-                    rows={2}
-                    placeholder="描述语音风格，例如：请用温柔缓慢的语气朗读"
-                    className="bg-card/50"
-                  />
-                </InputGroup>
-              </Field>
+            {/* OpenAI-specific: instructions & audio format */}
+            {!isEdgeFormat && (
+              <>
+                <Field>
+                  <Label>语音指令（可选）</Label>
+                  <InputGroup className="h-auto">
+                    <InputGroupTextarea
+                      value={instructions}
+                      onChange={(e) => setInstructions(e.target.value)}
+                      rows={2}
+                      placeholder="描述语音风格，例如：请用温柔缓慢的语气朗读"
+                      className="bg-card/50"
+                    />
+                  </InputGroup>
+                </Field>
 
-              <Field>
-                <Label>音频格式</Label>
-                <div className="flex flex-wrap gap-1.5">
-                  {(['mp3', 'opus', 'aac', 'flac', 'wav', 'pcm'] as const).map(
-                    (fmt) => (
+                <Field>
+                  <Label>音频格式</Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(
+                      ['mp3', 'opus', 'aac', 'flac', 'wav', 'pcm'] as const
+                    ).map((fmt) => (
                       <Button
                         key={fmt}
                         variant={audioFormat === fmt ? 'default' : 'outline'}
@@ -583,81 +587,81 @@ export default function TTSForm() {
                       >
                         {fmt.toUpperCase()}
                       </Button>
-                    ),
-                  )}
-                </div>
-              </Field>
-            </>
-          )}
-
-          {/* Edge-only controls */}
-          {isEdgeFormat && (
-            <>
-              <Field>
-                <div className="flex justify-between items-center">
-                  <FieldTitle>停顿</FieldTitle>
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-sm tabular-nums">
-                      {pauseSeconds ? `${pauseSeconds}秒` : '0秒'}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleInsertPause}
-                    >
-                      <Timer className="size-3.5" />
-                      插入
-                    </Button>
+                    ))}
                   </div>
-                </div>
-                <Slider
-                  value={[pauseSeconds]}
-                  onValueChange={([value]) => setPauseSeconds(value)}
-                  min={0}
-                  max={10}
-                  step={1}
-                />
-              </Field>
+                </Field>
+              </>
+            )}
 
-              <Field>
-                <div className="flex justify-between">
-                  <FieldTitle>语速</FieldTitle>
-                  <span className="text-muted-foreground text-sm tabular-nums">
-                    {rate}
-                  </span>
-                </div>
-                <Slider
-                  value={[rate]}
-                  onValueChange={([value]) => setRate(value)}
-                  min={-100}
-                  max={100}
-                  step={1}
-                />
-              </Field>
+            {/* Edge-only controls */}
+            {isEdgeFormat && (
+              <>
+                <Field>
+                  <div className="flex justify-between items-center">
+                    <FieldTitle>停顿</FieldTitle>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground text-sm tabular-nums">
+                        {pauseSeconds ? `${pauseSeconds}秒` : '0秒'}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleInsertPause}
+                      >
+                        <Timer className="size-3.5" />
+                        插入
+                      </Button>
+                    </div>
+                  </div>
+                  <Slider
+                    value={[pauseSeconds]}
+                    onValueChange={([value]) => setPauseSeconds(value)}
+                    min={0}
+                    max={10}
+                    step={1}
+                  />
+                </Field>
 
-              <Field>
-                <div className="flex justify-between">
-                  <FieldTitle>语调</FieldTitle>
-                  <span className="text-muted-foreground text-sm tabular-nums">
-                    {pitch}
-                  </span>
-                </div>
-                <Slider
-                  value={[pitch]}
-                  onValueChange={([value]) => setPitch(value)}
-                  min={-100}
-                  max={100}
-                  step={1}
-                />
-              </Field>
-            </>
-          )}
-        </FieldGroup>
+                <Field>
+                  <div className="flex justify-between">
+                    <FieldTitle>语速</FieldTitle>
+                    <span className="text-muted-foreground text-sm tabular-nums">
+                      {rate}
+                    </span>
+                  </div>
+                  <Slider
+                    value={[rate]}
+                    onValueChange={([value]) => setRate(value)}
+                    min={-100}
+                    max={100}
+                    step={1}
+                  />
+                </Field>
+
+                <Field>
+                  <div className="flex justify-between">
+                    <FieldTitle>语调</FieldTitle>
+                    <span className="text-muted-foreground text-sm tabular-nums">
+                      {pitch}
+                    </span>
+                  </div>
+                  <Slider
+                    value={[pitch]}
+                    onValueChange={([value]) => setPitch(value)}
+                    min={-100}
+                    max={100}
+                    step={1}
+                  />
+                </Field>
+              </>
+            )}
+          </FieldGroup>
+        </ScrollArea>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="shrink-0">
         <div className="flex flex-row gap-2 w-full">
           {isGenerating ? (
-            <Button disabled className="flex-1">
+            <Button disabled size="sm" className="flex-1">
               <Loader2 className="animate-spin" />
               正在生成语音，请稍候...
             </Button>
@@ -665,12 +669,17 @@ export default function TTSForm() {
             <>
               <Button
                 variant="secondary"
+                size="sm"
                 onClick={() => generateVoice(true)}
                 className="flex-1"
               >
                 试听前20个字
               </Button>
-              <Button onClick={() => generateVoice(false)} className="flex-1">
+              <Button
+                size="sm"
+                onClick={() => generateVoice(false)}
+                className="flex-1"
+              >
                 生成语音
               </Button>
             </>

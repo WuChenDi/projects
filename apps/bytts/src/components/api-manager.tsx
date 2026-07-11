@@ -981,7 +981,7 @@ export function ApiManagerDialog({
     <>
       <Dialog open={listOpen} onOpenChange={setListOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" size="icon" title="管理自定义 API">
+          <Button variant="outline" size="icon-sm" title="管理自定义 API">
             <Settings />
           </Button>
         </DialogTrigger>
