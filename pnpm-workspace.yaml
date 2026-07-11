@@ -26,6 +26,7 @@ catalogs:
     '@hono/zod-validator': ^0.8.0
     '@huggingface/transformers': ^4.2.0
     '@libsql/client': ^0.17.4
+    '@mediabunny/mp3-encoder': ^1.50.8
     '@next/third-parties': 16.2.10
     '@noble/ciphers': ^2.2.0
     '@noble/curves': ^2.2.0

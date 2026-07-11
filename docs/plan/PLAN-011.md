@@ -1,6 +1,6 @@
 # PLAN-011 bytts — single-page audio timeline editor (generate + edit)
 
-- **status**: implementing
+- **status**: done
 - **createdAt**: 2026-07-11
 - **approvedAt**: 2026-07-11 13:15
 - **tasks**: FEAT-026, FEAT-027, FEAT-028, FEAT-029
@@ -174,3 +174,5 @@ click/drag on ruler, zoom (slider + wheel), undo/redo, track add/remove.
 - 2026-07-11: User approved and requested execution via BKD three-tier
   coordination (L1 session issue `hxdmz6lr`, project `68ll1mkh`). Single-page
   requirement confirmed by user: generation + editor on `/`, no new routes.
+- 2026-07-11: Completed — FEAT-026..029 all merged; bytts ships the audio
+  timeline editor with mp3/wav mixdown export.

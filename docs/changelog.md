@@ -1,5 +1,37 @@
 # Changelog
 
+## 2026-07-11 [feature]
+
+PLAN-011 / FEAT-026..029 done. **bytts is now a single-page generate + edit
+audio tool** — the TTS form and history stay on top, and a bycut-ported
+audio-only timeline editor sits below, all on `/` (no new routes). The editor
+lives under `apps/bytts/src/editor/**` and is lazy-loaded (`next/dynamic`) so
+the generation UI stays light.
+
+- **Editor shell + timeline** (FEAT-026): page restructured into a vertical
+  split; core managers (`timeline`/`playback`/`audio`/`media`/`selection`/
+  `commands`) ported from bycut, audio-only. Multi-track render with
+  ruler/playhead/zoom/seek and canvas waveform peaks. Material flow: history
+  cards gain a "send to timeline" action (reuses the stored blob); local
+  mp3/wav/m4a/ogg drop/browse decoded via `AudioContext.decodeAudioData` into
+  the editor media pool. Web Audio preview plays tracks in sync.
+- **Editing interactions** (FEAT-027): clip drag (within/cross-track), trim
+  handles, split at playhead, copy, delete, multi-select + box select,
+  snapping, and undo/redo over the command bus. Timeline state autosaves to
+  IndexedDB and restores on reload.
+- **P0 audio** (FEAT-028): per-clip fade in/out (curve math) + gain
+  (−60…+12 dB, −60 mutes), track mute/solo honored by preview and export, and
+  Web-Worker silence removal (RMS threshold + min-duration) that auto
+  splits/deletes/ripple-closes as one undoable command.
+- **Export** (FEAT-029): offline mixdown honoring gain/fades/mute/solo →
+  stereo AudioBuffer, encoded to mp3 (`mediabunny` + `@mediabunny/mp3-encoder`,
+  bundling verified under `next-on-pages`) or wav (zero-dep `createWavBlob`),
+  saved back into history (`-edited` suffix) plus direct download.
+- Known follow-up: a reloaded WAV export currently carries an `audio/mpeg` MIME
+  label because `useHistoryStore.rehydrateBlobs` reconstructs restored blobs as
+  `audio/mpeg` (bytes are intact and direct download uses the correct type) —
+  deferred, the store file was out of the editor's scope.
+
 ## 2026-06-28 [feature]
 
 FEAT-019 / PLAN-007 done. Made flnk link **tags functional** — they were storage
