@@ -1,4 +1,19 @@
-import type { AudioClip, AudioTrack } from '@/editor/types'
+import { EditorCore } from '@/editor/core'
+import type { Command } from '@/editor/core/commands'
+import type { ClipboardClip } from '@/editor/core/timeline-commands'
+import {
+  AddTrackCommand,
+  BatchMoveClipsCommand,
+  DeleteClipsCommand,
+  DuplicateClipsCommand,
+  MoveClipCommand,
+  PasteClipsCommand,
+  RemoveTrackCommand,
+  ReorderTracksCommand,
+  SplitClipsCommand,
+  UpdateClipTrimCommand,
+} from '@/editor/core/timeline-commands'
+import type { AudioClip, AudioTrack, ClipRef } from '@/editor/types'
 import { genid } from '@/lib/genid'
 
 // Holds the audio tracks directly (no scenes layer). Ported from bycut's
@@ -109,6 +124,107 @@ export class TimelineManager {
   setTracks({ tracks }: { tracks: AudioTrack[] }): void {
     this.tracks = tracks
     this.notify()
+  }
+
+  // --- command-driven mutations (routed through the undo/redo bus) ---------
+
+  private run<T extends Command>(command: T): T {
+    EditorCore.getInstance().command.execute({ command })
+    return command
+  }
+
+  addTrackWithHistory(): string {
+    return this.run(new AddTrackCommand()).getTrackId()
+  }
+
+  removeTrack({ trackId }: { trackId: string }): void {
+    this.run(new RemoveTrackCommand(trackId))
+  }
+
+  reorderTracks({ trackIds }: { trackIds: string[] }): void {
+    this.run(new ReorderTracksCommand(trackIds))
+  }
+
+  splitClips({
+    clips,
+    splitTime,
+    retainSide = 'both',
+  }: {
+    clips: ClipRef[]
+    splitTime: number
+    retainSide?: 'both' | 'left' | 'right'
+  }): ClipRef[] {
+    return this.run(
+      new SplitClipsCommand(clips, splitTime, retainSide),
+    ).getRightSideClips()
+  }
+
+  updateClipTrim({
+    clipId,
+    trimStart,
+    trimEnd,
+    startTime,
+    duration,
+  }: {
+    clipId: string
+    trimStart: number
+    trimEnd: number
+    startTime?: number
+    duration?: number
+  }): void {
+    this.run(
+      new UpdateClipTrimCommand(
+        clipId,
+        trimStart,
+        trimEnd,
+        startTime,
+        duration,
+      ),
+    )
+  }
+
+  moveClipsByDelta({
+    clips,
+    timeDelta,
+  }: {
+    clips: ClipRef[]
+    timeDelta: number
+  }): void {
+    this.run(new BatchMoveClipsCommand(clips, timeDelta))
+  }
+
+  moveClip({
+    sourceTrackId,
+    targetTrackId,
+    clipId,
+    newStartTime,
+  }: {
+    sourceTrackId: string
+    targetTrackId: string
+    clipId: string
+    newStartTime: number
+  }): void {
+    this.run(
+      new MoveClipCommand(sourceTrackId, targetTrackId, clipId, newStartTime),
+    )
+  }
+
+  deleteClips({ clips }: { clips: ClipRef[] }): void {
+    this.run(new DeleteClipsCommand(clips))
+  }
+
+  duplicateClips({ clips }: { clips: ClipRef[] }): ClipRef[] {
+    return this.run(new DuplicateClipsCommand(clips)).getDuplicatedClips()
+  }
+
+  pasteClips({
+    time,
+    items,
+  }: {
+    time: number
+    items: ClipboardClip[]
+  }): ClipRef[] {
+    return this.run(new PasteClipsCommand(time, items)).getPastedClips()
   }
 
   subscribe(listener: () => void): () => void {

@@ -26,6 +26,12 @@ export interface AudioTrack {
   clips: AudioClip[]
 }
 
+/** Points at a single clip on a track (selection / command target). */
+export interface ClipRef {
+  trackId: string
+  clipId: string
+}
+
 export interface MediaAsset {
   id: string
   name: string

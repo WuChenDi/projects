@@ -1,10 +1,7 @@
-// Tracks which clips are selected. Ported from bycut; interactions land in
-// FEAT-027. Kept minimal here so the timeline can highlight a clicked clip.
+import type { ClipRef } from '@/editor/types'
 
-interface ClipRef {
-  trackId: string
-  clipId: string
-}
+// Tracks which clips are selected. Ported from bycut; wired to the FEAT-027
+// interactions (click, multi-select, box select, batch drag).
 
 export class SelectionManager {
   private selected: ClipRef[] = []
@@ -22,6 +19,17 @@ export class SelectionManager {
 
   setSelected({ clips }: { clips: ClipRef[] }): void {
     this.selected = clips
+    this.notify()
+  }
+
+  toggle({ trackId, clipId }: ClipRef): void {
+    if (this.isSelected({ trackId, clipId })) {
+      this.selected = this.selected.filter(
+        (ref) => !(ref.trackId === trackId && ref.clipId === clipId),
+      )
+    } else {
+      this.selected = [...this.selected, { trackId, clipId }]
+    }
     this.notify()
   }
 
