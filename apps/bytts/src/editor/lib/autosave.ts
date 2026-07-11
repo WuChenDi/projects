@@ -84,9 +84,18 @@ export async function restoreProject({
     }
   }
 
+  // Normalize snapshots written before FEAT-028 (no fade/gain/solo fields).
   const tracks: AudioTrack[] = snapshot.tracks.map((track) => ({
     ...track,
-    clips: track.clips.filter((clip) => availableMediaIds.has(clip.mediaId)),
+    solo: track.solo ?? false,
+    clips: track.clips
+      .filter((clip) => availableMediaIds.has(clip.mediaId))
+      .map((clip) => ({
+        ...clip,
+        fadeIn: clip.fadeIn ?? 0,
+        fadeOut: clip.fadeOut ?? 0,
+        gainDb: clip.gainDb ?? 0,
+      })),
   }))
 
   editor.timeline.setTracks({ tracks })
