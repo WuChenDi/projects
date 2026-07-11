@@ -1,0 +1,49 @@
+// Audio-only editor data model. Field names mirror bycut's timeline types
+// (startTime / trimStart / trimEnd / volume / muted / duration) so later
+// tasks (FEAT-027..029) can extend clips without a data migration.
+
+export interface AudioClip {
+  id: string
+  name: string
+  /** Key into the media pool (MediaAsset.id). */
+  mediaId: string
+  /** Seconds from the timeline origin where the clip begins. */
+  startTime: number
+  /** Playable length in seconds (after trimming). */
+  duration: number
+  /** Seconds trimmed from the source head. */
+  trimStart: number
+  /** Seconds trimmed from the source tail. */
+  trimEnd: number
+  volume: number
+  muted: boolean
+}
+
+export interface AudioTrack {
+  id: string
+  name: string
+  muted: boolean
+  clips: AudioClip[]
+}
+
+export interface MediaAsset {
+  id: string
+  name: string
+  file: File
+  /** Full decoded duration of the source in seconds. */
+  duration: number
+}
+
+/** Resolved playback source for a single clip (see audio-manager). */
+export interface AudioClipSource {
+  id: string
+  sourceKey: string
+  file: File
+  startTime: number
+  duration: number
+  trimStart: number
+  trimEnd: number
+  muted: boolean
+  volume: number
+  playbackRate: number
+}
