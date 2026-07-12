@@ -155,13 +155,6 @@ export default function RootLayout({
                 alt: 'ByTTS - Free Online Text to Speech Converter',
               },
               softwareVersion: '1.0.0',
-              aggregateRating: {
-                '@type': 'AggregateRating',
-                ratingValue: '4.8',
-                reviewCount: '200',
-                bestRating: '5',
-                worstRating: '1',
-              },
               featureList: [
                 'Multiple voice options',
                 'Adjustable speed and pitch',
@@ -169,13 +162,6 @@ export default function RootLayout({
                 'Download feature',
                 'Free to use',
               ],
-              interactionStatistic: {
-                '@type': 'InteractionCounter',
-                interactionType: {
-                  '@type': 'http://schema.org/ViewAction',
-                },
-                userInteractionCount: 10000,
-              },
               sameAs: [
                 'https://github.com/WuChenDi',
                 'https://x.com/wuchendi96',

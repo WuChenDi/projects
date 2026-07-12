@@ -171,7 +171,6 @@ function ApiFormDialog({
       })
       if (!res.ok) throw new Error(res.statusText)
       const data = await res.json()
-      console.log('🚀 ~ handleFetchModels ~ data:', data)
 
       let models: string[] = []
       if (format === 'openai' && Array.isArray(data.data)) {

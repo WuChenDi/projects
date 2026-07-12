@@ -65,8 +65,6 @@ export function collectAudioClips({
         trimStart: clip.trimStart,
         trimEnd: clip.trimEnd,
         muted: trackSilenced || clip.muted,
-        volume: clip.volume,
-        playbackRate: 1,
         fadeIn: clip.fadeIn ?? 0,
         fadeOut: clip.fadeOut ?? 0,
         gainDb: clip.gainDb ?? 0,

@@ -3,25 +3,9 @@
 // interactions can be routed through it without reshaping the core.
 
 export interface Command {
-  execute(): void
+  execute(): boolean
   undo(): void
   redo(): void
-}
-
-export class BatchCommand implements Command {
-  constructor(private commands: Command[]) {}
-
-  execute(): void {
-    for (const command of this.commands) command.execute()
-  }
-
-  undo(): void {
-    for (const command of [...this.commands].reverse()) command.undo()
-  }
-
-  redo(): void {
-    for (const command of this.commands) command.redo()
-  }
 }
 
 export class CommandManager {
@@ -29,9 +13,11 @@ export class CommandManager {
   private redoStack: Command[] = []
 
   execute({ command }: { command: Command }): Command {
-    command.execute()
-    this.history.push(command)
-    this.redoStack = []
+    const changed = command.execute()
+    if (changed) {
+      this.history.push(command)
+      this.redoStack = []
+    }
     return command
   }
 

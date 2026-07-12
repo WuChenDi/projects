@@ -103,7 +103,15 @@ export class AudioManager {
 
     this.timelineChangeTimer = window.setTimeout(() => {
       this.timelineChangeTimer = null
-      this.decodedBuffers.clear()
+
+      const tracks = this.editor.timeline.getTracks()
+      const mediaAssets = this.editor.media.getAssets()
+      const live = new Set(
+        collectAudioClips({ tracks, mediaAssets }).map((c) => c.sourceKey),
+      )
+      for (const key of [...this.decodedBuffers.keys()]) {
+        if (!live.has(key)) this.decodedBuffers.delete(key)
+      }
 
       if (!this.editor.playback.getIsPlaying()) return
 
@@ -199,9 +207,8 @@ export class AudioManager {
     const audioContext = this.audioContext
     if (!audioContext || !this.masterGain) return
 
-    const rate = clip.playbackRate
     const elapsed = Math.max(0, time - clip.startTime)
-    const sourceOffset = clip.trimStart + elapsed * rate
+    const sourceOffset = clip.trimStart + elapsed
     const remainingDuration = clip.duration - elapsed
 
     if (remainingDuration <= 0) return
@@ -212,9 +219,8 @@ export class AudioManager {
 
     const node = audioContext.createBufferSource()
     node.buffer = buffer
-    node.playbackRate.value = rate
 
-    const baseGain = clip.volume * gainDbToLinear(clip.gainDb)
+    const baseGain = gainDbToLinear(clip.gainDb)
     const clipGain = audioContext.createGain()
     clipGain.gain.value = baseGain
     node.connect(clipGain)
@@ -226,7 +232,7 @@ export class AudioManager {
       node.start(scheduleTime, sourceOffset, remainingDuration)
     } else {
       const late = audioContext.currentTime - scheduleTime
-      const adjustedOffset = sourceOffset + late * rate
+      const adjustedOffset = sourceOffset + late
       const adjustedDuration = remainingDuration - late
       if (adjustedDuration > 0) {
         node.start(audioContext.currentTime, adjustedOffset, adjustedDuration)
@@ -329,6 +335,36 @@ export class AudioManager {
       return buffer
     } catch (error) {
       console.warn('Failed to decode audio:', clip.sourceKey, error)
+      return null
+    }
+  }
+
+  /**
+   * Shares the playback decode cache with the waveform renderer so each source
+   * is decoded once. Keyed by mediaId (equals the clip sourceKey).
+   */
+  async getWaveformBuffer({
+    mediaId,
+  }: {
+    mediaId: string
+  }): Promise<AudioBuffer | null> {
+    const cached = this.decodedBuffers.get(mediaId)
+    if (cached) return cached
+
+    const audioContext = this.ensureAudioContext()
+    if (!audioContext) return null
+
+    const file = this.editor.media.getAsset({ id: mediaId })?.file
+    if (!file) return null
+
+    try {
+      const arrayBuffer = await file.arrayBuffer()
+      // .slice(0) avoids the detached-buffer error on repeated decodes
+      const buffer = await audioContext.decodeAudioData(arrayBuffer.slice(0))
+      this.decodedBuffers.set(mediaId, buffer)
+      return buffer
+    } catch (error) {
+      console.warn('Failed to decode audio:', mediaId, error)
       return null
     }
   }

@@ -82,7 +82,7 @@ export function TimelineEditor() {
       const core = EditorCore.getInstance()
       try {
         const asset = await core.media.addAsset({ file, name, mediaId })
-        core.timeline.addClipFromMedia({
+        core.timeline.addClipFromMediaWithHistory({
           mediaId: asset.id,
           name,
           duration: asset.duration,
