@@ -20,10 +20,7 @@ interface HistoryStore {
   history: HistoryItem[]
   isHydrated: boolean
   addHistory: (item: HistoryItem) => void
-  updateHistory: (
-    id: string,
-    updates: Partial<HistoryItem>,
-  ) => Promise<void> | undefined
+  updateHistory: (id: string, updates: Partial<HistoryItem>) => Promise<void>
   removeHistory: (id: string) => void
   clearHistory: () => void
   rehydrateBlobs: () => Promise<void>
@@ -50,7 +47,7 @@ export const useHistoryStore = create<HistoryStore>()(
             .then((buf) => dbStore.set(id, buf))
             .catch(console.error)
         }
-        return undefined
+        return Promise.resolve()
       },
 
       removeHistory: (id) => {
