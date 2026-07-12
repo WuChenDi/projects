@@ -341,6 +341,9 @@ importers:
       '@huggingface/transformers':
         specifier: catalog:prod
         version: 4.2.0
+      '@mediabunny/mp3-encoder':
+        specifier: catalog:prod
+        version: 1.50.8(mediabunny@1.50.8)
       '@next/third-parties':
         specifier: catalog:prod
         version: 16.2.10(next@16.2.10(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)
@@ -606,9 +609,6 @@ importers:
       '@cdlab/utils':
         specifier: workspace:*
         version: link:../../packages/utils
-      '@mediabunny/mp3-encoder':
-        specifier: catalog:prod
-        version: 1.50.8(mediabunny@1.50.8)
       '@tanstack/react-form':
         specifier: catalog:prod
         version: 1.33.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -618,9 +618,6 @@ importers:
       lucide-react:
         specifier: catalog:prod
         version: 1.24.0(react@19.2.7)
-      mediabunny:
-        specifier: catalog:prod
-        version: 1.50.8
       next:
         specifier: catalog:prod
         version: 16.2.10(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
