@@ -40,10 +40,9 @@ import {
 } from '@cdlab/ui/IK'
 import type { ZipFileEntry } from '@cdlab/utils'
 import { downloadFile, downloadFilesAsZip } from '@cdlab/utils'
-import { Download, Eye, History, ListPlus, Loader2, Trash2 } from 'lucide-react'
+import { Download, Eye, History, Loader2, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { useMaterialBridge } from '@/editor'
 import type { HistoryItem } from '@/store/useHistoryStore'
 import { useHistoryStore } from '@/store/useHistoryStore'
 
@@ -71,16 +70,6 @@ function HistoryCard({ item }: { item: HistoryItem }) {
     toast.success('音频下载成功！')
   }
 
-  const sendToTimeline = () => {
-    if (!item.audioBlob) return
-    useMaterialBridge.getState().send({
-      mediaId: item.id,
-      name: displayName.replace(/\.[^./]+$/, ''),
-      blob: item.audioBlob,
-    })
-    toast.success('已发送到时间线')
-  }
-
   return (
     <>
       <div className="group relative rounded-lg overflow-hidden bg-muted transition-shadow duration-200 hover:ring-2 hover:ring-primary border">
@@ -103,16 +92,6 @@ function HistoryCard({ item }: { item: HistoryItem }) {
         <div className="absolute top-2 right-2 flex gap-1">
           {isCompleted && (
             <>
-              <Button
-                variant="secondary"
-                size="icon-xs"
-                className=" bg-black/40 backdrop-blur-[2px]"
-                onClick={sendToTimeline}
-                disabled={!item.audioBlob}
-                title="发送到时间线"
-              >
-                <ListPlus className="size-3.5" />
-              </Button>
               <Button
                 variant="secondary"
                 size="icon-xs"
