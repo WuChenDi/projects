@@ -15,9 +15,12 @@ export interface TCanvasSize {
   height: number
 }
 
+export type TProjectType = 'video' | 'audio'
+
 export interface TProjectMetadata {
   id: string
   name: string
+  type: TProjectType
   thumbnail?: string
   duration: number
   createdAt: Date

@@ -7,6 +7,8 @@ import {
 import { DEFAULT_TIMELINE_VIEW_STATE } from '@/constants/timeline-constants'
 import type { EditorCore } from '@/core'
 import { UpdateProjectSettingsCommand } from '@/lib/commands/project'
+import { createTimelineAudioBuffer } from '@/lib/media/audio'
+import { encodeAudioBuffer } from '@/lib/media/audio-encode'
 import { buildDefaultScene, getProjectDurationFromScenes } from '@/lib/scenes'
 import { CanvasRenderer } from '@/services/renderer/canvas-renderer'
 import { buildScene } from '@/services/renderer/scene-builder'
@@ -17,13 +19,18 @@ import {
   runStorageMigrations,
 } from '@/services/storage/migrations'
 import { storageService } from '@/services/storage/service'
-import type { ExportOptions, ExportResult } from '@/types/export'
+import type {
+  AudioExportFormat,
+  ExportOptions,
+  ExportResult,
+} from '@/types/export'
 import type {
   TProject,
   TProjectMetadata,
   TProjectSettings,
   TProjectSortKey,
   TProjectSortOption,
+  TProjectType,
   TTimelineViewState,
 } from '@/types/project'
 import { genid } from '@/utils/genid'
@@ -71,12 +78,23 @@ export class ProjectManager {
     await this.storageMigrationPromise
   }
 
-  async createNewProject({ name }: { name: string }): Promise<string> {
-    const mainScene = buildDefaultScene({ name: 'Main scene', isMain: true })
+  async createNewProject({
+    name,
+    type = 'video',
+  }: {
+    name: string
+    type?: TProjectType
+  }): Promise<string> {
+    const mainScene = buildDefaultScene({
+      name: 'Main scene',
+      isMain: true,
+      type,
+    })
     const newProject: TProject = {
       metadata: {
         id: String(genid.nextId()),
         name,
+        type,
         duration: getProjectDurationFromScenes({ scenes: [mainScene] }),
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -191,6 +209,47 @@ export class ProjectManager {
 
   async export({ options }: { options: ExportOptions }): Promise<ExportResult> {
     return this.editor.renderer.exportProject({ options })
+  }
+
+  async exportAudio({
+    format,
+    onProgress,
+  }: {
+    format: AudioExportFormat
+    onProgress?: ({ progress }: { progress: number }) => void
+  }): Promise<{ success: boolean; blob?: Blob; error?: string }> {
+    try {
+      const tracks = this.editor.timeline.getTracks()
+      const mediaAssets = this.editor.media.getAssets()
+      const duration = this.editor.timeline.getTotalDuration()
+
+      if (duration === 0) {
+        return { success: false, error: 'Project is empty' }
+      }
+
+      const audioBuffer = await createTimelineAudioBuffer({
+        tracks,
+        mediaAssets,
+        duration,
+      })
+
+      if (!audioBuffer) {
+        return { success: false, error: 'No audio to export' }
+      }
+
+      const blob = await encodeAudioBuffer({
+        audioBuffer,
+        format,
+        onProgress: (progress) => onProgress?.({ progress }),
+      })
+
+      return { success: true, blob }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Audio export failed',
+      }
+    }
   }
 
   async loadAllProjects(): Promise<void> {
