@@ -109,6 +109,9 @@ export function AudioClip({
   const [waveformBuffer, setWaveformBuffer] = useState<AudioBuffer | null>(null)
   useEffect(() => {
     let active = true
+    // Clear the previous buffer so a mediaId change never briefly renders the
+    // stale waveform while the new decode is in flight.
+    setWaveformBuffer(null)
     void editor.audio
       .getWaveformBuffer({ mediaId: clip.mediaId })
       .then((buffer) => {
