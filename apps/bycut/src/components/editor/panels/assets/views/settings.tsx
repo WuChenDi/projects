@@ -37,6 +37,8 @@ export function SettingsView() {
 
 function ProjectSettingsTabs() {
   const t = useTranslations()
+  const editor = useEditor()
+  const isAudioProject = editor.project.getActive()?.metadata.type === 'audio'
 
   return (
     <BaseView
@@ -51,17 +53,21 @@ function ProjectSettingsTabs() {
             </div>
           ),
         },
-        {
-          value: 'background',
-          label: t('properties.background'),
-          content: (
-            <div className="flex h-full flex-col justify-between">
-              <div className="flex-1">
-                <BackgroundView />
-              </div>
-            </div>
-          ),
-        },
+        ...(isAudioProject
+          ? []
+          : [
+              {
+                value: 'background',
+                label: t('properties.background'),
+                content: (
+                  <div className="flex h-full flex-col justify-between">
+                    <div className="flex-1">
+                      <BackgroundView />
+                    </div>
+                  </div>
+                ),
+              },
+            ]),
       ]}
       className="flex h-full flex-col justify-between p-0"
     />
@@ -101,6 +107,7 @@ function ProjectInfoView() {
   const t = useTranslations()
   const editor = useEditor()
   const activeProject = editor.project.getActive()
+  const isAudioProject = activeProject.metadata.type === 'audio'
 
   const currentCanvasSize = activeProject.settings.canvasSize
   const originalCanvasSize = activeProject.settings.originalCanvasSize ?? null
@@ -169,102 +176,112 @@ function ProjectInfoView() {
         <PropertyItemValue>{activeProject.metadata.name}</PropertyItemValue>
       </PropertyItem>
 
-      <PropertyItem direction="column">
-        <PropertyItemLabel>{t('export.canvasSize')}</PropertyItemLabel>
-        <PropertyItemValue>
-          <Select
-            value={selectedValue}
-            onValueChange={(value) => handleCanvasSizeChange({ value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={t('export.selectCanvasSize')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={CANVAS_FIT_VALUE}>
-                {originalCanvasSize
-                  ? t('properties.fitWithSize', {
-                      width: originalCanvasSize.width,
-                      height: originalCanvasSize.height,
+      {!isAudioProject && (
+        <>
+          <PropertyItem direction="column">
+            <PropertyItemLabel>{t('export.canvasSize')}</PropertyItemLabel>
+            <PropertyItemValue>
+              <Select
+                value={selectedValue}
+                onValueChange={(value) => handleCanvasSizeChange({ value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('export.selectCanvasSize')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={CANVAS_FIT_VALUE}>
+                    {originalCanvasSize
+                      ? t('properties.fitWithSize', {
+                          width: originalCanvasSize.width,
+                          height: originalCanvasSize.height,
+                        })
+                      : t('properties.fit')}
+                  </SelectItem>
+                  {CANVAS_SIZE_PRESETS.map((preset) => (
+                    <SelectItem key={preset.label} value={preset.label}>
+                      {preset.label} ({preset.width}×{preset.height})
+                    </SelectItem>
+                  ))}
+                  <SelectItem value={CANVAS_CUSTOM_VALUE}>
+                    {t('common.custom')}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </PropertyItemValue>
+          </PropertyItem>
+
+          {isCustom && (
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                min={1}
+                value={customWidth}
+                onChange={(event) => {
+                  const value = Number(event.target.value)
+                  setCustomWidth(value)
+                }}
+                onBlur={() =>
+                  applyCustomSize({ width: customWidth, height: customHeight })
+                }
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    applyCustomSize({
+                      width: customWidth,
+                      height: customHeight,
                     })
-                  : t('properties.fit')}
-              </SelectItem>
-              {CANVAS_SIZE_PRESETS.map((preset) => (
-                <SelectItem key={preset.label} value={preset.label}>
-                  {preset.label} ({preset.width}×{preset.height})
-                </SelectItem>
-              ))}
-              <SelectItem value={CANVAS_CUSTOM_VALUE}>
-                {t('common.custom')}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </PropertyItemValue>
-      </PropertyItem>
+                  }
+                }}
+                className="w-0 flex-1"
+                aria-label={t('properties.canvasWidth')}
+              />
+              <span className="text-muted-foreground text-xs">×</span>
+              <Input
+                type="number"
+                min={1}
+                value={customHeight}
+                onChange={(event) => {
+                  const value = Number(event.target.value)
+                  setCustomHeight(value)
+                }}
+                onBlur={() =>
+                  applyCustomSize({ width: customWidth, height: customHeight })
+                }
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    applyCustomSize({
+                      width: customWidth,
+                      height: customHeight,
+                    })
+                  }
+                }}
+                className="w-0 flex-1"
+                aria-label={t('properties.canvasHeight')}
+              />
+            </div>
+          )}
 
-      {isCustom && (
-        <div className="flex items-center gap-2">
-          <Input
-            type="number"
-            min={1}
-            value={customWidth}
-            onChange={(event) => {
-              const value = Number(event.target.value)
-              setCustomWidth(value)
-            }}
-            onBlur={() =>
-              applyCustomSize({ width: customWidth, height: customHeight })
-            }
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                applyCustomSize({ width: customWidth, height: customHeight })
-              }
-            }}
-            className="w-0 flex-1"
-            aria-label={t('properties.canvasWidth')}
-          />
-          <span className="text-muted-foreground text-xs">×</span>
-          <Input
-            type="number"
-            min={1}
-            value={customHeight}
-            onChange={(event) => {
-              const value = Number(event.target.value)
-              setCustomHeight(value)
-            }}
-            onBlur={() =>
-              applyCustomSize({ width: customWidth, height: customHeight })
-            }
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                applyCustomSize({ width: customWidth, height: customHeight })
-              }
-            }}
-            className="w-0 flex-1"
-            aria-label={t('properties.canvasHeight')}
-          />
-        </div>
+          <PropertyItem direction="column">
+            <PropertyItemLabel>{t('export.frameRate')}</PropertyItemLabel>
+            <PropertyItemValue>
+              <Select
+                value={activeProject.settings.fps.toString()}
+                onValueChange={handleFpsChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('export.selectFrameRate')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {FPS_PRESETS.map((preset) => (
+                    <SelectItem key={preset.value} value={preset.value}>
+                      {preset.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </PropertyItemValue>
+          </PropertyItem>
+        </>
       )}
-
-      <PropertyItem direction="column">
-        <PropertyItemLabel>{t('export.frameRate')}</PropertyItemLabel>
-        <PropertyItemValue>
-          <Select
-            value={activeProject.settings.fps.toString()}
-            onValueChange={handleFpsChange}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={t('export.selectFrameRate')} />
-            </SelectTrigger>
-            <SelectContent>
-              {FPS_PRESETS.map((preset) => (
-                <SelectItem key={preset.value} value={preset.value}>
-                  {preset.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </PropertyItemValue>
-      </PropertyItem>
     </div>
   )
 }

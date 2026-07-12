@@ -1,5 +1,6 @@
 import { calculateTotalDuration } from '@/lib/timeline'
 import { ensureMainTrack } from '@/lib/timeline/track-utils'
+import type { TProjectType } from '@/types/project'
 import type { TScene } from '@/types/timeline'
 import { genid } from '@/utils/genid'
 
@@ -7,10 +8,20 @@ export function getMainScene({ scenes }: { scenes: TScene[] }): TScene | null {
   return scenes.find((scene) => scene.isMain) || null
 }
 
-export function ensureMainScene({ scenes }: { scenes: TScene[] }): TScene[] {
+export function ensureMainScene({
+  scenes,
+  type = 'video',
+}: {
+  scenes: TScene[]
+  type?: TProjectType
+}): TScene[] {
   const hasMain = scenes.some((scene) => scene.isMain)
   if (!hasMain) {
-    const mainScene = buildDefaultScene({ name: 'Main scene', isMain: true })
+    const mainScene = buildDefaultScene({
+      name: 'Main scene',
+      isMain: true,
+      type,
+    })
     return [mainScene, ...scenes]
   }
   return scenes
@@ -19,11 +30,13 @@ export function ensureMainScene({ scenes }: { scenes: TScene[] }): TScene[] {
 export function buildDefaultScene({
   name,
   isMain,
+  type = 'video',
 }: {
   name: string
   isMain: boolean
+  type?: TProjectType
 }): TScene {
-  const tracks = ensureMainTrack({ tracks: [] })
+  const tracks = ensureMainTrack({ tracks: [], type })
   return {
     id: String(genid.nextId()),
     name,

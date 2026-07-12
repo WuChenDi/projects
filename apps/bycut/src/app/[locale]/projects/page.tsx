@@ -50,7 +50,11 @@ import {
 import { useEditor } from '@/hooks/use-editor'
 import { Link, useRouter } from '@/lib/navigation'
 import { formatTimeCode } from '@/lib/time'
-import type { TProjectMetadata, TProjectSortOption } from '@/types/project'
+import type {
+  TProjectMetadata,
+  TProjectSortOption,
+  TProjectType,
+} from '@/types/project'
 import { StorageIndicator } from './storage-indicator'
 import { useProjectsStore } from './store'
 
@@ -502,9 +506,9 @@ function NewProjectButton() {
   const router = useRouter()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const handleCreateProject = async (name: string) => {
+  const handleCreateProject = async (name: string, type: TProjectType) => {
     setIsDialogOpen(false)
-    const projectId = await editor.project.createNewProject({ name })
+    const projectId = await editor.project.createNewProject({ name, type })
     router.push({
       pathname: '/editor',
       query: { projectId },
@@ -770,10 +774,10 @@ function EmptyState() {
   const savedProjects = editor.project.getSavedProjects()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const handleCreateProject = async (name: string) => {
+  const handleCreateProject = async (name: string, type: TProjectType) => {
     try {
       setIsDialogOpen(false)
-      const projectId = await editor.project.createNewProject({ name })
+      const projectId = await editor.project.createNewProject({ name, type })
       router.push({
         pathname: '/editor',
         query: { projectId },

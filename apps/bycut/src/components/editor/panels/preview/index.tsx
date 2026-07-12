@@ -76,6 +76,7 @@ export function PreviewPanel() {
   const containerRef = useRef<HTMLDivElement>(null)
   const { isFullscreen, toggleFullscreen } = useFullscreen({ containerRef })
   const editor = useEditor()
+  const isAudioProject = editor.project.getActive()?.metadata.type === 'audio'
   const selectedMediaId = useMediaPreviewStore((state) => state.selectedMediaId)
   const clearSelection = useMediaPreviewStore((state) => state.clearSelection)
 
@@ -108,8 +109,14 @@ export function PreviewPanel() {
       ) : (
         <>
           <div className="flex min-h-0 min-w-0 flex-1 items-center justify-center p-2 pb-0">
-            <PreviewCanvas />
-            <RenderTreeController />
+            {isAudioProject ? (
+              <Music className="text-muted-foreground size-24" />
+            ) : (
+              <>
+                <PreviewCanvas />
+                <RenderTreeController />
+              </>
+            )}
           </div>
           <PreviewToolbar
             isFullscreen={isFullscreen}

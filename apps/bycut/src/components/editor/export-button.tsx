@@ -13,13 +13,25 @@ import { RadioGroup, RadioGroupItem } from '@cdlab/ui/components/radio-group'
 import { downloadFile } from '@cdlab/utils'
 import { Check, Copy, Download, FolderUp, RotateCcw } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { PropertyGroup } from '@/components/editor/panels/properties/property-item'
-import { DEFAULT_EXPORT_OPTIONS } from '@/constants/export-constants'
+import {
+  AUDIO_EXPORT_MIME_TYPES,
+  DEFAULT_EXPORT_OPTIONS,
+} from '@/constants/export-constants'
 import { useEditor } from '@/hooks/use-editor'
 import { getExportFileExtension, getExportMimeType } from '@/lib/export'
-import type { ExportFormat, ExportQuality, ExportResult } from '@/types/export'
-import { EXPORT_FORMAT_VALUES, EXPORT_QUALITY_VALUES } from '@/types/export'
+import type {
+  AudioExportFormat,
+  ExportFormat,
+  ExportQuality,
+  ExportResult,
+} from '@/types/export'
+import {
+  AUDIO_EXPORT_FORMAT_VALUES,
+  EXPORT_FORMAT_VALUES,
+  EXPORT_QUALITY_VALUES,
+} from '@/types/export'
 
 export function ExportButton() {
   const t = useTranslations()
@@ -30,7 +42,9 @@ export function ExportButton() {
     setIsExportPopoverOpen(true)
   }
 
-  const hasProject = !!editor.project.getActive()
+  const activeProject = editor.project.getActive()
+  const hasProject = !!activeProject
+  const isAudio = activeProject?.metadata.type === 'audio'
 
   return (
     <Popover open={isExportPopoverOpen} onOpenChange={setIsExportPopoverOpen}>
@@ -43,9 +57,160 @@ export function ExportButton() {
           <span>{t('common.export')}</span>
         </Button>
       </PopoverTrigger>
-      {hasProject && <ExportPopover onOpenChange={setIsExportPopoverOpen} />}
+      {hasProject &&
+        (isAudio ? (
+          <AudioExportPopover onOpenChange={setIsExportPopoverOpen} />
+        ) : (
+          <ExportPopover onOpenChange={setIsExportPopoverOpen} />
+        ))}
     </Popover>
   )
+}
+
+function AudioExportPopover({
+  onOpenChange,
+}: {
+  onOpenChange: (open: boolean) => void
+}) {
+  const t = useTranslations()
+  const editor = useEditor()
+  const activeProject = editor.project.getActive()
+  const [format, setFormat] = useState<AudioExportFormat>('mp3')
+  const [canEncodeM4a, setCanEncodeM4a] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [exportResult, setExportResult] = useState<{
+    success: boolean
+    error?: string
+  } | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const probe = async () => {
+      try {
+        const { canEncodeAudio } = await import('mediabunny')
+        const supported = await canEncodeAudio('aac')
+        if (!cancelled) setCanEncodeM4a(supported)
+      } catch {
+        if (!cancelled) setCanEncodeM4a(false)
+      }
+    }
+    void probe()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const handleExport = async () => {
+    if (!activeProject) return
+
+    setIsExporting(true)
+    setProgress(0)
+    setExportResult(null)
+
+    const result = await editor.project.exportAudio({
+      format,
+      onProgress: ({ progress }) => setProgress(progress),
+    })
+
+    setIsExporting(false)
+    setExportResult(result)
+
+    if (result.success && result.blob) {
+      const blob = new Blob([result.blob], {
+        type: AUDIO_EXPORT_MIME_TYPES[format],
+      })
+      downloadFile({
+        data: blob,
+        filename: `${activeProject.metadata.name}.${format}`,
+      })
+
+      onOpenChange(false)
+      setExportResult(null)
+      setProgress(0)
+    }
+  }
+
+  return (
+    <PopoverContent className="bg-background mr-4 flex w-80 flex-col p-0">
+      {exportResult && !exportResult.success ? (
+        <ExportError
+          error={exportResult.error || 'Unknown error occurred'}
+          onRetry={handleExport}
+        />
+      ) : (
+        <>
+          <div className="flex items-center justify-between p-3 border-b">
+            <h3 className="font-medium text-sm">
+              {isExporting ? t('export.exporting') : t('export.title')}
+            </h3>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            {!isExporting && (
+              <>
+                <div className="flex flex-col">
+                  <PropertyGroup
+                    title={t('common.format')}
+                    defaultExpanded={false}
+                    hasBorderTop={false}
+                  >
+                    <RadioGroup
+                      value={format}
+                      onValueChange={(value) => {
+                        if (isAudioExportFormat(value)) {
+                          setFormat(value)
+                        }
+                      }}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="mp3" id="mp3" />
+                        <Label htmlFor="mp3">{t('export.mp3Label')}</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="wav" id="wav" />
+                        <Label htmlFor="wav">{t('export.wavLabel')}</Label>
+                      </div>
+                      {canEncodeM4a && (
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="m4a" id="m4a" />
+                          <Label htmlFor="m4a">{t('export.m4aLabel')}</Label>
+                        </div>
+                      )}
+                    </RadioGroup>
+                  </PropertyGroup>
+                </div>
+
+                <div className="p-3 pt-0">
+                  <Button onClick={handleExport} className="w-full gap-2">
+                    <Download className="size-4" />
+                    {t('common.export')}
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {isExporting && (
+              <div className="space-y-4 p-3">
+                <div className="flex flex-col">
+                  <div className="flex items-center justify-between text-center">
+                    <p className="text-muted-foreground mb-2 text-sm">
+                      {Math.round(progress * 100)}%
+                    </p>
+                  </div>
+                  <Progress value={progress * 100} className="w-full" />
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </PopoverContent>
+  )
+}
+
+function isAudioExportFormat(value: string): value is AudioExportFormat {
+  return AUDIO_EXPORT_FORMAT_VALUES.some((formatValue) => formatValue === value)
 }
 
 function ExportPopover({

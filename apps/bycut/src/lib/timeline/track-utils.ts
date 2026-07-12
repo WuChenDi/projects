@@ -3,6 +3,7 @@ import {
   TRACK_GAP,
   TRACK_HEIGHTS,
 } from '@/constants/timeline-constants'
+import type { TProjectType } from '@/types/project'
 import type {
   AudioTrack,
   ElementType,
@@ -185,9 +186,26 @@ export function getMainTrack({
 
 export function ensureMainTrack({
   tracks,
+  type = 'video',
 }: {
   tracks: TimelineTrack[]
+  type?: TProjectType
 }): TimelineTrack[] {
+  if (type === 'audio') {
+    const hasAudioTrack = tracks.some((track) => track.type === 'audio')
+    if (!hasAudioTrack) {
+      const mainAudioTrack: TimelineTrack = {
+        id: String(genid.nextId()),
+        name: 'Main Track',
+        type: 'audio',
+        elements: [],
+        muted: false,
+      }
+      return [mainAudioTrack, ...tracks]
+    }
+    return tracks
+  }
+
   const hasMainTrack = tracks.some((track) => isMainTrack(track))
 
   if (!hasMainTrack) {

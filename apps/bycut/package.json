@@ -26,6 +26,7 @@
     "@cdlab/ui": "workspace:*",
     "@cdlab/utils": "workspace:*",
     "@huggingface/transformers": "catalog:prod",
+    "@mediabunny/mp3-encoder": "catalog:prod",
     "@next/third-parties": "catalog:prod",
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",

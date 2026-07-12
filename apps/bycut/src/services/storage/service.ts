@@ -101,6 +101,7 @@ class StorageService {
       metadata: {
         id: project.metadata.id,
         name: project.metadata.name,
+        type: project.metadata.type,
         thumbnail: project.metadata.thumbnail,
         duration,
         createdAt: project.metadata.createdAt.toISOString(),
@@ -149,6 +150,7 @@ class StorageService {
       metadata: {
         id: serializedProject.metadata.id,
         name: serializedProject.metadata.name,
+        type: serializedProject.metadata.type ?? 'video',
         thumbnail: serializedProject.metadata.thumbnail,
         duration:
           serializedProject.metadata.duration ??
@@ -189,6 +191,7 @@ class StorageService {
     const metadata = serializedProjects.map((serializedProject) => ({
       id: serializedProject.metadata.id,
       name: serializedProject.metadata.name,
+      type: serializedProject.metadata.type ?? 'video',
       thumbnail: serializedProject.metadata.thumbnail,
       duration:
         serializedProject.metadata.duration ??
