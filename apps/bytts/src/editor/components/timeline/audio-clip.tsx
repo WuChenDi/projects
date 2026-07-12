@@ -2,7 +2,7 @@
 
 import { AudioWaveform } from '@cdlab/ui/components/audio-waveform'
 import { cn } from '@cdlab/ui/lib/utils'
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { TIMELINE_CONSTANTS, TRACK_GAP, TRACK_HEIGHT } from '@/editor/constants'
 import { useClipFade } from '@/editor/hooks/timeline/use-clip-fade'
 import { useClipGain } from '@/editor/hooks/timeline/use-clip-gain'
@@ -106,9 +106,18 @@ export function AudioClip({
       ? (dragState.targetTrackIndex - dragState.sourceTrackIndex) * ROW_STRIDE
       : 0
 
-  const asset = editor.media.getAsset({ id: clip.mediaId })
-  const blob = asset?.file
-  const waveformBlob = useMemo(() => blob, [blob])
+  const [waveformBuffer, setWaveformBuffer] = useState<AudioBuffer | null>(null)
+  useEffect(() => {
+    let active = true
+    void editor.audio
+      .getWaveformBuffer({ mediaId: clip.mediaId })
+      .then((buffer) => {
+        if (active) setWaveformBuffer(buffer)
+      })
+    return () => {
+      active = false
+    }
+  }, [editor, clip.mediaId])
 
   return (
     <div
@@ -137,9 +146,9 @@ export function AudioClip({
       >
         {clip.name}
       </div>
-      {waveformBlob && waveformWidth > 0 ? (
+      {waveformBuffer && waveformWidth > 0 ? (
         <AudioWaveform
-          blob={waveformBlob}
+          audioBuffer={waveformBuffer}
           width={waveformWidth}
           height={waveformHeight}
           barColor="rgba(255, 255, 255, 0.85)"

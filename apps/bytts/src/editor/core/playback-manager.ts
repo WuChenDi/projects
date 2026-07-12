@@ -1,8 +1,8 @@
 import type { EditorCore } from '@/editor/core'
 
-// Transport clock. Ported verbatim from bycut's playback-manager: a RAF loop
-// advances currentTime and broadcasts `playback-seek` / `playback-update`
-// window events that the audio-manager schedules against.
+// Transport clock. Ported from bycut's playback-manager: a RAF loop advances
+// currentTime and broadcasts `playback-seek` window events that the
+// audio-manager schedules against.
 
 export class PlaybackManager {
   private isPlaying = false
@@ -14,6 +14,7 @@ export class PlaybackManager {
   private listeners = new Set<() => void>()
   private playbackTimer: number | null = null
   private lastUpdate = 0
+  private lastNotify = 0
 
   constructor(private editor: EditorCore) {}
 
@@ -134,13 +135,10 @@ export class PlaybackManager {
       )
     } else {
       this.currentTime = newTime
-      this.notify()
-
-      window.dispatchEvent(
-        new CustomEvent('playback-update', {
-          detail: { time: newTime },
-        }),
-      )
+      if (now - this.lastNotify >= 33) {
+        this.lastNotify = now
+        this.notify()
+      }
     }
 
     this.playbackTimer = requestAnimationFrame(this.updateTime)

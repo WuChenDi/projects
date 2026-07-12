@@ -3,12 +3,14 @@
 import { randomUUID, subtle } from '@cdlab/uncrypto'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
+import { escapeXml } from '@/lib/utils'
 
 export const runtime = 'edge'
 
 let expiredAt: number | null = null
 let endpoint: { t: string; r: string } | null = null
 let clientId = process.env.MICROSOFT_CLIENTTRACEID || ''
+let refreshInFlight: Promise<void> | null = null
 
 const VOICE_NAME_RE = /^[a-zA-Z0-9\-_]+$/
 
@@ -18,10 +20,13 @@ function generateSsml(
   rate: number,
   pitch: number,
 ) {
+  // Escape user text on the server so direct API callers cannot inject SSML;
+  // escapeXml preserves legitimate <break time="..."/> pause tags.
+  const escapedText = escapeXml(text)
   return `<speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" version="1.0" xml:lang="zh-CN">
     <voice name="${voiceName}">
       <mstts:express-as style="general" styledegree="1.0" role="default">
-        <prosody rate="${rate}%" pitch="${pitch}%" volume="50">${text}</prosody>
+        <prosody rate="${rate}%" pitch="${pitch}%" volume="50">${escapedText}</prosody>
       </mstts:express-as>
     </voice>
   </speak>`
@@ -30,24 +35,34 @@ function generateSsml(
 async function refreshEndpoint() {
   if (expiredAt && Date.now() / 1000 <= expiredAt - 60) return
 
-  const ep = await getEndpoint()
-  endpoint = ep
+  // De-dupe concurrent refreshes in the same isolate: share one in-flight
+  // promise so only a single endpoint fetch runs at a time.
+  if (refreshInFlight !== null) return refreshInFlight
 
-  const parts = ep.t.split('.')
-  if (parts.length >= 2) {
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`)
-        .join(''),
-    )
-    expiredAt = JSON.parse(jsonPayload).exp
-  } else {
-    expiredAt = Date.now() / 1000 + 3600
-  }
+  refreshInFlight = (async () => {
+    const ep = await getEndpoint()
+    endpoint = ep
 
-  clientId = randomUUID().replace(/-/g, '')
+    const parts = ep.t.split('.')
+    if (parts.length >= 2) {
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`)
+          .join(''),
+      )
+      expiredAt = JSON.parse(jsonPayload).exp
+    } else {
+      expiredAt = Date.now() / 1000 + 3600
+    }
+
+    clientId = randomUUID().replace(/-/g, '')
+  })().finally(() => {
+    refreshInFlight = null
+  })
+
+  return refreshInFlight
 }
 
 async function getEndpoint() {

@@ -15,13 +15,12 @@ export interface AudioClip {
   trimStart: number
   /** Seconds trimmed from the source tail. */
   trimEnd: number
-  volume: number
   muted: boolean
   /** Fade-in length in seconds (0..5), applied from the clip's head. */
   fadeIn: number
   /** Fade-out length in seconds (0..5), applied to the clip's tail. */
   fadeOut: number
-  /** Per-clip gain in dB (-60..+12); -60 mutes. Combined with `volume`. */
+  /** Per-clip gain in dB (-60..+12); -60 mutes. */
   gainDb: number
 }
 
@@ -58,8 +57,6 @@ export interface AudioClipSource {
   trimStart: number
   trimEnd: number
   muted: boolean
-  volume: number
-  playbackRate: number
   fadeIn: number
   fadeOut: number
   gainDb: number

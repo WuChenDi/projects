@@ -37,7 +37,7 @@ import { StatusEnum } from '@cdlab/ui/IK'
 import { copyToClipboard } from '@cdlab/utils'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { ClipboardPaste, Copy, Loader2, Timer, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ApiManagerDialog } from '@/components/api-manager'
 import type { BuiltinApiId } from '@/lib/builtin-apis'
@@ -62,6 +62,7 @@ export default function TTSForm() {
   const [instructions, setInstructions] = useState('')
   const [audioFormat, setAudioFormat] = useState('mp3')
   const [isGenerating, setIsGenerating] = useState(false)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const { customApis, builtinOverrides } = useApiStore()
   const { addHistory, updateHistory } = useHistoryStore()
@@ -170,7 +171,7 @@ export default function TTSForm() {
           headers[effective.authHeaderName] = effective.apiKey
         }
         body = {
-          text: escapeXml(text),
+          text,
           voice: speakerId,
           rate,
           pitch,
@@ -261,7 +262,8 @@ export default function TTSForm() {
   const handlePaste = async () => {
     try {
       const clipText = await navigator.clipboard.readText()
-      const textarea = document.getElementById('text') as HTMLTextAreaElement
+      const textarea = textareaRef.current
+      if (!textarea) return
       const start = textarea.selectionStart
       const end = textarea.selectionEnd
       setText(text.substring(0, start) + clipText + text.substring(end))
@@ -275,7 +277,8 @@ export default function TTSForm() {
       toast.error('请输入0.01到100之间的数字')
       return
     }
-    const textarea = document.getElementById('text') as HTMLTextAreaElement
+    const textarea = textareaRef.current
+    if (!textarea) return
     const cursorPos = textarea.selectionStart
     setText(
       text.substring(0, cursorPos) +
@@ -447,7 +450,7 @@ export default function TTSForm() {
               {selectedApiId === 'edge-api' ? (
                 <Cascader
                   placeholder="选择语音"
-                  size='sm'
+                  size="sm"
                   className="w-full"
                   allowClear={false}
                   value={
@@ -541,6 +544,7 @@ export default function TTSForm() {
 
                 <InputGroupTextarea
                   id="text"
+                  ref={textareaRef}
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   rows={4}

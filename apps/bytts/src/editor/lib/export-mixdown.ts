@@ -88,7 +88,7 @@ function scheduleClip({
   const node = offline.createBufferSource()
   node.buffer = buffer
 
-  const baseGain = clip.volume * gainDbToLinear(clip.gainDb)
+  const baseGain = gainDbToLinear(clip.gainDb)
   const gain = offline.createGain()
   gain.gain.value = baseGain
   node.connect(gain)

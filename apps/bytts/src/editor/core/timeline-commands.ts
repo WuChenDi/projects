@@ -13,8 +13,13 @@ import { genid } from '@/lib/genid'
 abstract class SnapshotCommand implements Command {
   protected savedTracks: AudioTrack[] | null = null
   protected savedSelection: ClipRef[] = []
+  // Cache generated ids so redo() (which re-runs execute over the identical
+  // restored snapshot, requesting the same ids in the same order) reuses them
+  // instead of minting new ones — keeping ClipRef/selection valid across redo.
+  private idPool: string[] = []
+  private idCursor = 0
 
-  abstract execute(): void
+  abstract execute(): boolean
 
   redo(): void {
     this.execute()
@@ -30,6 +35,18 @@ abstract class SnapshotCommand implements Command {
   protected snapshot(editor: EditorCore): void {
     this.savedTracks = editor.timeline.getTracks()
     this.savedSelection = editor.selection.getSelected()
+  }
+
+  protected resetIds(): void {
+    this.idCursor = 0
+  }
+
+  protected freshId(): string {
+    if (this.idCursor < this.idPool.length) return this.idPool[this.idCursor++]
+    const id = String(genid.nextId())
+    this.idPool.push(id)
+    this.idCursor++
+    return id
   }
 }
 
@@ -50,11 +67,13 @@ export class SplitClipsCommand extends SnapshotCommand {
     return this.rightSideClips
   }
 
-  execute(): void {
+  execute(): boolean {
     const editor = EditorCore.getInstance()
     this.snapshot(editor)
+    this.resetIds()
     this.rightSideClips = []
 
+    let didSplit = false
     const updatedTracks = (this.savedTracks ?? []).map((track) => {
       const clipsToSplit = this.clips.filter((ref) => ref.trackId === track.id)
       if (clipsToSplit.length === 0) return track
@@ -74,6 +93,7 @@ export class SplitClipsCommand extends SnapshotCommand {
             return [clip]
           }
 
+          didSplit = true
           const relativeTime = this.splitTime - clip.startTime
           const leftVisibleDuration = relativeTime
           const rightVisibleDuration = clip.duration - relativeTime
@@ -89,7 +109,7 @@ export class SplitClipsCommand extends SnapshotCommand {
           }
 
           if (this.retainSide === 'right') {
-            const newId = String(genid.nextId())
+            const newId = this.freshId()
             this.rightSideClips.push({ trackId: track.id, clipId: newId })
             return [
               {
@@ -102,7 +122,7 @@ export class SplitClipsCommand extends SnapshotCommand {
             ]
           }
 
-          const secondClipId = String(genid.nextId())
+          const secondClipId = this.freshId()
           this.rightSideClips.push({ trackId: track.id, clipId: secondClipId })
           return [
             {
@@ -122,10 +142,13 @@ export class SplitClipsCommand extends SnapshotCommand {
       }
     })
 
+    if (!didSplit) return false
+
     editor.timeline.setTracks({ tracks: updatedTracks })
     if (this.rightSideClips.length > 0) {
       editor.selection.setSelected({ clips: this.rightSideClips })
     }
+    return true
   }
 }
 
@@ -142,11 +165,28 @@ export class UpdateClipTrimCommand extends SnapshotCommand {
     super()
   }
 
-  execute(): void {
+  execute(): boolean {
     const editor = EditorCore.getInstance()
     this.snapshot(editor)
 
-    const updatedTracks = (this.savedTracks ?? []).map((track) => ({
+    const tracks = this.savedTracks ?? []
+    const current = tracks
+      .flatMap((track) => track.clips)
+      .find((clip) => clip.id === this.clipId)
+    if (!current) return false
+
+    const nextStartTime = this.startTime ?? current.startTime
+    const nextDuration = this.duration ?? current.duration
+    if (
+      current.trimStart === this.trimStart &&
+      current.trimEnd === this.trimEnd &&
+      current.startTime === nextStartTime &&
+      current.duration === nextDuration
+    ) {
+      return false
+    }
+
+    const updatedTracks = tracks.map((track) => ({
       ...track,
       clips: track.clips.map((clip) =>
         clip.id === this.clipId
@@ -154,14 +194,15 @@ export class UpdateClipTrimCommand extends SnapshotCommand {
               ...clip,
               trimStart: this.trimStart,
               trimEnd: this.trimEnd,
-              startTime: this.startTime ?? clip.startTime,
-              duration: this.duration ?? clip.duration,
+              startTime: nextStartTime,
+              duration: nextDuration,
             }
           : clip,
       ),
     }))
 
     editor.timeline.setTracks({ tracks: updatedTracks })
+    return true
   }
 }
 
@@ -177,11 +218,20 @@ export class UpdateClipAudioCommand extends SnapshotCommand {
     super()
   }
 
-  execute(): void {
+  execute(): boolean {
     const editor = EditorCore.getInstance()
     this.snapshot(editor)
 
-    const updatedTracks = (this.savedTracks ?? []).map((track) => ({
+    const tracks = this.savedTracks ?? []
+    const current = tracks
+      .flatMap((track) => track.clips)
+      .find((clip) => clip.id === this.clipId)
+    if (!current) return false
+
+    const keys = Object.keys(this.patch) as Array<keyof typeof this.patch>
+    if (keys.every((key) => current[key] === this.patch[key])) return false
+
+    const updatedTracks = tracks.map((track) => ({
       ...track,
       clips: track.clips.map((clip) =>
         clip.id === this.clipId ? { ...clip, ...this.patch } : clip,
@@ -189,6 +239,7 @@ export class UpdateClipAudioCommand extends SnapshotCommand {
     }))
 
     editor.timeline.setTracks({ tracks: updatedTracks })
+    return true
   }
 }
 
@@ -202,15 +253,23 @@ export class SetTrackFlagsCommand extends SnapshotCommand {
     super()
   }
 
-  execute(): void {
+  execute(): boolean {
     const editor = EditorCore.getInstance()
     this.snapshot(editor)
 
-    const updatedTracks = (this.savedTracks ?? []).map((track) =>
+    const tracks = this.savedTracks ?? []
+    const current = tracks.find((track) => track.id === this.trackId)
+    if (!current) return false
+
+    const keys = Object.keys(this.patch) as Array<keyof typeof this.patch>
+    if (keys.every((key) => current[key] === this.patch[key])) return false
+
+    const updatedTracks = tracks.map((track) =>
       track.id === this.trackId ? { ...track, ...this.patch } : track,
     )
 
     editor.timeline.setTracks({ tracks: updatedTracks })
+    return true
   }
 }
 
@@ -225,14 +284,15 @@ export class RemoveSilenceCommand extends SnapshotCommand {
     super()
   }
 
-  execute(): void {
+  execute(): boolean {
     const editor = EditorCore.getInstance()
     this.snapshot(editor)
+    this.resetIds()
 
     const tracks = this.savedTracks ?? []
     const track = tracks.find((current) => current.id === this.trackId)
     const clip = track?.clips.find((current) => current.id === this.clipId)
-    if (!track || !clip) return
+    if (!track || !clip) return false
 
     // Silent ranges are clip-relative (0..duration). Merge/clamp them, then
     // build the audible complement as packed sub-clips and ripple every later
@@ -255,7 +315,7 @@ export class RemoveSilenceCommand extends SnapshotCommand {
       }
     }
 
-    if (mergedRanges.length === 0) return
+    if (mergedRanges.length === 0) return false
 
     // Audible segments = complement of the silent ranges within [0, duration].
     const audibleSegments: Array<{ from: number; to: number }> = []
@@ -286,7 +346,7 @@ export class RemoveSilenceCommand extends SnapshotCommand {
         ...clip,
         // Keep the original id on the first surviving segment so selection and
         // any external reference stay valid; give the rest fresh ids.
-        id: index === 0 ? clip.id : String(genid.nextId()),
+        id: index === 0 ? clip.id : this.freshId(),
         startTime: packedStart,
         duration: segmentDuration,
         trimStart: clip.trimStart + segment.from,
@@ -324,6 +384,7 @@ export class RemoveSilenceCommand extends SnapshotCommand {
         clipId: packed.id,
       })),
     })
+    return true
   }
 }
 
@@ -337,7 +398,7 @@ export class BatchMoveClipsCommand extends SnapshotCommand {
     super()
   }
 
-  execute(): void {
+  execute(): boolean {
     const editor = EditorCore.getInstance()
     this.snapshot(editor)
 
@@ -361,6 +422,7 @@ export class BatchMoveClipsCommand extends SnapshotCommand {
     })
 
     editor.timeline.setTracks({ tracks: updatedTracks })
+    return true
   }
 }
 
@@ -374,7 +436,7 @@ export class MoveClipCommand extends SnapshotCommand {
     super()
   }
 
-  execute(): void {
+  execute(): boolean {
     const editor = EditorCore.getInstance()
     this.snapshot(editor)
 
@@ -383,7 +445,7 @@ export class MoveClipCommand extends SnapshotCommand {
     const clip = sourceTrack?.clips.find(
       (current) => current.id === this.clipId,
     )
-    if (!sourceTrack || !clip) return
+    if (!sourceTrack || !clip) return false
 
     const movedClip: AudioClip = {
       ...clip,
@@ -413,6 +475,7 @@ export class MoveClipCommand extends SnapshotCommand {
     })
 
     editor.timeline.setTracks({ tracks: updatedTracks })
+    return true
   }
 }
 
@@ -423,7 +486,7 @@ export class DeleteClipsCommand extends SnapshotCommand {
     super()
   }
 
-  execute(): void {
+  execute(): boolean {
     const editor = EditorCore.getInstance()
     this.snapshot(editor)
 
@@ -442,6 +505,7 @@ export class DeleteClipsCommand extends SnapshotCommand {
 
     editor.timeline.setTracks({ tracks: updatedTracks })
     editor.selection.setSelected({ clips: [] })
+    return true
   }
 }
 
@@ -458,9 +522,10 @@ export class DuplicateClipsCommand extends SnapshotCommand {
     return this.duplicated
   }
 
-  execute(): void {
+  execute(): boolean {
     const editor = EditorCore.getInstance()
     this.snapshot(editor)
+    this.resetIds()
     this.duplicated = []
 
     const updatedTracks = (this.savedTracks ?? []).map((track) => {
@@ -472,7 +537,7 @@ export class DuplicateClipsCommand extends SnapshotCommand {
       if (clipsToCopy.length === 0) return track
 
       const copies = clipsToCopy.map((clip) => {
-        const newId = String(genid.nextId())
+        const newId = this.freshId()
         this.duplicated.push({ trackId: track.id, clipId: newId })
         return {
           ...clip,
@@ -489,6 +554,7 @@ export class DuplicateClipsCommand extends SnapshotCommand {
     if (this.duplicated.length > 0) {
       editor.selection.setSelected({ clips: this.duplicated })
     }
+    return true
   }
 }
 
@@ -513,15 +579,16 @@ export class PasteClipsCommand extends SnapshotCommand {
     return this.pasted
   }
 
-  execute(): void {
-    if (this.items.length === 0) return
+  execute(): boolean {
+    if (this.items.length === 0) return false
     const editor = EditorCore.getInstance()
     this.snapshot(editor)
+    this.resetIds()
     this.pasted = []
 
     const tracks = this.savedTracks ?? []
     const fallbackTrackId = tracks[0]?.id
-    if (!fallbackTrackId) return
+    if (!fallbackTrackId) return false
 
     const minStart = Math.min(...this.items.map((item) => item.clip.startTime))
     const additions = new Map<string, AudioClip[]>()
@@ -533,7 +600,7 @@ export class PasteClipsCommand extends SnapshotCommand {
       const relativeOffset = item.clip.startTime - minStart
       const newClip: AudioClip = {
         ...item.clip,
-        id: String(genid.nextId()),
+        id: this.freshId(),
         startTime: Math.max(0, this.time + relativeOffset),
       }
       const bucket = additions.get(targetTrackId) ?? []
@@ -551,6 +618,7 @@ export class PasteClipsCommand extends SnapshotCommand {
     if (this.pasted.length > 0) {
       editor.selection.setSelected({ clips: this.pasted })
     }
+    return true
   }
 }
 
@@ -563,7 +631,7 @@ export class AddTrackCommand extends SnapshotCommand {
     return this.trackId
   }
 
-  execute(): void {
+  execute(): boolean {
     const editor = EditorCore.getInstance()
     this.snapshot(editor)
     const tracks = this.savedTracks ?? []
@@ -575,6 +643,7 @@ export class AddTrackCommand extends SnapshotCommand {
       clips: [],
     }
     editor.timeline.setTracks({ tracks: [...tracks, newTrack] })
+    return true
   }
 }
 
@@ -583,11 +652,11 @@ export class RemoveTrackCommand extends SnapshotCommand {
     super()
   }
 
-  execute(): void {
+  execute(): boolean {
     const editor = EditorCore.getInstance()
     this.snapshot(editor)
     const tracks = this.savedTracks ?? []
-    if (tracks.length <= 1) return
+    if (tracks.length <= 1) return false
     // Renumber remaining tracks so the "音轨 N" suffix stays sequential and
     // gap-free after a deletion (undo restores the original names via snapshot).
     editor.timeline.setTracks({
@@ -600,6 +669,90 @@ export class RemoveTrackCommand extends SnapshotCommand {
         .getSelected()
         .filter((ref) => ref.trackId !== this.trackId),
     })
+    return true
+  }
+}
+
+// --- add clip from media (undoable "send to timeline") -------------------
+
+export class AddClipFromMediaCommand extends SnapshotCommand {
+  private clipId: string | undefined
+
+  constructor(
+    private args: {
+      mediaId: string
+      name: string
+      duration: number
+      trackId?: string
+    },
+  ) {
+    super()
+  }
+
+  getClipId(): string | undefined {
+    return this.clipId
+  }
+
+  execute(): boolean {
+    const editor = EditorCore.getInstance()
+    this.snapshot(editor)
+    this.resetIds()
+
+    const tracks = this.savedTracks ?? []
+    const trackEnd = (track: AudioTrack): number =>
+      track.clips.reduce(
+        (max, clip) => Math.max(max, clip.startTime + clip.duration),
+        0,
+      )
+
+    // Pick the target track: explicit id, else the least-filled existing track,
+    // else create a fresh one with a stable id.
+    let target: AudioTrack | undefined
+    if (this.args.trackId) {
+      target = tracks.find((track) => track.id === this.args.trackId)
+    } else if (tracks.length > 0) {
+      target = tracks.reduce((least, track) =>
+        trackEnd(track) < trackEnd(least) ? track : least,
+      )
+    }
+
+    let createdTrack: AudioTrack | undefined
+    if (!target) {
+      createdTrack = {
+        id: this.freshId(),
+        name: '音轨 1',
+        muted: false,
+        solo: false,
+        clips: [],
+      }
+      target = createdTrack
+    }
+
+    const clip: AudioClip = {
+      id: this.freshId(),
+      name: this.args.name,
+      mediaId: this.args.mediaId,
+      startTime: trackEnd(target),
+      duration: this.args.duration,
+      trimStart: 0,
+      trimEnd: 0,
+      muted: false,
+      fadeIn: 0,
+      fadeOut: 0,
+      gainDb: 0,
+    }
+    this.clipId = clip.id
+
+    const base = createdTrack ? [...tracks, createdTrack] : tracks
+    const targetId = target.id
+    const updatedTracks = base.map((track) =>
+      track.id === targetId
+        ? { ...track, clips: [...track.clips, clip] }
+        : track,
+    )
+
+    editor.timeline.setTracks({ tracks: updatedTracks })
+    return true
   }
 }
 
@@ -608,7 +761,7 @@ export class ReorderTracksCommand extends SnapshotCommand {
     super()
   }
 
-  execute(): void {
+  execute(): boolean {
     const editor = EditorCore.getInstance()
     this.snapshot(editor)
     const trackMap = new Map(
@@ -620,5 +773,6 @@ export class ReorderTracksCommand extends SnapshotCommand {
       if (track) reordered.push(track)
     }
     editor.timeline.setTracks({ tracks: reordered })
+    return true
   }
 }

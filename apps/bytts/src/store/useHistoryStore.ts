@@ -20,7 +20,10 @@ interface HistoryStore {
   history: HistoryItem[]
   isHydrated: boolean
   addHistory: (item: HistoryItem) => void
-  updateHistory: (id: string, updates: Partial<HistoryItem>) => void
+  updateHistory: (
+    id: string,
+    updates: Partial<HistoryItem>,
+  ) => Promise<void> | undefined
   removeHistory: (id: string) => void
   clearHistory: () => void
   rehydrateBlobs: () => Promise<void>
@@ -42,10 +45,12 @@ export const useHistoryStore = create<HistoryStore>()(
           ),
         }))
         if (updates.audioBlob) {
-          updates.audioBlob.arrayBuffer().then((buf) => {
-            dbStore.set(id, buf).catch(console.error)
-          })
+          return updates.audioBlob
+            .arrayBuffer()
+            .then((buf) => dbStore.set(id, buf))
+            .catch(console.error)
         }
+        return undefined
       },
 
       removeHistory: (id) => {

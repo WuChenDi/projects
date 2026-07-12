@@ -2,6 +2,7 @@ import { EditorCore } from '@/editor/core'
 import type { Command } from '@/editor/core/commands'
 import type { ClipboardClip } from '@/editor/core/timeline-commands'
 import {
+  AddClipFromMediaCommand,
   AddTrackCommand,
   BatchMoveClipsCommand,
   DeleteClipsCommand,
@@ -68,60 +69,6 @@ export class TimelineManager {
     return track
   }
 
-  /**
-   * Appends a clip built from a media asset onto a track. When no track is
-   * given the least-filled track is picked (or a new one is created) so
-   * sequential sends spread across tracks instead of piling onto one.
-   */
-  addClipFromMedia({
-    mediaId,
-    name,
-    duration,
-    trackId,
-  }: {
-    mediaId: string
-    name: string
-    duration: number
-    trackId?: string
-  }): AudioClip {
-    const track = trackId
-      ? this.getTrackById({ trackId })
-      : this.pickTrackForNewClip()
-    const targetTrack = track ?? this.addTrack()
-
-    const clip: AudioClip = {
-      id: String(genid.nextId()),
-      name,
-      mediaId,
-      startTime: this.getTrackEnd({ track: targetTrack }),
-      duration,
-      trimStart: 0,
-      trimEnd: 0,
-      volume: 1,
-      muted: false,
-      fadeIn: 0,
-      fadeOut: 0,
-      gainDb: 0,
-    }
-
-    this.tracks = this.tracks.map((current) =>
-      current.id === targetTrack.id
-        ? { ...current, clips: [...current.clips, clip] }
-        : current,
-    )
-    this.notify()
-    return clip
-  }
-
-  private pickTrackForNewClip(): AudioTrack | null {
-    if (this.tracks.length === 0) return null
-    return this.tracks.reduce((least, track) =>
-      this.getTrackEnd({ track }) < this.getTrackEnd({ track: least })
-        ? track
-        : least,
-    )
-  }
-
   setTracks({ tracks }: { tracks: AudioTrack[] }): void {
     this.tracks = tracks
     this.notify()
@@ -136,6 +83,15 @@ export class TimelineManager {
 
   addTrackWithHistory(): string {
     return this.run(new AddTrackCommand()).getTrackId()
+  }
+
+  addClipFromMediaWithHistory(args: {
+    mediaId: string
+    name: string
+    duration: number
+    trackId?: string
+  }): string {
+    return this.run(new AddClipFromMediaCommand(args)).getClipId()!
   }
 
   removeTrack({ trackId }: { trackId: string }): void {
