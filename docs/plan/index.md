@@ -40,3 +40,4 @@ Each plan is a single line linking to its detail file. All detailed information 
 - [x] [**PLAN-009 flnk — short-link title + QR styling & scan tracking**](PLAN-009.md) `2026-06-29`
 - [x] [**PLAN-010 flnk — launchpads (marketing pages)**](PLAN-010.md) `2026-06-29`
 - [x] [**PLAN-011 bytts — single-page audio timeline editor (generate + edit)**](PLAN-011.md) `2026-07-11`
+- [-] [**PLAN-012 bycut — audio project type; retire the bytts editor back to TTS-only**](PLAN-012.md) `2026-07-12`
