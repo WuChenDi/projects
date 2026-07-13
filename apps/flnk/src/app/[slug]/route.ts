@@ -116,9 +116,13 @@ async function redirectTo(
     env,
   })
 
+  // Persist the owner's STORED destination, not the query-merged `dest` — the
+  // latter can carry visitor-controlled query input, which would let a crafted
+  // URL inject arbitrary data into the access-log blob. `dest` is used only for
+  // the Location header below.
   ctx.waitUntil(
     Promise.resolve().then(() =>
-      writeAccessLog(env, extractAccessLog(request, slug, dest, cf)),
+      writeAccessLog(env, extractAccessLog(request, slug, link.url, cf)),
     ),
   )
 
