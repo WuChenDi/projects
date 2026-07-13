@@ -269,6 +269,11 @@ export async function resolveLink(
 ): Promise<Link | null> {
   const slug = normalizeSlug(rawSlug, env)
 
+  // Cache-penetration guard: a slug that fails validateSlug can never match a
+  // stored row (every write path validates), so short-circuit before touching
+  // KV or D1 — malformed scans never reach the database.
+  if (validateSlug(slug) !== null) return null
+
   const cached = await readCache(env, domain, slug)
   if (cached === 'negative') return null
   if (cached) return cached
