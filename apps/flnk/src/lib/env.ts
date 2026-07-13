@@ -9,6 +9,10 @@ export interface FlnkConfig {
   // penetration from repeated lookups of non-existent slugs. 0 disables it;
   // any positive value is floored to KV's 60s minimum.
   negativeCacheTtl: number
+  // Per-IP rate limiting on the /[slug] resolve path (Cloudflare native
+  // Rate Limiting binding). Default true; set false to disable enforcement
+  // without redeploying code. Always fails open when the binding is absent.
+  resolveRateLimitEnabled: boolean
   redirectWithQuery: boolean
   homeURL: string
   notFoundRedirect: string
@@ -65,6 +69,7 @@ export function getConfig(env?: CloudflareEnv): FlnkConfig {
     redirectStatusCode: num(raw.REDIRECT_STATUS_CODE, 308),
     linkCacheTtl: num(raw.LINK_CACHE_TTL, 60),
     negativeCacheTtl: num(raw.NEGATIVE_CACHE_TTL, 60),
+    resolveRateLimitEnabled: bool(loose.RESOLVE_RATE_LIMIT_ENABLED, true),
     redirectWithQuery: bool(raw.REDIRECT_WITH_QUERY),
     homeURL: raw.HOME_URL ?? '',
     notFoundRedirect: raw.NOT_FOUND_REDIRECT ?? '',

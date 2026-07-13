@@ -7,6 +7,7 @@ interface __BaseEnv_CloudflareEnv {
 	ANALYTICS: AnalyticsEngineDataset;
 	AI: Ai;
 	ASSETS: Fetcher;
+	RESOLVE_RATE_LIMIT?: RateLimit;
 	account_id: "e604cf9cff8acba07cae37c938bc7479";
 	NEGATIVE_CACHE_TTL: "60";
 	SAFE_BROWSING_DOH: "";
