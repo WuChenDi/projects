@@ -109,18 +109,25 @@ export type LinkConfigInput = z.infer<typeof LinkConfigInputSchema>
 // passwordHash; timestamps as epoch ms).
 const ImportConfigSchema = z
   .object({
-    geo: z.record(z.string(), z.string()).optional(),
-    apple: z.string().optional(),
-    google: z.string().optional(),
+    // Redirect targets must be http(s) URLs, matching the create path
+    // (LinkConfigInputSchema) — importing raw strings would bypass that gate.
+    geo: GeoSchema.optional(),
+    apple: z.url().max(2048).optional(),
+    google: z.url().max(2048).optional(),
     title: z.string().optional(),
     description: z.string().optional(),
-    image: z.string().optional(),
+    image: z.url().max(2048).optional(),
     cloaking: z.boolean().optional(),
     redirectWithQuery: z.boolean().optional(),
     unsafe: z.boolean().optional(),
     maxVisits: z.number().int().positive().optional(),
     disabled: z.boolean().optional(),
-    passwordHash: z.string().optional(),
+    // Argon2id hash produced by hashPasswordFn: `hex(16B salt):hex(32B hash)`.
+    // Bound the shape so import can't smuggle an arbitrary string in.
+    passwordHash: z
+      .string()
+      .regex(/^[0-9a-f]{32}:[0-9a-f]{64}$/u, 'Invalid password hash format')
+      .optional(),
     qr: QrSchema.optional(),
   })
   .optional()
