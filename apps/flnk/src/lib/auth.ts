@@ -140,3 +140,18 @@ export async function requireSession(request: Request): Promise<AuthResult> {
   }
   return { ok: true, user }
 }
+
+// Session gate for the dashboard server layout. Returns the signed-in user only
+// when a session exists AND its email passes the SAME allow-list requireSession
+// enforces — so the rendered dashboard can't outlive an allow-list tightening.
+// Returns null when either check fails (caller redirects to login).
+export async function getAllowedSession(
+  headers: Headers,
+): Promise<SessionUser | null> {
+  const auth = await getAuth()
+  const session = await auth.api.getSession({ headers })
+  if (!session) return null
+  const user = session.user as SessionUser
+  if (!isEmailAllowed(user.email)) return null
+  return user
+}
