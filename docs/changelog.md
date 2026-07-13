@@ -1,5 +1,43 @@
 # Changelog
 
+## 2026-07-13 [security/correctness/architecture]
+
+flnk audit remediation (FEAT-034..050, audit `docs/audit/2026-07-13-flnk-audit.md`).
+All **11 in-scope SEC**, all **9 QUA**, and all **7 ARC** findings fixed across 17
+task groups. `tsc` + `biome` + the new vitest suite green.
+
+- **Security (SEC-03…SEC-13)**: per-IP redirect rate-limit via the Cloudflare
+  Rate Limiting binding + `validateSlug` short-circuit killing cache-penetration
+  (SEC-03); KV/IP throttles on AI/backup/check/import/export + OG KV cache +
+  prompt-injection delimiter/truncation (SEC-04, SEC-13); launchpad track-beacon
+  guarded (auth-less forgery) and analytics now log the stored destination, not
+  visitor query (SEC-05); keyed HMAC IP pepper replacing reversible date-only
+  hash (SEC-06); http(s) scheme validation on import config, the redirect
+  `Location`, and launchpad avatar/og.image (SEC-07, SEC-08, SEC-12); dashboard
+  layout allow-list parity + gate-token nonce/IP binding and key separation
+  (SEC-09, SEC-10); SSRF blocklist gaps (CGNAT, IPv4-mapped IPv6, octal/integer
+  encodings) closed (SEC-11).
+- **Correctness & Cloudflare quota (QUA-01…QUA-09)**: `expiresAt`/`createdAt`
+  indexes + migration 0003 (QUA-01); cron cleanup now batched with a bounded page
+  + concurrent KV deletes + `visits:{id}` purge (QUA-02, QUA-07, QUA-08); backup
+  runs before cleanup with per-task try/catch (QUA-05); streamed backup query and
+  `count(*)` launchpad totals (QUA-03, QUA-04); id lists chunked at 99 and
+  health-check batch/subrequest caps lowered (QUA-06, QUA-09).
+- **Architecture (ARC-01…ARC-07)**: vitest harness + security unit tests
+  (ARC-01); `links.ts` god-module split into `lib/data/links/{cache,resolve,repo,
+  tags}` and `src/lib` grouped into domain folders (ARC-02, ARC-04); `withAuth`
+  route wrapper + server error envelope (ARC-03); env zod-validation + typed
+  fields + memoized `getConfig` (ARC-05); dedup of bots/RepoResult/SortKey/error
+  parsing + a `cache-keys` registry (ARC-06); stripped `sink`/`shortener` legacy
+  references incl. the biased AI few-shot (ARC-07).
+- **Deferred by product-owner design**: **SEC-01 (default-open auth)** and
+  **SEC-02 (owner isolation / IDOR)** are intentionally NOT fixed — flnk is
+  currently a demo with intentionally open auth and a shared workspace; the
+  `ownerId`/`createdBy` columns are pre-wired for a future multi-tenant change.
+- **Behavior note**: the ARC-06 bot-list unification (`lib/bots.ts`) merges the
+  two former divergent lists into a **union superset**, so bot detection is now
+  broader than either previous list.
+
 ## 2026-07-11 [feature]
 
 PLAN-011 / FEAT-026..029 done. **bytts is now a single-page generate + edit
