@@ -1,24 +1,13 @@
-import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
-import { requireSession } from '@/lib/auth'
 import { importLinks } from '@/lib/links'
+import { withAuth } from '@/lib/with-auth'
 import { ImportDataSchema } from '@/schemas/link'
 
-export async function POST(request: Request): Promise<NextResponse> {
-  const auth = await requireSession(request)
-  if (!auth.ok) return auth.response
-
-  const parsed = ImportDataSchema.safeParse(
-    await request.json().catch(() => null),
-  )
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'Invalid import data', issues: parsed.error.issues },
-      { status: 400 },
-    )
-  }
-
-  const { env } = getCloudflareContext()
-  const report = await importLinks(env, parsed.data.links, auth.user.email)
-  return NextResponse.json(report)
-}
+export const POST = withAuth(
+  ImportDataSchema,
+  async (data, { user, env }) => {
+    const report = await importLinks(env, data.links, user.email)
+    return NextResponse.json(report)
+  },
+  'Invalid import data',
+)
