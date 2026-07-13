@@ -2,7 +2,7 @@ import { getConfig } from '@/lib/env'
 import { isReservedSlug } from '@/lib/reserve-slug'
 
 // Slug grammar: lowercase/uppercase alnum groups joined by single hyphens.
-// Mirrors Sink's slugRegex. No dots (those are treated as static assets).
+// No dots (those are treated as static assets).
 export const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i
 
 // Unambiguous alphabet for generated slugs (no 0/o/1/l/i to avoid confusion).
