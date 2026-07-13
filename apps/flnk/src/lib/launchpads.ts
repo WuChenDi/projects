@@ -12,15 +12,14 @@ import { getDb } from '@/lib/db'
 import { newId } from '@/lib/genid'
 import { isExpired, normalizeSlug } from '@/lib/links'
 import { defaultSlug, validateSlug } from '@/lib/slug'
+import type { RepoResult as RepoResultBase, SortKey } from '@/lib/types'
 import type {
   CreateLaunchpadInput,
   EditLaunchpadInput,
 } from '@/schemas/launchpad'
 
-export type SortKey = 'createdAt' | 'updatedAt' | 'expiresAt'
-export type RepoResult =
-  | { ok: true; launchpad: Launchpad }
-  | { ok: false; status: number; error: string }
+export type { SortKey }
+export type RepoResult = RepoResultBase<{ launchpad: Launchpad }>
 
 const SORT_COLUMNS = {
   createdAt: launchpads.createdAt,

@@ -4,6 +4,7 @@ import type {
   LaunchpadStatus,
   LinkConfig,
 } from '@/database/schema'
+import type { SortKey } from '@/lib/types'
 import type {
   CreateLaunchpadInput,
   EditLaunchpadInput,
@@ -52,6 +53,13 @@ export class ApiError extends Error {
   }
 }
 
+// Turn a failed response into an ApiError: read the best-effort JSON body
+// (`{ error?: string }`), falling back to the status text.
+async function parseError(res: Response): Promise<ApiError> {
+  const body = (await res.json().catch(() => ({}))) as { error?: string }
+  return new ApiError(body.error || res.statusText, res.status)
+}
+
 // Auth is a better-auth session cookie, sent automatically on same-origin
 // fetches — no Authorization header to attach.
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -62,14 +70,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       ...init?.headers,
     },
   })
-  if (!res.ok) {
-    const body = (await res.json().catch(() => ({}))) as { error?: string }
-    throw new ApiError(body.error || res.statusText, res.status)
-  }
+  if (!res.ok) throw await parseError(res)
   return res.json() as Promise<T>
 }
 
-export type SortKey = 'createdAt' | 'updatedAt' | 'expiresAt'
+export type { SortKey }
 
 export const linkApi = {
   list: (params: ListParams) => {
@@ -306,10 +311,7 @@ export interface ImportReport {
 // <a href>) so the session cookie + error handling apply consistently.
 async function downloadAuthed(path: string, filename: string): Promise<void> {
   const res = await fetch(path)
-  if (!res.ok) {
-    const body = (await res.json().catch(() => ({}))) as { error?: string }
-    throw new ApiError(body.error || res.statusText, res.status)
-  }
+  if (!res.ok) throw await parseError(res)
   const href = URL.createObjectURL(await res.blob())
   const a = document.createElement('a')
   a.href = href
@@ -345,10 +347,7 @@ export const uploadApi = {
       method: 'POST',
       body: fd,
     })
-    if (!res.ok) {
-      const body = (await res.json().catch(() => ({}))) as { error?: string }
-      throw new ApiError(body.error || res.statusText, res.status)
-    }
+    if (!res.ok) throw await parseError(res)
     return res.json() as Promise<{ url: string }>
   },
 }

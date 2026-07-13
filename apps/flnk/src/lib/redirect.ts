@@ -46,29 +46,9 @@ export function isAndroidDevice(ua: string): boolean {
   return ANDROID_UA.test(ua)
 }
 
-const SOCIAL_CRAWLERS = [
-  'applebot',
-  'discordbot',
-  'facebot',
-  'facebookexternalhit',
-  'linkedinbot',
-  'linkexpanding',
-  'mastodon',
-  'pinterest',
-  'skypeuripreview',
-  'slackbot',
-  'slackbot-linkexpanding',
-  'snapchat',
-  'telegrambot',
-  'tiktok',
-  'twitterbot',
-  'whatsapp',
-] as const
-
-export function isSocialCrawler(ua: string): boolean {
-  const lower = ua.toLowerCase()
-  return SOCIAL_CRAWLERS.some((bot) => lower.includes(bot))
-}
+// Re-exported for existing importers; the list now lives in `@/lib/bots` as a
+// union with the analytics bot patterns.
+export { isSocialCrawler } from '@/lib/bots'
 
 // Resolve the final destination for a link, applying geo + device routing and
 // optional query-string forwarding. `country` comes from `request.cf.country`.
