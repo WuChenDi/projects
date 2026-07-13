@@ -1,4 +1,6 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
+import * as z from 'zod'
+import { logger } from '@/lib/logger'
 
 // Resolved, typed view of the env flags wired in wrangler.jsonc. Reading goes
 // through here so defaults live in one place and every call site is consistent.
@@ -39,58 +41,140 @@ export interface FlnkConfig {
   analyticsIpSalt: string
 }
 
-function num(value: string | undefined, fallback: number): number {
-  const n = Number(value)
-  return Number.isFinite(n) && value !== undefined && value !== ''
-    ? n
-    : fallback
+// Env vars wired in wrangler.jsonc that aren't part of the generated
+// CloudflareEnv type — declared here so their reads are typed instead of going
+// through an untyped loose cast.
+interface ExtraEnv {
+  RESOLVE_RATE_LIMIT_ENABLED?: string
+  AI_OG_PROMPT?: string
+  CLOUDFLARE_ACCOUNT_ID?: string
+  CLOUDFLARE_API_TOKEN?: string
+  SAFE_BROWSING_DOH?: string
+  ALLOWED_EMAILS?: string
+  ANALYTICS_IP_SALT?: string
 }
 
-function bool(value: string | undefined, fallback = false): boolean {
+// Merged env view: generated bindings/vars plus the extra vars above. Binding
+// types (DB, KV, …) are preserved so consumers like db.ts read them typed.
+export type ResolvedEnv = CloudflareEnv & ExtraEnv
+
+// Zod shape mirroring FlnkConfig — the parsed config is validated once so a
+// malformed construction fails loudly rather than flowing through as garbage.
+const configSchema = z.object({
+  redirectStatusCode: z.number(),
+  linkCacheTtl: z.number(),
+  negativeCacheTtl: z.number(),
+  resolveRateLimitEnabled: z.boolean(),
+  redirectWithQuery: z.boolean(),
+  homeURL: z.string(),
+  notFoundRedirect: z.string(),
+  caseSensitive: z.boolean(),
+  slugDefaultLength: z.number(),
+  listQueryLimit: z.number(),
+  dataset: z.string(),
+  disableBotAccessLog: z.boolean(),
+  aiModel: z.string(),
+  aiPrompt: z.string(),
+  aiOgPrompt: z.string(),
+  cfAccountId: z.string(),
+  cfApiToken: z.string(),
+  safeBrowsingDoh: z.string(),
+  allowedEmails: z.array(z.string()),
+  analyticsIpSalt: z.string(),
+})
+
+function num(key: string, value: string | undefined, fallback: number): number {
   if (value === undefined || value === '') return fallback
-  return value === 'true' || value === '1'
+  const n = Number(value)
+  if (!Number.isFinite(n)) {
+    logger.warn(
+      `Invalid number for ${key}="${value}", using fallback ${fallback}`,
+    )
+    return fallback
+  }
+  return n
 }
 
-type RawEnv = Partial<Record<keyof CloudflareEnv, string>>
+function bool(
+  key: string,
+  value: string | undefined,
+  fallback = false,
+): boolean {
+  if (value === undefined || value === '') return fallback
+  if (value === 'true' || value === '1') return true
+  if (value === 'false' || value === '0') return false
+  logger.warn(
+    `Invalid boolean for ${key}="${value}", using fallback ${fallback}`,
+  )
+  return fallback
+}
 
-// `env` may be injected (cron/worker scheduled path); otherwise fall back to the
-// fetch-time Cloudflare context, then to process.env (dev / build).
-export function getConfig(env?: CloudflareEnv): FlnkConfig {
-  let raw: RawEnv = (env as RawEnv | undefined) ?? {}
-  if (!env) {
-    try {
-      raw = getCloudflareContext().env as unknown as RawEnv
-    } catch {
-      raw = process.env as unknown as RawEnv
-    }
+// Resolve raw env with three-tier precedence: explicit `env` arg (cron/worker
+// scheduled path), then the fetch-time Cloudflare context, then process.env
+// (dev / build / Node test). Higher tiers win per key, so a partially-injected
+// env still falls back for anything it omits.
+export function resolveRawEnv(env?: CloudflareEnv): ResolvedEnv {
+  const merged: Record<string, unknown> = {
+    ...(process.env as Record<string, unknown>),
   }
+  try {
+    Object.assign(
+      merged,
+      getCloudflareContext().env as unknown as Record<string, unknown>,
+    )
+  } catch {
+    // No Cloudflare context (dev / build / Node test) — process.env only.
+  }
+  if (env) Object.assign(merged, env as unknown as Record<string, unknown>)
+  return merged as unknown as ResolvedEnv
+}
 
-  // CF API creds aren't part of the generated CloudflareEnv type — read loosely.
-  const loose = raw as Record<string, string | undefined>
+let cachedConfig: FlnkConfig | undefined
 
-  return {
-    redirectStatusCode: num(raw.REDIRECT_STATUS_CODE, 308),
-    linkCacheTtl: num(raw.LINK_CACHE_TTL, 60),
-    negativeCacheTtl: num(raw.NEGATIVE_CACHE_TTL, 60),
-    resolveRateLimitEnabled: bool(loose.RESOLVE_RATE_LIMIT_ENABLED, true),
-    redirectWithQuery: bool(raw.REDIRECT_WITH_QUERY),
+// Parsed once per isolate and memoized — env is stable for the isolate's
+// lifetime, so re-parsing on every hot-path call is wasted work.
+export function getConfig(env?: CloudflareEnv): FlnkConfig {
+  if (cachedConfig) return cachedConfig
+
+  const raw = resolveRawEnv(env)
+
+  const parsed: FlnkConfig = {
+    redirectStatusCode: num(
+      'REDIRECT_STATUS_CODE',
+      raw.REDIRECT_STATUS_CODE,
+      308,
+    ),
+    linkCacheTtl: num('LINK_CACHE_TTL', raw.LINK_CACHE_TTL, 60),
+    negativeCacheTtl: num('NEGATIVE_CACHE_TTL', raw.NEGATIVE_CACHE_TTL, 60),
+    resolveRateLimitEnabled: bool(
+      'RESOLVE_RATE_LIMIT_ENABLED',
+      raw.RESOLVE_RATE_LIMIT_ENABLED,
+      true,
+    ),
+    redirectWithQuery: bool('REDIRECT_WITH_QUERY', raw.REDIRECT_WITH_QUERY),
     homeURL: raw.HOME_URL ?? '',
     notFoundRedirect: raw.NOT_FOUND_REDIRECT ?? '',
-    caseSensitive: bool(raw.CASE_SENSITIVE),
-    slugDefaultLength: num(raw.SLUG_DEFAULT_LENGTH, 6),
-    listQueryLimit: num(raw.LIST_QUERY_LIMIT, 500),
+    caseSensitive: bool('CASE_SENSITIVE', raw.CASE_SENSITIVE),
+    slugDefaultLength: num('SLUG_DEFAULT_LENGTH', raw.SLUG_DEFAULT_LENGTH, 6),
+    listQueryLimit: num('LIST_QUERY_LIMIT', raw.LIST_QUERY_LIMIT, 500),
     dataset: raw.DATASET ?? 'flnk_analytics',
-    disableBotAccessLog: bool(raw.DISABLE_BOT_ACCESS_LOG),
+    disableBotAccessLog: bool(
+      'DISABLE_BOT_ACCESS_LOG',
+      raw.DISABLE_BOT_ACCESS_LOG,
+    ),
     aiModel: raw.AI_MODEL ?? '@cf/meta/llama-3.1-8b-instruct',
     aiPrompt: raw.AI_PROMPT ?? '',
-    aiOgPrompt: loose.AI_OG_PROMPT ?? '',
-    cfAccountId: loose.CLOUDFLARE_ACCOUNT_ID ?? '',
-    cfApiToken: loose.CLOUDFLARE_API_TOKEN ?? '',
-    safeBrowsingDoh: loose.SAFE_BROWSING_DOH ?? '',
-    allowedEmails: (loose.ALLOWED_EMAILS ?? '')
+    aiOgPrompt: raw.AI_OG_PROMPT ?? '',
+    cfAccountId: raw.CLOUDFLARE_ACCOUNT_ID ?? '',
+    cfApiToken: raw.CLOUDFLARE_API_TOKEN ?? '',
+    safeBrowsingDoh: raw.SAFE_BROWSING_DOH ?? '',
+    allowedEmails: (raw.ALLOWED_EMAILS ?? '')
       .split(',')
       .map((email) => email.trim().toLowerCase())
       .filter(Boolean),
-    analyticsIpSalt: loose.ANALYTICS_IP_SALT ?? '',
+    analyticsIpSalt: raw.ANALYTICS_IP_SALT ?? '',
   }
+
+  cachedConfig = configSchema.parse(parsed)
+  return cachedConfig
 }
