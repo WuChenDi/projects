@@ -1,27 +1,12 @@
-import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
-import { requireSession } from '@/lib/auth'
 import { publishLaunchpad } from '@/lib/launchpads'
+import { withAuth } from '@/lib/with-auth'
 import { PublishLaunchpadSchema } from '@/schemas/launchpad'
 
-export async function POST(request: Request): Promise<NextResponse> {
-  const auth = await requireSession(request)
-  if (!auth.ok) return auth.response
-
-  const parsed = PublishLaunchpadSchema.safeParse(
-    await request.json().catch(() => null),
-  )
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'Invalid payload', issues: parsed.error.issues },
-      { status: 400 },
-    )
-  }
-
-  const { env } = getCloudflareContext()
-  const result = await publishLaunchpad(env, parsed.data.id, parsed.data.status)
+export const POST = withAuth(PublishLaunchpadSchema, async (data, { env }) => {
+  const result = await publishLaunchpad(env, data.id, data.status)
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: result.status })
   }
   return NextResponse.json({ launchpad: result.launchpad })
-}
+})
