@@ -2,12 +2,17 @@ import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
 import { requireSession } from '@/lib/auth'
 import { backupToR2 } from '@/lib/backup'
+import { checkRateLimit, clientIp } from '@/lib/rate-limit'
 
 export async function POST(request: Request): Promise<NextResponse> {
   const auth = await requireSession(request)
   if (!auth.ok) return auth.response
 
   const { env } = getCloudflareContext()
+  const identity = auth.user.id || clientIp(request)
+  if (await checkRateLimit(env, 'backup', identity, 5, 300)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
   const key = await backupToR2(env)
   if (!key) {
     return NextResponse.json({ error: 'R2 not configured' }, { status: 503 })
