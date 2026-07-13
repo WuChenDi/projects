@@ -89,10 +89,18 @@ export async function getLinksByIds(
 ): Promise<Map<string, Link>> {
   if (ids.length === 0) return new Map()
   const db = await getDb(env)
-  const rows = await db
-    .select()
-    .from(links)
-    .where(and(inArray(links.id, ids), eq(links.isDeleted, 0)))
+  // Chunk at 99 ids so `inArray(ids)` + the `isDeleted` predicate never exceeds
+  // the D1 100 bound-parameter cap.
+  const rows: Link[] = []
+  for (let i = 0; i < ids.length; i += 99) {
+    const chunk = ids.slice(i, i + 99)
+    rows.push(
+      ...(await db
+        .select()
+        .from(links)
+        .where(and(inArray(links.id, chunk), eq(links.isDeleted, 0)))),
+    )
+  }
   return new Map(rows.map((row) => [row.id, row]))
 }
 

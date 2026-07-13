@@ -4,6 +4,7 @@ import * as z from 'zod'
 import { requireSession } from '@/lib/auth'
 import { MAX_LINKS, runHealthCheck } from '@/lib/health-check'
 import { getLinkRowsByIds } from '@/lib/links'
+import { checkRateLimit, clientIp } from '@/lib/rate-limit'
 
 // One batch of links to check, with a per-link timeout. The client drives
 // batching (so it can show progress and stop), so each request carries an
@@ -23,6 +24,10 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const { env } = getCloudflareContext()
+  const identity = auth.user.id || clientIp(request)
+  if (await checkRateLimit(env, 'linkcheck', identity, 10, 60)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
   const { ids, timeout } = parsed.data
 
   // Re-resolve the ids to their stored links server-side — never trust a
