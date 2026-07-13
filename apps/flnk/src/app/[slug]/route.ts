@@ -235,7 +235,8 @@ export async function POST(
     // invalid or expired token falls back to the password form.
     const gateToken = String(form.get('gate') || '')
     if (gateToken) {
-      if (await verifyGateToken(env, slug, gateToken)) {
+      const ip = clientIp(request)
+      if (await verifyGateToken(env, slug, ip, gateToken)) {
         if (link.config.unsafe && !confirmed) {
           return htmlResponse(
             unsafeWarningHtml(slug, link.url, {
@@ -284,7 +285,7 @@ export async function POST(
       return htmlResponse(
         unsafeWarningHtml(slug, link.url, {
           locale: resolveRedirectLocale(request),
-          gateToken: await createGateToken(env, slug),
+          gateToken: await createGateToken(env, slug, ip),
         }),
       )
     }
