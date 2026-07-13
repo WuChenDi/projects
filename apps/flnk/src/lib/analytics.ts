@@ -113,17 +113,38 @@ export function extractAccessLog(
   }
 }
 
+// Resolve the secret pepper for the visitor-IP HMAC. Prefer the dedicated
+// ANALYTICS_IP_SALT secret; when it is unset, derive a namespaced key from the
+// (still secret) BETTER_AUTH_SECRET and warn — never key the hash off a public
+// value, or the daily digest becomes an offline-recoverable IP.
+function ipHashKeyMaterial(env: CloudflareEnv): string {
+  const salt = getConfig(env).analyticsIpSalt
+  if (salt) return salt
+  logger.warn(
+    'ANALYTICS_IP_SALT not set — deriving visitor-IP hash key from BETTER_AUTH_SECRET',
+  )
+  return `flnk:analytics-ip:v1:${env.BETTER_AUTH_SECRET ?? ''}`
+}
+
 // Daily-rotating visitor fingerprint: the raw IP never leaves the request —
-// only hex(SHA-256(`${ip}:${YYYY-MM-DD}`)) truncated to 32 chars is stored,
-// so uniqueness holds within a UTC day but IPs cannot be recovered or
-// correlated across days.
-async function anonymizeIp(ip: string): Promise<string> {
+// only hex(HMAC-SHA-256(`${ip}:${YYYY-MM-DD}`)) keyed by a secret pepper,
+// truncated to 32 chars, is stored. Uniqueness holds within a UTC day, but
+// without the pepper the digest cannot be reversed to an IP from public data.
+async function anonymizeIp(env: CloudflareEnv, ip: string): Promise<string> {
   const day = new Date().toISOString().slice(0, 10)
-  const digest = await crypto.subtle.digest(
-    'SHA-256',
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(ipHashKeyMaterial(env)),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  )
+  const sig = await crypto.subtle.sign(
+    'HMAC',
+    key,
     new TextEncoder().encode(`${ip}:${day}`),
   )
-  return Array.from(new Uint8Array(digest))
+  return Array.from(new Uint8Array(sig))
     .map((byte) => byte.toString(16).padStart(2, '0'))
     .join('')
     .slice(0, 32)
@@ -145,7 +166,7 @@ export async function writeAccessLog(
   }
 
   try {
-    const visitorId = await anonymizeIp(data.ip)
+    const visitorId = await anonymizeIp(env, data.ip)
     env.ANALYTICS.writeDataPoint({
       indexes: [data.slug],
       blobs: [

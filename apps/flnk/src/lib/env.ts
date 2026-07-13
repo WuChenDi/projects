@@ -34,6 +34,9 @@ export interface FlnkConfig {
   // Sign-in email allow-list (comma-separated, case-insensitive; normalized to
   // lowercase here). Empty = any Google/GitHub account may sign in.
   allowedEmails: string[]
+  // Secret pepper for the daily visitor-IP HMAC (never a generated key). Empty
+  // = fall back to a key derived from BETTER_AUTH_SECRET; never a public salt.
+  analyticsIpSalt: string
 }
 
 function num(value: string | undefined, fallback: number): number {
@@ -88,5 +91,6 @@ export function getConfig(env?: CloudflareEnv): FlnkConfig {
       .split(',')
       .map((email) => email.trim().toLowerCase())
       .filter(Boolean),
+    analyticsIpSalt: loose.ANALYTICS_IP_SALT ?? '',
   }
 }
