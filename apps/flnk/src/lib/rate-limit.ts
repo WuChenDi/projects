@@ -55,3 +55,32 @@ export async function recordPasswordFailure(
     )
   }
 }
+
+// Generic per-user/IP KV fixed-window limiter, sharing the same approach as the
+// password gate above. Combined check-and-increment: reads the current window
+// counter for `namespace`+`identity`, returns true (reject) when it is already
+// at `limit`, otherwise increments it and refreshes the window TTL. KV errors
+// and the UNKNOWN_IP sentinel fail open (allow) — availability over strictness.
+export async function checkRateLimit(
+  env: CloudflareEnv,
+  namespace: string,
+  identity: string,
+  limit: number,
+  windowSeconds: number,
+): Promise<boolean> {
+  if (identity === UNKNOWN_IP) return false
+  const key = `ratelimit:${namespace}:${identity}`
+  try {
+    const raw = await env.KV.get(key)
+    const count = Number(raw ?? 0)
+    if (count >= limit) return true
+    await env.KV.put(key, String(count + 1), { expirationTtl: windowSeconds })
+    return false
+  } catch (error) {
+    logger.warn(
+      'KV rate-limit error',
+      error instanceof Error ? error.message : error,
+    )
+    return false
+  }
+}
