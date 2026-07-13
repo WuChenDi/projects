@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import * as z from 'zod'
 import { generateAiOg } from '@/lib/ai-og'
 import { requireSession } from '@/lib/auth'
+import { checkRateLimit, clientIp } from '@/lib/rate-limit'
 
 const QuerySchema = z.object({
   url: z.url(),
@@ -23,6 +24,10 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 
   const { env } = getCloudflareContext()
+  const identity = auth.user.id || clientIp(request)
+  if (await checkRateLimit(env, 'og-ai', identity, 20, 60)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
   const result = await generateAiOg(env, parsed.data.url, parsed.data.locale)
   return NextResponse.json(result)
 }
