@@ -90,6 +90,8 @@ export const links = sqliteTable(
   },
   (table) => [
     uniqueIndex('uniq_links_slug_domain').on(table.slug, table.domain),
+    index('idx_links_expires_at').on(table.expiresAt),
+    index('idx_links_created_at').on(table.createdAt),
   ],
 )
 
