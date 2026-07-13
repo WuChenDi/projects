@@ -116,6 +116,20 @@ async function redirectTo(
     env,
   })
 
+  // Defense in depth: never emit a non-http(s) Location. The stored url or a
+  // geo/device override could carry a foreign scheme (javascript:, data:, …);
+  // a malformed or non-http(s) dest must not become a redirect target.
+  try {
+    const proto = new URL(dest).protocol
+    if (proto !== 'http:' && proto !== 'https:') {
+      logger.info(`Blocked non-http(s) destination for slug: ${slug}`)
+      return notFound(request, env)
+    }
+  } catch {
+    logger.info(`Malformed destination for slug: ${slug}`)
+    return notFound(request, env)
+  }
+
   // Persist the owner's STORED destination, not the query-merged `dest` — the
   // latter can carry visitor-controlled query input, which would let a crafted
   // URL inject arbitrary data into the access-log blob. `dest` is used only for
