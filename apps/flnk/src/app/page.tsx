@@ -110,7 +110,7 @@ function CardCorners() {
 
 export default async function LandingPage() {
   // When HOME_URL is configured, the root path redirects there instead of
-  // rendering the landing page (matches the original Sink behaviour).
+  // rendering the landing page.
   const { homeURL } = getConfig()
   if (homeURL) redirect(homeURL)
 
@@ -250,7 +250,7 @@ export default async function LandingPage() {
                 </Button>
               </div>
 
-              {/* Decorative shortener preview */}
+              {/* Decorative link preview */}
               <div className="mx-auto mt-14 w-full max-w-xl rounded-xl border p-2 shadow-sm backdrop-blur">
                 <InputGroup className="border-none">
                   <InputGroupAddon>

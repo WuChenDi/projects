@@ -645,8 +645,8 @@ const SLUG_MAX_RETRIES = 12
 
 // Allocate a random slug with race-safe insertion. `onConflictDoNothing` lets
 // the unique index arbitrate uniqueness atomically (no check-then-insert race),
-// and we retry with a longer slug to escape collision hot-spots — mirrors
-// shortener's generateUniqueHash but without a separate pre-query.
+// and we retry with a longer slug to escape collision hot-spots, without a
+// separate pre-query.
 async function insertWithRandomSlug(
   env: CloudflareEnv,
   domain: string,
