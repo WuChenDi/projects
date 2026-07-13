@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createLink } from '@/lib/links'
-import { withAuth } from '@/lib/with-auth'
+import { createLink } from '@/lib/data/links'
+import { withAuth } from '@/lib/platform/with-auth'
 import { CreateLinkSchema } from '@/schemas/link'
 
 export const POST = withAuth(

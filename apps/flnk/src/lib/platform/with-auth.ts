@@ -1,9 +1,9 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
 import type * as z from 'zod'
-import type { SessionUser } from '@/lib/auth'
-import { requireSession } from '@/lib/auth'
-import { logger } from '@/lib/logger'
+import type { SessionUser } from '@/lib/platform/auth'
+import { requireSession } from '@/lib/platform/auth'
+import { logger } from '@/lib/platform/logger'
 
 type CloudflareEnv = ReturnType<typeof getCloudflareContext>['env']
 

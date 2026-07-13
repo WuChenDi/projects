@@ -1,10 +1,10 @@
 import { and, eq, inArray, sql } from 'drizzle-orm'
 import type { Link, LinkRow } from '@/database/schema'
 import { links, tags } from '@/database/schema'
-import type { DB } from '@/lib/db'
-import { getDb } from '@/lib/db'
-import { newId } from '@/lib/genid'
-import { purgeLink } from '@/lib/links/cache'
+import type { DB } from '@/lib/data/db'
+import { getDb } from '@/lib/data/db'
+import { purgeLink } from '@/lib/data/links/cache'
+import { newId } from '@/lib/platform/genid'
 
 // Max tags per link — mirrors the bound in `schemas/link.ts`.
 const MAX_TAGS = 20

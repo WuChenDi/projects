@@ -1,8 +1,8 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import type { NextRequest } from 'next/server'
-import { ogPageHtml } from '@/lib/html'
-import { isExpired, resolveLink } from '@/lib/links'
-import { isReservedSlug } from '@/lib/reserve-slug'
+import { isExpired, resolveLink } from '@/lib/data/links'
+import { ogPageHtml } from '@/lib/redirect/html'
+import { isReservedSlug } from '@/lib/redirect/reserve-slug'
 
 type RouteContext = { params: Promise<{ slug: string }> }
 

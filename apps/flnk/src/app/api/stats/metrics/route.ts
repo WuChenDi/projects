@@ -1,14 +1,14 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
-import type { Dimension } from '@/lib/analytics-query'
+import type { Dimension } from '@/lib/analytics/analytics-query'
 import {
   AnalyticsNotConfiguredError,
   executeAeSql,
   METRIC_DIMENSIONS,
   metricsSql,
   parseStatsQuery,
-} from '@/lib/analytics-query'
-import { requireSession } from '@/lib/auth'
+} from '@/lib/analytics/analytics-query'
+import { requireSession } from '@/lib/platform/auth'
 
 export async function GET(request: Request): Promise<NextResponse> {
   const auth = await requireSession(request)

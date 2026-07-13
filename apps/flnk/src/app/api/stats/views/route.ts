@@ -5,8 +5,8 @@ import {
   executeAeSql,
   parseStatsQuery,
   viewsSql,
-} from '@/lib/analytics-query'
-import { requireSession } from '@/lib/auth'
+} from '@/lib/analytics/analytics-query'
+import { requireSession } from '@/lib/platform/auth'
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000
 

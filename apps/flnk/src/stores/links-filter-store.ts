@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { LinkStatusFilter, SortKey, TagMatch } from '@/lib/api'
+import type { LinkStatusFilter, SortKey, TagMatch } from '@/lib/platform/api'
 
 export type LinkView = 'list' | 'grid'
 

@@ -18,7 +18,7 @@ import { cn } from '@cdlab/ui/lib/utils'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { useLocale } from 'next-intl'
 import { useMemo, useState } from 'react'
-import { COUNTRY_CODES, countryName, flagEmoji } from '@/lib/countries'
+import { COUNTRY_CODES, countryName, flagEmoji } from '@/lib/redirect/countries'
 
 export function CountrySelect({
   value,

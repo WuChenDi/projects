@@ -1,9 +1,9 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
-import { requireSession } from '@/lib/auth'
-import { getConfig } from '@/lib/env'
-import type { LinkStatus, SortKey } from '@/lib/links'
-import { listLinks } from '@/lib/links'
+import type { LinkStatus, SortKey } from '@/lib/data/links'
+import { listLinks } from '@/lib/data/links'
+import { requireSession } from '@/lib/platform/auth'
+import { getConfig } from '@/lib/platform/env'
 
 const SORTS: readonly SortKey[] = ['createdAt', 'updatedAt', 'expiresAt']
 const STATUSES: readonly LinkStatus[] = ['active', 'disabled', 'expired']

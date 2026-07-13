@@ -33,7 +33,7 @@ import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { Faq } from '@/components/landing/faq'
 import { FlnkLogo, LocaleSwitcher, ThemeToggle } from '@/components/layout'
-import { getConfig } from '@/lib/env'
+import { getConfig } from '@/lib/platform/env'
 
 const GITHUB_HREF = 'https://github.com/WuChenDi/projects/tree/main/apps/flnk'
 const AUTHOR_HREF = 'https://github.com/WuChenDi'

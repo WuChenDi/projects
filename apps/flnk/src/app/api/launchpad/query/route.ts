@@ -1,7 +1,7 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
-import { requireSession } from '@/lib/auth'
-import { getLaunchpadById } from '@/lib/launchpads'
+import { getLaunchpadById } from '@/lib/data/launchpads'
+import { requireSession } from '@/lib/platform/auth'
 
 // Fetch a single launchpad by id.
 export async function GET(request: Request): Promise<NextResponse> {

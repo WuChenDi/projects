@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import * as z from 'zod'
-import { MAX_LINKS, runHealthCheck } from '@/lib/health-check'
-import { getLinkRowsByIds } from '@/lib/links'
-import { checkRateLimit, clientIp } from '@/lib/rate-limit'
-import { withAuth } from '@/lib/with-auth'
+import { MAX_LINKS, runHealthCheck } from '@/lib/ai/health-check'
+import { getLinkRowsByIds } from '@/lib/data/links'
+import { checkRateLimit, clientIp } from '@/lib/platform/rate-limit'
+import { withAuth } from '@/lib/platform/with-auth'
 
 // One batch of links to check, with a per-link timeout. The client drives
 // batching (so it can show progress and stop), so each request carries an

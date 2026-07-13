@@ -1,4 +1,4 @@
-import { getConfig } from '@/lib/env'
+import { getConfig } from '@/lib/platform/env'
 
 // Logical dimension → Analytics Engine column, matching the write order in
 // lib/analytics.ts (writeAccessLog). `timestamp` is AE's built-in event-time

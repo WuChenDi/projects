@@ -1,4 +1,4 @@
-import { getAuth } from '@/lib/auth'
+import { getAuth } from '@/lib/platform/auth'
 
 export async function GET(req: Request) {
   const auth = await getAuth()

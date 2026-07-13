@@ -1,12 +1,16 @@
 import { and, eq, sql } from 'drizzle-orm'
 import type { Link } from '@/database/schema'
 import { links } from '@/database/schema'
-import { visitsKey } from '@/lib/cache-keys'
-import { getDb } from '@/lib/db'
-import { getConfig } from '@/lib/env'
-import { readCache, writeCache, writeNegativeCache } from '@/lib/links/cache'
-import { logger } from '@/lib/logger'
-import { validateSlug } from '@/lib/slug'
+import { visitsKey } from '@/lib/data/cache-keys'
+import { getDb } from '@/lib/data/db'
+import {
+  readCache,
+  writeCache,
+  writeNegativeCache,
+} from '@/lib/data/links/cache'
+import { getConfig } from '@/lib/platform/env'
+import { logger } from '@/lib/platform/logger'
+import { validateSlug } from '@/lib/redirect/slug'
 
 // Normalize a slug for lookup/storage. Case-insensitive mode folds to lowercase
 // so `/AbC` and `/abc` resolve to the same link.

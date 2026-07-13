@@ -4,9 +4,9 @@ import {
   accessExportSql,
   executeAeSql,
   parseStatsQuery,
-} from '@/lib/analytics-query'
-import { requireSession } from '@/lib/auth'
-import { generateCsv } from '@/lib/csv'
+} from '@/lib/analytics/analytics-query'
+import { generateCsv } from '@/lib/format/csv'
+import { requireSession } from '@/lib/platform/auth'
 
 export async function GET(request: Request): Promise<Response> {
   const auth = await requireSession(request)

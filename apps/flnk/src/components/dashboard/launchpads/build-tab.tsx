@@ -28,7 +28,7 @@ import {
   LinkPicker,
 } from '@/components/dashboard/launchpads/link-picker'
 import type { LaunchpadBlock, LaunchpadConfig } from '@/database/schema'
-import type { LinkRow } from '@/lib/api'
+import type { LinkRow } from '@/lib/platform/api'
 import type { AddableBlockType } from './blocks'
 import { BLOCK_TYPES, newBlock } from './blocks'
 

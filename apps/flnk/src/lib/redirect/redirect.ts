@@ -1,7 +1,7 @@
 import type { Link } from '@/database/schema'
 import type { Locale } from '@/i18n/config'
 import { defaultLocale, localeCookieName, locales } from '@/i18n/config'
-import { getConfig } from '@/lib/env'
+import { getConfig } from '@/lib/platform/env'
 
 // Resolve the UI locale for server-rendered interstitials (password / unsafe
 // pages) from the `NEXT_LOCALE` cookie first, then `Accept-Language`, matching
@@ -46,9 +46,9 @@ export function isAndroidDevice(ua: string): boolean {
   return ANDROID_UA.test(ua)
 }
 
-// Re-exported for existing importers; the list now lives in `@/lib/bots` as a
+// Re-exported for existing importers; the list now lives in `@/lib/analytics/bots` as a
 // union with the analytics bot patterns.
-export { isSocialCrawler } from '@/lib/bots'
+export { isSocialCrawler } from '@/lib/analytics/bots'
 
 // Resolve the final destination for a link, applying geo + device routing and
 // optional query-string forwarding. `country` comes from `request.cf.country`.

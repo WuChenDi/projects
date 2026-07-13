@@ -1,9 +1,9 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
-import { requireSession } from '@/lib/auth'
-import { newId } from '@/lib/genid'
-import { getR2, IMAGE_ALLOWED_TYPES, IMAGE_MAX_SIZE } from '@/lib/r2'
-import { validateSlug } from '@/lib/slug'
+import { getR2, IMAGE_ALLOWED_TYPES, IMAGE_MAX_SIZE } from '@/lib/data/r2'
+import { requireSession } from '@/lib/platform/auth'
+import { newId } from '@/lib/platform/genid'
+import { validateSlug } from '@/lib/redirect/slug'
 
 export async function POST(request: Request): Promise<NextResponse> {
   const auth = await requireSession(request)

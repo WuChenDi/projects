@@ -1,10 +1,10 @@
 import { asc, eq } from 'drizzle-orm'
 import type { Link } from '@/database/schema'
 import { links as linksTable } from '@/database/schema'
-import { getDb } from '@/lib/db'
-import { listLinks } from '@/lib/links'
-import { logger } from '@/lib/logger'
-import { getR2 } from '@/lib/r2'
+import { getDb } from '@/lib/data/db'
+import { listLinks } from '@/lib/data/links'
+import { getR2 } from '@/lib/data/r2'
+import { logger } from '@/lib/platform/logger'
 
 const PAGE_SIZE = 1000
 const MAX_LINKS = 50000

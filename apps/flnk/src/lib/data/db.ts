@@ -1,7 +1,7 @@
 import type { Db } from '@cdlab/db/web'
 import { defineDb } from '@cdlab/db/web'
 import * as schema from '@/database/schema'
-import { resolveRawEnv } from '@/lib/env'
+import { resolveRawEnv } from '@/lib/platform/env'
 
 // Both LibSQLDatabase and DrizzleD1Database extend this base, so a single `DB`
 // reference accepts either driver. Driver-specific extras (e.g. `.batch`) are

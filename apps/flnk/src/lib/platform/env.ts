@@ -1,6 +1,6 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import * as z from 'zod'
-import { logger } from '@/lib/logger'
+import { logger } from '@/lib/platform/logger'
 
 // Resolved, typed view of the env flags wired in wrangler.jsonc. Reading goes
 // through here so defaults live in one place and every call site is consistent.

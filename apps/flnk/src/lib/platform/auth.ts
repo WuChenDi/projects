@@ -4,9 +4,9 @@ import { APIError } from 'better-auth/api'
 import { nextCookies } from 'better-auth/next-js'
 import { NextResponse } from 'next/server'
 import * as schema from '@/database/schema'
-import { getDb } from '@/lib/db'
-import { getConfig } from '@/lib/env'
-import { logger } from '@/lib/logger'
+import { getDb } from '@/lib/data/db'
+import { getConfig } from '@/lib/platform/env'
+import { logger } from '@/lib/platform/logger'
 
 // One-per-isolate reminder that the console is open to any social account.
 let warnedAllowAll = false

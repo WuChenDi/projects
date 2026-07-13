@@ -1,7 +1,7 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
-import { requireSession } from '@/lib/auth'
-import { getLinkById, resolveLink } from '@/lib/links'
+import { getLinkById, resolveLink } from '@/lib/data/links'
+import { requireSession } from '@/lib/platform/auth'
 
 // Fetch a single link by id, or by (slug, domain) when id is absent.
 export async function GET(request: Request): Promise<NextResponse> {
