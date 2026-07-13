@@ -1,5 +1,5 @@
 import type { SQL } from 'drizzle-orm'
-import { and, desc, eq, inArray } from 'drizzle-orm'
+import { and, desc, eq, inArray, sql } from 'drizzle-orm'
 import type {
   Launchpad,
   LaunchpadStatus,
@@ -145,10 +145,10 @@ export async function listLaunchpads(
     .limit(opts.limit)
     .offset(opts.offset)
   const totalRow = await db
-    .select({ value: launchpads.id })
+    .select({ value: sql<number>`count(*)` })
     .from(launchpads)
     .where(where)
-  return { launchpads: rows, total: totalRow.length }
+  return { launchpads: rows, total: Number(totalRow[0]?.value ?? 0) }
 }
 
 // Allocate a slug: validate a user-supplied one (must be unique among active
