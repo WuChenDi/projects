@@ -17,6 +17,7 @@ import type {
 } from '@cloudflare/workers-types'
 import { backupToR2 } from '@/lib/backup'
 import { cleanupExpiredLinks } from '@/lib/cleanup'
+import { logger } from '@/lib/logger'
 // @ts-expect-error: artifact only exists after `opennextjs-cloudflare build`
 import openNextWorker from '../../.open-next/worker.js'
 
@@ -36,8 +37,29 @@ export default {
     // Forward `env` explicitly — opennext only installs the Cloudflare context
     // inside its fetch wrapper, so the cron path can't rely on
     // `getCloudflareContext()`.
-    await cleanupExpiredLinks(env)
-    // Daily R2 backup (no-op when R2 is not configured).
-    await backupToR2(env)
+    //
+    // Order matters: back up BEFORE cleanup so links expiring today are still
+    // `isDeleted=0` and get snapshotted. Each step is isolated in its own
+    // try/catch so a failure in one doesn't abort the other or the whole run.
+    try {
+      // Daily R2 backup (no-op when R2 is not configured).
+      await backupToR2(env)
+    } catch (error) {
+      logger.error(
+        `Backup task failed: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+      )
+    }
+
+    try {
+      await cleanupExpiredLinks(env)
+    } catch (error) {
+      logger.error(
+        `Cleanup task failed: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+      )
+    }
   },
 } satisfies ExportedHandler<CloudflareEnv>
