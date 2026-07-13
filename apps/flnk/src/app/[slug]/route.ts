@@ -43,6 +43,39 @@ function notFound(request: Request, env: CloudflareEnv): Response {
   return new Response('Not found', { status: 404, headers: NO_STORE })
 }
 
+// Per-IP rate limit on the resolve path (Cloudflare native Rate Limiting
+// binding — per-colo, in-memory, no D1/KV quota cost). Returns a 429 Response
+// when the caller is over the threshold, else null to proceed. Fails open
+// (returns null) when disabled, when the binding is absent (dev), when the IP
+// is unknown, or on any limiter error — availability over strictness, matching
+// the KV rate-limit policy.
+async function resolveRateLimited(
+  request: Request,
+  env: CloudflareEnv,
+): Promise<Response | null> {
+  if (!getConfig(env).resolveRateLimitEnabled) return null
+  const binding = env.RESOLVE_RATE_LIMIT
+  if (!binding) return null
+  const ip = clientIp(request)
+  if (ip === 'unknown') return null
+  try {
+    const { success } = await binding.limit({ key: ip })
+    if (!success) {
+      logger.info(`Resolve rate limit exceeded for IP: ${ip}`)
+      return new Response('Too many requests', {
+        status: 429,
+        headers: NO_STORE,
+      })
+    }
+  } catch (error) {
+    logger.warn(
+      'Resolve rate limit error',
+      error instanceof Error ? error.message : error,
+    )
+  }
+  return null
+}
+
 function htmlResponse(body: string, status = 200): Response {
   return new Response(body, {
     status,
@@ -141,6 +174,9 @@ export async function GET(
 
   if (isReservedSlug(slug)) return notFound(request, env)
 
+  const rateLimited = await resolveRateLimited(request, env)
+  if (rateLimited) return rateLimited
+
   const domain = new URL(request.url).hostname
   const link = await resolveLink(env, domain, slug)
 
@@ -218,6 +254,9 @@ export async function POST(
   const { env, cf, ctx } = getCloudflareContext()
 
   if (isReservedSlug(slug)) return notFound(request, env)
+
+  const rateLimited = await resolveRateLimited(request, env)
+  if (rateLimited) return rateLimited
 
   const domain = new URL(request.url).hostname
   const link = await resolveLink(env, domain, slug)
