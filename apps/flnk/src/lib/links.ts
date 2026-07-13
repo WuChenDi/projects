@@ -357,18 +357,26 @@ export async function getLinkById(
 }
 
 // Batched id lookup for callers that don't need tag names (e.g. health check).
-// Returns raw rows (`tags` holds IDs). Callers keep `ids` within the D1
-// bound-parameter cap (100).
+// Returns raw rows (`tags` holds IDs). Chunked at 99 ids per query so
+// `inArray(ids)` + the `isDeleted` predicate never exceeds the D1 100
+// bound-parameter cap.
 export async function getLinkRowsByIds(
   env: CloudflareEnv,
   ids: string[],
 ): Promise<LinkRow[]> {
   if (ids.length === 0) return []
   const db = await getDb(env)
-  return db
-    .select()
-    .from(links)
-    .where(and(inArray(links.id, ids), eq(links.isDeleted, 0)))
+  const rows: LinkRow[] = []
+  for (let i = 0; i < ids.length; i += 99) {
+    const chunk = ids.slice(i, i + 99)
+    rows.push(
+      ...(await db
+        .select()
+        .from(links)
+        .where(and(inArray(links.id, chunk), eq(links.isDeleted, 0)))),
+    )
+  }
+  return rows
 }
 
 export type LinkStatus = 'active' | 'disabled' | 'expired'
