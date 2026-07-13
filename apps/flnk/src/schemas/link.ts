@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import { SLUG_REGEX } from '@/lib/slug'
+import { SLUG_REGEX } from '@/lib/redirect/slug'
 
 // Geo routing map: ISO-3166-1 alpha-2 (UPPERCASE) → destination URL. Keys are
 // uppercased here so the redirect engine's `config.geo[cf.country]` lookup

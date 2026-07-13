@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { upsertLaunchpad } from '@/lib/launchpads'
-import { withAuth } from '@/lib/with-auth'
+import { upsertLaunchpad } from '@/lib/data/launchpads'
+import { withAuth } from '@/lib/platform/with-auth'
 import { UpsertLaunchpadSchema } from '@/schemas/launchpad'
 
 export const POST = withAuth(

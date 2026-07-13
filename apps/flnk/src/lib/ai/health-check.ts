@@ -1,5 +1,5 @@
-import { getConfig } from '@/lib/env'
-import { safeBrowsingHost } from '@/lib/safe-browsing'
+import { safeBrowsingHost } from '@/lib/ai/safe-browsing'
+import { getConfig } from '@/lib/platform/env'
 
 const TIMEOUT_MS = 5000
 const CONCURRENCY = 5

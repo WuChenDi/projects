@@ -1,6 +1,6 @@
 import type { LinkRef } from '@/components/launchpad/launchpad-view'
 import type { LaunchpadBlock } from '@/database/schema'
-import type { LinkRow } from '@/lib/api'
+import type { LinkRow } from '@/lib/platform/api'
 
 export type BlockType = LaunchpadBlock['type']
 

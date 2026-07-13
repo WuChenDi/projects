@@ -1,6 +1,6 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import type { NextRequest } from 'next/server'
-import { getR2 } from '@/lib/r2'
+import { getR2 } from '@/lib/data/r2'
 
 type RouteContext = { params: Promise<{ key: string[] }> }
 

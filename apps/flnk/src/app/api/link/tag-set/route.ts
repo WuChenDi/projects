@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { setLinkTags } from '@/lib/links'
-import { withAuth } from '@/lib/with-auth'
+import { setLinkTags } from '@/lib/data/links'
+import { withAuth } from '@/lib/platform/with-auth'
 import { SetTagsSchema } from '@/schemas/link'
 
 export const POST = withAuth(SetTagsSchema, async (data, { user, env }) => {

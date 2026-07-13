@@ -1,9 +1,9 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
 import * as z from 'zod'
-import { generateAiSlug } from '@/lib/ai-slug'
-import { requireSession } from '@/lib/auth'
-import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import { generateAiSlug } from '@/lib/ai/ai-slug'
+import { requireSession } from '@/lib/platform/auth'
+import { checkRateLimit, clientIp } from '@/lib/platform/rate-limit'
 
 const QuerySchema = z.object({ url: z.url() })
 

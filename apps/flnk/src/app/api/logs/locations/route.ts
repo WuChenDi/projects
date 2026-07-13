@@ -5,8 +5,8 @@ import {
   executeAeSql,
   locationSql,
   parseStatsQuery,
-} from '@/lib/analytics-query'
-import { requireSession } from '@/lib/auth'
+} from '@/lib/analytics/analytics-query'
+import { requireSession } from '@/lib/platform/auth'
 
 // Aggregated visit coordinates for the realtime globe. Upstream Sink serves this
 // from `/api/logs/locations`; `/api/location` instead returns the caller's own

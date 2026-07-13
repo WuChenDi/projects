@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { updateLink } from '@/lib/links'
-import { withAuth } from '@/lib/with-auth'
+import { updateLink } from '@/lib/data/links'
+import { withAuth } from '@/lib/platform/with-auth'
 import { EditLinkSchema } from '@/schemas/link'
 
 export const PUT = withAuth(EditLinkSchema, async (data, { user, env }) => {

@@ -26,9 +26,9 @@ import { Inbox } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import type { StatsParams } from '@/lib/api'
-import { statsApi } from '@/lib/api'
-import { formatNumber } from '@/lib/format'
+import { formatNumber } from '@/lib/format/format'
+import type { StatsParams } from '@/lib/platform/api'
+import { statsApi } from '@/lib/platform/api'
 
 function MetricList({
   type,

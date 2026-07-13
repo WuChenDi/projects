@@ -13,7 +13,7 @@ import { cn } from '@cdlab/ui/lib/utils'
 import { Check, Link2, Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
-import type { LinkRow } from '@/lib/api'
+import type { LinkRow } from '@/lib/platform/api'
 
 interface LinkPickerProps {
   links: LinkRow[]

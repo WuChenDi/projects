@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { upsertLink } from '@/lib/links'
-import { withAuth } from '@/lib/with-auth'
+import { upsertLink } from '@/lib/data/links'
+import { withAuth } from '@/lib/platform/with-auth'
 import { UpsertLinkSchema } from '@/schemas/link'
 
 export const POST = withAuth(

@@ -7,12 +7,12 @@ import type {
   NewLaunchpad,
 } from '@/database/schema'
 import { DEFAULT_LAUNCHPAD_CONFIG, launchpads, links } from '@/database/schema'
-import type { SessionUser } from '@/lib/auth'
-import { getDb } from '@/lib/db'
-import { newId } from '@/lib/genid'
-import { isExpired, normalizeSlug } from '@/lib/links'
-import { defaultSlug, validateSlug } from '@/lib/slug'
-import type { RepoResult as RepoResultBase, SortKey } from '@/lib/types'
+import { getDb } from '@/lib/data/db'
+import { isExpired, normalizeSlug } from '@/lib/data/links'
+import type { RepoResult as RepoResultBase, SortKey } from '@/lib/format/types'
+import type { SessionUser } from '@/lib/platform/auth'
+import { newId } from '@/lib/platform/genid'
+import { defaultSlug, validateSlug } from '@/lib/redirect/slug'
 import type {
   CreateLaunchpadInput,
   EditLaunchpadInput,

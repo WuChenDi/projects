@@ -11,7 +11,7 @@ import { Skeleton } from '@cdlab/ui/components/skeleton'
 import CountUp from '@cdlab/ui/reactbits/CountUp'
 import { MousePointerClick, Share2, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import type { Counters } from '@/lib/api'
+import type { Counters } from '@/lib/platform/api'
 
 export function CountersCards({
   data,

@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import { SLUG_REGEX } from '@/lib/slug'
+import { SLUG_REGEX } from '@/lib/redirect/slug'
 
 const HexColor = z
   .string()

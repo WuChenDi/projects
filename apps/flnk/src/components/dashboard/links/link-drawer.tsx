@@ -45,9 +45,9 @@ import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CountrySelect } from '@/components/dashboard/links/country-select'
 import { TagCombobox } from '@/components/dashboard/links/tag-combobox'
-import type { LinkRow } from '@/lib/api'
-import { configApi, linkApi, uploadApi } from '@/lib/api'
-import { buildShortUrl, dateLocale } from '@/lib/format'
+import { buildShortUrl, dateLocale } from '@/lib/format/format'
+import type { LinkRow } from '@/lib/platform/api'
+import { configApi, linkApi, uploadApi } from '@/lib/platform/api'
 import type { CreateLinkInput } from '@/schemas/link'
 
 // QR defaults — kept in sync with the popover so an uncustomized link renders

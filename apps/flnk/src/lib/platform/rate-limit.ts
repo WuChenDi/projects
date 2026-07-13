@@ -1,5 +1,5 @@
-import { pwfailKey } from '@/lib/cache-keys'
-import { logger } from '@/lib/logger'
+import { pwfailKey } from '@/lib/data/cache-keys'
+import { logger } from '@/lib/platform/logger'
 
 // Brute-force gate for password-protected links: a KV fixed-window failure
 // counter keyed by client IP + slug. KV floors expirationTtl at 60s.

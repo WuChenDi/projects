@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isBlockedHostname } from '@/lib/health-check'
+import { isBlockedHostname } from '@/lib/ai/health-check'
 
 describe('isBlockedHostname', () => {
   it('blocks localhost and internal suffixes', () => {

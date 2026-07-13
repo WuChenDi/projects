@@ -1,9 +1,9 @@
 import { and, eq, inArray, lt } from 'drizzle-orm'
 import { links } from '@/database/schema'
-import { visitsKey } from '@/lib/cache-keys'
-import { getDb } from '@/lib/db'
-import { linkCacheKey } from '@/lib/links'
-import { logger } from '@/lib/logger'
+import { visitsKey } from '@/lib/data/cache-keys'
+import { getDb } from '@/lib/data/db'
+import { linkCacheKey } from '@/lib/data/links'
+import { logger } from '@/lib/platform/logger'
 
 interface CleanupResult {
   deletedCount: number

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { updateLaunchpad } from '@/lib/launchpads'
-import { withAuth } from '@/lib/with-auth'
+import { updateLaunchpad } from '@/lib/data/launchpads'
+import { withAuth } from '@/lib/platform/with-auth'
 import { EditLaunchpadSchema } from '@/schemas/launchpad'
 
 export const PUT = withAuth(EditLaunchpadSchema, async (data, { env }) => {

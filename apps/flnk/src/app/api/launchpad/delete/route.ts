@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { deleteLaunchpad } from '@/lib/launchpads'
-import { withAuth } from '@/lib/with-auth'
+import { deleteLaunchpad } from '@/lib/data/launchpads'
+import { withAuth } from '@/lib/platform/with-auth'
 import { DeleteLaunchpadSchema } from '@/schemas/launchpad'
 
 export const POST = withAuth(DeleteLaunchpadSchema, async (data, { env }) => {

@@ -4,7 +4,7 @@ import type {
   LaunchpadStatus,
   LinkConfig,
 } from '@/database/schema'
-import type { SortKey } from '@/lib/types'
+import type { SortKey } from '@/lib/format/types'
 import type {
   CreateLaunchpadInput,
   EditLaunchpadInput,

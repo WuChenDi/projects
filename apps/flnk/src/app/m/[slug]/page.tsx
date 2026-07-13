@@ -6,8 +6,11 @@ import { LaunchpadTracker } from '@/components/launchpad/launchpad-tracker'
 import type { LinkRef } from '@/components/launchpad/launchpad-view'
 import { LaunchpadView } from '@/components/launchpad/launchpad-view'
 import type { Launchpad } from '@/database/schema'
-import { extractAccessLog, writeAccessLog } from '@/lib/analytics'
-import { getLinksByIds, getPublishedLaunchpadBySlug } from '@/lib/launchpads'
+import { extractAccessLog, writeAccessLog } from '@/lib/analytics/analytics'
+import {
+  getLinksByIds,
+  getPublishedLaunchpadBySlug,
+} from '@/lib/data/launchpads'
 
 // Every load resolves the launchpad fresh (publish/expiry checks) and emits a
 // view data point — never serve a cached HTML snapshot.

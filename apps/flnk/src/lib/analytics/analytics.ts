@@ -1,7 +1,7 @@
 import { UAParser } from 'ua-parser-js'
-import { isBot } from '@/lib/bots'
-import { getConfig } from '@/lib/env'
-import { logger } from '@/lib/logger'
+import { isBot } from '@/lib/analytics/bots'
+import { getConfig } from '@/lib/platform/env'
+import { logger } from '@/lib/platform/logger'
 
 interface AccessLog {
   slug: string
