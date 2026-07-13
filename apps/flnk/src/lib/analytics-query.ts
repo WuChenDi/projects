@@ -81,7 +81,7 @@ export class AnalyticsNotConfiguredError extends Error {
 // break out — escape the backslash first, then the quote. Control chars are
 // also dropped. Filter values are second-order untrusted (analytics dimensions
 // like referer/slug are visitor-controlled), so this must be backslash-safe.
-function sanitize(input: string): string {
+export function sanitize(input: string): string {
   let out = ''
   for (const ch of input) {
     const code = ch.charCodeAt(0)

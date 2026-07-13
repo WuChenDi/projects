@@ -1,5 +1,5 @@
 // CSV generation with formula-injection guarding and a UTF-8 BOM for Excel.
-function escapeCsvCell(value: unknown): string {
+export function escapeCsvCell(value: unknown): string {
   let text = String(value ?? '')
   // Neutralize spreadsheet formula injection (=, +, -, @, tab, CR leading char).
   const first = text.charCodeAt(0)
