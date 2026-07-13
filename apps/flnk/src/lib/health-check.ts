@@ -89,7 +89,7 @@ function isBlockedIPv4(value: number): boolean {
 // level), but local dev / preview use Node fetch which does not — so validate
 // here too. Literal-host checks can't catch a public name resolving to a private
 // IP; the platform flag covers that case in production.
-function isBlockedHostname(host: string): boolean {
+export function isBlockedHostname(host: string): boolean {
   const h = host.toLowerCase().replace(/^\[|\]$/g, '')
   if (
     h === 'localhost' ||
