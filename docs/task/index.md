@@ -60,3 +60,20 @@ Each task is a single line linking to its detail file. All detailed information 
 - [x] [**FEAT-027 bytts editor — editing interactions (drag/trim/split/undo) + autosave**](FEAT-027.md) `P1`
 - [x] [**FEAT-028 bytts editor — P0 audio features (fades, gain, mute/solo, silence removal)**](FEAT-028.md) `P1`
 - [x] [**FEAT-029 bytts editor — export mixdown (mp3/wav) + save to history**](FEAT-029.md) `P1`
+- [x] [**FEAT-034 flnk — redirect rate-limit + cache-penetration guard (SEC-03)**](FEAT-034.md) `P1`
+- [x] [**FEAT-035 flnk — links expiresAt/createdAt indexes + migration 0003 (QUA-01)**](FEAT-035.md) `P1`
+- [x] [**FEAT-036 flnk — cleanup batching + LIMIT page + visits purge (QUA-02/07/08)**](FEAT-036.md) `P1`
+- [x] [**FEAT-037 flnk — cron order (backup before cleanup) + per-task try/catch (QUA-05)**](FEAT-037.md) `P2`
+- [x] [**FEAT-038 flnk — AI/backup throttle + OG KV cache + prompt hardening (SEC-04/13)**](FEAT-038.md) `P2`
+- [x] [**FEAT-039 flnk — track-beacon guard + stored-dest logging + HMAC IP pepper (SEC-05/06)**](FEAT-039.md) `P2`
+- [x] [**FEAT-040 flnk — check batch caps + id-chunk-99 + SSRF blocklist (QUA-06/09, SEC-11)**](FEAT-040.md) `P2`
+- [x] [**FEAT-041 flnk — streamed backup query + launchpad count(*) (QUA-03/04)**](FEAT-041.md) `P1`
+- [x] [**FEAT-042 flnk — import/redirect/launchpad URL+scheme validation (SEC-07/08/12)**](FEAT-042.md) `P2`
+- [x] [**FEAT-043 flnk — dashboard allow-list parity + gate-token nonce/IP + key separation (SEC-09/10)**](FEAT-043.md) `P3`
+- [x] [**FEAT-044 flnk — vitest harness + security unit tests (ARC-01)**](FEAT-044.md) `P2`
+- [x] [**FEAT-045 flnk — withAuth route wrapper + server error envelope (ARC-03)**](FEAT-045.md) `P2`
+- [x] [**FEAT-046 flnk — env zod validation + typed fields + memoized getConfig (ARC-05)**](FEAT-046.md) `P2`
+- [x] [**FEAT-047 flnk — dedup bots/RepoResult/SortKey + cache-keys registry (ARC-06)**](FEAT-047.md) `P3`
+- [x] [**FEAT-048 flnk — strip sink/shortener legacy references (ARC-07)**](FEAT-048.md) `P3`
+- [x] [**FEAT-049 flnk — split links.ts into lib/data/links/{cache,resolve,repo,tags} (ARC-02)**](FEAT-049.md) `P2`
+- [x] [**FEAT-050 flnk — group src/lib into domain folders (ARC-04)**](FEAT-050.md) `P2`
