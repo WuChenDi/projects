@@ -1,3 +1,4 @@
+import { pwfailKey } from '@/lib/cache-keys'
 import { logger } from '@/lib/logger'
 
 // Brute-force gate for password-protected links: a KV fixed-window failure
@@ -11,7 +12,7 @@ const WINDOW_TTL_SECONDS = 600
 const UNKNOWN_IP = 'unknown'
 
 function failureKey(ip: string, slug: string): string {
-  return `pwfail:${ip}:${slug}`
+  return pwfailKey(ip, slug)
 }
 
 export function clientIp(request: Request): string {
