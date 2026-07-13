@@ -1,31 +1,7 @@
 import { UAParser } from 'ua-parser-js'
+import { isBot } from '@/lib/bots'
 import { getConfig } from '@/lib/env'
 import { logger } from '@/lib/logger'
-
-const BOT_PATTERNS = [
-  'bot',
-  'crawler',
-  'spider',
-  'scraper',
-  'facebook',
-  'twitter',
-  'linkedin',
-  'telegram',
-  'whatsapp',
-  'discord',
-  'slack',
-  'googlebot',
-  'bingbot',
-  'yahoobot',
-  'facebookexternalhit',
-  'twitterbot',
-  'linkedinbot',
-] as const
-
-export function isBot(userAgent: string): boolean {
-  const ua = userAgent.toLowerCase()
-  return BOT_PATTERNS.some((pattern) => ua.includes(pattern))
-}
 
 interface AccessLog {
   slug: string

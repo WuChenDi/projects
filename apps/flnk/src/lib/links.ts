@@ -15,6 +15,7 @@ import {
 } from 'drizzle-orm'
 import type { Link, LinkConfig, LinkRow, NewLink } from '@/database/schema'
 import { links, tags } from '@/database/schema'
+import { linkKey, visitsKey } from '@/lib/cache-keys'
 import type { DB } from '@/lib/db'
 import { getDb } from '@/lib/db'
 import { getConfig } from '@/lib/env'
@@ -22,6 +23,7 @@ import { newId } from '@/lib/genid'
 import { logger } from '@/lib/logger'
 import { isUnsafeUrl } from '@/lib/safe-browsing'
 import { randomSlug, validateSlug } from '@/lib/slug'
+import type { RepoResult as RepoResultBase, SortKey } from '@/lib/types'
 import type {
   CreateLinkInput,
   EditLinkInput,
@@ -100,7 +102,7 @@ async function attachTagNames(db: DB, rows: LinkRow[]): Promise<Link[]> {
 // KV cache key. Multi-domain links are namespaced by host so the same slug can
 // point to different destinations per domain.
 export function linkCacheKey(domain: string, slug: string): string {
-  return `link:${domain}:${slug}`
+  return linkKey(domain, slug)
 }
 
 // Normalize a slug for lookup/storage. Case-insensitive mode folds to lowercase
@@ -214,7 +216,7 @@ export async function visitLimitReached(
 ): Promise<boolean> {
   const max = link.config.maxVisits
   if (!max) return false
-  const key = `visits:${link.id}`
+  const key = visitsKey(link.id)
   let count: number
   try {
     const raw = await env.KV.get(key)
@@ -310,10 +312,8 @@ export async function resolveLink(
 
 // ===================== Repository (dashboard CRUD) =====================
 
-export type SortKey = 'createdAt' | 'updatedAt' | 'expiresAt'
-export type RepoResult =
-  | { ok: true; link: Link }
-  | { ok: false; status: number; error: string }
+export type { SortKey }
+export type RepoResult = RepoResultBase<{ link: Link }>
 
 const SORT_COLUMNS = {
   createdAt: links.createdAt,

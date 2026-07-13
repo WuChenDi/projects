@@ -1,5 +1,6 @@
 import { and, eq, inArray, lt } from 'drizzle-orm'
 import { links } from '@/database/schema'
+import { visitsKey } from '@/lib/cache-keys'
 import { getDb } from '@/lib/db'
 import { linkCacheKey } from '@/lib/links'
 import { logger } from '@/lib/logger'
@@ -69,7 +70,7 @@ export async function cleanupExpiredLinks(
         chunk.map(async (link) => {
           try {
             await env.KV.delete(linkCacheKey(link.domain, link.slug))
-            await env.KV.delete(`visits:${link.id}`)
+            await env.KV.delete(visitsKey(link.id))
             result.cacheCleanedCount++
           } catch (error) {
             const msg = `Cache purge failed for ${link.id}: ${
