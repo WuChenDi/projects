@@ -25,6 +25,11 @@ const httpUrl = z
     }
   }, 'Only http(s) URLs are allowed')
 
+// avatar / og.image are optional absolute image URLs held to the same http(s)
+// policy as block href/src. The editor emits '' when the field is cleared, so
+// tolerate the empty string alongside a valid http(s) URL.
+const optionalHttpUrl = z.union([httpUrl, z.literal('')]).optional()
+
 // Fields shared by every block. Type-specific fields are added per variant.
 const blockBase = {
   id: z.string().min(1),
@@ -77,7 +82,7 @@ const BlockSchema = z.discriminatedUnion('type', [
 
 const ConfigSchema = z.object({
   profile: z.object({
-    avatar: z.string().trim().max(2048).optional(),
+    avatar: optionalHttpUrl,
     name: z.string().trim().max(128).optional(),
     bio: z.string().trim().max(512).optional(),
   }),
@@ -92,7 +97,7 @@ const ConfigSchema = z.object({
 const OgSchema = z.object({
   title: z.string().trim().max(256).optional(),
   description: z.string().trim().max(2048).optional(),
-  image: z.string().trim().max(2048).optional(),
+  image: optionalHttpUrl,
 })
 
 export const CreateLaunchpadSchema = z.object({
