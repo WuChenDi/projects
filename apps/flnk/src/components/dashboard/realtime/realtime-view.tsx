@@ -21,9 +21,9 @@ import dynamic from 'next/dynamic'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { ViewsChart } from '@/components/dashboard/analytics/views-chart'
-import type { LogEvent } from '@/lib/api'
-import { statsApi } from '@/lib/api'
-import { dateLocale } from '@/lib/format'
+import { dateLocale } from '@/lib/format/format'
+import type { LogEvent } from '@/lib/platform/api'
+import { statsApi } from '@/lib/platform/api'
 
 // WebGL globe is client-only — skip SSR and lazy-load so it never blocks the page.
 const RealtimeGlobe = dynamic(

@@ -6,8 +6,8 @@ import { useQuery } from '@tanstack/react-query'
 import { BarChart3, Eye, MousePointerClick } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import type { LaunchpadConfig } from '@/database/schema'
-import { launchpadApi } from '@/lib/api'
-import { formatNumber } from '@/lib/format'
+import { formatNumber } from '@/lib/format/format'
+import { launchpadApi } from '@/lib/platform/api'
 
 // Stats window for headline + per-block totals — wide enough to read as
 // "all-time" given Analytics Engine retention.

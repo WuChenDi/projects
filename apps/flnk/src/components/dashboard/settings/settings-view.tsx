@@ -12,7 +12,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslations } from 'next-intl'
 import { LocaleSwitcher } from '@/components/layout/locale-switcher'
 import { ThemeToggle } from '@/components/layout/theme-toggle'
-import { configApi } from '@/lib/api'
+import { configApi } from '@/lib/platform/api'
 
 function StatusRow({ label, ok }: { label: string; ok: boolean }) {
   const t = useTranslations('settings.system')

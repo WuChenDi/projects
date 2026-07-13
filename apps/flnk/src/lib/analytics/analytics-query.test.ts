@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { sanitize } from '@/lib/analytics-query'
+import { sanitize } from '@/lib/analytics/analytics-query'
 
 describe('sanitize', () => {
   it('leaves normal values untouched', () => {

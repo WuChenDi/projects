@@ -48,9 +48,13 @@ import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { LaunchpadPreview } from '@/components/dashboard/launchpads/launchpad-preview'
 import type { LinkRef } from '@/components/launchpad/launchpad-view'
-import type { LaunchpadRow } from '@/lib/api'
-import { launchpadApi, linkApi } from '@/lib/api'
-import { buildLaunchpadUrl, formatDate, formatNumber } from '@/lib/format'
+import {
+  buildLaunchpadUrl,
+  formatDate,
+  formatNumber,
+} from '@/lib/format/format'
+import type { LaunchpadRow } from '@/lib/platform/api'
+import { launchpadApi, linkApi } from '@/lib/platform/api'
 import { useLaunchpadsViewStore } from '@/stores/launchpads-view-store'
 import { buildLinkRefs } from './blocks'
 

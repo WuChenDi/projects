@@ -2,29 +2,33 @@ import { verifyPasswordFn } from '@cdlab/utils'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import type { NextRequest } from 'next/server'
 import type { Link } from '@/database/schema'
-import { extractAccessLog, writeAccessLog } from '@/lib/analytics'
-import { getConfig } from '@/lib/env'
-import { createGateToken, verifyGateToken } from '@/lib/gate-token'
-import { ogPageHtml, passwordFormHtml, unsafeWarningHtml } from '@/lib/html'
+import { extractAccessLog, writeAccessLog } from '@/lib/analytics/analytics'
 import {
   disableLinkOnVisitCap,
   isExpired,
   purgeLink,
   resolveLink,
   visitLimitReached,
-} from '@/lib/links'
-import { logger } from '@/lib/logger'
+} from '@/lib/data/links'
+import { getConfig } from '@/lib/platform/env'
+import { logger } from '@/lib/platform/logger'
 import {
   clientIp,
   passwordAttemptsExceeded,
   recordPasswordFailure,
-} from '@/lib/rate-limit'
+} from '@/lib/platform/rate-limit'
+import { createGateToken, verifyGateToken } from '@/lib/redirect/gate-token'
+import {
+  ogPageHtml,
+  passwordFormHtml,
+  unsafeWarningHtml,
+} from '@/lib/redirect/html'
 import {
   isSocialCrawler,
   resolveDestination,
   resolveRedirectLocale,
-} from '@/lib/redirect'
-import { isReservedSlug } from '@/lib/reserve-slug'
+} from '@/lib/redirect/redirect'
+import { isReservedSlug } from '@/lib/redirect/reserve-slug'
 
 const NO_STORE = { 'cache-control': 'no-store' } as const
 

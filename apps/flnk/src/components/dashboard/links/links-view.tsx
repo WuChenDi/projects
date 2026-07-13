@@ -81,9 +81,9 @@ import { DeleteDialog } from '@/components/dashboard/links/delete-dialog'
 import { LinkDrawer } from '@/components/dashboard/links/link-drawer'
 import { QrPopover } from '@/components/dashboard/links/qr-popover'
 import { TagInlineEditor } from '@/components/dashboard/links/tag-inline-editor'
-import type { LinkRow, SortKey } from '@/lib/api'
-import { linkApi, statsApi } from '@/lib/api'
-import { buildShortUrl, configBadges, formatDate } from '@/lib/format'
+import { buildShortUrl, configBadges, formatDate } from '@/lib/format/format'
+import type { LinkRow, SortKey } from '@/lib/platform/api'
+import { linkApi, statsApi } from '@/lib/platform/api'
 import {
   hasActiveFilters,
   useLinksFilterStore,

@@ -3,7 +3,7 @@
 import createGlobe from 'cobe'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef } from 'react'
-import type { GeoPoint } from '@/lib/api'
+import type { GeoPoint } from '@/lib/platform/api'
 
 // Live-visit globe (cobe — tiny WebGL, no asset pipeline). Markers come from the
 // aggregated `/api/logs/locations` feed; the globe auto-rotates. cobe v2 has no

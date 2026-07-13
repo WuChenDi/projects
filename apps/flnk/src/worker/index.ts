@@ -15,9 +15,9 @@ import type {
   ExportedHandlerFetchHandler,
   ScheduledController,
 } from '@cloudflare/workers-types'
-import { backupToR2 } from '@/lib/backup'
-import { cleanupExpiredLinks } from '@/lib/cleanup'
-import { logger } from '@/lib/logger'
+import { backupToR2 } from '@/lib/data/backup'
+import { cleanupExpiredLinks } from '@/lib/data/cleanup'
+import { logger } from '@/lib/platform/logger'
 // @ts-expect-error: artifact only exists after `opennextjs-cloudflare build`
 import openNextWorker from '../../.open-next/worker.js'
 

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createGateToken, verifyGateToken } from '@/lib/gate-token'
+import { createGateToken, verifyGateToken } from '@/lib/redirect/gate-token'
 
 const env = {
   BETTER_AUTH_SECRET: 'test-secret-do-not-use-in-prod',

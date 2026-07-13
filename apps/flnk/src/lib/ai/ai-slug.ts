@@ -1,6 +1,6 @@
-import { getConfig } from '@/lib/env'
-import { logger } from '@/lib/logger'
-import { randomSlug, SLUG_REGEX } from '@/lib/slug'
+import { getConfig } from '@/lib/platform/env'
+import { logger } from '@/lib/platform/logger'
+import { randomSlug, SLUG_REGEX } from '@/lib/redirect/slug'
 
 const CACHE_TTL_SECONDS = 60 * 60 * 24 * 7 // 7 days
 const AI_TIMEOUT_MS = 10_000

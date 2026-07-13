@@ -1,5 +1,5 @@
-import { getConfig } from '@/lib/env'
-import { logger } from '@/lib/logger'
+import { getConfig } from '@/lib/platform/env'
+import { logger } from '@/lib/platform/logger'
 
 const AI_TIMEOUT_MS = 10_000
 const CACHE_TTL_SECONDS = 60 * 60 * 24 // 24 hours

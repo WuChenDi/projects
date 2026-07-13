@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { escapeCsvCell } from '@/lib/csv'
+import { escapeCsvCell } from '@/lib/format/csv'
 
 describe('escapeCsvCell', () => {
   it('neutralizes formula-injection prefixes with a leading quote', () => {

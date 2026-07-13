@@ -13,7 +13,7 @@ import { Archive, Download, FileSpreadsheet, Upload } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useRef } from 'react'
 import { toast } from 'sonner'
-import { configApi, migrateApi } from '@/lib/api'
+import { configApi, migrateApi } from '@/lib/platform/api'
 
 export function MigrateView() {
   const t = useTranslations('migrate')

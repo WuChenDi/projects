@@ -2,7 +2,7 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { DashboardShell } from '@/components/dashboard/shell'
-import { getAllowedSession } from '@/lib/auth'
+import { getAllowedSession } from '@/lib/platform/auth'
 
 export default async function ProtectedDashboardLayout({
   children,

@@ -33,7 +33,7 @@ import { useTransition } from 'react'
 import type { Locale } from '@/i18n/config'
 import { localeLabels, locales } from '@/i18n/config'
 import { setUserLocale } from '@/i18n/locale'
-import { authClient } from '@/lib/auth-client'
+import { authClient } from '@/lib/platform/auth-client'
 
 const DOCS_HREF =
   'https://github.com/WuChenDi/projects/blob/main/apps/flnk/README.md'

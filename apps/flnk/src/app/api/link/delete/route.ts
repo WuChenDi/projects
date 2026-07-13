@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { deleteLink } from '@/lib/links'
-import { withAuth } from '@/lib/with-auth'
+import { deleteLink } from '@/lib/data/links'
+import { withAuth } from '@/lib/platform/with-auth'
 import { DeleteLinkSchema } from '@/schemas/link'
 
 export const POST = withAuth(DeleteLinkSchema, async (data, { env }) => {

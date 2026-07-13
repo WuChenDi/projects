@@ -1,5 +1,5 @@
-import { getConfig } from '@/lib/env'
-import { isReservedSlug } from '@/lib/reserve-slug'
+import { getConfig } from '@/lib/platform/env'
+import { isReservedSlug } from '@/lib/redirect/reserve-slug'
 
 // Slug grammar: lowercase/uppercase alnum groups joined by single hyphens.
 // No dots (those are treated as static assets).

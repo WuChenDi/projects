@@ -1,4 +1,4 @@
-import { getConfig } from '@/lib/env'
+import { getConfig } from '@/lib/platform/env'
 
 // Resolve a host via a filtering DoH resolver (e.g. a Safe-Browsing-style
 // blocklist resolver). A 0.0.0.0/:: answer means the host is blocked (unsafe).

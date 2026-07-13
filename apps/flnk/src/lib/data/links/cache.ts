@@ -1,7 +1,7 @@
 import type { Link } from '@/database/schema'
-import { linkKey } from '@/lib/cache-keys'
-import { getConfig } from '@/lib/env'
-import { logger } from '@/lib/logger'
+import { linkKey } from '@/lib/data/cache-keys'
+import { getConfig } from '@/lib/platform/env'
+import { logger } from '@/lib/platform/logger'
 
 // Negative-cache sentinel stored under the link cache key when a slug resolves
 // to nothing. A real link is always serialized JSON ('{'…), so this marker can

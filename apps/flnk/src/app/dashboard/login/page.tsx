@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { FlnkLogo, LocaleSwitcher, ThemeToggle } from '@/components/layout'
-import { authClient } from '@/lib/auth-client'
+import { authClient } from '@/lib/platform/auth-client'
 
 function GoogleIcon() {
   return (

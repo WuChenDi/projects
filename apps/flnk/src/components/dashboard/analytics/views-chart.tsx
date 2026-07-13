@@ -20,7 +20,7 @@ import { cn } from '@cdlab/ui/lib/utils'
 import { Inbox, TrendingDown, TrendingUp } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
-import type { ViewPoint } from '@/lib/api'
+import type { ViewPoint } from '@/lib/platform/api'
 
 const SERIES = ['visits', 'visitors'] as const
 

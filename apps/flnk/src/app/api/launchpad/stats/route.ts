@@ -6,9 +6,9 @@ import {
   launchpadBlockStatsSql,
   launchpadStatsSql,
   parseStatsQuery,
-} from '@/lib/analytics-query'
-import { requireSession } from '@/lib/auth'
-import { getLaunchpadById } from '@/lib/launchpads'
+} from '@/lib/analytics/analytics-query'
+import { getLaunchpadById } from '@/lib/data/launchpads'
+import { requireSession } from '@/lib/platform/auth'
 
 // Per-launchpad view + engagement totals for the dashboard Track tab.
 export async function GET(request: Request): Promise<NextResponse> {

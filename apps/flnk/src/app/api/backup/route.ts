@@ -1,8 +1,8 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
-import { requireSession } from '@/lib/auth'
-import { backupToR2 } from '@/lib/backup'
-import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import { backupToR2 } from '@/lib/data/backup'
+import { requireSession } from '@/lib/platform/auth'
+import { checkRateLimit, clientIp } from '@/lib/platform/rate-limit'
 
 export async function POST(request: Request): Promise<NextResponse> {
   const auth = await requireSession(request)

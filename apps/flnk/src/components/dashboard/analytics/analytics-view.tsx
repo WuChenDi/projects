@@ -27,7 +27,7 @@ import { useMemo, useState } from 'react'
 import { CountersCards } from '@/components/dashboard/analytics/counters'
 import { MetricGroup } from '@/components/dashboard/analytics/metric-group'
 import { ViewsChart } from '@/components/dashboard/analytics/views-chart'
-import { statsApi } from '@/lib/api'
+import { statsApi } from '@/lib/platform/api'
 
 // Map lib is client-only (SVG, runtime topojson fetch) — skip SSR.
 const WorldMap = dynamic(

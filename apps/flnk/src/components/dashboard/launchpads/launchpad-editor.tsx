@@ -22,9 +22,9 @@ import { LaunchpadPreview } from '@/components/dashboard/launchpads/launchpad-pr
 import { TrackTab } from '@/components/dashboard/launchpads/track-tab'
 import type { LaunchpadConfig, LaunchpadStatus } from '@/database/schema'
 import { DEFAULT_LAUNCHPAD_CONFIG } from '@/database/schema'
-import type { LaunchpadRow } from '@/lib/api'
-import { launchpadApi, linkApi } from '@/lib/api'
-import { buildLaunchpadUrl } from '@/lib/format'
+import { buildLaunchpadUrl } from '@/lib/format/format'
+import type { LaunchpadRow } from '@/lib/platform/api'
+import { launchpadApi, linkApi } from '@/lib/platform/api'
 import { buildLinkRefs } from './blocks'
 
 interface EditorState {

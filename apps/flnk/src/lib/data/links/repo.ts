@@ -15,21 +15,21 @@ import {
 } from 'drizzle-orm'
 import type { Link, LinkConfig, LinkRow, NewLink } from '@/database/schema'
 import { links, tags } from '@/database/schema'
-import { getDb } from '@/lib/db'
-import { getConfig } from '@/lib/env'
-import { newId } from '@/lib/genid'
-import { purgeLink, writeCache } from '@/lib/links/cache'
-import { normalizeSlug } from '@/lib/links/resolve'
+import { isUnsafeUrl } from '@/lib/ai/safe-browsing'
+import { getDb } from '@/lib/data/db'
+import { purgeLink, writeCache } from '@/lib/data/links/cache'
+import { normalizeSlug } from '@/lib/data/links/resolve'
 import {
   attachTagNames,
   normalizeTagList,
   tagNamesToIds,
   upsertTagIds,
-} from '@/lib/links/tags'
-import { logger } from '@/lib/logger'
-import { isUnsafeUrl } from '@/lib/safe-browsing'
-import { randomSlug, validateSlug } from '@/lib/slug'
-import type { RepoResult as RepoResultBase, SortKey } from '@/lib/types'
+} from '@/lib/data/links/tags'
+import type { RepoResult as RepoResultBase, SortKey } from '@/lib/format/types'
+import { getConfig } from '@/lib/platform/env'
+import { newId } from '@/lib/platform/genid'
+import { logger } from '@/lib/platform/logger'
+import { randomSlug, validateSlug } from '@/lib/redirect/slug'
 import type {
   CreateLinkInput,
   EditLinkInput,

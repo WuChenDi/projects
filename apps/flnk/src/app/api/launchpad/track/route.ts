@@ -1,7 +1,7 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
-import { extractAccessLog, writeAccessLog } from '@/lib/analytics'
-import { getPublishedLaunchpadBySlug } from '@/lib/launchpads'
-import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import { extractAccessLog, writeAccessLog } from '@/lib/analytics/analytics'
+import { getPublishedLaunchpadBySlug } from '@/lib/data/launchpads'
+import { checkRateLimit, clientIp } from '@/lib/platform/rate-limit'
 import { TrackLaunchpadSchema } from '@/schemas/launchpad'
 
 // Public click-beacon for launchpad blocks. No auth — a visitor's click on a

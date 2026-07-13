@@ -6,7 +6,7 @@ import {
   Geography,
   Marker,
 } from 'react-simple-maps'
-import type { GeoPoint } from '@/lib/api'
+import type { GeoPoint } from '@/lib/platform/api'
 
 const GEO_STYLE = {
   default: {

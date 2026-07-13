@@ -1,8 +1,8 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
-import { requireSession } from '@/lib/auth'
-import { getConfig } from '@/lib/env'
-import { searchLinks } from '@/lib/links'
+import { searchLinks } from '@/lib/data/links'
+import { requireSession } from '@/lib/platform/auth'
+import { getConfig } from '@/lib/platform/env'
 
 export async function GET(request: Request): Promise<NextResponse> {
   const auth = await requireSession(request)

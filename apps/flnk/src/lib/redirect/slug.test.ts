@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { validateSlug } from '@/lib/slug'
+import { validateSlug } from '@/lib/redirect/slug'
 
 describe('validateSlug', () => {
   it('returns null for valid slugs', () => {

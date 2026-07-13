@@ -22,8 +22,8 @@ import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { linkApi, statsApi } from '@/lib/api'
-import { formatNumber } from '@/lib/format'
+import { formatNumber } from '@/lib/format/format'
+import { linkApi, statsApi } from '@/lib/platform/api'
 
 const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000
 
