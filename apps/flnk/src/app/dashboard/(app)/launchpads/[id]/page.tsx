@@ -1,8 +1,19 @@
-import { LaunchpadEditor } from '@/components/dashboard/launchpads/launchpad-editor'
+'use client'
+
+import dynamic from 'next/dynamic'
+import { use } from 'react'
+
+const LaunchpadEditor = dynamic(
+  () =>
+    import('@/components/dashboard/launchpads/launchpad-editor').then(
+      (m) => m.LaunchpadEditor,
+    ),
+  { ssr: false },
+)
 
 type PageProps = { params: Promise<{ id: string }> }
 
-export default async function LaunchpadEditorPage({ params }: PageProps) {
-  const { id } = await params
+export default function LaunchpadEditorPage({ params }: PageProps) {
+  const { id } = use(params)
   return <LaunchpadEditor id={id} />
 }
