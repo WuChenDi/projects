@@ -111,17 +111,52 @@ export interface LaunchpadConfig {
     // Button fill + elevation. Optional for backward compatibility — legacy
     // rows render as a solid, shadowless button.
     buttonFill?: 'solid' | 'outline' | 'soft'
-    buttonShadow?: 'none' | 'soft'
+    buttonShadow?: 'none' | 'soft' | 'hard'
+    // Explicit block/button label color; unset = auto-contrast against the fill.
+    buttonTextColor?: string
     // Optional page background. When absent the public page inherits the app
-    // theme surface (legacy behavior); when present it paints its own gradient
-    // or solid fill and the renderer auto-picks a readable text color.
+    // theme surface (legacy behavior); when present it paints its own gradient,
+    // solid fill, or cover image and the renderer auto-picks a readable ink.
     background?: {
-      type: 'solid' | 'gradient'
+      type: 'solid' | 'gradient' | 'image'
       from: string
       to?: string
       dir?: 'b' | 'r' | 'br' | 'tr'
+      // `image` backgrounds: cover image URL + a 0–100 dark scrim for legibility.
+      image?: string
+      overlay?: number
+    }
+    // Page font family (system stacks — no web-font fetch). Defaults to sans.
+    font?: 'sans' | 'serif' | 'mono' | 'rounded'
+    // Explicit text-color overrides; when unset the renderer auto-contrasts
+    // against the background.
+    textColor?: { title?: string; body?: string }
+    // Header/profile layout. classic = centered (default); left = avatar + text
+    // left-aligned; hero = header band with the avatar overlapping it; banner =
+    // taller band with name/bio inside it; cover = large rounded-square avatar;
+    // compact = small avatar inline with the name.
+    layout?: 'classic' | 'left' | 'hero' | 'banner' | 'cover' | 'compact'
+    // Header band surface (used by the `hero` layout). Same shape as
+    // `background`; `solid` paints a single color, `gradient` two, `image` a
+    // cover photo with an optional dark scrim.
+    header?: {
+      type: 'solid' | 'gradient' | 'image'
+      from: string
+      to?: string
+      dir?: 'b' | 'r' | 'br' | 'tr'
+      image?: string
+      overlay?: number
     }
   }
+  // Page-level social icon bar (curated brand glyphs), rendered above or below
+  // the content. Distinct from the legacy `socials` content block.
+  socials?: {
+    items: { platform: string; url: string }[]
+    iconColor?: 'brand' | 'mono'
+    placement?: 'top' | 'bottom'
+  }
+  // Hide the "Flnk" footer badge. Absent/false = shown (default on).
+  hideBranding?: boolean
   blocks: LaunchpadBlock[]
 }
 
@@ -169,7 +204,7 @@ export const DEFAULT_LAUNCHPAD_CONFIG: LaunchpadConfig = {
     buttonShape: 'rounded',
     buttonFill: 'solid',
     buttonShadow: 'soft',
-    background: { type: 'gradient', from: '#eef2ff', to: '#faf5ff', dir: 'b' },
+    background: { type: 'gradient', from: '#e0e7ff', to: '#a5b4fc', dir: 'b' },
   },
   blocks: [],
 }
