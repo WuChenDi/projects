@@ -8,9 +8,10 @@ export type BlockType = LaunchpadBlock['type']
 // the build tab — it is not addable as a content block.
 export type AddableBlockType = Exclude<BlockType, 'header'>
 
-// Add-menu order — mirrors the MVP block set in the spec.
+// Add-menu order. `socials` is intentionally excluded: social links are now a
+// page-level bar edited from the Design tab. Legacy `socials` content blocks
+// still render, but no new ones are created here.
 export const BLOCK_TYPES: AddableBlockType[] = [
-  'socials',
   'button',
   'shortlink',
   'image',
