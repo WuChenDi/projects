@@ -30,6 +30,33 @@ const httpUrl = z
 // tolerate the empty string alongside a valid http(s) URL.
 const optionalHttpUrl = z.union([httpUrl, z.literal('')]).optional()
 
+// Background images are interpolated into a CSS `url("…")`, so reject any
+// character that could break out of the quoted string and inject CSS. Mirrors
+// the renderer's `safeCssImageUrl` guard (defense-in-depth).
+const cssImageUrl = z
+  .union([
+    httpUrl.refine(
+      (v) => !/[\s"'()\\]/u.test(v),
+      'URL contains characters not allowed in a background image',
+    ),
+    z.literal(''),
+  ])
+  .optional()
+
+// Social-bar destinations additionally permit `mailto:` (safe in an href) so an
+// Email platform can link a real address; every other scheme is rejected.
+const socialUrl = z
+  .string()
+  .max(2048)
+  .refine((v) => {
+    try {
+      const p = new URL(v).protocol
+      return /^https?:$/u.test(p) || p === 'mailto:'
+    } catch {
+      return false
+    }
+  }, 'Only http(s) or mailto URLs are allowed')
+
 // Fields shared by every block. Type-specific fields are added per variant.
 const blockBase = {
   id: z.string().min(1),
@@ -80,6 +107,17 @@ const BlockSchema = z.discriminatedUnion('type', [
   z.object({ ...blockBase, type: z.literal('divider') }),
 ])
 
+// A paintable surface (page background or header band): a solid color, a
+// two-color gradient, or a cover image with an optional dark scrim.
+const SurfaceSchema = z.object({
+  type: z.enum(['solid', 'gradient', 'image']),
+  from: HexColor,
+  to: HexColor.optional(),
+  dir: z.enum(['b', 'r', 'br', 'tr']).optional(),
+  image: cssImageUrl,
+  overlay: z.number().min(0).max(100).optional(),
+})
+
 const ConfigSchema = z.object({
   profile: z.object({
     avatar: optionalHttpUrl,
@@ -91,16 +129,33 @@ const ConfigSchema = z.object({
     primaryColor: HexColor,
     buttonShape: z.enum(['rounded', 'pill', 'square']),
     buttonFill: z.enum(['solid', 'outline', 'soft']).optional(),
-    buttonShadow: z.enum(['none', 'soft']).optional(),
-    background: z
-      .object({
-        type: z.enum(['solid', 'gradient']),
-        from: HexColor,
-        to: HexColor.optional(),
-        dir: z.enum(['b', 'r', 'br', 'tr']).optional(),
-      })
+    buttonShadow: z.enum(['none', 'soft', 'hard']).optional(),
+    buttonTextColor: HexColor.optional(),
+    background: SurfaceSchema.optional(),
+    font: z.enum(['sans', 'serif', 'mono', 'rounded']).optional(),
+    textColor: z
+      .object({ title: HexColor.optional(), body: HexColor.optional() })
       .optional(),
+    layout: z
+      .enum(['classic', 'left', 'hero', 'banner', 'cover', 'compact'])
+      .optional(),
+    header: SurfaceSchema.optional(),
   }),
+  socials: z
+    .object({
+      items: z
+        .array(
+          z.object({
+            platform: z.string().trim().min(1).max(32),
+            url: socialUrl,
+          }),
+        )
+        .max(50),
+      iconColor: z.enum(['brand', 'mono']).optional(),
+      placement: z.enum(['top', 'bottom']).optional(),
+    })
+    .optional(),
+  hideBranding: z.boolean().optional(),
   blocks: z.array(BlockSchema).max(100),
 })
 
