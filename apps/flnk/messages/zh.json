@@ -449,7 +449,8 @@
         "remove": "移除头像"
       },
       "sections": {
-        "theme": "主题"
+        "theme": "主题",
+        "page": "页面"
       },
       "background": {
         "title": "背景",
@@ -458,7 +459,10 @@
         "color": "颜色",
         "from": "起始色",
         "to": "结束色",
-        "direction": "方向"
+        "direction": "方向",
+        "image": "图片",
+        "imageUrl": "图片链接",
+        "overlay": "遮罩"
       },
       "buttons": {
         "title": "按钮"
@@ -472,7 +476,62 @@
       "shadow": {
         "label": "阴影",
         "none": "无",
-        "soft": "柔和"
+        "soft": "柔和",
+        "hard": "硬"
+      },
+      "socials": {
+        "title": "社交",
+        "pick": "添加社交图标",
+        "urlPlaceholder": "https://… 或 mailto:…",
+        "remove": "删除",
+        "moveUp": "上移",
+        "moveDown": "下移",
+        "iconColor": "图标颜色",
+        "brand": "品牌色",
+        "mono": "单色",
+        "placement": "位置",
+        "top": "顶部",
+        "bottom": "底部",
+        "viewMore": "查看更多",
+        "viewFewer": "收起"
+      },
+      "typography": {
+        "title": "排版",
+        "font": "字体",
+        "fonts": {
+          "sans": "无衬线",
+          "serif": "衬线",
+          "mono": "等宽",
+          "rounded": "圆润"
+        },
+        "titleColor": "标题颜色",
+        "bodyColor": "正文颜色",
+        "auto": "自动"
+      },
+      "layout": {
+        "title": "版式",
+        "variants": {
+          "classic": "经典",
+          "left": "左对齐",
+          "hero": "英雄",
+          "banner": "横幅",
+          "cover": "封面",
+          "compact": "紧凑"
+        }
+      },
+      "header": {
+        "title": "页头",
+        "hint": "英雄版式下头像后方显示的色带。"
+      },
+      "blocks": {
+        "title": "区块",
+        "blockColor": "区块颜色",
+        "blockText": "区块文字"
+      },
+      "branding": {
+        "title": "品牌",
+        "showLogo": "显示 Flnk 标识",
+        "hint": "在页面底部显示一个小的 Flnk 标识。"
       }
     },
     "editor": {

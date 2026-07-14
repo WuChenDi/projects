@@ -449,7 +449,8 @@
         "remove": "Remove avatar"
       },
       "sections": {
-        "theme": "Theme"
+        "theme": "Theme",
+        "page": "Page"
       },
       "background": {
         "title": "Background",
@@ -458,7 +459,10 @@
         "color": "Color",
         "from": "From",
         "to": "To",
-        "direction": "Direction"
+        "direction": "Direction",
+        "image": "Image",
+        "imageUrl": "Image URL",
+        "overlay": "Overlay"
       },
       "buttons": {
         "title": "Buttons"
@@ -472,7 +476,62 @@
       "shadow": {
         "label": "Shadow",
         "none": "None",
-        "soft": "Soft"
+        "soft": "Soft",
+        "hard": "Hard"
+      },
+      "socials": {
+        "title": "Socials",
+        "pick": "Add social icons",
+        "urlPlaceholder": "https://… or mailto:…",
+        "remove": "Remove",
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "iconColor": "Icon color",
+        "brand": "Brand",
+        "mono": "Mono",
+        "placement": "Placement",
+        "top": "Top",
+        "bottom": "Bottom",
+        "viewMore": "View more",
+        "viewFewer": "View fewer"
+      },
+      "typography": {
+        "title": "Typography",
+        "font": "Font",
+        "fonts": {
+          "sans": "Sans",
+          "serif": "Serif",
+          "mono": "Mono",
+          "rounded": "Rounded"
+        },
+        "titleColor": "Title color",
+        "bodyColor": "Body color",
+        "auto": "Auto"
+      },
+      "layout": {
+        "title": "Layout",
+        "variants": {
+          "classic": "Classic",
+          "left": "Left",
+          "hero": "Hero",
+          "banner": "Banner",
+          "cover": "Cover",
+          "compact": "Compact"
+        }
+      },
+      "header": {
+        "title": "Header",
+        "hint": "Header band shown behind the avatar in the Hero layout."
+      },
+      "blocks": {
+        "title": "Blocks",
+        "blockColor": "Block color",
+        "blockText": "Block text"
+      },
+      "branding": {
+        "title": "Branding",
+        "showLogo": "Show Flnk logo",
+        "hint": "Display a small Flnk badge at the bottom of your page."
       }
     },
     "editor": {
