@@ -89,7 +89,10 @@ function Block({
   shape: string
   primaryColor: string
 }) {
-  const buttonClass = `block w-full px-5 py-3 text-center text-sm font-medium text-white ${shape}`
+  // A translucent border delineates the button on the page surface: without it
+  // a near-black fill (the "default" preset's #000000) is invisible against the
+  // dark background. Subtle enough not to intrude on saturated fills.
+  const buttonClass = `block w-full border border-border px-5 py-3 text-center text-sm font-medium text-white ${shape}`
   const buttonStyle = { backgroundColor: primaryColor }
 
   switch (block.type) {
