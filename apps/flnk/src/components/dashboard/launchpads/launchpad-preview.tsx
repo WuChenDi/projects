@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@cdlab/ui/lib/utils'
+import type { CSSProperties } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import type { LinkRef } from '@/components/launchpad/launchpad-view'
 import { LaunchpadView } from '@/components/launchpad/launchpad-view'
@@ -32,6 +33,9 @@ export function LaunchpadPreview({
   const innerRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(0)
   const [height, setHeight] = useState(0)
+  // Device mode: page min-height (in base coords) so the theme background fills
+  // the enclosing phone frame exactly — no black gap, no needless scrollbar.
+  const [fillH, setFillH] = useState(0)
 
   useEffect(() => {
     const outer = outerRef.current
@@ -39,7 +43,10 @@ export function LaunchpadPreview({
     if (!outer || !inner) return
     const measure = () => {
       const width = outer.clientWidth
-      setScale(width > 0 ? width / BASE_WIDTH : 0)
+      const s = width > 0 ? width / BASE_WIDTH : 0
+      setScale(s)
+      const frameH = outer.parentElement?.clientHeight ?? 0
+      setFillH(mode === 'device' && s > 0 ? frameH / s : 0)
       setHeight(inner.scrollHeight)
     }
     measure()
@@ -47,7 +54,7 @@ export function LaunchpadPreview({
     ro.observe(outer)
     ro.observe(inner)
     return () => ro.disconnect()
-  }, [])
+  }, [mode])
 
   return (
     <div
@@ -58,10 +65,24 @@ export function LaunchpadPreview({
       <div style={mode === 'device' ? { height: height * scale } : undefined}>
         <div
           ref={innerRef}
-          className="pointer-events-none origin-top-left [&>main]:min-h-0"
-          style={{ width: BASE_WIDTH, transform: `scale(${scale})` }}
+          className={cn(
+            'pointer-events-none origin-top-left',
+            // Device mode: fill the phone frame (via the measured --pv-fill min
+            // height) so the theme background covers it, without overshooting
+            // into a scrollbar. Thumb mode clips tight, so keep content-height.
+            mode === 'device'
+              ? '[&>main]:min-h-[var(--pv-fill)]'
+              : '[&>main]:min-h-0',
+          )}
+          style={
+            {
+              width: BASE_WIDTH,
+              transform: `scale(${scale})`,
+              '--pv-fill': `${fillH}px`,
+            } as CSSProperties
+          }
         >
-          <LaunchpadView config={config} linkRefs={linkRefs} />
+          <LaunchpadView config={config} linkRefs={linkRefs} bare />
         </div>
       </div>
     </div>
