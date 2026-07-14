@@ -153,7 +153,7 @@ export function LaunchpadsView() {
         <div
           className={
             view === 'grid'
-              ? 'grid gap-3 sm:grid-cols-2 xl:grid-cols-3'
+              ? 'grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3'
               : 'space-y-2.5'
           }
         >
@@ -178,7 +178,7 @@ export function LaunchpadsView() {
         <div
           className={
             view === 'grid'
-              ? 'grid gap-3 sm:grid-cols-2 xl:grid-cols-3'
+              ? 'grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3'
               : 'space-y-2.5'
           }
         >
@@ -346,7 +346,7 @@ function LaunchpadCard({
 
   if (view === 'list') {
     return (
-      <Card className="flex flex-row items-center gap-3 p-3 transition-all hover:border-primary/60 hover:shadow-xl">
+      <Card className="flex flex-row items-center gap-3 border p-4 transition-all hover:border-primary/60 hover:shadow-xl">
         {thumb}
         <div className="min-w-0 flex-1 space-y-1.5">
           {titleBlock}
@@ -358,7 +358,7 @@ function LaunchpadCard({
   }
 
   return (
-    <Card className="gap-0 overflow-hidden p-0 transition-all hover:border-primary/60 hover:shadow-xl">
+    <Card className="gap-0 overflow-hidden border p-0 transition-all hover:border-primary/60 hover:shadow-xl">
       {/* Live scaled mini-preview — no screenshot pipeline. */}
       {thumb}
       <div className="space-y-2.5 p-4">
