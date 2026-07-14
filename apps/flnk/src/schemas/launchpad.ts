@@ -90,6 +90,16 @@ const ConfigSchema = z.object({
     preset: z.string().trim().max(64),
     primaryColor: HexColor,
     buttonShape: z.enum(['rounded', 'pill', 'square']),
+    buttonFill: z.enum(['solid', 'outline', 'soft']).optional(),
+    buttonShadow: z.enum(['none', 'soft']).optional(),
+    background: z
+      .object({
+        type: z.enum(['solid', 'gradient']),
+        from: HexColor,
+        to: HexColor.optional(),
+        dir: z.enum(['b', 'r', 'br', 'tr']).optional(),
+      })
+      .optional(),
   }),
   blocks: z.array(BlockSchema).max(100),
 })

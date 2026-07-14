@@ -108,6 +108,19 @@ export interface LaunchpadConfig {
     preset: string
     primaryColor: string
     buttonShape: 'rounded' | 'pill' | 'square'
+    // Button fill + elevation. Optional for backward compatibility — legacy
+    // rows render as a solid, shadowless button.
+    buttonFill?: 'solid' | 'outline' | 'soft'
+    buttonShadow?: 'none' | 'soft'
+    // Optional page background. When absent the public page inherits the app
+    // theme surface (legacy behavior); when present it paints its own gradient
+    // or solid fill and the renderer auto-picks a readable text color.
+    background?: {
+      type: 'solid' | 'gradient'
+      from: string
+      to?: string
+      dir?: 'b' | 'r' | 'br' | 'tr'
+    }
   }
   blocks: LaunchpadBlock[]
 }
@@ -150,7 +163,14 @@ export type LaunchpadStatus = 'draft' | 'published'
 // no blocks. Used as the column default and by the repository on create.
 export const DEFAULT_LAUNCHPAD_CONFIG: LaunchpadConfig = {
   profile: {},
-  theme: { preset: 'default', primaryColor: '#000000', buttonShape: 'rounded' },
+  theme: {
+    preset: 'default',
+    primaryColor: '#4f46e5',
+    buttonShape: 'rounded',
+    buttonFill: 'solid',
+    buttonShadow: 'soft',
+    background: { type: 'gradient', from: '#eef2ff', to: '#faf5ff', dir: 'b' },
+  },
   blocks: [],
 }
 

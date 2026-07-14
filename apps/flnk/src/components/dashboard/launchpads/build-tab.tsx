@@ -1,6 +1,5 @@
 'use client'
 
-import { Badge } from '@cdlab/ui/components/badge'
 import { Button } from '@cdlab/ui/components/button'
 import { Card } from '@cdlab/ui/components/card'
 import {
@@ -72,11 +71,6 @@ export function BuildTab({ config, links, onChange }: BuildTabProps) {
 
   return (
     <div className="space-y-4">
-      <HeaderCard
-        profile={config.profile}
-        onChange={(profile) => onChange({ ...config, profile })}
-      />
-
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">{t('build.hint')}</p>
         <DropdownMenu>
@@ -170,68 +164,6 @@ export function BuildTab({ config, links, onChange }: BuildTabProps) {
         </div>
       )}
     </div>
-  )
-}
-
-// Fixed profile card pinned above the blocks list — always exactly one, not
-// draggable, removable, or toggleable. The public page shows the header iff
-// any profile field has content, so no enabled switch here.
-function HeaderCard({
-  profile,
-  onChange,
-}: {
-  profile: LaunchpadConfig['profile']
-  onChange: (profile: LaunchpadConfig['profile']) => void
-}) {
-  const t = useTranslations('launchpads')
-
-  return (
-    <Card className="gap-0 overflow-hidden p-0">
-      <div className="flex items-center gap-2 border-b bg-muted/30 px-3 py-2">
-        <span className="flex-1 text-sm font-medium">
-          {t('block.type.header')}
-        </span>
-        <Badge variant="secondary">{t('build.pinned')}</Badge>
-      </div>
-      <div className="space-y-3 p-3">
-        <p className="text-xs text-muted-foreground">
-          {t('block.header.hint')}
-        </p>
-        <Field label={t('block.header.name')}>
-          <Input
-            value={profile.name ?? ''}
-            maxLength={128}
-            onChange={(e) => onChange({ ...profile, name: e.target.value })}
-          />
-        </Field>
-        <Field label={t('block.header.bio')}>
-          <Textarea
-            value={profile.bio ?? ''}
-            maxLength={512}
-            rows={2}
-            onChange={(e) => onChange({ ...profile, bio: e.target.value })}
-          />
-        </Field>
-        <Field label={t('block.header.avatar')}>
-          <div className="flex items-center gap-2">
-            {profile.avatar && (
-              // biome-ignore lint/performance/noImgElement: tiny inline preview of a user-supplied remote URL
-              <img
-                src={profile.avatar}
-                alt=""
-                className="size-8 shrink-0 rounded-full object-cover"
-              />
-            )}
-            <Input
-              value={profile.avatar ?? ''}
-              maxLength={2048}
-              placeholder="https://…"
-              onChange={(e) => onChange({ ...profile, avatar: e.target.value })}
-            />
-          </div>
-        </Field>
-      </div>
-    </Card>
   )
 }
 
