@@ -440,6 +440,39 @@
         "rounded": "Rounded",
         "pill": "Pill",
         "square": "Square"
+      },
+      "profile": {
+        "title": "Profile",
+        "avatar": "Avatar",
+        "name": "Name",
+        "bio": "Bio",
+        "remove": "Remove avatar"
+      },
+      "sections": {
+        "theme": "Theme"
+      },
+      "background": {
+        "title": "Background",
+        "solid": "Solid",
+        "gradient": "Gradient",
+        "color": "Color",
+        "from": "From",
+        "to": "To",
+        "direction": "Direction"
+      },
+      "buttons": {
+        "title": "Buttons"
+      },
+      "fill": {
+        "label": "Style",
+        "solid": "Solid",
+        "outline": "Outline",
+        "soft": "Soft"
+      },
+      "shadow": {
+        "label": "Shadow",
+        "none": "None",
+        "soft": "Soft"
       }
     },
     "editor": {
