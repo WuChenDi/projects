@@ -25,8 +25,6 @@ import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { CountersCards } from '@/components/dashboard/analytics/counters'
-import { MetricGroup } from '@/components/dashboard/analytics/metric-group'
-import { ViewsChart } from '@/components/dashboard/analytics/views-chart'
 import { statsApi } from '@/lib/platform/api'
 
 // Map lib is client-only (SVG, runtime topojson fetch) — skip SSR.
@@ -39,6 +37,27 @@ const WorldMap = dynamic(
     ssr: false,
     loading: () => <Skeleton className="h-[300px] w-full" />,
   },
+)
+
+// Recharts pulls in a large d3 tree and is browser-only — lazy-load ssr:false
+// so it never enters the Worker's server bundle.
+const ViewsChart = dynamic(
+  () =>
+    import('@/components/dashboard/analytics/views-chart').then(
+      (m) => m.ViewsChart,
+    ),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-[240px] w-full" />,
+  },
+)
+
+const MetricGroup = dynamic(
+  () =>
+    import('@/components/dashboard/analytics/metric-group').then(
+      (m) => m.MetricGroup,
+    ),
+  { ssr: false },
 )
 
 const DAY = 24 * 60 * 60 * 1000

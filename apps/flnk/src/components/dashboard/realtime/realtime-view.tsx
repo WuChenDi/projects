@@ -20,7 +20,6 @@ import { Globe } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
-import { ViewsChart } from '@/components/dashboard/analytics/views-chart'
 import { dateLocale } from '@/lib/format/format'
 import type { LogEvent } from '@/lib/platform/api'
 import { statsApi } from '@/lib/platform/api'
@@ -36,6 +35,19 @@ const RealtimeGlobe = dynamic(
     loading: () => (
       <Skeleton className="mx-auto aspect-square w-full max-w-[420px] rounded-full" />
     ),
+  },
+)
+
+// Recharts is heavy (~d3 tree) and browser-only — lazy-load ssr:false to keep
+// it out of the Worker's server bundle.
+const ViewsChart = dynamic(
+  () =>
+    import('@/components/dashboard/analytics/views-chart').then(
+      (m) => m.ViewsChart,
+    ),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-[240px] w-full" />,
   },
 )
 
