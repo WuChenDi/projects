@@ -247,7 +247,7 @@ export function LaunchpadEditor({ id }: { id: string }) {
               <Smartphone className="size-3.5" />
               {t('editor.preview')}
             </p>
-            <div className="mx-auto h-[640px] w-full max-w-[360px] overflow-y-auto rounded-[2rem] border-8 border-muted bg-background shadow-inner">
+            <div className="mx-auto h-[640px] w-full max-w-[360px] overflow-y-auto rounded-[2rem] border-8 border-muted bg-background shadow-inner [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <LaunchpadPreview
                 mode="device"
                 config={form.config}

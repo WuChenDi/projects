@@ -377,6 +377,8 @@
       "empty": "还没有区块。添加第一个区块开始构建。",
       "moveUp": "上移",
       "moveDown": "下移",
+      "moveTop": "置顶",
+      "reorder": "拖动排序",
       "toggle": "启用区块",
       "remove": "删除区块"
     },
@@ -384,6 +386,7 @@
       "remove": "删除",
       "linkSearch": "搜索链接…",
       "noLinks": "未找到链接",
+      "linkMissing": "链接已删除",
       "type": {
         "header": "头部",
         "socials": "社交链接",
