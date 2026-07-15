@@ -14,7 +14,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 
   const { env } = getCloudflareContext()
-  const launchpad = await getLaunchpadById(env, id)
+  const launchpad = await getLaunchpadById(env, id, auth.user.id)
   if (!launchpad) {
     return NextResponse.json({ error: 'Launchpad not found' }, { status: 404 })
   }

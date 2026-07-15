@@ -18,6 +18,6 @@ export async function GET(request: Request): Promise<NextResponse> {
     maxLimit,
     Math.max(1, Number(url.searchParams.get('limit')) || 20),
   )
-  const links = await searchLinks(env, q, { limit })
+  const links = await searchLinks(env, q, { limit }, auth.user.email)
   return NextResponse.json({ links })
 }

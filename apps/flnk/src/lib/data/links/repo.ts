@@ -64,9 +64,13 @@ async function findBySlugDomain(
   )
 }
 
+// Owner-scoped by-id lookup: when `createdBy` is supplied, a row owned by a
+// different user is treated as not-found (returns null) so callers 404 rather
+// than 403 — never leaking that the id exists.
 export async function getLinkById(
   env: CloudflareEnv,
   id: string,
+  createdBy?: string,
 ): Promise<Link | null> {
   const db = await getDb(env)
   const row = (
@@ -77,16 +81,19 @@ export async function getLinkById(
       .limit(1)
   )[0]
   if (!row) return null
+  if (createdBy !== undefined && row.createdBy !== createdBy) return null
   return (await attachTagNames(db, [row]))[0]!
 }
 
 // Batched id lookup for callers that don't need tag names (e.g. health check).
-// Returns raw rows (`tags` holds IDs). Chunked at 99 ids per query so
-// `inArray(ids)` + the `isDeleted` predicate never exceeds the D1 100
-// bound-parameter cap.
+// Returns raw rows (`tags` holds IDs). Owner-scoped: only the caller's own rows
+// are returned, so cross-owner ids resolve to nothing (no existence leak).
+// Chunked at 99 ids per query so `inArray(ids)` + the `isDeleted`/`createdBy`
+// predicates never exceed the D1 100 bound-parameter cap.
 export async function getLinkRowsByIds(
   env: CloudflareEnv,
   ids: string[],
+  createdBy: string,
 ): Promise<LinkRow[]> {
   if (ids.length === 0) return []
   const db = await getDb(env)
@@ -97,7 +104,13 @@ export async function getLinkRowsByIds(
       ...(await db
         .select()
         .from(links)
-        .where(and(inArray(links.id, chunk), eq(links.isDeleted, 0)))),
+        .where(
+          and(
+            inArray(links.id, chunk),
+            eq(links.isDeleted, 0),
+            eq(links.createdBy, createdBy),
+          ),
+        )),
     )
   }
   return rows
@@ -182,7 +195,9 @@ export async function listLinks(
   }
 }
 
-// Distinct non-empty link authors, for the dashboard creator filter.
+// Distinct non-empty link authors. Retained for completeness, but per-owner
+// isolation means the creators route now returns only the caller — it no longer
+// enumerates other owners' emails.
 export async function listCreators(env: CloudflareEnv): Promise<string[]> {
   const db = await getDb(env)
   const rows = await db
@@ -195,13 +210,17 @@ export async function listCreators(env: CloudflareEnv): Promise<string[]> {
     .sort((a, b) => a.localeCompare(b))
 }
 
-// Count of non-deleted links — backs the overview "total links" card.
-export async function countLinks(env: CloudflareEnv): Promise<number> {
+// Count of the caller's own non-deleted links — backs the overview "total
+// links" card. Owner-scoped so each user only ever counts their own links.
+export async function countLinks(
+  env: CloudflareEnv,
+  createdBy: string,
+): Promise<number> {
   const db = await getDb(env)
   const row = await db
     .select({ value: sql<number>`count(*)` })
     .from(links)
-    .where(eq(links.isDeleted, 0))
+    .where(and(eq(links.isDeleted, 0), eq(links.createdBy, createdBy)))
   return Number(row[0]?.value ?? 0)
 }
 
@@ -209,6 +228,7 @@ export async function searchLinks(
   env: CloudflareEnv,
   query: string,
   opts: { limit: number },
+  createdBy: string,
 ): Promise<Link[]> {
   const db = await getDb(env)
   const q = `%${query.trim()}%`
@@ -218,6 +238,7 @@ export async function searchLinks(
     .where(
       and(
         eq(links.isDeleted, 0),
+        eq(links.createdBy, createdBy),
         or(
           like(links.slug, q),
           like(links.url, q),
@@ -372,7 +393,9 @@ export async function updateLink(
   input: EditLinkInput,
   createdBy = '',
 ): Promise<RepoResult> {
-  const current = await getLinkById(env, input.id)
+  // Owner-scoped fetch: a cross-owner (or missing) id resolves to null → 404,
+  // never 403, so existence isn't leaked.
+  const current = await getLinkById(env, input.id, createdBy)
   if (!current) return { ok: false, status: 404, error: 'Link not found' }
 
   const domain = input.domain?.trim() || current.domain
@@ -458,8 +481,10 @@ export async function upsertLink(
 export async function deleteLink(
   env: CloudflareEnv,
   id: string,
+  createdBy = '',
 ): Promise<RepoResult> {
-  const current = await getLinkById(env, id)
+  // Owner-scoped fetch: another owner's (or a missing) id → 404, not 403.
+  const current = await getLinkById(env, id, createdBy)
   if (!current) return { ok: false, status: 404, error: 'Link not found' }
   const db = await getDb(env)
   await db

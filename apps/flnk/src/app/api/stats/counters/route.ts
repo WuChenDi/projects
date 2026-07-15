@@ -6,6 +6,7 @@ import {
   executeAeSql,
   parseStatsQuery,
 } from '@/lib/analytics/analytics-query'
+import { getOwnerSlugs } from '@/lib/analytics/owner-scope'
 import { requireSession } from '@/lib/platform/auth'
 
 export async function GET(request: Request): Promise<NextResponse> {
@@ -14,6 +15,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   const { env } = getCloudflareContext()
   const q = parseStatsQuery(new URL(request.url).searchParams)
+  q.ownerSlugs = await getOwnerSlugs(env, auth.user)
   try {
     const rows = await executeAeSql(env, countersSql(env, q))
     const r = rows[0] ?? {}

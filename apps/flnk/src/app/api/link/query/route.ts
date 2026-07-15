@@ -14,11 +14,17 @@ export async function GET(request: Request): Promise<NextResponse> {
   const slug = url.searchParams.get('slug')
   const domain = url.searchParams.get('domain') || url.hostname
 
-  const link = id
-    ? await getLinkById(env, id)
+  // By-id is owner-scoped (cross-owner id → null → 404, no existence leak). The
+  // by-(slug,domain) branch reuses the public redirect resolver but is then
+  // owner-checked here: a slug owned by another user is treated as not-found so
+  // the full record (comment/config incl. passwordHash/tags) never leaks.
+  let link = id
+    ? await getLinkById(env, id, auth.user.email)
     : slug
       ? await resolveLink(env, domain, slug)
       : null
+
+  if (link && link.createdBy !== auth.user.email) link = null
 
   if (!link) {
     return NextResponse.json({ error: 'Link not found' }, { status: 404 })

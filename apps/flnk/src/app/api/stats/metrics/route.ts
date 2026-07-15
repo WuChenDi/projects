@@ -8,6 +8,7 @@ import {
   metricsSql,
   parseStatsQuery,
 } from '@/lib/analytics/analytics-query'
+import { getOwnerSlugs } from '@/lib/analytics/owner-scope'
 import { requireSession } from '@/lib/platform/auth'
 
 export async function GET(request: Request): Promise<NextResponse> {
@@ -22,6 +23,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   const { env } = getCloudflareContext()
   const q = parseStatsQuery(url.searchParams)
+  q.ownerSlugs = await getOwnerSlugs(env, auth.user)
   const limit = Math.min(
     50,
     Math.max(1, Number(url.searchParams.get('limit')) || 20),

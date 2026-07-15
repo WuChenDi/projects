@@ -6,6 +6,7 @@ import {
   locationSql,
   parseStatsQuery,
 } from '@/lib/analytics/analytics-query'
+import { getOwnerSlugs } from '@/lib/analytics/owner-scope'
 import { requireSession } from '@/lib/platform/auth'
 
 // Aggregated visit coordinates for the realtime globe. Upstream Sink serves this
@@ -18,6 +19,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   const { env } = getCloudflareContext()
   const url = new URL(request.url)
   const q = parseStatsQuery(url.searchParams)
+  q.ownerSlugs = await getOwnerSlugs(env, auth.user)
   const limit = Math.min(
     1000,
     Math.max(1, Number(url.searchParams.get('limit')) || 500),

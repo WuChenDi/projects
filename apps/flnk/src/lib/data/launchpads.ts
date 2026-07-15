@@ -27,12 +27,11 @@ const SORT_COLUMNS = {
   expiresAt: launchpads.expiresAt,
 } as const
 
-// Single funnel for owner filtering. No-op today (shared workspace): returns
-// the conditions unchanged. When per-owner isolation is enabled this becomes
-// `[...conds, eq(launchpads.ownerId, session.id)]` — no schema backfill is
-// needed since every row already carries `ownerId`.
-export function scopeToOwner(conds: SQL[], _session: SessionUser): SQL[] {
-  return conds
+// Single funnel for owner filtering: every list/count query is scoped to the
+// caller's rows. No schema backfill is needed since every row already carries
+// `ownerId`.
+export function scopeToOwner(conds: SQL[], session: SessionUser): SQL[] {
+  return [...conds, eq(launchpads.ownerId, session.id)]
 }
 
 // Find a row by slug regardless of soft-delete state — the unique index covers
@@ -103,12 +102,17 @@ export async function getLinksByIds(
   return new Map(rows.map((row) => [row.id, row]))
 }
 
+// Fetch a launchpad by id, scoped to its owner: a row owned by another user
+// resolves to null so callers 404 (never 403 — cross-owner ids are simply
+// not-found). The PUBLIC `/m/<slug>` path uses getPublishedLaunchpadBySlug, so
+// this owner check never touches the public render.
 export async function getLaunchpadById(
   env: CloudflareEnv,
   id: string,
+  ownerId: string,
 ): Promise<Launchpad | null> {
   const db = await getDb(env)
-  return (
+  const row =
     (
       await db
         .select()
@@ -116,7 +120,8 @@ export async function getLaunchpadById(
         .where(and(eq(launchpads.id, id), eq(launchpads.isDeleted, 0)))
         .limit(1)
     )[0] ?? null
-  )
+  if (!row || row.ownerId !== ownerId) return null
+  return row
 }
 
 export interface ListOptions {
@@ -217,8 +222,9 @@ export async function createLaunchpad(
 export async function updateLaunchpad(
   env: CloudflareEnv,
   input: EditLaunchpadInput,
+  ownerId: string,
 ): Promise<RepoResult> {
-  const current = await getLaunchpadById(env, input.id)
+  const current = await getLaunchpadById(env, input.id, ownerId)
   if (!current) return { ok: false, status: 404, error: 'Launchpad not found' }
 
   const rawSlug = input.slug?.trim() || current.slug
@@ -266,7 +272,11 @@ export async function upsertLaunchpad(
   if (rawSlug) {
     const existing = await findBySlug(env, normalizeSlug(rawSlug, env))
     if (existing && existing.isDeleted === 0) {
-      return updateLaunchpad(env, { ...input, id: existing.id })
+      // A slug owned by another user yields 404 (getLaunchpadById in
+      // updateLaunchpad returns null cross-owner) — the global slug namespace
+      // is preserved because createLaunchpad's resolveSlug still 409s on a
+      // taken slug.
+      return updateLaunchpad(env, { ...input, id: existing.id }, ownerId)
     }
   }
   return createLaunchpad(env, input, ownerId)
@@ -275,8 +285,9 @@ export async function upsertLaunchpad(
 export async function deleteLaunchpad(
   env: CloudflareEnv,
   id: string,
+  ownerId: string,
 ): Promise<RepoResult> {
-  const current = await getLaunchpadById(env, id)
+  const current = await getLaunchpadById(env, id, ownerId)
   if (!current) return { ok: false, status: 404, error: 'Launchpad not found' }
   const db = await getDb(env)
   await db
@@ -290,8 +301,9 @@ export async function publishLaunchpad(
   env: CloudflareEnv,
   id: string,
   status: LaunchpadStatus,
+  ownerId: string,
 ): Promise<RepoResult> {
-  const current = await getLaunchpadById(env, id)
+  const current = await getLaunchpadById(env, id, ownerId)
   if (!current) return { ok: false, status: 404, error: 'Launchpad not found' }
   const db = await getDb(env)
   const row = (

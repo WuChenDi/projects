@@ -109,9 +109,12 @@ soft-delete — NEVER hard-delete; filter `is_deleted=0` or use `@cdlab/db/utils
 - Server-side authorization: `requireSession(request)` (API, 401/403),
   `getAllowedSession(headers)` (dashboard layout), `withAuth(schema, handler)`
   (mutation wrapper: session + Zod + uniform `{ error }` envelope). No client-only gate.
-- Multi-tenancy is designed-in but a NO-OP today: `scopeToOwner(conds, session)`
-  returns conds unchanged (shared workspace). Rows are owner-stamped, so isolation
-  flips with no backfill.
+- Per-owner isolation is ENFORCED: links & tags scoped by `createdBy` (email),
+  launchpads by `ownerId` (`user.id`); launchpad list/count funnel through
+  `scopeToOwner(conds, session)`. Cross-owner by-id access → 404 (not 403). Tags
+  are a per-owner namespace via the `(name, created_by)` unique index. Public
+  `/<slug>` and `/m/<slug>` stay owner-agnostic. No backfill (rows were already
+  owner-stamped).
 
 ## Analytics (src/lib/analytics/)
 

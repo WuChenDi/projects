@@ -11,14 +11,20 @@ const MAX_LINKS = 50000
 
 // Page through listLinks until exhausted, hard-capped at MAX_LINKS. When the
 // cap is hit the result is flagged truncated and a warning is logged. Backs the
-// user-facing export, which needs tag names + title (via listLinks).
+// user-facing export, which needs tag names + title (via listLinks). Scoped to
+// the caller's own links via `createdBy` (per-owner isolation).
 export async function fetchAllLinks(
   env: CloudflareEnv,
+  createdBy: string,
 ): Promise<{ links: Link[]; truncated: boolean }> {
   const all: Link[] = []
   let offset = 0
   for (;;) {
-    const { links, total } = await listLinks(env, { limit: PAGE_SIZE, offset })
+    const { links, total } = await listLinks(env, {
+      limit: PAGE_SIZE,
+      offset,
+      createdBy,
+    })
     all.push(...links)
     offset += PAGE_SIZE
     if (all.length >= MAX_LINKS) {

@@ -36,6 +36,20 @@
       "when": 1784024756328,
       "tag": "0004_zippy_ezekiel",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1784116282994,
+      "tag": "0005_keen_magma",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1784120226693,
+      "tag": "0006_dizzy_stranger",
+      "breakpoints": true
     }
   ]
 }

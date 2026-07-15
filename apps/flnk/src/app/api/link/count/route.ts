@@ -8,6 +8,6 @@ export async function GET(request: Request): Promise<NextResponse> {
   if (!auth.ok) return auth.response
 
   const { env } = getCloudflareContext()
-  const total = await countLinks(env)
+  const total = await countLinks(env, auth.user.email)
   return NextResponse.json({ total })
 }
