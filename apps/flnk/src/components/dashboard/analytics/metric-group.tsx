@@ -7,12 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab/ui/components/card'
-import type { ChartConfig } from '@cdlab/ui/components/chart'
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@cdlab/ui/components/chart'
 import { Skeleton } from '@cdlab/ui/components/skeleton'
 import {
   Tabs,
@@ -25,8 +19,8 @@ import { useQuery } from '@tanstack/react-query'
 import { Inbox } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { formatNumber } from '@/lib/format/format'
+import { MetricRankList } from '@/components/dashboard/metric-rank-list'
+import { flagEmoji, regionName } from '@/lib/geo/country'
 import type { StatsParams } from '@/lib/platform/api'
 import { statsApi } from '@/lib/platform/api'
 
@@ -54,58 +48,16 @@ function MetricList({
     return <IKEmpty className="h-40" title={t('noData')} icon={Inbox} />
   }
 
-  const config = {
-    count: { label: t(`metrics.${type}`), color: 'var(--chart-1)' },
-  } satisfies ChartConfig
-
-  // Horizontal bars read better than vertical ones when only a few categories
-  // come back — height scales with the row count so bars stay evenly spaced.
-  const chartHeight = Math.max(140, rows.length * 44)
-
   return (
-    <ChartContainer
-      config={config}
-      className="aspect-auto w-full"
-      style={{ height: chartHeight }}
-    >
-      <BarChart
-        accessibilityLayer
-        data={rows}
-        layout="vertical"
-        margin={{ left: 4, right: 16 }}
-      >
-        <CartesianGrid horizontal={false} />
-        <YAxis
-          dataKey="name"
-          type="category"
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          fontSize={11}
-          width={80}
-          tickFormatter={(v: string) =>
-            v.length > 12 ? `${v.slice(0, 11)}…` : v
-          }
-        />
-        <XAxis type="number" hide />
-        <ChartTooltip
-          cursor={false}
-          content={
-            <ChartTooltipContent
-              formatter={(value) => formatNumber(Number(value), locale)}
-            />
-          }
-        />
-        <Bar
-          dataKey="count"
-          fill="var(--color-count)"
-          radius={4}
-          maxBarSize={32}
-          className="cursor-pointer"
-          onClick={(_, index) => onDrill(type, rows[index]!.name)}
-        />
-      </BarChart>
-    </ChartContainer>
+    <MetricRankList
+      items={rows.map((r) => ({
+        key: r.name || '—',
+        label: type === 'country' ? regionName(r.name, locale) : r.name || '—',
+        value: r.count,
+        flag: type === 'country' ? flagEmoji(r.name) : undefined,
+        onSelect: () => onDrill(type, r.name),
+      }))}
+    />
   )
 }
 

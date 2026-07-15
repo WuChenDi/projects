@@ -18,7 +18,9 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
+import { MetricRankList } from '@/components/dashboard/metric-rank-list'
 import { dateLocale } from '@/lib/format/format'
+import { flagEmoji, regionName } from '@/lib/geo/country'
 import type { LogEvent } from '@/lib/platform/api'
 import { linkApi, statsApi } from '@/lib/platform/api'
 
@@ -26,11 +28,6 @@ const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000
 
 // Recharts / the SVG map pull in large browser-only trees — lazy-load ssr:false
 // so they stay out of the Worker's server bundle.
-const TopBarChart = dynamic(
-  () =>
-    import('@/components/dashboard/top-bar-chart').then((m) => m.TopBarChart),
-  { ssr: false, loading: () => <Skeleton className="h-[160px] w-full" /> },
-)
 const ViewsChart = dynamic(
   () =>
     import('@/components/dashboard/analytics/views-chart').then(
@@ -208,7 +205,7 @@ export default function DashboardOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className="ring-1 h-full">
+        <Card className="ring-1">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <span className="relative flex size-2">
@@ -218,15 +215,15 @@ export default function DashboardOverviewPage() {
               {t('overview.recentActivity')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="min-h-0 flex-1">
+          <CardContent>
             {eventsQuery.isLoading ? (
-              <Skeleton className="h-full w-full" />
+              <Skeleton className="h-[340px] w-full" />
             ) : events.length === 0 ? (
-              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+              <div className="flex h-[340px] items-center justify-center text-sm text-muted-foreground">
                 {t('overview.activityEmpty')}
               </div>
             ) : (
-              <ScrollArea className="h-full">
+              <ScrollArea className="h-[340px]">
                 <ul className="-my-1 divide-y">
                   {events.map((e) => (
                     <li
@@ -270,14 +267,16 @@ export default function DashboardOverviewPage() {
                 {tAnalytics('noData')}
               </p>
             ) : (
-              <TopBarChart
-                data={topLinks}
-                formatName={(name) => `/${name}`}
-                onSelect={(name) =>
-                  router.push(
-                    `/dashboard/analytics?slug=${encodeURIComponent(name)}`,
-                  )
-                }
+              <MetricRankList
+                items={topLinks.map((l) => ({
+                  key: l.name,
+                  label: `/${l.name}`,
+                  value: l.count,
+                  onSelect: () =>
+                    router.push(
+                      `/dashboard/analytics?slug=${encodeURIComponent(l.name)}`,
+                    ),
+                }))}
               />
             )}
           </CardContent>
@@ -302,9 +301,13 @@ export default function DashboardOverviewPage() {
                 {tAnalytics('noData')}
               </p>
             ) : (
-              <TopBarChart
-                data={topCountries}
-                formatName={(name) => name || '—'}
+              <MetricRankList
+                items={topCountries.map((c) => ({
+                  key: c.name,
+                  label: regionName(c.name, locale),
+                  value: c.count,
+                  flag: flagEmoji(c.name),
+                }))}
               />
             )}
           </CardContent>
