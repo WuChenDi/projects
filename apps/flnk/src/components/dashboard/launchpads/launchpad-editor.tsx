@@ -3,7 +3,6 @@
 import { Badge } from '@cdlab/ui/components/badge'
 import { Button } from '@cdlab/ui/components/button'
 import { Input } from '@cdlab/ui/components/input'
-import { Skeleton } from '@cdlab/ui/components/skeleton'
 import {
   Tabs,
   TabsContent,
@@ -18,6 +17,7 @@ import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { BuildTab } from '@/components/dashboard/launchpads/build-tab'
 import { DesignTab } from '@/components/dashboard/launchpads/design-tab'
+import { LaunchpadEditorSkeleton } from '@/components/dashboard/launchpads/launchpad-editor-skeleton'
 import { LaunchpadPreview } from '@/components/dashboard/launchpads/launchpad-preview'
 import { TrackTab } from '@/components/dashboard/launchpads/track-tab'
 import type { LaunchpadConfig, LaunchpadStatus } from '@/database/schema'
@@ -125,7 +125,7 @@ export function LaunchpadEditor({ id }: { id: string }) {
   }
 
   if (!isNew && existing.isLoading) {
-    return <Skeleton className="h-[70vh] w-full rounded-lg" />
+    return <LaunchpadEditorSkeleton />
   }
   if (!isNew && existing.isError) {
     return (

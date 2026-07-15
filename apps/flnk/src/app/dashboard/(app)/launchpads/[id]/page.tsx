@@ -1,8 +1,8 @@
 'use client'
 
-import { Skeleton } from '@cdlab/ui/components/skeleton'
 import dynamic from 'next/dynamic'
 import { use } from 'react'
+import { LaunchpadEditorSkeleton } from '@/components/dashboard/launchpads/launchpad-editor-skeleton'
 
 const LaunchpadEditor = dynamic(
   () =>
@@ -13,7 +13,7 @@ const LaunchpadEditor = dynamic(
     ssr: false,
     // Mirror the editor's own `existing.isLoading` skeleton so the chunk-load →
     // data-load handoff is seamless (no blank flash on entry).
-    loading: () => <Skeleton className="h-[70vh] w-full rounded-lg" />,
+    loading: () => <LaunchpadEditorSkeleton />,
   },
 )
 
