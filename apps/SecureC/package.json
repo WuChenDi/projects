@@ -3,7 +3,7 @@
   "type": "module",
   "version": "6.0.2",
   "private": true,
-  "description": "SecureC is a client-side tool for secure file and text encryption/decryption using AES-GCM with Argon2id key derivation.",
+  "description": "SecureC is a client-side tool for secure file and text encryption/decryption using XChaCha20-Poly1305 with Argon2id key derivation.",
   "author": "wudi <wuchendi96@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/WuChenDi",

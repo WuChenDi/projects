@@ -46,17 +46,17 @@ export async function generateMetadata({
 
   if (locale === 'zh') {
     return {
-      title: 'SecureC - 客户端文件与文本加密工具 | AES-GCM 加密',
+      title: 'SecureC - 客户端文件与文本加密工具 | XChaCha20-Poly1305 加密',
       icons: 'https://wcd.pages.dev/logo.png',
       description:
-        'SecureC 是一款强大的客户端加密工具，使用 AES-GCM 和 Argon2id 密钥派生进行安全的文件和文本加密/解密。免费使用，无需注册，隐私优先。',
+        'SecureC 是一款强大的客户端加密工具，使用 XChaCha20-Poly1305 和 Argon2id 密钥派生进行安全的文件和文本加密/解密。免费使用，无需注册，隐私优先。',
       keywords: [
         'SecureC',
         '文件加密',
         '文本加密',
         '文件解密',
         '文本解密',
-        'AES-GCM',
+        'XChaCha20-Poly1305',
         'Argon2id',
         '客户端加密',
         '密码保护',
@@ -83,7 +83,7 @@ export async function generateMetadata({
       openGraph: {
         title: 'SecureC - 客户端文件与文本加密工具',
         description:
-          '强大的客户端加密工具，支持 AES-GCM 和 Argon2id 的文件和文本加密/解密。安全、私密、免费。',
+          '强大的客户端加密工具，支持 XChaCha20-Poly1305 和 Argon2id 的文件和文本加密/解密。安全、私密、免费。',
         url: 'https://securec.pages.dev/',
         siteName: 'SecureC',
         images: [
@@ -101,7 +101,7 @@ export async function generateMetadata({
         card: 'summary_large_image',
         title: 'SecureC - 客户端文件与文本加密工具',
         description:
-          '强大的客户端加密工具，支持 AES-GCM 和 Argon2id 的文件和文本加密/解密。安全、私密、免费。',
+          '强大的客户端加密工具，支持 XChaCha20-Poly1305 和 Argon2id 的文件和文本加密/解密。安全、私密、免费。',
         images: [
           'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/index.png',
         ],
@@ -113,17 +113,17 @@ export async function generateMetadata({
 
   return {
     title:
-      'SecureC - Client-Side File & Text Encryption Tool | AES-GCM Encryption',
+      'SecureC - Client-Side File & Text Encryption Tool | XChaCha20-Poly1305 Encryption',
     icons: 'https://wcd.pages.dev/logo.png',
     description:
-      'SecureC is a powerful client-side tool for secure file and text encryption/decryption using AES-GCM with Argon2id key derivation. Free, no registration required, privacy-first encryption.',
+      'SecureC is a powerful client-side tool for secure file and text encryption/decryption using XChaCha20-Poly1305 with Argon2id key derivation. Free, no registration required, privacy-first encryption.',
     keywords: [
       'SecureC',
       'File encryption',
       'Text encryption',
       'File decryption',
       'Text decryption',
-      'AES-GCM',
+      'XChaCha20-Poly1305',
       'Argon2id',
       'Client-side encryption',
       'Password protection',
@@ -152,7 +152,7 @@ export async function generateMetadata({
     openGraph: {
       title: 'SecureC - Client-Side File & Text Encryption Tool',
       description:
-        'Powerful client-side encryption tool supporting file and text encryption/decryption using AES-GCM with Argon2id. Secure, private, and free to use.',
+        'Powerful client-side encryption tool supporting file and text encryption/decryption using XChaCha20-Poly1305 with Argon2id. Secure, private, and free to use.',
       url: 'https://securec.pages.dev/',
       siteName: 'SecureC',
       images: [
@@ -170,7 +170,7 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title: 'SecureC - Client-Side File & Text Encryption Tool',
       description:
-        'Powerful client-side encryption tool supporting file and text encryption/decryption using AES-GCM with Argon2id. Secure, private, and free to use.',
+        'Powerful client-side encryption tool supporting file and text encryption/decryption using XChaCha20-Poly1305 with Argon2id. Secure, private, and free to use.',
       images: [
         'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/index.png',
       ],
@@ -216,7 +216,7 @@ export default async function LocaleLayout({
               name: 'SecureC',
               url: 'https://securec.pages.dev/',
               description:
-                'Client-side file and text encryption tool using AES-GCM with Argon2id',
+                'Client-side file and text encryption tool using XChaCha20-Poly1305 with Argon2id',
               inLanguage,
               potentialAction: {
                 '@type': 'SearchAction',
@@ -236,7 +236,7 @@ export default async function LocaleLayout({
               '@type': 'WebApplication',
               name: 'SecureC',
               description:
-                'Powerful client-side encryption tool for secure file and text encryption/decryption using AES-GCM with Argon2id key derivation.',
+                'Powerful client-side encryption tool for secure file and text encryption/decryption using XChaCha20-Poly1305 with Argon2id key derivation.',
               url: 'https://securec.pages.dev/',
               applicationCategory: 'SecurityApplication',
               operatingSystem: 'Web',
@@ -263,7 +263,7 @@ export default async function LocaleLayout({
               inLanguage,
               isAccessibleForFree: true,
               keywords:
-                'file encryption, text encryption, AES-GCM, Argon2id, client-side encryption, privacy tools',
+                'file encryption, text encryption, XChaCha20-Poly1305, Argon2id, client-side encryption, privacy tools',
               screenshot: {
                 '@type': 'ImageObject',
                 contentUrl:
@@ -279,7 +279,7 @@ export default async function LocaleLayout({
                 worstRating: '1',
               },
               featureList: [
-                'Client-side AES-GCM encryption',
+                'Client-side XChaCha20-Poly1305 encryption',
                 'Argon2id key derivation',
                 'File encryption and decryption',
                 'Text encryption and decryption',

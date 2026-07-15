@@ -313,7 +313,7 @@ chestRoutes.post(
     const { sessionId } = c.req.valid('param')
     const { fileIds, validityDays } = c.req.valid('json')
 
-    // 验证JWT令牌
+    // Verify the JWT token
     const authHeader = c.req.header('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
       return c.json<ApiResponse>(
