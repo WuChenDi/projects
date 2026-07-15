@@ -94,7 +94,7 @@
         "apps/vidl/**/*",
         "apps/SecureC/**/*",
         "apps/txt2img/**/*",
-        "apps/value-vision/**/*",
+        "apps/values/**/*",
         "apps/flox/**/*",
         "apps/byshot/**/*",
         "apps/wepush/**/*",

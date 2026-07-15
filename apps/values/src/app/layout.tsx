@@ -254,7 +254,7 @@ export default function RootLayout({
             <BackgroundEffects />
             <IKHeader
               brand="Values"
-              githubHref="https://github.com/WuChenDi/projects/tree/main/apps/value-vision"
+              githubHref="https://github.com/WuChenDi/projects/tree/main/apps/values"
             />
             {children}
             <IKFooter year={2025} />

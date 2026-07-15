@@ -38,7 +38,7 @@
 | [repo-changelog](./apps/repo-changelog) | GitHub 发布 / 更新日志看板(Nuxt) | [↗](https://repo-changelog.vercel.app/) |
 | [SecureC](./apps/SecureC) | 客户端文件 / 文本加密(XChaCha20-Poly1305) | [↗](https://securec.pages.dev/) |
 | [text2img](./apps/text2img) | 浏览器 AI 文生图(Workers AI) | [↗](https://text2img.cdlab.workers.dev/) |
-| [value-vision](./apps/value-vision) | 加密货币 / 法币 / 大宗商品价值对比 | [↗](https://values.pages.dev/) |
+| [values](./apps/values) | 加密货币 / 法币 / 大宗商品价值对比 | [↗](https://values.pages.dev/) |
 | [vidl](./apps/vidl) | 浏览器视频下载器(M3U8 / HLS → MP4) | [↗](https://vidl.pages.dev/) |
 | [wepush](./apps/wepush) | 多租户微信模板消息推送控制台 | [↗](https://wepush.cdlab.workers.dev/) |
 
@@ -87,8 +87,8 @@ pnpm --filter @cdlab/<name> dev       # → http://<name>.localhost:3355
 pnpm --filter @cdlab/<name> build
 ```
 
-包名不一定等于目录名(`securec` → `SecureC`,`values` → `value-vision`)。具体
-脚本、开发地址和部署命令见各子项目的 README。
+dev 名是去掉 scope 的包名 —— 即目录名(目录首字母大写时取小写,如 `SecureC`
+→ `securec`)。具体脚本、开发地址和部署命令见各子项目的 README。
 
 ## 目录结构
 

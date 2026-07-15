@@ -1,4 +1,4 @@
-# value-vision
+# values
 
 A no-signup **purchasing-power converter**: drop an amount into any field —
 crypto, fiat, or a real-world product — and every other field re-prices to
@@ -26,7 +26,7 @@ depends on what a fiat salary, a car, or a phone costs — and each lives in its
 own currency. Off-the-shelf converters do one pair at a time (USD → EUR) and
 never mix in a physical good.
 
-`value-vision` puts everything on one board:
+`values` puts everything on one board:
 
 - **Everything is a "currency."** Crypto, fiat, and fixed-price products share
   one converter — a product is just an asset with a hardcoded home-currency
@@ -41,7 +41,7 @@ never mix in a physical good.
 
 ## Quick start
 
-`value-vision` is part of the [`@cdlab/projects-monorepo`](../../README.md); run
+`values` is part of the [`@cdlab/projects-monorepo`](../../README.md); run
 everything from the repo root.
 
 ```bash
