@@ -1,5 +1,6 @@
 'use client'
 
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
 import {
   Sidebar,
   SidebarContent,
@@ -16,7 +17,7 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from '@cdlab/ui/components/sidebar'
-import { IKFooter, IKPageContainer } from '@cdlab/ui/IK'
+import { IKFooter } from '@cdlab/ui/IK'
 import type { LucideIcon } from 'lucide-react'
 import {
   Activity,
@@ -155,10 +156,18 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <SidebarTrigger className="-ml-1" />
         </header>
 
-        <IKPageContainer className="flex-col pt-4 md:pt-6">
-          {children}
-        </IKPageContainer>
-        <IKFooter year={new Date().getFullYear()} />
+        {/* One scroll region for the whole page. The footer lives inside it so
+            it flows at the end of the content instead of being pinned to the
+            viewport — matching the (non-persistent) header. The viewport's inner
+            wrapper is forced into a full-height flex column so `main` (flex-1)
+            keeps the footer at the bottom on short pages and lets it scroll away
+            on tall ones. */}
+        <ScrollArea className="h-[calc(100svh-3.5rem)] md:h-svh [&>[data-slot=scroll-area-viewport]>div]:!flex [&>[data-slot=scroll-area-viewport]>div]:min-h-full [&>[data-slot=scroll-area-viewport]>div]:flex-col">
+          <main className="flex flex-1 flex-col p-4 pt-4 md:px-6 md:pt-6">
+            {children}
+          </main>
+          <IKFooter year={new Date().getFullYear()} />
+        </ScrollArea>
       </SidebarInset>
     </SidebarProvider>
   )
