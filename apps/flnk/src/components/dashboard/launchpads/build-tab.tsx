@@ -14,8 +14,11 @@ import { Switch } from '@cdlab/ui/components/switch'
 import { Textarea } from '@cdlab/ui/components/textarea'
 import { cn } from '@cdlab/ui/lib/utils'
 import {
+  ArrowUpToLine,
   ChevronDown,
   ChevronUp,
+  CornerDownRight,
+  Globe,
   GripVertical,
   Plus,
   Trash2,
@@ -27,6 +30,7 @@ import {
   LinkPicker,
 } from '@/components/dashboard/launchpads/link-picker'
 import type { LaunchpadBlock, LaunchpadConfig } from '@/database/schema'
+import { buildShortUrl } from '@/lib/format/format'
 import type { LinkRow } from '@/lib/platform/api'
 import type { AddableBlockType } from './blocks'
 import { BLOCK_TYPES, newBlock } from './blocks'
@@ -167,6 +171,37 @@ export function BuildTab({ config, links, onChange }: BuildTabProps) {
   )
 }
 
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return ''
+  }
+}
+
+// Destination favicon for a selected short-link row — mirrors the Links card
+// avatar (DuckDuckGo icon service, Globe fallback).
+function LinkFavicon({ url }: { url: string }) {
+  const host = hostOf(url)
+  const [failed, setFailed] = useState(false)
+  return (
+    <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted">
+      {host && !failed ? (
+        // biome-ignore lint/performance/noImgElement: tiny external favicon, next/image not worthwhile
+        <img
+          src={`https://icons.duckduckgo.com/ip3/${host}.ico`}
+          alt=""
+          className="size-5"
+          loading="lazy"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <Globe className="size-4 text-muted-foreground" />
+      )}
+    </div>
+  )
+}
+
 function BlockFields({
   block,
   links,
@@ -178,6 +213,8 @@ function BlockFields({
 }) {
   const t = useTranslations('launchpads')
   const linkById = new Map(links.map((l) => [l.id, l]))
+  // Drag state for the shortlink block's reorderable link list.
+  const [linkDrag, setLinkDrag] = useState<number | null>(null)
 
   switch (block.type) {
     case 'socials':
@@ -292,7 +329,16 @@ function BlockFields({
         </div>
       )
 
-    case 'shortlink':
+    case 'shortlink': {
+      // Selected links render in `linkIds` order on the public page, so the
+      // list is reorderable (move up/down), mirroring the socials editor.
+      const moveLink = (from: number, to: number) => {
+        if (to < 0 || to >= block.linkIds.length) return
+        const next = [...block.linkIds]
+        const [item] = next.splice(from, 1)
+        next.splice(to, 0, item!)
+        onChange({ ...block, linkIds: next })
+      }
       return (
         <div className="space-y-2">
           <LinkPicker
@@ -301,22 +347,82 @@ function BlockFields({
             multiple
             onChange={(ids) => onChange({ ...block, linkIds: ids })}
           />
-          <div className="flex flex-wrap gap-1.5">
-            {block.linkIds.map((id) => (
-              <LinkChip
-                key={id}
-                link={linkById.get(id)}
-                onRemove={() =>
-                  onChange({
-                    ...block,
-                    linkIds: block.linkIds.filter((x) => x !== id),
-                  })
-                }
-              />
-            ))}
-          </div>
+          {block.linkIds.length > 0 && (
+            <div className="space-y-1.5">
+              {block.linkIds.map((id, i) => {
+                const link = linkById.get(id)
+                return (
+                  <div
+                    key={id}
+                    draggable
+                    onDragStart={() => setLinkDrag(i)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => {
+                      if (linkDrag !== null) moveLink(linkDrag, i)
+                      setLinkDrag(null)
+                    }}
+                    onDragEnd={() => setLinkDrag(null)}
+                    className={cn(
+                      'flex items-center gap-2 rounded-md border bg-muted/30 px-2 py-1.5',
+                      linkDrag === i && 'opacity-50',
+                    )}
+                  >
+                    <GripVertical
+                      className="size-4 shrink-0 cursor-grab text-muted-foreground"
+                      aria-label={t('build.reorder')}
+                    />
+                    <LinkFavicon url={link?.url ?? ''} />
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <p className="truncate text-sm font-medium">
+                        {link
+                          ? link.title || link.slug
+                          : t('block.linkMissing')}
+                      </p>
+                      {link && (
+                        <>
+                          <p className="truncate text-xs font-medium text-primary">
+                            {buildShortUrl(link.slug, link.domain).replace(
+                              /^https?:\/\//,
+                              '',
+                            )}
+                          </p>
+                          <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <CornerDownRight className="size-3 shrink-0" />
+                            <span className="truncate">{link.url}</span>
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={t('build.moveTop')}
+                      disabled={i === 0}
+                      onClick={() => moveLink(i, 0)}
+                    >
+                      <ArrowUpToLine className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={t('block.remove')}
+                      onClick={() =>
+                        onChange({
+                          ...block,
+                          linkIds: block.linkIds.filter((x) => x !== id),
+                        })
+                      }
+                    >
+                      <Trash2 className="size-4 text-destructive" />
+                    </Button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       )
+    }
 
     case 'image':
       return (

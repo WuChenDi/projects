@@ -343,16 +343,19 @@ export function DesignTab({ config, onChange }: DesignTabProps) {
             </div>
           </SubSection>
 
-          <SubSection
-            icon={PanelTop}
-            title={t('design.header.title')}
-            action={<SurfaceTypeToggle value={header} onChange={setHeader} />}
-          >
-            <p className="text-xs text-muted-foreground">
-              {t('design.header.hint')}
-            </p>
-            <SurfaceEditor value={header} onChange={setHeader} />
-          </SubSection>
+          {/* Header band only applies to the hero / banner layouts. */}
+          {(layout === 'hero' || layout === 'banner') && (
+            <SubSection
+              icon={PanelTop}
+              title={t('design.header.title')}
+              action={<SurfaceTypeToggle value={header} onChange={setHeader} />}
+            >
+              <p className="text-xs text-muted-foreground">
+                {t('design.header.hint')}
+              </p>
+              <SurfaceEditor value={header} onChange={setHeader} />
+            </SubSection>
+          )}
 
           <SubSection
             icon={ImageIcon}

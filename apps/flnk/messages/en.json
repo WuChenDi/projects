@@ -377,6 +377,8 @@
       "empty": "No blocks yet. Add your first block to get started.",
       "moveUp": "Move up",
       "moveDown": "Move down",
+      "moveTop": "Move to top",
+      "reorder": "Drag to reorder",
       "toggle": "Enable block",
       "remove": "Remove block"
     },
@@ -384,6 +386,7 @@
       "remove": "Remove",
       "linkSearch": "Search links…",
       "noLinks": "No links found",
+      "linkMissing": "Link deleted",
       "type": {
         "header": "Header",
         "socials": "Socials",
