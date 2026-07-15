@@ -253,6 +253,23 @@ export function launchpadStatsSql(env: CloudflareEnv, q: StatsQuery): string {
     FROM ${dataset(env)} ${whereClause(q, 'launchpad')}`
 }
 
+// Launchpad page-view buckets over time for the Track tab chart. Counts only
+// `launchpad` points (engagements excluded); the caller pins the slug via
+// `q.filters.slug`.
+export function launchpadViewsSql(
+  env: CloudflareEnv,
+  q: StatsQuery,
+  interval: 'hour' | 'day',
+): string {
+  const fmt = interval === 'hour' ? '%Y-%m-%d %H:00' : '%Y-%m-%d'
+  return `SELECT
+      formatDateTime(timestamp, '${fmt}') AS time,
+      SUM(_sample_interval) AS views
+    FROM ${dataset(env)} ${whereClause(q, 'launchpad')}
+      AND ${FIELD.type} = 'launchpad'
+    GROUP BY time ORDER BY time`
+}
+
 // Per-block engagement breakdown for the Track tab. A `launchpad_block` point
 // carries the clicked block id in the `url` blob (blob2); group by it. The
 // caller pins the launchpad slug via `q.filters.slug`.

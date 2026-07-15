@@ -557,10 +557,24 @@
     "track": {
       "saveFirst": "Save the launchpad to see its metrics.",
       "notConfigured": "Analytics is not configured.",
+      "overview": "Overview",
       "views": "Views",
       "engagements": "Engagements",
+      "chartTitle": "Page views over time",
+      "noData": "No views in this range yet.",
       "perBlock": "Per-block engagements",
-      "noBlocks": "No blocks to track yet."
+      "noBlocks": "No blocks to track yet.",
+      "range": {
+        "placeholder": "Pick a date range",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "last7": "Last 7 days",
+        "last30": "Last 30 days",
+        "thisWeek": "This week",
+        "lastWeek": "Last week",
+        "thisMonth": "This month",
+        "lastMonth": "Last month"
+      }
     }
   },
   "analytics": {

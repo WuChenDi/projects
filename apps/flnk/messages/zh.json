@@ -557,10 +557,24 @@
     "track": {
       "saveFirst": "保存落地页后即可查看数据。",
       "notConfigured": "未配置分析。",
+      "overview": "概览",
       "views": "浏览量",
       "engagements": "互动量",
+      "chartTitle": "浏览量趋势",
+      "noData": "该时间范围内暂无浏览数据。",
       "perBlock": "各区块互动",
-      "noBlocks": "暂无可统计的区块。"
+      "noBlocks": "暂无可统计的区块。",
+      "range": {
+        "placeholder": "选择日期范围",
+        "today": "今天",
+        "yesterday": "昨天",
+        "last7": "近 7 天",
+        "last30": "近 30 天",
+        "thisWeek": "本周",
+        "lastWeek": "上周",
+        "thisMonth": "本月",
+        "lastMonth": "上月"
+      }
     }
   },
   "analytics": {

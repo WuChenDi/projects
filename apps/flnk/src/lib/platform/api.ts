@@ -165,6 +165,7 @@ export interface LaunchpadStats {
   views: number
   engagements: number
   blocks: { blockId: string; count: number }[]
+  series: { time: string; views: number }[]
 }
 
 export const launchpadApi = {
@@ -202,9 +203,11 @@ export const launchpadApi = {
       method: 'POST',
       body: JSON.stringify({ id, status }),
     }),
-  stats: (id: string, startAt: number) =>
+  stats: (id: string, startAt: number, endAt?: number) =>
     request<LaunchpadStats>(
-      `/api/launchpad/stats?id=${encodeURIComponent(id)}&startAt=${startAt}`,
+      `/api/launchpad/stats?id=${encodeURIComponent(id)}&startAt=${startAt}${
+        endAt ? `&endAt=${endAt}` : ''
+      }`,
     ),
 }
 
