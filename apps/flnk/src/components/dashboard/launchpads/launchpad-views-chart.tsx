@@ -12,7 +12,7 @@ import { formatNumber } from '@/lib/format/format'
 
 // Daily launchpad page-views bar chart. Kept in its own client-only module so
 // the Track tab can lazy-load it with `ssr: false`, keeping recharts' large d3
-// dependency tree out of the Worker's server bundle (mirrors `top-bar-chart`).
+// dependency tree out of the Worker's server bundle.
 export function LaunchpadViewsChart({
   data,
 }: {
