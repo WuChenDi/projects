@@ -5,11 +5,6 @@ Zero-knowledge file & text sharing — encryption happens **in the browser**, th
 ([`dropply-api`](../dropply-api)) only ever stores ciphertext. A single Next.js
 app **statically exported** to Cloudflare Pages, with no server of its own.
 
-```diff
-- upload.example.com/file.pdf     # server holds your plaintext, you trust it not to read it
-+ dropply.pages.dev/?code=ABC123#key=…   # server holds ciphertext; the key never leaves the URL fragment
-```
-
 Preview: <https://dropply.pages.dev/>
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Dropply/og-image.png)

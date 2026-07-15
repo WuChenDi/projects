@@ -5,11 +5,6 @@ multi-track timeline, AI captions, TTS, and GPU-accelerated canvas rendering.
 **Every edit and export runs locally in the browser; nothing is ever uploaded to
 a server.**
 
-```diff
-- upload.mp4 → cloud render farm → wait → download   # your footage on someone else's disk
-+ drop.mp4   → edit + render + export in the tab       # frames never leave the machine
-```
-
 Preview: <https://bycut.pages.dev/>
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/ByCut/index.png)

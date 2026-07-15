@@ -5,11 +5,6 @@ recipients, templates, scheduled pushes, and a permanent push log, all in one
 Next.js app on **Cloudflare Workers**. Every message can weave in live data:
 weather, lunar-calendar countdowns, birthdays, a daily quote.
 
-```diff
-- ALL_CONFIG = {...}   +  a Qinglong cron script you SSH in to edit
-+ sign in → add recipients & templates in the UI → cron fires per account
-```
-
 Preview: <https://wepush.cdlab.workers.dev/>
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/wepush/og-image.png)

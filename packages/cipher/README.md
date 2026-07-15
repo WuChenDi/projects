@@ -5,11 +5,6 @@ key or an **ECIES** public key, chunked for arbitrarily large files and streamed
 so the browser never holds the whole plaintext in memory. Encrypt files and text
 in the tab (or a Web Worker) and hand the server only ciphertext.
 
-```diff
-- upload plaintext → server encrypts at rest → server (and its logs, backups, ops) can read it
-+ encrypt in the browser (@cdlab/cipher) → upload a Blob → the server only ever sees ciphertext
-```
-
 A build-only library (`workspace:*`, no dev server, no network, no secrets of its
 own) consumed by [`SecureC`](../../apps/SecureC) (file/text encryption UI, in a
 Web Worker) and [`dropply-web`](../../apps/dropply-web) (end-to-end encrypted file

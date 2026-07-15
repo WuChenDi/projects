@@ -4,11 +4,6 @@ A Telegram Baccarat dealer that runs a full table — betting, dice-dealt cards,
 third-card rules, payouts, and history — inside a single **Cloudflare Worker**,
 with one **Durable Object** per group holding the game state.
 
-```diff
-- a human dealer + a spreadsheet: manual shuffles, hand-counted points, disputed payouts
-+ /newgame → /bet banker 100 → dice roll · natural / third-card rules · auto payout · logged
-```
-
 Every group gets its own isolated game room (a Durable Object keyed by chat ID),
 so tables never cross-talk. Cards come from Telegram's own **dice rolls** (the
 visible 🎲 animation *is* the shuffle), and each finished round is persisted to

@@ -4,11 +4,6 @@ Shared `tsconfig.json` presets for the [`@cdlab/projects-monorepo`](../../README
 one strict `base.json` plus four framework overlays, so every app and package
 extends a preset instead of hand-rolling compiler options.
 
-```diff
-- // apps/<name>/tsconfig.json — 20+ hand-copied compilerOptions, drifting per app
-+ { "extends": "@cdlab/tsconfig/nextjs.json" }   // one line; strictness is centralized
-```
-
 This is a config-only package: raw JSON files, no build step, no entry point, no
 runtime code. `tsc` and each app's bundler read the merged options; nothing here
 executes.

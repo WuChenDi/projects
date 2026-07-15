@@ -5,11 +5,6 @@ player — a **Hono Cloudflare Worker** that validates a batch of client-side
 playback events, enriches them with server-side request metadata, and
 batch-inserts them into a SQLite-family database via Drizzle.
 
-```diff
-- player fetch → self-reported IP/UA/country, ad-hoc shapes, no validation
-+ POST /monitor?bury_content=play → zod-validated → CF-Connecting-IP/UA/country stamped server-side → one atomic batch insert
-```
-
 Preview: <https://byplay.pages.dev/>
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byplay/og-image.png)

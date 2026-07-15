@@ -4,11 +4,6 @@ Zero-knowledge file and text encryption that runs **entirely in your browser** �
 XChaCha20-Poly1305 + Argon2id inside a Web Worker, so nothing you encrypt ever
 leaves the tab and the UI never freezes on a large file.
 
-```diff
-- upload file → server encrypts → server holds the key → trust the server
-+ pick file  → browser encrypts in a Web Worker → you keep the password   # nothing leaves the tab
-```
-
 Preview: <https://securec.pages.dev/>
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/SecureC/og-image.png)

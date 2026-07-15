@@ -4,11 +4,6 @@ Browser-based image & video toolbox — **background removal, image compression,
 and video compression** — that runs **100% in your browser**. No account, no
 upload, no server: your files never leave the device.
 
-```diff
-- upload.jpg  →  someone-else's-server  →  processed.jpg   # your file left your machine
-+ image.jpg   →  WebGPU / WASM / WebCodecs (in-tab)  →  image.webp   # nothing uploaded
-```
-
 Preview: <https://clearify.pages.dev/>
 
 <details>

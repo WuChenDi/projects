@@ -5,11 +5,6 @@ dashboard — a **Nuxt 4** app with no backend of its own, sourcing every byte
 from [ungh.cc](https://ungh.cc) and keeping your selections in the URL and
 `localStorage`, never on a server.
 
-```diff
-- open github.com/a/b/releases, then c/d/releases, then e/f/releases …   # N tabs, no merge
-+ /repos?repos=a/b,c/d,e/f   one timeline · date-sorted · shareable link
-```
-
 Preview: <https://repo-changelog.vercel.app/>
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/repo-changelog/index.png)

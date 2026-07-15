@@ -3,11 +3,6 @@
 Free, no-registration AI **text-to-image** tool — type a prompt, pick a model,
 get a PNG — one Next.js app running entirely on **Cloudflare Workers AI**.
 
-```diff
-- sign up → buy credits → upload your prompt to someone else's server
-+ text2img.cdlab.workers.dev   type prompt · pick model · download PNG · no account, no upload
-```
-
 Preview: <https://text2img.cdlab.workers.dev/>
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/text2img/og-image.png)
