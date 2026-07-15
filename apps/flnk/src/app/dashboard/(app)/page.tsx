@@ -194,18 +194,20 @@ export default function DashboardOverviewPage() {
           </CardHeader>
           <CardContent>
             {topCountriesQuery.isLoading ? (
-              <Skeleton className="h-[300px] w-full" />
+              <Skeleton className="h-[340px] w-full" />
             ) : countryMetrics.length === 0 ? (
-              <div className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">
+              <div className="flex h-[340px] items-center justify-center text-sm text-muted-foreground">
                 {tAnalytics('noData')}
               </div>
             ) : (
-              <WorldMap countries={countryMetrics} />
+              <div className="h-[340px]">
+                <WorldMap countries={countryMetrics} />
+              </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="ring-1">
+        <Card className="ring-1 h-full">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <span className="relative flex size-2">
@@ -215,15 +217,15 @@ export default function DashboardOverviewPage() {
               {t('overview.recentActivity')}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-h-0 flex-1">
             {eventsQuery.isLoading ? (
-              <Skeleton className="h-[300px] w-full" />
+              <Skeleton className="h-full w-full" />
             ) : events.length === 0 ? (
-              <div className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">
+              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                 {t('overview.activityEmpty')}
               </div>
             ) : (
-              <ul className="-my-1 max-h-[300px] divide-y overflow-y-auto">
+              <ul className="-my-1 h-full divide-y overflow-y-auto">
                 {events.map((e) => (
                   <li
                     key={eventKey(e)}
