@@ -197,3 +197,6 @@ collect_files.sh
 files_summary*.md
 temp
 tmp
+
+# PMA process docs (local-only, not published)
+docs/
