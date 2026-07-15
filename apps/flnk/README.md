@@ -1,7 +1,5 @@
 # flnk
 
-**English** · [中文](./README.zh-CN.md)
-
 Privacy-first link shortener with **geo / device routing**, styled QR codes,
 password + safety gates, link-in-bio pages, and self-hosted analytics — one
 Next.js app running entirely on **Cloudflare Workers**.

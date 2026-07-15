@@ -1,7 +1,5 @@
 # flnk — Design
 
-**English** · [中文](./DESIGN.zh-CN.md)
-
 > A privacy-first, server-authoritative link shortener on Cloudflare Workers.
 > The short link is a **name**, not a URL: the destination, routing rules, and
 > access gates live in D1, resolved at the edge through a KV read-through cache,
