@@ -195,7 +195,11 @@
       "totalReferers": "来源数",
       "topLinks": "热门链接",
       "topCountries": "热门国家/地区",
-      "last30Days": "最近 30 天"
+      "last30Days": "最近 30 天",
+      "allTime": "全部时间",
+      "globalReach": "全球分布",
+      "recentActivity": "最近活动",
+      "activityEmpty": "暂无最近活动。"
     }
   },
   "links": {

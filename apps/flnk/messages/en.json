@@ -195,7 +195,11 @@
       "totalReferers": "Referers",
       "topLinks": "Top links",
       "topCountries": "Top countries",
-      "last30Days": "Last 30 days"
+      "last30Days": "Last 30 days",
+      "allTime": "All time",
+      "globalReach": "Global reach",
+      "recentActivity": "Recent activity",
+      "activityEmpty": "No recent activity yet."
     }
   },
   "links": {

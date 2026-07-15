@@ -11,29 +11,55 @@ import {
 import { Skeleton } from '@cdlab/ui/components/skeleton'
 import CountUp from '@cdlab/ui/reactbits/CountUp'
 import { useQuery } from '@tanstack/react-query'
-import { Link2, MousePointerClick, Share2, Users } from 'lucide-react'
+import { format } from 'date-fns'
+import { Globe, Link2, MousePointerClick, Share2, Users } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
+import { dateLocale } from '@/lib/format/format'
+import type { LogEvent } from '@/lib/platform/api'
 import { linkApi, statsApi } from '@/lib/platform/api'
 
 const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000
 
-// Recharts pulls in a large d3 tree and is browser-only — lazy-load ssr:false
-// so it stays out of the Worker's server bundle.
+// Recharts / the SVG map pull in large browser-only trees — lazy-load ssr:false
+// so they stay out of the Worker's server bundle.
 const TopBarChart = dynamic(
   () =>
     import('@/components/dashboard/top-bar-chart').then((m) => m.TopBarChart),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="h-[160px] w-full" />,
-  },
+  { ssr: false, loading: () => <Skeleton className="h-[160px] w-full" /> },
 )
+const ViewsChart = dynamic(
+  () =>
+    import('@/components/dashboard/analytics/views-chart').then(
+      (m) => m.ViewsChart,
+    ),
+  { ssr: false, loading: () => <Skeleton className="h-[300px] w-full" /> },
+)
+const WorldMap = dynamic(
+  () =>
+    import('@/components/dashboard/analytics/world-map').then(
+      (m) => m.WorldMap,
+    ),
+  { ssr: false, loading: () => <Skeleton className="h-[300px] w-full" /> },
+)
+
+const eventKey = (e: LogEvent) =>
+  `${e.timestamp}-${e.slug}-${e.city}-${e.browser}-${e.os}`
+
+// AE returns UTC "YYYY-MM-DD HH:MM:SS"; render as local time.
+function localTime(ts: string, locale: string): string {
+  const d = new Date(`${ts.replace(' ', 'T')}Z`)
+  return Number.isNaN(d.getTime())
+    ? ts
+    : format(d, 'HH:mm', { locale: dateLocale(locale) })
+}
 
 export default function DashboardOverviewPage() {
   const t = useTranslations('dashboard')
   const tAnalytics = useTranslations('analytics')
+  const locale = useLocale()
   const router = useRouter()
 
   // Fixed at first render — the 30d window is anchored to page load.
@@ -47,6 +73,15 @@ export default function DashboardOverviewPage() {
     queryKey: ['overview-counters', startAt],
     queryFn: () => statsApi.counters({ startAt }),
   })
+  const viewsQuery = useQuery({
+    queryKey: ['overview-views', startAt],
+    queryFn: () => statsApi.views({ startAt }),
+  })
+  const eventsQuery = useQuery({
+    queryKey: ['overview-events'],
+    queryFn: () => statsApi.events({}),
+    refetchInterval: 20_000,
+  })
   const topLinksQuery = useQuery({
     queryKey: ['overview-top-links', startAt],
     queryFn: () => statsApi.metrics('slug', { startAt }),
@@ -58,8 +93,11 @@ export default function DashboardOverviewPage() {
 
   const configured = countersQuery.data?.configured ?? true
   const counters = countersQuery.data
+  const events = (eventsQuery.data?.events ?? []).slice(0, 12)
   const topLinks = (topLinksQuery.data?.metrics ?? []).slice(0, 5)
-  const topCountries = (topCountriesQuery.data?.metrics ?? []).slice(0, 5)
+  // Full country list drives the map choropleth; the bar chart shows the top 5.
+  const countryMetrics = topCountriesQuery.data?.metrics ?? []
+  const topCountries = countryMetrics.slice(0, 5)
 
   const stats = [
     {
@@ -68,6 +106,7 @@ export default function DashboardOverviewPage() {
       value: countQuery.data?.total ?? 0,
       loading: countQuery.isLoading,
       gated: false,
+      caption: t('overview.allTime'),
     },
     {
       key: 'totalVisits',
@@ -75,6 +114,7 @@ export default function DashboardOverviewPage() {
       value: counters?.visits ?? 0,
       loading: countersQuery.isLoading,
       gated: true,
+      caption: t('overview.last30Days'),
     },
     {
       key: 'totalVisitors',
@@ -82,6 +122,7 @@ export default function DashboardOverviewPage() {
       value: counters?.visitors ?? 0,
       loading: countersQuery.isLoading,
       gated: true,
+      caption: t('overview.last30Days'),
     },
     {
       key: 'totalReferers',
@@ -89,6 +130,7 @@ export default function DashboardOverviewPage() {
       value: counters?.referers ?? 0,
       loading: countersQuery.isLoading,
       gated: true,
+      caption: t('overview.last30Days'),
     },
   ] as const
 
@@ -109,7 +151,9 @@ export default function DashboardOverviewPage() {
                   {t(`overview.${s.key}`)}
                 </CardTitle>
                 <CardAction>
-                  <Icon className="size-4 text-muted-foreground" />
+                  <span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Icon className="size-4" />
+                  </span>
                 </CardAction>
               </CardHeader>
               <CardContent>
@@ -120,14 +164,87 @@ export default function DashboardOverviewPage() {
                     {tAnalytics('notConfigured')}
                   </p>
                 ) : (
-                  <div className="text-3xl font-bold tabular-nums">
-                    <CountUp to={s.value} duration={1.2} separator="," />
-                  </div>
+                  <>
+                    <div className="text-3xl font-bold tabular-nums">
+                      <CountUp to={s.value} duration={1.2} separator="," />
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {s.caption}
+                    </p>
+                  </>
                 )}
               </CardContent>
             </Card>
           )
         })}
+      </div>
+
+      <ViewsChart
+        data={viewsQuery.data?.views ?? []}
+        loading={viewsQuery.isLoading}
+      />
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card className="ring-1 lg:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">
+              {t('overview.globalReach')}
+            </CardTitle>
+            <CardDescription>{t('overview.last30Days')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {topCountriesQuery.isLoading ? (
+              <Skeleton className="h-[300px] w-full" />
+            ) : countryMetrics.length === 0 ? (
+              <div className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">
+                {tAnalytics('noData')}
+              </div>
+            ) : (
+              <WorldMap countries={countryMetrics} />
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="ring-1">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+              </span>
+              {t('overview.recentActivity')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {eventsQuery.isLoading ? (
+              <Skeleton className="h-[300px] w-full" />
+            ) : events.length === 0 ? (
+              <div className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">
+                {t('overview.activityEmpty')}
+              </div>
+            ) : (
+              <ul className="-my-1 max-h-[300px] divide-y overflow-y-auto">
+                {events.map((e) => (
+                  <li
+                    key={eventKey(e)}
+                    className="flex items-center justify-between gap-2 py-2 text-sm"
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <Globe className="size-3.5 shrink-0 text-muted-foreground" />
+                      <span className="font-medium">/{e.slug}</span>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {[e.city, e.country].filter(Boolean).join(', ')}
+                      </span>
+                    </div>
+                    <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                      {localTime(e.timestamp, locale)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -161,7 +278,7 @@ export default function DashboardOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="ring-1">
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div className="space-y-1.5">
               <CardTitle>{t('overview.topCountries')}</CardTitle>
