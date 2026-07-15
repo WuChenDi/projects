@@ -8,7 +8,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   if (!auth.ok) return auth.response
 
   const { env } = getCloudflareContext()
-  const { links, truncated } = await fetchAllLinks(env)
+  const { links, truncated } = await fetchAllLinks(env, auth.user.email)
   const out = links.map((l) => ({
     id: l.id,
     slug: l.slug,

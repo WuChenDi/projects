@@ -23,7 +23,9 @@ export async function GET(request: Request): Promise<NextResponse> {
   const statusParam = sp.get('status') as LinkStatus | null
   const status =
     statusParam && STATUSES.includes(statusParam) ? statusParam : undefined
-  const createdBy = sp.get('createdBy')?.trim() || undefined
+  // Per-owner isolation: always scope the list to the caller. A client-supplied
+  // `createdBy` is intentionally ignored so it can't read another owner's links.
+  const createdBy = auth.user.email
   const startAt = Number(sp.get('startAt')) || undefined
   const endAt = Number(sp.get('endAt')) || undefined
   const untagged = sp.get('untagged') === '1'

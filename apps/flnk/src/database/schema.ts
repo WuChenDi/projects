@@ -91,7 +91,15 @@ export const links = sqliteTable(
   (table) => [
     uniqueIndex('uniq_links_slug_domain').on(table.slug, table.domain),
     index('idx_links_expires_at').on(table.expiresAt),
-    index('idx_links_created_at').on(table.createdAt),
+    // Owner-scoped list/count/search + analytics slug resolution all filter by
+    // `created_by` and default-sort by `created_at`; this composite serves the
+    // filter, range, and ordering in one index (supersedes the old
+    // `created_at`-only index — post-isolation no query sorts by created_at
+    // without an owner filter).
+    index('idx_links_created_by_created_at').on(
+      table.createdBy,
+      table.createdAt,
+    ),
   ],
 )
 
@@ -230,7 +238,15 @@ export const launchpads = sqliteTable(
     expiresAt: integer('expires_at', { mode: 'timestamp' }),
     ...trackingFields,
   },
-  (table) => [uniqueIndex('uniq_launchpads_slug').on(table.slug)],
+  (table) => [
+    uniqueIndex('uniq_launchpads_slug').on(table.slug),
+    // Owner-scoped list/count + analytics slug resolution filter by `owner_id`
+    // and default-sort by `created_at`.
+    index('idx_launchpads_owner_id_created_at').on(
+      table.ownerId,
+      table.createdAt,
+    ),
+  ],
 )
 
 // Tag dictionary — each tag name exists exactly once and is the single source
@@ -246,7 +262,12 @@ export const tags = sqliteTable(
     createdBy: text('created_by').notNull().default(''),
     ...trackingFields,
   },
-  (table) => [uniqueIndex('uniq_tags_name').on(table.name)],
+  (table) => [
+    uniqueIndex('uniq_tags_name_created_by').on(table.name, table.createdBy),
+    // `listTags` filters by `created_by` alone; the composite unique index above
+    // leads with `name`, so it can't serve an owner-only lookup.
+    index('idx_tags_created_by').on(table.createdBy),
+  ],
 )
 
 // better-auth core tables. Column/table names must match better-auth's expected

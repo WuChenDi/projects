@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { sanitize } from '@/lib/analytics/analytics-query'
+import { countersSql, sanitize } from '@/lib/analytics/analytics-query'
+
+// dataset() reads getConfig defaults (no env needed); an empty env is enough to
+// exercise the SQL string builders.
+const env = {} as CloudflareEnv
 
 describe('sanitize', () => {
   it('leaves normal values untouched', () => {
@@ -21,5 +25,29 @@ describe('sanitize', () => {
 
   it('drops control characters', () => {
     expect(sanitize('a\x00b\x1fc\x7fd\te')).toBe('abcde')
+  })
+})
+
+describe('whereClause owner scoping (via countersSql)', () => {
+  it('omits the slug allow-list when ownerSlugs is undefined', () => {
+    const sql = countersSql(env, { filters: {} })
+    expect(sql).not.toContain('blob1 IN')
+    expect(sql).not.toContain('1=0')
+  })
+
+  it('forces zero rows when ownerSlugs is empty (fail-closed)', () => {
+    const sql = countersSql(env, { filters: {}, ownerSlugs: [] })
+    expect(sql).toContain('1=0')
+    expect(sql).not.toContain('blob1 IN')
+  })
+
+  it('restricts to the owned slugs when ownerSlugs is non-empty', () => {
+    const sql = countersSql(env, { filters: {}, ownerSlugs: ['abc', 'xyz'] })
+    expect(sql).toContain("blob1 IN ('abc', 'xyz')")
+  })
+
+  it('sanitizes slug values in the allow-list', () => {
+    const sql = countersSql(env, { filters: {}, ownerSlugs: ["a'b"] })
+    expect(sql).toContain("blob1 IN ('a\\'b')")
   })
 })

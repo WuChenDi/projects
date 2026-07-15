@@ -58,8 +58,9 @@ account — and holds itself to these goals:
 - Not a cookie-based web-analytics suite — it counts clicks, it does not profile
   sessions across sites.
 - Not a general CMS — launchpads are a constrained block model, not arbitrary HTML.
-- No hard multi-tenant isolation *yet* — the schema is owner-stamped and the
-  filter funnel exists, but the current baseline is a shared workspace (§9).
+- Not a team/org tool — isolation is strictly per-user (each account sees only
+  its own links, tags, launchpads, and analytics); there are no shared
+  workspaces, teams, or role-based access (§9).
 
 ---
 
@@ -499,11 +500,15 @@ client check:
   validation + a uniform `{ error }` envelope, passing `{ user, request, env }`
   and a typed `ApiError` for explicit statuses.
 
-**Multi-tenancy (designed-in, not yet enforced).** Every write stamps `ownerId`
-(launchpads) / `createdBy` (links), and owner filtering funnels through a single
-`scopeToOwner(conds, session)` helper — **today a no-op** (shared workspace).
-Flipping to per-tenant isolation becomes a one-line change in that funnel with
-**no schema backfill**, because every row already carries its owner.
+**Per-owner isolation (enforced).** Every write stamps `ownerId` (launchpads) /
+`createdBy` (links), and every read/mutation is owner-scoped — **links & tags by
+`createdBy` (email), launchpads by `ownerId` (`user.id`)**; launchpad list/count
+funnel through the `scopeToOwner(conds, session)` helper. Cross-owner by-id
+access returns **404** (never 403 — existence isn't disclosed). Tags are a
+per-owner namespace via the `(name, created_by)` unique index. The public
+`/<slug>` redirect and `/m/<slug>` render stay owner-agnostic (they resolve by
+globally-unique slug with no auth context). No schema backfill was needed —
+every row already carried its owner.
 
 ---
 

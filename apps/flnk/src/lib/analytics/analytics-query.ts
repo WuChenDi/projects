@@ -66,6 +66,11 @@ export interface StatsQuery {
   startAt?: number // epoch ms
   endAt?: number // epoch ms
   filters: Partial<Record<Dimension, string>>
+  // Owner allow-list of slugs. When defined, results are restricted to these
+  // slugs (an empty list yields zero rows — fail-closed). Injected by the
+  // stats/* + logs/* routes from the caller's owned slugs; never parsed from
+  // request params. Launchpad SQL does not set this (it pins its own slug).
+  ownerSlugs?: string[]
 }
 
 export class AnalyticsNotConfiguredError extends Error {
@@ -110,6 +115,16 @@ function whereClause(
   if (scope === 'link') {
     const list = LAUNCHPAD_TYPES.map((t) => `'${t}'`).join(', ')
     conditions.push(`${FIELD.type} NOT IN (${list})`)
+  }
+  // Owner-scoped slug allow-list (fail-closed): an empty list means the caller
+  // owns nothing, so force zero rows instead of matching everything.
+  if (query.ownerSlugs !== undefined) {
+    if (query.ownerSlugs.length === 0) {
+      conditions.push('1=0')
+    } else {
+      const list = query.ownerSlugs.map((s) => `'${sanitize(s)}'`).join(', ')
+      conditions.push(`${FIELD.slug} IN (${list})`)
+    }
   }
   if (query.startAt) {
     conditions.push(

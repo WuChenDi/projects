@@ -147,7 +147,6 @@ export function LinksView() {
     search,
     sort,
     status,
-    creator,
     startAt,
     endAt,
     tags,
@@ -157,7 +156,6 @@ export function LinksView() {
     setSearch,
     setSort,
     setStatus,
-    setCreator,
     setDateRange,
     toggleTag,
     setTagMatch,
@@ -196,7 +194,7 @@ export function LinksView() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional triggers
   useEffect(() => {
     setPage(0)
-  }, [search, sort, status, creator, startAt, endAt, tags, tagMatch, untagged])
+  }, [search, sort, status, startAt, endAt, tags, tagMatch, untagged])
 
   const isSearching = search.length > 0
 
@@ -208,7 +206,6 @@ export function LinksView() {
         sort,
         page,
         status,
-        creator,
         startAt,
         endAt,
         tags,
@@ -226,18 +223,12 @@ export function LinksView() {
             offset: page * PAGE_SIZE,
             sort,
             status,
-            createdBy: creator,
             startAt,
             endAt,
             tags,
             tagMatch,
             untagged,
           }),
-  })
-
-  const creatorsQuery = useQuery({
-    queryKey: ['link-creators'],
-    queryFn: () => linkApi.creators(),
   })
 
   const tagsQuery = useQuery({
@@ -289,7 +280,7 @@ export function LinksView() {
   const total = query.data?.total ?? 0
   const pageCount = isSearching ? 1 : Math.max(1, Math.ceil(total / PAGE_SIZE))
 
-  // The list path filters status/creator/date/tags on the server. The search
+  // The list path filters status/date/tags on the server. The search
   // path returns a single unfiltered page, so apply those filters client-side.
   const visibleRows = isSearching
     ? rows.filter((l) => {
@@ -304,7 +295,6 @@ export function LinksView() {
           if (!ok) return false
         }
         if (status !== 'all' && linkStatus(l) !== status) return false
-        if (creator && l.createdBy !== creator) return false
         const created = new Date(l.createdAt).getTime()
         if (startAt && created < startAt) return false
         if (endAt && created > endAt) return false
@@ -313,7 +303,6 @@ export function LinksView() {
     : rows
 
   const allTags = tagsQuery.data?.tags ?? []
-  const creators = creatorsQuery.data?.creators ?? []
 
   // Clear the selection whenever the underlying rows change.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset on data swap
@@ -459,14 +448,10 @@ export function LinksView() {
           {formatDate(link.createdAt, locale)}
         </span>
         {link.createdBy && (
-          <button
-            type="button"
-            onClick={() => setCreator(link.createdBy)}
-            className="flex items-center gap-1 transition-colors hover:text-foreground"
-          >
+          <span className="flex items-center gap-1">
             <User className="size-3.5" />
             <span className="max-w-[12rem] truncate">{link.createdBy}</span>
-          </button>
+          </span>
         )}
         <span className="group/tag flex items-center gap-1.5">
           <Tag className="size-3.5 shrink-0" />
@@ -611,31 +596,6 @@ export function LinksView() {
     )
   }
 
-  function creatorSelect(mobile: boolean) {
-    return (
-      <Select
-        value={creator || 'all'}
-        onValueChange={(v) => setCreator(v === 'all' ? '' : v)}
-      >
-        <SelectTrigger
-          className={
-            mobile ? 'w-full' : 'hidden w-auto min-w-32 max-w-52 md:flex'
-          }
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t('allCreators')}</SelectItem>
-          {creators.map((c) => (
-            <SelectItem key={c} value={c}>
-              {c}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    )
-  }
-
   function dateRangePicker(mobile: boolean) {
     return (
       <Popover>
@@ -707,7 +667,6 @@ export function LinksView() {
   // Active filters surfaced in the mobile drawer (drives the trigger badge).
   const drawerActiveCount =
     (status !== 'all' ? 1 : 0) +
-    (creator !== '' ? 1 : 0) +
     (startAt || endAt ? 1 : 0) +
     (tags.length > 0 || untagged ? 1 : 0)
 
@@ -773,10 +732,6 @@ export function LinksView() {
                 {statusSelect(true)}
               </div>
               <div className="space-y-2">
-                <Label>{t('creatorLabel')}</Label>
-                {creatorSelect(true)}
-              </div>
-              <div className="space-y-2">
                 <Label>{t('dateRange')}</Label>
                 {dateRangePicker(true)}
               </div>
@@ -804,7 +759,6 @@ export function LinksView() {
         {/* Desktop: filter controls inline (hidden on mobile). */}
         {sortSelect(false)}
         {statusSelect(false)}
-        {creatorSelect(false)}
         {dateRangePicker(false)}
 
         {hasActiveFilters(filter) && (

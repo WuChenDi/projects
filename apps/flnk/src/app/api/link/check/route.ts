@@ -24,7 +24,7 @@ export const POST = withAuth(
 
     // Re-resolve the ids to their stored links server-side — never trust a
     // client-supplied destination URL for the server-side fetch (SSRF surface).
-    const found = await getLinkRowsByIds(env, ids)
+    const found = await getLinkRowsByIds(env, ids, user.email)
     const targets = found.map((l) => ({ id: l.id, slug: l.slug, url: l.url }))
 
     const results = await runHealthCheck(

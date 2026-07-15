@@ -31,10 +31,13 @@ export async function upsertTagIds(
     .insert(tags)
     .values(unique.map((name) => ({ id: newId(), name, createdBy })))
     .onConflictDoNothing()
+  // Read back only the caller's own tags. The (name, created_by) unique index
+  // lets the same name exist per owner, so an unscoped read could resolve a name
+  // to ANOTHER owner's tag id — this filter keeps every id owner-local.
   const rows = await db
     .select({ id: tags.id, name: tags.name })
     .from(tags)
-    .where(inArray(tags.name, unique))
+    .where(and(inArray(tags.name, unique), eq(tags.createdBy, createdBy)))
   return new Map(rows.map((r) => [r.name, r.id]))
 }
 
@@ -68,11 +71,12 @@ export async function attachTagNames(db: DB, rows: LinkRow[]): Promise<Link[]> {
   }))
 }
 
-// Every tag in the dictionary with its non-deleted link count, for the dashboard
-// tag filter. Counts only links that are not soft-deleted; tags with no live
-// link sort last (count 0).
+// The caller's own tags with their non-deleted link count, for the dashboard
+// tag filter. Owner-scoped: only the caller's tags are listed, and the count
+// covers only the caller's own links. Tags with no live link sort last (0).
 export async function listTags(
   env: CloudflareEnv,
+  createdBy: string,
 ): Promise<{ tag: string; count: number }[]> {
   const db = await getDb(env)
   const rows = await db.all<{ tag: string; count: number }>(sql`
@@ -80,10 +84,12 @@ export async function listTags(
       (
         select count(*) from ${links} l
         where l.is_deleted = 0
+          and l.created_by = ${createdBy}
           and exists (select 1 from json_each(l.tags) je where je.value = t.id)
       ) as count
     from ${tags} t
     where t.is_deleted = 0
+      and t.created_by = ${createdBy}
     order by count desc, tag asc
   `)
   return rows.map((r) => ({ tag: String(r.tag), count: Number(r.count) }))
@@ -101,7 +107,9 @@ export async function bulkTagLinks(
   createdBy = '',
 ): Promise<number> {
   const db = await getDb(env)
-  // Add creates the tag if it's new; remove on an unknown tag is a no-op.
+  // Add creates the tag if it's new; remove on an unknown tag is a no-op. The
+  // remove lookup is owner-scoped so it resolves the caller's own tag, not a
+  // same-named tag belonging to another owner.
   const tagId =
     op === 'add'
       ? (await upsertTagIds(db, [tag], createdBy)).get(tag)
@@ -109,12 +117,13 @@ export async function bulkTagLinks(
           await db
             .select({ id: tags.id })
             .from(tags)
-            .where(eq(tags.name, tag))
+            .where(and(eq(tags.name, tag), eq(tags.createdBy, createdBy)))
             .limit(1)
         )[0]?.id
   if (!tagId) return 0
   // One batched select up front (chunked at 100 ids — the D1 bound-parameter
-  // cap); the updates stay per-row because each row's tag array differs.
+  // cap); the updates stay per-row because each row's tag array differs. The
+  // owner filter prevents tagging another owner's links.
   const rows: LinkRow[] = []
   for (let i = 0; i < ids.length; i += 100) {
     rows.push(
@@ -122,7 +131,11 @@ export async function bulkTagLinks(
         .select()
         .from(links)
         .where(
-          and(inArray(links.id, ids.slice(i, i + 100)), eq(links.isDeleted, 0)),
+          and(
+            inArray(links.id, ids.slice(i, i + 100)),
+            eq(links.isDeleted, 0),
+            eq(links.createdBy, createdBy),
+          ),
         )),
     )
   }
@@ -157,11 +170,19 @@ export async function setLinkTags(
   createdBy = '',
 ): Promise<boolean> {
   const db = await getDb(env)
+  // Owner-scoped: another owner's link resolves to no row → returns false → the
+  // route 404s, so a user can't rewrite another owner's tag set.
   const current = (
     await db
       .select()
       .from(links)
-      .where(and(eq(links.id, id), eq(links.isDeleted, 0)))
+      .where(
+        and(
+          eq(links.id, id),
+          eq(links.isDeleted, 0),
+          eq(links.createdBy, createdBy),
+        ),
+      )
       .limit(1)
   )[0]
   if (!current) return false
