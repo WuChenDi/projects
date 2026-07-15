@@ -8,14 +8,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Workspace layout:
 
-- `apps/*` — 17 deployable products (Next.js, Nuxt, Cloudflare Workers)
+- `apps/*` — 18 deployable products (Next.js, Nuxt, Cloudflare Workers)
 - `packages/*` — 6 shared libraries (`ui`, `utils`, `cipher`, `uncrypto`, `db`, `tsconfig`)
 
 Apps fall into three runtime families with different toolchains:
 
 | Family                        | Apps                                                                                                                             | Build tool                      | Deploy target                                                                                        |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Next.js (App Router)**      | `bycut`, `byplay`, `byshot`, `bytts`, `clearify`, `dropply-web`, `flox`, `SecureC`, `text2img`, `values`, `vidl`, `wepush` | `next build` (some `--webpack`) | Cloudflare Pages (`@cloudflare/next-on-pages`); `text2img` and `wepush` use `@opennextjs/cloudflare` |
+| **Next.js (App Router)**      | `bycut`, `byplay`, `byshot`, `bytts`, `clearify`, `dropply-web`, `flnk`, `flox`, `SecureC`, `text2img`, `values`, `vidl`, `wepush` | `next build` (some `--webpack`) | Cloudflare Pages (`@cloudflare/next-on-pages`); `text2img`, `wepush`, and `flnk` use `@opennextjs/cloudflare` |
 | **Cloudflare Workers (Hono)** | `baccarat`, `byplay-log`, `dropply-api`, `live-user`                                                                            | `wrangler deploy --minify`      | Cloudflare Workers + Durable Objects / D1                                                            |
 | **Nuxt 4 (Vue 3)**            | `repo-changelog`                                                                                                                 | `nuxt build`/`generate`         | Vercel                                                                                               |
 
