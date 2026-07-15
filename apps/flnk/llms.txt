@@ -71,6 +71,21 @@ KV is a read-through cache in front of D1, key `link:{domain}:{slug}`:
 - Invalidation: a create/import overwrites the same key in place; expiry/disable
   purge on the redirect path.
 
+## Slug allocation (src/lib/data/links/repo.ts, src/lib/redirect/slug.ts, src/lib/ai/ai-slug.ts)
+
+Three paths, all keyed on `(slug, domain)`:
+
+- Auto (no slug given): `insertWithRandomSlug` — `crypto.getRandomValues` over the
+  31-char unambiguous alphabet `23456789abcdefghjkmnpqrstuvwxyz` (no 0/o/1/l/i),
+  length `SLUG_DEFAULT_LENGTH` (6). Race-safe: `onConflictDoNothing().returning()`
+  (unique index arbitrates; empty return = collision) with an escalating-length
+  retry (12 attempts; +1 len after 4, +2 after 8). NEVER a check-then-insert.
+- Custom: `validateSlug` (grammar `^[a-z0-9]+(?:-[a-z0-9]+)*$`, no dots, ≤2048,
+  not reserved) → normalize → active collision = 409, soft-deleted = revive in place.
+- AI (`POST /api/link/ai`, opt-in): Workers AI, URL wrapped in untrusted-data
+  markers (prompt-injection guard), parsed loosely, KV-cached 7d, random fallback.
+  It's a suggestion submitted as a custom slug — create never calls AI implicitly.
+
 ## Data model (src/database/schema.ts)
 
 All business tables share `trackingFields` (`createdAt`, `updatedAt`, `isDeleted`
