@@ -70,11 +70,11 @@ export function WorldMap({
 
   return (
     <TooltipProvider>
-      <div className="w-full cursor-grab overflow-hidden active:cursor-grabbing">
+      <div className="h-full w-full cursor-grab overflow-hidden active:cursor-grabbing">
         <ComposableMap
           projectionConfig={{ scale: 140 }}
           height={300}
-          style={{ width: '100%', height: 'auto' }}
+          style={{ width: '100%', height: '100%' }}
         >
           <ZoomableGroup
             center={position.coordinates}

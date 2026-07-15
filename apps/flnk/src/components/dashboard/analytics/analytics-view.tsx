@@ -213,7 +213,9 @@ export function AnalyticsView() {
           ) : (location.data?.points.length ?? 0) === 0 ? (
             <IKEmpty className="h-[300px]" title={t('noData')} icon={Inbox} />
           ) : (
-            <WorldMap points={location.data?.points ?? []} />
+            <div className="h-[300px]">
+              <WorldMap points={location.data?.points ?? []} />
+            </div>
           )}
         </CardContent>
       </Card>
