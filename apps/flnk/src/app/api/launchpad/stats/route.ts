@@ -5,6 +5,7 @@ import {
   executeAeSql,
   launchpadBlockStatsSql,
   launchpadStatsSql,
+  launchpadViewsSql,
   parseStatsQuery,
 } from '@/lib/analytics/analytics-query'
 import { getLaunchpadById } from '@/lib/data/launchpads'
@@ -29,11 +30,15 @@ export async function GET(request: Request): Promise<NextResponse> {
   const q = parseStatsQuery(new URL(request.url).searchParams)
   q.filters.slug = launchpad.slug
   try {
-    const [totals, blocks] = await Promise.all([
+    const [totals, blocks, series] = await Promise.all([
       executeAeSql(env, launchpadStatsSql(env, q)),
       executeAeSql<{ blockId: string; count: string }>(
         env,
         launchpadBlockStatsSql(env, q, 100),
+      ),
+      executeAeSql<{ time: string; views: string }>(
+        env,
+        launchpadViewsSql(env, q, 'day'),
       ),
     ])
     const r = totals[0] ?? {}
@@ -45,6 +50,10 @@ export async function GET(request: Request): Promise<NextResponse> {
         blockId: b.blockId,
         count: Number(b.count) || 0,
       })),
+      series: series.map((s) => ({
+        time: s.time,
+        views: Number(s.views) || 0,
+      })),
     })
   } catch (error) {
     if (error instanceof AnalyticsNotConfiguredError) {
@@ -53,6 +62,7 @@ export async function GET(request: Request): Promise<NextResponse> {
         views: 0,
         engagements: 0,
         blocks: [],
+        series: [],
       })
     }
     throw error
