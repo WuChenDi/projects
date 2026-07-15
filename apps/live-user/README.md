@@ -6,11 +6,6 @@ with **no server to run and no accounts**. A single Hono **Cloudflare Worker**
 fronting a **Durable Object per site** (WebSocket Hibernation API + embedded
 SQLite).
 
-```diff
-- analytics vendor account · tracking cookie · a snippet that phones home
-+ <script src="…/liveuser.js"></script>   → 42 online · updates live · zero deps
-```
-
 Preview: <https://live-user.cdlab.workers.dev/>
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/live-user/index.png)

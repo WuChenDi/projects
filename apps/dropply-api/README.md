@@ -6,11 +6,6 @@ Zero-knowledge file-sharing backend — one **Hono** Cloudflare Worker that stor
 service just holds blobs in R2, gates them behind short-lived signed tokens, and
 sweeps them when they expire.
 
-```diff
-- upload file → server encrypts → server holds the key → server can read it
-+ browser encrypts → uploads ciphertext → server never sees the key → share a 6-char code
-```
-
 Preview (paired frontend): <https://dropply.pages.dev/>
 
 Every share is a **session** (a random UUID owning one or more files) unlocked by

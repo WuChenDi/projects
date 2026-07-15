@@ -5,11 +5,6 @@ rate / pitch, long-text auto-splitting, and a pluggable "API manager" so you can
 bring your own TTS backend. A single Next.js app; no account, no Azure key, no
 server database.
 
-```diff
-- Azure Cognitive Services TTS   pay per character · subscription key · SDK setup
-+ bytts /api/tts                 free · one POST · audio/mpeg back · runs on the Edge
-```
-
 Preview: <https://bytts.pages.dev/>
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/bytts/og-image.png)

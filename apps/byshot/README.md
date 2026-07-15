@@ -4,11 +4,6 @@ A zero-infrastructure personal photography site: a Cloudinary folder becomes a
 Pinterest-style masonry gallery with a full-screen lightbox and deep-linkable
 photo pages — **no database, no image assets in the repo, no upload pipeline**.
 
-```diff
-- gallery app: upload UI + object storage + a DB of image rows + a thumbnail job
-+ byshot: point CLOUDINARY_FOLDER at a Cloudinary folder → the site IS that folder
-```
-
 Preview: <https://byshot.pages.dev/>
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byshot/og-image.png)

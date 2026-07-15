@@ -4,11 +4,6 @@ Shared React 19 + Tailwind v4 component library for the monorepo — shadcn/ui
 primitives, an app-shell "asset kit", brand icons, hooks, and WebGL effects,
 consumed **directly from source** by every app with **zero build step**.
 
-```diff
-- component-lib/            build → tsc → dist/ → publish → bump → reinstall
-+ @cdlab/ui                 import '@cdlab/ui/components/button'   # straight to .tsx, edit-and-reload
-```
-
 Author / live hub: <https://wcd.pages.dev/projects/> ·
 <https://github.com/WuChenDi>
 

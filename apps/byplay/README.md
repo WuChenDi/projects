@@ -5,12 +5,6 @@ retry, and ad-filter behavior **live** while a real-time stats and event-log
 panel shows exactly what hls.js is doing — one Next.js app that runs entirely
 client-side, with **no backend**.
 
-```diff
-- open a stream in a black-box player, guess why it stalls, edit code, rebuild
-+ paste a URL, flip enableWorker / maxBufferLength / abrBandWidthFactor live,
-+ watch bandwidth · buffered · dropped-frames · level updates + a 200-line event log
-```
-
 Preview: <https://byplay.pages.dev/>
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byplay/og-image.png)

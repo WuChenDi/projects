@@ -4,11 +4,6 @@ Pure-browser video downloader — it parses **M3U8/HLS** playlists (and direct
 `.mp4`/`.ts`/… links), decrypts AES-128 segments, transmuxes to MP4, and streams
 the result straight to disk, all client-side, with **no upload and no server**.
 
-```diff
-- server-side downloader:   your URL → their box fetches it → re-download from them   # they see every link
-+ vidl:                     your URL → your browser fetches, decrypts, muxes → disk    # nothing leaves the tab
-```
-
 Preview: <https://vidl.pages.dev/>
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/vidl/og-image.png)

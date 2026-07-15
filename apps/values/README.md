@@ -5,11 +5,6 @@ crypto, fiat, or a real-world product — and every other field re-prices to
 match, so a Bitcoin balance, a salary, and a MacBook all sit on one scale. A
 single statically-exported Next.js page, no backend, no accounts.
 
-```diff
-- 0.5 BTC   ·   $48,000 salary   ·   ¥215,900 SU7   # three numbers, three mental scales
-+ one board · type any field · every other field re-prices instantly to match
-```
-
 Preview: <https://values.pages.dev/>
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/value-vision/og-image.png)
