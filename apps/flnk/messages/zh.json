@@ -355,7 +355,7 @@
   },
   "launchpads": {
     "title": "落地页",
-    "subtitle": "托管的个人主页，发布在 /m/<slug>。",
+    "subtitle": "托管的个人主页，发布在 /m/[slug]。",
     "new": "新建落地页",
     "searchPlaceholder": "搜索落地页…",
     "clearSearch": "清除搜索",

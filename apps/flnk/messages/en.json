@@ -355,7 +355,7 @@
   },
   "launchpads": {
     "title": "Launchpads",
-    "subtitle": "Hosted link-in-bio pages, published at /m/<slug>.",
+    "subtitle": "Hosted link-in-bio pages, published at /m/[slug].",
     "new": "New launchpad",
     "searchPlaceholder": "Search launchpads…",
     "clearSearch": "Clear search",
