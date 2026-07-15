@@ -1,0 +1,114 @@
+# @cdlab/ui usage guide for AI agents
+
+`@cdlab/ui` is a source-distributed React 19 + Tailwind v4 component library for
+the monorepo. It is a **library, not an app**: no server, no runtime, no deploy
+target, no database, no env/secrets/bindings. It has **no build step** — every
+`exports` subpath points straight at a `.tsx`/`.ts` file under `src/`, and the
+consuming app's bundler compiles the source. Editing a file is visible on the
+next app reload; there is nothing to build, no `dist/`, and no type emit.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Exports contract: ./package.json (`exports`)
+- shadcn CLI config: ./components.json
+- Theme entry: ./src/styles/globals.css
+
+Part of `@cdlab/projects-monorepo`. Consumed as `"@cdlab/ui": "workspace:*"`.
+There are **no package-level scripts** (`"scripts": {}`) — do not invent
+`build`/`dev`/`test` for it.
+
+## What it is
+
+- **No barrel index.** `exports` uses `/*` wildcards: `./components/*` →
+  `src/components/*.tsx`, `./IK/*` → `src/IK/*.tsx`, `./icon/*`, `./reactbits/*`,
+  `./hooks/*` → `.ts`, `./lib/*` → `.ts`, plus `./globals.css` and
+  `./postcss.config`. Import by leaf subpath (`@cdlab/ui/components/button`).
+- `IK/index.ts` and `icon/index.ts` are internal barrels **not in** the exports
+  map — never import `@cdlab/ui/IK` or `@cdlab/ui/icon`.
+- Contents: 56 `components/` (shadcn/ui primitives), 10 `IK/` (app-shell parts),
+  10 `reactbits/` (WebGL/motion effects), 2 `icon/`, 1 `hooks/` (`useIsMobile`),
+  1 `lib/` (`cn`).
+
+## Key files (paths)
+
+- `src/components/*.tsx` — shadcn/ui primitives, `style: radix-nova`.
+- `src/IK/*.tsx` — app-shell kit composed from primitives (`IKHeader`,
+  `IKFooter`, `IKAssetRenderer`, `IKConfirmDialog`, `IKVersionInfo`, …).
+- `src/reactbits/*.tsx` — `Aurora`/`Particles`/`Plasma`/`Threads` (ogl GLSL),
+  `SplashCursor` (raw WebGL), `BlurText`/`CountUp`/`GradientText`/`ShinyText`/
+  `SpotlightCard` (DOM/motion). All `'use client'`.
+- `src/lib/utils.ts` — `cn(...) = twMerge(clsx(...))`; imported by nearly every
+  component as `@cdlab/ui/lib/utils`.
+- `src/hooks/use-mobile.ts` — exports `useIsMobile()` (768px `matchMedia`).
+- `src/icon/{GitHubIcon,XIcon}.tsx` — brand SVGs.
+- `src/styles/globals.css` — the single Tailwind v4 theme entry.
+- `components.json` — shadcn CLI config + custom registries.
+
+## Primitive ecosystems (important)
+
+- Most `components/*` use the **unified `radix-ui`** package
+  (`import { Dialog as DialogPrimitive } from "radix-ui"`), **not** per-component
+  `@radix-ui/*`. 27 components use it.
+- **Exactly one** component uses `@base-ui/react`: `combobox.tsx`. Check a
+  component's neighbors before choosing an ecosystem.
+- Driver-backed wrappers: `chart`→recharts, `qr-code`→qrcode (imperative
+  `QRCodeHandle` ref), `sonner`→sonner, `drawer`→vaul, `command`→cmdk,
+  `calendar`→react-day-picker, `resizable`→react-resizable-panels,
+  `input-otp`→input-otp.
+
+## RSC boundary
+
+- Client components carry `'use client'`: 44 of 56 primitives, plus
+  `IKAudioAssetPlayer`, `IKVersionInfo`, and all 10 reactbits.
+- Server-safe (no directive): `button`, `badge`, `card`, `alert`, `input`,
+  `textarea`, `skeleton`, `spinner`, `breadcrumb`, `button-group`,
+  `color-picker`, `empty`, and most `IK/*` chrome.
+- Do NOT add `'use client'` to a server-safe primitive without cause — it pulls it
+  and its importers into the client bundle.
+
+## Styling (src/styles/globals.css)
+
+- Tailwind v4: `@import "tailwindcss"` + `tw-animate-css` + `shadcn/tailwind.css`.
+- `@source` globs scan `../../../apps/**`, `../../../components/**`, `../**` — the
+  JIT sees class usage across the whole monorepo. Moving the package or apps
+  breaks class detection.
+- Dark mode is class-based (`@custom-variant dark (&:is(.dark *))`), toggled via
+  `next-themes`. `@theme inline` → oklch CSS vars + `--radius` scale.
+- Fonts `--font-sans` / `--font-mono: var(--font-geist-mono)` are only
+  referenced; the consuming app must supply them.
+
+## Config / bindings
+
+- No env vars, secrets, or Cloudflare bindings — it's a library.
+- Dependencies are pinned via the pnpm catalog (`catalog:prod`/`catalog:dev` in
+  root `pnpm-workspace.yaml`), not literal versions.
+- `components.json` registries: `@react-bits` →
+  `https://reactbits.dev/r/{name}.json`, `@ikui` →
+  `https://ik-ui.pages.dev/r/{name}.json`.
+
+## Gotchas for agents
+
+- **Nothing to build here.** Do not run/expect `pnpm --filter @cdlab/ui build` —
+  there are no scripts. To see a change, run a consuming app's dev server.
+- **The hook export is `useIsMobile`**, not `useMobile`.
+- **Biome does not lint** `src/components/**/*.tsx` or `src/reactbits/**/*.tsx`
+  (3rd-party-derived). Only `IK/`, `hooks/`, `lib/`, `icon/`, `styles/` are
+  linted — hence double quotes in components vs single quotes in `IK/`.
+- **No `dist/`, no type emit.** `tsconfig.lint.json`'s `dist` outDir is a phantom;
+  type-checking happens in the consuming app.
+- reactbits `ogl`/WebGL effects are heavy and browser-only — import only where
+  needed.
+- Add/update primitives via the `shadcn` CLI (`components.json`), don't hand-copy;
+  new `components/`/`reactbits/` files are unlinted by design.
+
+## Common commands
+
+There is no dev server for this package; exercise it inside a consuming app.
+
+```bash
+pnpm install                       # resolves the workspace:* link (nothing to build here)
+pnpm lint:biome                    # root Biome over the linted dirs (IK/, hooks/, lib/, icon/, styles/)
+pnpm --filter @cdlab/<app> dev     # run a consuming app to see UI changes
+```

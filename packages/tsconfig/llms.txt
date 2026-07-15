@@ -1,0 +1,99 @@
+# @cdlab/tsconfig usage guide for AI agents
+
+`@cdlab/tsconfig` is a config-only workspace package: one strict `base.json` plus
+four framework overlays (`nextjs`, `hono`, `react-library`, `utils`). Each overlay
+extends `base.json` and patches only the module system, JSX runtime, and emit
+flags that differ per project type. There is **no runtime code, no build step, no
+entry point, no dependencies** — consumers extend a preset by raw subpath and
+`tsc` merges the options.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+
+Part of the `@cdlab/projects-monorepo`. There are no scripts to run in this
+package; validate changes by type-checking a consumer (see Common commands).
+
+## What it is
+
+- **Five JSON files at the package root**, no subdirs: `base.json`, `nextjs.json`,
+  `hono.json`, `react-library.json`, `utils.json`.
+- **No `exports` field** in `package.json` (load-bearing) — so
+  `@cdlab/tsconfig/nextjs.json` resolves straight to the file at the package root.
+- `package.json` has no `main`/`module`/`scripts`/`deps`. `private: true`
+  (workspace-internal); `publishConfig.access: public` is vestigial and inert.
+
+## Preset hierarchy (single level)
+
+`base.json` extends nothing; each overlay `extends: "./base.json"`. No overlay
+extends another. Merge order is base → overlay → consumer, key-by-key; **arrays
+(`lib`, `types`, `plugins`) replace wholesale, they do not concatenate**.
+
+- `base.json` — `strict`, `module`/`moduleResolution: NodeNext`, `target: ES2017`,
+  `lib: [dom, dom.iterable, esnext]`, `moduleDetection: force`, `declaration` +
+  `declarationMap: true`, `incremental: false`, `resolveJsonModule`, `skipLibCheck`,
+  `noUncheckedIndexedAccess: false`.
+- `nextjs.json` — `module: ESNext`, `moduleResolution: Bundler`, `jsx: preserve`,
+  `noEmit: true`, `allowJs: true`, `plugins: [{ name: "next" }]`.
+- `hono.json` — `target`+`module: ESNext`, `moduleResolution: Bundler`,
+  `lib: [ESNext]` (drops DOM), `jsx: react-jsx` + `jsxImportSource: hono/jsx`.
+  Re-states `strict`/`skipLibCheck` (redundant noise).
+- `react-library.json` — `module: ESNext`, `moduleResolution: Bundler`,
+  `jsx: react-jsx`. No plugin.
+- `utils.json` — `module: ESNext`, `moduleResolution: Bundler`, `target: ES6`
+  (lower than base on purpose), `types: [node]`, emit inverted:
+  `noEmit: false`, `declaration: false`, `declarationMap: false` (tsdown emits types).
+
+## Consumer inventory (authoritative)
+
+- `nextjs.json` → `bycut`, `byplay`, `byshot`, `bytts`, `clearify`, `dropply-web`,
+  `flnk`, `flox`, `SecureC`, `text2img`, `value-vision`, `vidl`, `wepush`.
+- `hono.json` → `baccarat`, `byplay-log`, `dropply-api`, `live-user`.
+- `react-library.json` → `packages/ui`.
+- `utils.json` → `packages/utils`, `packages/cipher`, `packages/uncrypto`, `packages/db`.
+- `base.json` → everything, directly or transitively.
+
+## How consumers extend
+
+```json
+{
+  "extends": "@cdlab/tsconfig/nextjs.json",
+  "compilerOptions": { "paths": { "@/*": ["./src/*"] } },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+```
+
+Presets never set `paths`/`include`/`exclude` — those are the consumer's job.
+
+## Gotchas for agents
+
+- **Do NOT add an `exports` field** to `package.json` — it breaks every consumer's
+  raw-subpath `extends` string.
+- **Arrays replace on merge.** Changing `base.json`'s `lib` affects every consumer
+  except `hono.json` (which re-declares `lib`). Same for `types`/`plugins`.
+- **base declares NodeNext, but all four overlays flip to Bundler** — so almost no
+  consumer runs on NodeNext. It only matters for anything extending `base` directly.
+- **The JSX runtime is the main differentiator**: `preserve` (nextjs), `react-jsx`
+  (react-library + hono, hono adds `jsxImportSource: hono/jsx`), none (base/utils).
+- `hono.json` drops DOM libs on purpose (Workers have no DOM); don't "fix" it.
+- `utils.json` targets ES6 and disables declaration on purpose (tsdown owns emit);
+  don't "align" it back to base.
+- `private: true` wins over `publishConfig.access: public`; the package is not
+  published.
+- There are **no scripts** in this package — never invent `build`/`test`/`dev` for
+  `@cdlab/tsconfig`.
+
+## Common commands
+
+Type-check a consumer to validate a preset change (there is nothing to run here):
+
+```bash
+pnpm --filter @cdlab/wepush build         # exercises nextjs.json
+pnpm --filter @cdlab/dropply-api build    # exercises hono.json
+pnpm --filter @cdlab/utils build          # exercises utils.json
+```
+
+`react-library.json` has no script — `packages/ui` ships raw source with no
+build step; validate it by type-checking an app that imports `@cdlab/ui`.

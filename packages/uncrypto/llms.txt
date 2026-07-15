@@ -1,0 +1,85 @@
+# @cdlab/uncrypto usage guide for AI agents
+
+`@cdlab/uncrypto` is a cross-runtime Web Crypto shim. It exposes one
+`Crypto`-shaped surface (`subtle`, `randomUUID`, `getRandomValues`) backed by two
+parallel source files — `crypto.node.ts` (`node:crypto.webcrypto`) and
+`crypto.web.ts` (`globalThis.crypto`) — and the correct file is picked **at bundle
+time** by `package.json#exports` conditions, NOT by a runtime `if`. It is a
+build-only, dependency-free, `private` workspace package with no deploy target of
+its own.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/uncrypto <script>`.
+
+## What it is
+
+- **Purpose:** let the same code call Web Crypto in both a browser / Cloudflare
+  Worker bundle and a Node test runner, with one import and no runtime branch.
+- **NOT an encryption library.** It only forwards to the platform crypto (the
+  `package.json` description saying "encryption library" is inherited and wrong).
+  Real encryption is in `@cdlab/cipher`.
+- **Consumers:** `@cdlab/cipher`, `dropply-api`, `bytts` — anywhere the same path
+  runs in both Workers/browser and Node.
+
+## Architecture / data flow
+
+```
+import { randomUUID } from '@cdlab/uncrypto'
+   → package.json#exports condition match:
+       browser  → dist/crypto.web.*  (globalThis.crypto)
+       node     → dist/crypto.node.* (node:crypto.webcrypto)
+       default  → dist/crypto.web.*  (safe fallback for edge/unknown)
+```
+
+Two source files, identical surface; tsdown builds both; the bundler resolves one.
+No shared runtime dispatcher.
+
+## Key files
+
+- `src/crypto.node.ts` — Node entry. `subtle = nodeCrypto.webcrypto?.subtle || {}`
+  (guarded, `@ts-expect-error`); `randomUUID = nodeCrypto.randomUUID()`;
+  `getRandomValues = nodeCrypto.webcrypto.getRandomValues(...)` (UNguarded).
+- `src/crypto.web.ts` — Web/Worker entry. All three delegate to
+  `globalThis.crypto`. No `subtle` fallback.
+- Both files also `default`-export `{ randomUUID, getRandomValues, subtle }`.
+- `package.json` — the `exports` map (`browser`/`node`/`default`) + legacy
+  `main`/`module`/`browser`/`types` fields. `private: true`, `dependencies: {}`.
+- `tsdown.config.ts` — `dts`, ESM+CJS, both entries, clean-on-build.
+- `test/index.test.ts` — one `runTests()` run against both entries.
+- `test/polyfill.ts` — sets `globalThis.crypto = node:crypto.webcrypto` so the web
+  entry works under Node (try/catch + `Object.defineProperty` because it's a
+  read-only getter on newer Node).
+
+## Config / bindings
+
+- No env vars, no bindings, no secrets, no storage, no config knobs.
+- `tsconfig.json` extends `@cdlab/tsconfig/utils.json`.
+- DevDeps pinned via `catalog:dev`; `@cdlab/tsconfig` via `workspace:*`.
+
+## Gotchas for agents
+
+- Consumers import from `dist/`, not `src/`. After editing `src/`, run
+  `pnpm --filter @cdlab/uncrypto build` (or `dev` watch) or the change is invisible.
+- The `default` export condition points at the **web** build on purpose — don't
+  repoint it at Node; an unknown/edge target must not pull a `node:crypto` import.
+- Asymmetry is intentional: `subtle` is guarded on Node, `getRandomValues` is not.
+  Don't "fix" it without reading DESIGN §5.1.
+- Do NOT add a runtime environment check — resolution is a build-time export
+  condition. Keep the two files in lockstep on their exported shape.
+- It is not a polyfill: the web entry throws at import if `globalThis.crypto` is
+  absent. Don't document it as supplying a Web Crypto implementation.
+- Ignore the `package.json` "encryption library" description — it's a shim.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/uncrypto build      # tsdown → ESM + CJS + .d.mts (both entries)
+pnpm --filter @cdlab/uncrypto dev        # tsdown --watch
+pnpm --filter @cdlab/uncrypto test       # vitest --run (both entries via one suite)
+pnpm --filter @cdlab/uncrypto typecheck  # tsc --noEmit
+```

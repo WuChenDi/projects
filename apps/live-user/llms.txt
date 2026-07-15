@@ -1,0 +1,118 @@
+# live-user usage guide for AI agents
+
+`live-user` is a real-time online-visitor counter that runs as a single Hono
+Cloudflare Worker fronting **one Durable Object per `siteId`** (WebSocket
+Hibernation API + embedded SQLite). The "online" number is NEVER stored — it is
+`ctx.getWebSockets().length` on the site's DO, so it is always exact and
+self-healing. Only an opt-in **total-visits** counter is persisted, in SQLite
+inside that same DO. Integration is one `<script src=".../liveuser.js">` tag.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Runtime config: ./wrangler.jsonc
+- Types: ./src/types/index.ts
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/live-user <script>`.
+
+## What it is
+
+- **One Worker, two tiers.** Stateless Hono front (`src/index.ts`) mounting
+  `homeRoutes` (`GET /`), `sdkRoutes` (`GET /liveuser.js`), `wsRoutes`
+  (`GET /ws`) — all at `/`. Stateful `SiteManager` Durable Object
+  (`src/site-manager.ts`) owns the sockets + SQLite.
+- **Deterministic sharding.** `wsRoutes` resolves the DO with
+  `SITE_MANAGER.idFromName(siteId)` → one strongly-consistent, single-threaded DO
+  instance per site. This is why the SQLite increment needs no locking.
+- **DO re-export.** `src/index.ts` does `export { SiteManager }` — Wrangler needs
+  the class exported from the main module to bind it. Do not remove it.
+- **No secrets, no env vars, no KV/R2/D1.** The only binding is the DO
+  `SITE_MANAGER`.
+
+## Connection lifecycle
+
+1. Browser loads `/liveuser.js`; `sdkRoutes` (`src/routes/sdk.ts`) parses query →
+   `SDKConfig` (`parseConfig`) and returns the `SDK_SCRIPT` IIFE with config
+   JSON-injected (`application/javascript`, `no-cache`, `Access-Control-Allow-Origin: *`).
+2. The IIFE makes a UUID `clientId`, finds `displayElementId`, opens
+   `wss://host/ws?siteId=…&clientId=…[&enableTotalCount=true]`, sends
+   `{type:'join'}`, starts a 30s heartbeat.
+3. `wsRoutes` `GET /ws` (`src/routes/ws.ts`): `idFromName(siteId)` → stub, forward
+   raw upgrade `stub.fetch(url, c.req.raw)`. It rewrites only `clientId` +
+   `enableTotalCount` into the URL, NOT `siteId` (DO re-reads it from the
+   still-present original query).
+4. `SiteManager.fetch`: non-`/ws` → 404; else `WebSocketPair` +
+   `ctx.acceptWebSocket(server)` + `serializeAttachment(state)`; if
+   `enableTotalCount` → `incrementTotalCount`; `broadcast(siteId)`; return 101.
+5. `webSocketMessage`: `heartbeat` → reply live count (+totalCount if this socket
+   opted in); `join` → broadcast. State via `ws.deserializeAttachment()`.
+6. `webSocketClose` / `webSocketError` → re-broadcast.
+
+## Key files
+
+- `src/index.ts` — Hono app, `logger`+`requestId` middleware, route mounts, 404
+  JSON `{statusCode,message}`, DO re-export, `export default {fetch: app.fetch}`.
+- `src/site-manager.ts` — `SiteManager` DO; the entire stateful core.
+- `src/routes/sdk.ts` — `/liveuser.js`; `parseConfig` + the `SDK_SCRIPT` IIFE.
+- `src/routes/ws.ts` — `/ws`; DO resolution + upgrade forwarding.
+- `src/routes/home.tsx` — `GET /` renders `<HomePage>` via Hono JSX.
+- `src/pages/{Layout,HomePage}.tsx` — JSX HTML shell + self-demo page (embeds its
+  own counter on `siteId=official-website`).
+- `src/types/index.ts` — `AppEnv`, `ConnectionState`, `SDKConfig`.
+
+## Data model (SQLite inside the DO)
+
+Created idempotently in the DO constructor under `ctx.blockConcurrencyWhile`:
+
+```
+visit_counter(site_id TEXT PRIMARY KEY, count INTEGER NOT NULL DEFAULT 0)
+```
+
+- Read: `getTotalCount` — `SELECT count … WHERE site_id = ?`, missing → 0.
+- Increment: `incrementTotalCount` — `INSERT … VALUES(?,1) ON CONFLICT(site_id)
+  DO UPDATE SET count = count + 1` (atomic upsert).
+- Online count is NOT stored — derived from `ctx.getWebSockets().length`.
+
+## Config & bindings
+
+- SDK/runtime config is read from the `/liveuser.js` query string (`parseConfig`,
+  `src/routes/sdk.ts`): `serverUrl` (`ws(s)://host/`), `siteId` (`default-site`),
+  `displayElementId` (`liveuser`), `totalCountElementId` (`liveuser_totalvisits`),
+  `reconnectDelay` (3000), `debug` (false), `enableTotalCount` (false).
+- Hard-coded in the SDK: 30s heartbeat, K/M format thresholds.
+- Binding: `SITE_MANAGER` DO → class `SiteManager` (`wrangler.jsonc`; `AppEnv`).
+  Migration tag `v1` = `new_sqlite_classes: ["SiteManager"]`. `account_id` is
+  EMPTY — set it before deploy.
+
+## Gotchas for agents
+
+- **Never `ws.close()` in `webSocketClose`** — the Hibernation API fires it AFTER
+  the socket is already closed; calling close there throws. Only `webSocketError`
+  closes (with `ws.close(1011, …)`), then broadcasts. See DESIGN §4.2.
+- **Store state on the socket, not the DO instance.** Use
+  `serializeAttachment`/`deserializeAttachment` for `ConnectionState`; the DO can
+  hibernate/evict between events. Handlers must be top-level DO methods, not
+  closures.
+- **`broadcast` reads EACH recipient's own `enableTotalCount`** from its
+  attachment, not the triggering connection's flag — opted-out clients must never
+  receive `totalCount`. Same rule in the heartbeat reply. See DESIGN §5.
+- **totalCount only increments on `enableTotalCount=true` connections** — it is
+  connection-count, not unique visitors. Sites embedding without the flag never
+  accrue totals.
+- **Don't add `siteId` rewriting in `wsRoutes`** — the DO re-reads `siteId` from
+  the original forwarded query; only `clientId`/`enableTotalCount` are rewritten.
+- **Doc discrepancy:** `Layout.tsx` SEO/JSON-LD says "SSE" but the transport is
+  WebSockets. WebSockets is source of truth.
+- No auth, no rate limiting, no secrets — `/liveuser.js` and `/ws` are open to any
+  origin (`Access-Control-Allow-Origin: *`).
+- No test suite exists.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/live-user dev         # http://live-user.localhost:3355 (nsl)
+pnpm --filter @cdlab/live-user cf-typegen  # regenerate CloudflareBindings types
+pnpm --filter @cdlab/live-user deploy      # wrangler deploy --minify
+```

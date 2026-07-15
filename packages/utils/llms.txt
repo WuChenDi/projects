@@ -1,0 +1,94 @@
+# @cdlab/utils usage guide for AI agents
+
+`@cdlab/utils` is a build-only ESM library of shared browser + Node primitives:
+clipboard copy, file download, byte formatting, IndexedDB key-value storage,
+timestamped logging, precise decimal arithmetic (`np`), and Argon2id password
+hashing. Seven independent modules re-exported from one barrel, consumed across
+the monorepo as a `workspace:*` dependency. No server, no routes, no env vars, no
+Cloudflare bindings, no network calls.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Barrel entry: ./src/index.ts
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/utils <script>`.
+
+## What it is
+
+- **Build-only library** — `tsdown` bundles `src/index.ts` → `dist/index.mjs` +
+  `dist/index.d.mts`. Consumers import from the package root ONLY (no deep subpath
+  exports besides `./package.json`).
+- **`dist/` is prebuilt and committed**; consumers resolve `dist/`, not `src/`.
+- **Runtime split**: universal (Node + browser) = `format`, `logger`, `np`,
+  `password`; browser-only (need DOM / `window` / `indexedDB`) = `clipboard`,
+  `download`, `idb-store`.
+- Build target `ES2018` (tsdown); TS compile target `ES6` via
+  `@cdlab/tsconfig/utils.json`.
+
+## Modules & key files
+
+| Module | File | Exports |
+| --- | --- | --- |
+| clipboard | src/clipboard.ts | `copyToClipboard(message, opts?)` |
+| download | src/download.ts | `downloadFile({ data, filename })`, `downloadFilesAsZip(files, prefix)` |
+| format | src/format.ts | `formatBytes({ bytes, decimals? })`, `formatFileSize` (deprecated) |
+| idb-store | src/idb-store.ts | `createIDBStore<T>(dbName, storeName?, version?)`, `deleteIDBDatabase(dbName)` |
+| logger | src/logger.ts | `logger` (`log`/`info`/`warn`/`error`/`debug`) |
+| np | src/np/index.ts | `plus`/`minus`/`times`/`divide`/`round`/`strip`/`digitLength`/`float2Fixed`/`enableBoundaryChecking`/`createCalculator`/`NumberCalculator` |
+| password | src/password.ts | `hashPasswordFn(password, salt?)`, `verifyPasswordFn(storedHash, attempt)` |
+
+## Behavior notes (read before editing)
+
+- `copyToClipboard` — tries `navigator.clipboard.writeText`, falls back to
+  `execCommand('copy')` when `fallbackToLegacy` (default true). Returns a boolean,
+  NEVER throws. iOS Safari uses `Range`/`Selection`, not `.select()`.
+- `downloadFile` — revokes the object URL ONLY when it created it from a Blob; if
+  the caller passes a URL string, the caller owns revoke.
+- `downloadFilesAsZip` — `jszip` is `await import('jszip')` (dynamic) so it stays
+  out of consumers' main bundles. ZIP name = `{prefix}_yyyyMMdd_HHmmss.zip`
+  (`date-fns`).
+- `np` — ops accept numbers OR numeric strings, are variadic; `plus`/`minus` are
+  built on `times`. `enableBoundaryChecking` toggles a MODULE-GLOBAL mutable flag;
+  boundary breaches only `console.warn`, never throw.
+- `password` — Argon2id (`@noble/hashes`, `t:3 m:1280 p:4 dkLen:32`); stored as
+  `saltHex:hashHex`. `verify` uses plain `===` (NOT constant-time) and THROWS on a
+  malformed hash. `async` API but synchronous hashing.
+- `logger` — timestamps are `toLocaleString()` (local tz, locale-dependent), not
+  ISO/UTC. Do not machine-parse them.
+
+## Config / bindings
+
+- None. No env vars, no secrets, no Cloudflare bindings, no network. Fully
+  self-contained.
+- Runtime deps (all `catalog:prod`): `@noble/hashes` (password), `date-fns`
+  (download timestamp), `jszip` (download, lazy).
+- Build: `tsdown.config.ts` (single entry, esm, dts, ES2018, clean unless
+  `--watch`). Test: `vitest.config.ts` (`@`→`src`, `test/**/*.test.ts`).
+
+## Gotchas for agents
+
+- REBUILD after editing source: consumers resolve committed `dist/index.mjs`, so
+  source edits are invisible until `pnpm --filter @cdlab/utils build` (or `dev`).
+- The barrel `export * from './np'` does NOT re-export np's `default` (`NP`) —
+  `export *` drops defaults. Import named functions from the package root; `NP`
+  is submodule-only.
+- Import from the package root, not deep paths — only `.` and `./package.json` are
+  exported.
+- Browser-only modules (`clipboard`, `download`, `idb-store`) throw in Node — do
+  not call them on a Node/Worker code path.
+- No tests exist for `download` or `idb-store` (DOM-bound); don't assume coverage.
+- Lint/format is Biome (single quotes, no semicolons, 2-space) — NOT ESLint (the
+  `eslint-disable` comments in `logger.ts` are legacy, harmless).
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/utils build       # tsdown -> dist/
+pnpm --filter @cdlab/utils dev         # tsdown --watch
+pnpm --filter @cdlab/utils test        # vitest --run
+pnpm --filter @cdlab/utils test:watch  # vitest watch
+pnpm --filter @cdlab/utils typecheck   # tsc --noEmit
+```

@@ -1,0 +1,163 @@
+# bycut usage guide for AI agents
+
+`bycut` is a 100% client-side, browser-based video editor (a free CapCut
+alternative) built as a **statically-exported Next.js App Router app** — no
+server component, no `app/api` directory. The editing model is a set of in-memory
+**manager singletons** (observer pattern) bridged to React via
+`useSyncExternalStore`; every mutation is a **command** on an undo/redo bus;
+compositing + export run on `OffscreenCanvas` through **mediabunny** (WebCodecs);
+AI captions run **Whisper on WebGPU** in a Web Worker. Projects persist to
+IndexedDB (structured data) + OPFS (raw media).
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Next config (static export): ./next.config.ts
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/bycut <script>`.
+
+## What it is
+
+- **Static export.** `next.config.ts` sets `output: 'export'` → static `out/`.
+  There is NO Node/edge runtime, NO `app/api`, NO wrangler config, NO secrets, NO
+  bindings. Deploy target: Cloudflare Pages (`build:cf` → `@cloudflare/next-on-pages`).
+- **Local by construction.** Media is decoded/composited/encoded entirely in the
+  browser via mediabunny + `@mediabunny/mp3-encoder`. Nothing is uploaded.
+- **NOT FFmpeg.** Despite older README copy, there is no `@ffmpeg/*` dependency and
+  zero `ffmpeg` in `src/`. Do not document or add FFmpeg.
+- **Routing.** `/` → `/en`; `/[locale]` → `/{locale}/projects` (gallery); editor at
+  `/[locale]/editor?projectId=<id>` (reads `?projectId` from `window.location`).
+  `middleware.ts` is `next-intl` locale middleware — a dev/SSR artifact only (does
+  not run under static export).
+
+## Architecture & data flow
+
+- **`EditorCore` (src/core/index.ts)** — a HARD singleton (`getInstance`/`reset`),
+  constructs 10 managers + `save.start()`. No React context; every hook reaches the
+  same instance. `reset()` is NOT wired to route changes.
+- **Managers (src/core/managers/)** — `command`, `timeline`, `scenes`, `project`,
+  `media`, `playback`, `audio`, `renderer`, `save`, `selection`. Each holds plain
+  in-memory state and exposes `subscribe()/notify()`.
+- **React bridge (src/hooks/use-editor.ts)** — folds ALL manager subscriptions into
+  one `useSyncExternalStore` version counter.
+- **Three state seams:** domain state = managers (observer); UI-only state = Zustand
+  (`src/stores/`); event bus = `window` CustomEvents `playback-seek` /
+  `playback-update` (playback → audio/preview).
+
+Drop-clip-to-screen flow:
+1. UI hook → `editor.timeline.insertElement(...)`.
+2. `InsertElementCommand` → `command.execute()` → pushed to undo history (clears
+   redo stack). First visual element sets canvas size + fps with `pushHistory:false`
+   (NON-undoable side effect).
+3. `scenes.updateSceneTracks(...)` → `notify()`.
+4a. `SaveManager` (subscribed) → 800ms debounce → `storageService.saveProject`.
+4b. Preview panel → `buildScene(...)` → `renderer.setRenderTree`.
+5. Preview RAF loop → `new CanvasRenderer().render({node, time})`; `VideoNode`
+   pulls a decoded frame from `videoCache.getFrameAt(...)`.
+6. On play → `AudioManager` schedules audio through the Web Audio graph.
+
+## Commands & undo (src/lib/commands/)
+
+Every project mutation is a Command. `TimelineManager` methods NEVER mutate tracks
+directly — they build a command and route through `CommandManager.execute`, which
+pushes to `history[]` and clears `redoStack[]`. `base-command` (`redo` defaults to
+`execute`), `batch-command` (undo in reverse). Categories: `media/`, `project/`,
+`scene/`, `timeline/element/`, `timeline/track/`, `timeline/clipboard/`.
+
+## Render tree & export (src/services/renderer/)
+
+- `scene-builder.ts` — pure `buildScene()`: tracks + media + background → `RootNode`
+  tree (main track at bottom, z-order, transition pairing, blur-bg wrapping).
+- `canvas-renderer.ts` — wraps `OffscreenCanvas` (falls back to `HTMLCanvasElement`);
+  `render` clears to black + recurses; `renderToCanvas` blits (preview + thumbnails).
+- `nodes/` — `base-node` → `visual-node` (getLocalTime: playbackRate/reversed/trim;
+  renderVisual: contain-fit + transform/rotate/flip/opacity) → video/image/text/
+  sticker/color/blur-background/transition/root.
+- `scene-exporter.ts` — `extends EventEmitter` (eventemitter3); encodes frame-by-
+  frame with mediabunny (`Output`, `CanvasSource`, `AudioBufferSource`, `Mp4/WebMOutputFormat`);
+  codecs avc+aac (mp4) / vp9+opus (webm); supports cancel; emits progress/complete/
+  error/cancelled. Driven by `renderer.exportProject()` (100ms cancel-poll interval).
+
+## Storage (src/services/storage/)
+
+Driver chosen by DATA TYPE, not a toggle:
+- Project docs → IndexedDB `video-editor-projects`.
+- Media metadata → IndexedDB `video-editor-media-{projectId}`.
+- Media binary files → OPFS `media-files-{projectId}`.
+- Saved sounds → IndexedDB `video-editor-saved-sounds`.
+`isFullySupported()` requires BOTH IndexedDB + OPFS (warning toast if missing).
+Serialization: Dates → ISO strings, audio `buffer` stripped, duration recomputed;
+object URLs reconstructed on load (SVG empty-MIME special-cased). Object URLs are
+manually created/revoked — memory-leak sensitive.
+
+Autosave: `SaveManager` subscribes to scenes+timeline, 800ms debounce, skips while
+loading/migrating; `getIsDirty()` drives the `beforeunload` guard (EditorProvider).
+
+## Migrations (src/services/storage/migrations/)
+
+`CURRENT_PROJECT_VERSION = 4`; chain v0→v1→v2→v3→v4. `runner.ts` infers version
+(numeric field, else scenes-array=v1, else v0), enforces 1s min dialog display
+(`MIN_MIGRATION_DISPLAY_MS`), one-time deletes legacy `video-editor-meta`. TWO
+entry points (`StorageService.ensureMigrations` + `ProjectManager.ensureStorageMigrations`),
+both idempotent + promise-memoized. `__tests__/` (with fixtures) is the ONLY test
+suite in the app. Keybindings have a separate migration chain (`src/stores/keybindings/migrations/`).
+
+## Transcription (src/services/transcription/)
+
+- `worker.ts` — module Web Worker, `@huggingface/transformers`,
+  `pipeline('automatic-speech-recognition', ...)` with `device: 'webgpu'` — a HARD
+  requirement, no CPU/WASM fallback. `WhisperTextStreamer` streaming, cancel support.
+- `service.ts` — `transcriptionService` singleton; spawns worker via
+  `new Worker(new URL('./worker.ts', import.meta.url), {type:'module'})`; TRANSFERS
+  the audio `Float32Array` (zero-copy). Models in `src/constants/transcription-constants.ts`
+  (default `whisper-base`). Weights stream from HF CDN + cache.
+
+## Data model
+
+Types: `src/types/project.ts`, `timeline.ts`, `assets.ts`. IDs via `@cdlab/driftflake`
+`GenidOptimized({ workerId: 1 })` (`src/utils/genid.ts`).
+- `TProject` = `{ metadata, scenes: TScene[], currentSceneId, settings (fps,
+  canvasSize, background), version=4, timelineViewState }`.
+- `TScene` = `{ id, name, isMain, tracks, bookmarks, ... }` — always ≥1 main scene + main track.
+- `TimelineTrack` (video/audio/text) with `elements[]`; video tracks add `transitions[]`.
+- element: `startTime/duration/trimStart/trimEnd/transform/opacity` + type-specific
+  (`playbackRate`, `reversed`, `mediaId`, `content`, `iconName`).
+- `MediaAsset` = `{ id, name, type, file, url, width, height, duration, thumbnailUrl,
+  ephemeral }`; persisted split metadata(IndexedDB)/File(OPFS).
+
+## Config & external services
+
+- NO secrets, NO Cloudflare bindings, NO runtime config. Only build knobs: `output`,
+  `BUILD_TIME`, `images.remotePatterns` (`next.config.ts`), `NODE_ENV`→`IS_DEV`.
+- Constants: `src/constants/*` (project/editor/export/transcription/…).
+- External (browser-direct, not proxied): HF model CDN (Whisper weights), Iconify
+  (sticker search, `src/lib/iconify-api.ts`, host failover), Freesound (`cdn.freesound.org`).
+
+## Gotchas for agents
+
+- NO FFmpeg — use/document mediabunny. Do not add `@ffmpeg/*`.
+- THREE `/api/*` calls have NO backend in this app: `POST /api/tts/generate`
+  (`src/lib/tts/service.ts`), `POST /api/upload/image` (`src/lib/media/upload-reference.ts`),
+  `GET /api/proxy/download?url=` (`src/lib/media/url-import.ts`). They must be served
+  by the deployment platform (Pages Functions / external worker). Core editing/export
+  do NOT depend on them.
+- AI captions REQUIRE WebGPU (`device: 'webgpu'`) — no fallback path.
+- `EditorCore` is a hard singleton; `reset()` isn't wired to routes.
+- Inserting the FIRST visual element mutates canvas size/fps NON-undoably.
+- Storage: binaries always OPFS, structured data always IndexedDB — not a toggle.
+- Object URLs are manually created/revoked; audio decodes a `.slice(0)` copy;
+  `AudioManager.playbackSessionId` invalidates stale async scheduling.
+- Every timeline mutation must go through a Command, not direct track mutation.
+- Root-repo lint is Biome (single quotes, no semicolons, 2-space) — no ESLint/Prettier.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/bycut dev        # http://bycut.localhost:3355
+pnpm --filter @cdlab/bycut build      # next build → static out/
+pnpm --filter @cdlab/bycut build:cf   # @cloudflare/next-on-pages
+pnpm --filter @cdlab/bycut lint       # next lint
+pnpm --filter @cdlab/bycut typecheck  # tsc --noEmit
+```

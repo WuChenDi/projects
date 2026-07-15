@@ -1,0 +1,160 @@
+# flnk usage guide for AI agents
+
+`flnk` is a privacy-first, server-authoritative link shortener that runs as a
+single Cloudflare Worker (Next.js App Router compiled through OpenNext). A short
+link is a **name**, not a URL: the destination, geo/device routing rules, and
+access gates live in D1, are resolved at the edge through a KV read-through
+cache, and every click is logged to Cloudflare Analytics Engine with the visitor
+IP hashed before storage. It is a lineage rewrite of Sink (export format + the
+analytics globe endpoint stay wire-compatible).
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Runtime config (annotated): ./wrangler.jsonc
+- Schema: ./src/database/schema.ts
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/flnk <script>`.
+
+## What it is
+
+- **One Worker, two surfaces.** Public: `GET/POST /<slug>` (redirect), `GET
+  /<slug>/og` (social preview), `GET /m/<slug>` (launchpad page). Console:
+  `/dashboard/*` + `/api/*`, gated by a better-auth session.
+- **Dual DB driver** selected at request time by `DB_TYPE`: `d1` (the `DB`
+  binding) or `libsql` (Turso). Both run in production. Wired via `@cdlab/db/web`.
+- **Custom worker entry** `src/worker/index.ts` wraps OpenNext's `fetch` and adds
+  a `scheduled()` cron handler (OpenNext emits only `fetch`).
+
+## The redirect pipeline (src/app/[slug]/route.ts)
+
+A `GET /<slug>` flows through fixed guards, each able to short-circuit:
+
+1. reserved-slug guard → 404.
+2. per-IP native rate limit (`RESOLVE_RATE_LIMIT`, 100/60s, fails open) → 429.
+3. `resolveLink(domain, slug)` — KV `link:{domain}:{slug}` → D1 fallback →
+   backfill cache. Returns null → 404.
+4. `isExpired` → purge KV + 404.
+5. `config.disabled` (paused) → 404.
+6. click-cap `config.maxVisits` (KV `visits:{id}`) → disable in D1 + purge + 404.
+7. password gate (`config.passwordHash`, Argon2id) — HTML form or `x-link-password`
+   header; brute force capped via KV `pwfail:{ip}:{slug}` (5/600s).
+8. cloaking / social-crawler-with-OG → serve OG HTML instead of a 3xx.
+9. `config.unsafe` → confirm interstitial (chained via a signed gate token).
+10. `resolveDestination` — override cascade: geo (`cf.country`) → apple (iOS UA)
+    → google (Android UA), then optional `?query` merge (drops `qr`).
+11. non-http(s) destination → 404 (open-redirect guard).
+12. `writeAccessLog` via `ctx.waitUntil` (non-blocking) → Analytics Engine.
+13. 308 (or 303 after a form POST) with `Location: <destination>`.
+
+Key invariants (do not reorder without reading DESIGN §3, §5):
+
+- The lookup key is `(domain, slug)` — same slug ≠ same destination across hosts.
+- Password gate runs BEFORE the OG/cloaking branch, or a crawler leaks the
+  destination via `og:url`.
+- Routing is a last-writer-wins cascade, so a device override beats a geo override.
+- The access log records the STORED `link.url`, never the visitor-merged `dest`
+  (log-injection guard).
+- Form-follow redirects are 303 (force GET), not 307/308.
+
+## Caching (src/lib/data/links/resolve.ts + cache.ts)
+
+KV is a read-through cache in front of D1, key `link:{domain}:{slug}`:
+
+- Positive: resolved link cached `LINK_CACHE_TTL`s (floored to KV's 60s min). A
+  link expiring within 60s is left uncached (can't outlive the link).
+- Negative: a miss writes a `__miss__` tombstone (`NEGATIVE_CACHE_TTL`s) so
+  repeated lookups of a missing slug skip D1 (cache-penetration guard). Malformed
+  slugs are shape-rejected before any I/O — no tombstone for junk.
+- Invalidation: a create/import overwrites the same key in place; expiry/disable
+  purge on the redirect path.
+
+## Data model (src/database/schema.ts)
+
+All business tables share `trackingFields` (`createdAt`, `updatedAt`, `isDeleted`
+soft-delete — NEVER hard-delete; filter `is_deleted=0` or use `@cdlab/db/utils`).
+
+- `links` — `url`, `config` (JSON `LinkConfig`: geo/apple/google, title/desc/image
+  OG, cloaking, unsafe, maxVisits, disabled, passwordHash, qr), `tags` (JSON of
+  tag **IDs**). Unique `(slug, domain)` — covers soft-deleted rows (revive-in-place).
+- `launchpads` — `config` (JSON `LaunchpadConfig`), `og`, `status`
+  (draft|published), `ownerId`. `slug` globally unique.
+- `tags` — dictionary; links reference IDs so a rename is O(1).
+- `user`/`session`/`account`/`verification` — better-auth core tables (names must
+  match its adapter).
+
+## Auth (src/lib/platform/auth.ts, with-auth.ts)
+
+- better-auth, social-only (Google + GitHub), login == registration, built lazily
+  per isolate.
+- `ALLOWED_EMAILS` allow-list gates BOTH first sign-in and every session check
+  (tightening it revokes existing sessions). Empty = allow-all (logs a warning).
+- Server-side authorization: `requireSession(request)` (API, 401/403),
+  `getAllowedSession(headers)` (dashboard layout), `withAuth(schema, handler)`
+  (mutation wrapper: session + Zod + uniform `{ error }` envelope). No client-only gate.
+- Multi-tenancy is designed-in but a NO-OP today: `scopeToOwner(conds, session)`
+  returns conds unchanged (shared workspace). Rows are owner-stamped, so isolation
+  flips with no backfill.
+
+## Analytics (src/lib/analytics/)
+
+- Write: `writeAccessLog` emits one AE point — `indexes:[slug]`, 19 blobs
+  (blob1..19, mapped in `analytics-query.ts`), `doubles:[lat,lng]`. blob19 `type`
+  = link|launchpad|launchpad_block; blob18 `source` = link|qr. Fired via `waitUntil`.
+- Privacy: IP stored only as `hex(HMAC-SHA-256(ip:YYYY-MM-DD))[:32]` keyed by
+  `ANALYTICS_IP_SALT` (never a public salt; falls back to a key derived from
+  `BETTER_AUTH_SECRET`). Daily-rotating, unreversible from public data.
+- Read: AE binding only WRITES; dashboard reads use the AE SQL REST API
+  (`CLOUDFLARE_ACCOUNT_ID` + a token with Analytics Read). Sampling-weighted
+  counts (`SUM(_sample_interval)`). Filter values pass a backslash-safe sanitize.
+
+## API routes (src/app/api/*)
+
+Mutations use `withAuth` (session + Zod); reads use `requireSession`. Public
+exceptions: `/api/auth/[...all]`, `/api/launchpad/track` (rate-limited beacon),
+`/api/asset/[...key]` (R2 read, `og/`-prefix + image-type restricted).
+
+- `link/*` — create, edit, upsert, delete, import, tag-bulk, tag-set, check
+  (health); reads: list, query, search, count, creators, tags, export, ai
+  (slug), og-ai.
+- `launchpad/*` — create, delete, edit, publish, upsert; list, query, stats; track.
+- `stats/*` — counters, views, metrics, export (CSV). `logs/*` — events
+  (realtime), locations (globe). `location` — caller's cf coords.
+- `upload/image` (R2 write), `asset/[...key]` (R2 read), `backup`, `config`.
+
+Client wrapper: `src/lib/platform/api.ts` (`linkApi`, `launchpadApi`, `statsApi`,
+`checkApi`, `migrateApi`, `configApi`, `uploadApi`).
+
+## Config & bindings (wrangler.jsonc, src/lib/platform/env.ts)
+
+- Config via `getConfig()` — Zod-validated once per isolate; precedence: explicit
+  env arg → cf context → process.env. Never read env directly on the hot path.
+- Bindings: `DB` (D1), `KV`, `ANALYTICS` (Analytics Engine), `AI` (Workers AI,
+  optional), `RESOLVE_RATE_LIMIT` (native, optional), `R2` (OPTIONAL, commented
+  out — assets + backups degrade gracefully), `ASSETS`.
+- Secrets are NEVER vars: `BETTER_AUTH_SECRET`, Google/GitHub client id+secret,
+  `ALLOWED_EMAILS`, `CLOUDFLARE_API_TOKEN`, `LIBSQL_AUTH_TOKEN`,
+  `ANALYTICS_IP_SALT`. Set via `.dev.vars` (local) or `wrangler secret put` (prod).
+
+## Gotchas for agents
+
+- Migrations MUST be generated with the sqlite dialect (`DB_TYPE=d1`) — the libSQL
+  default emits `ALTER COLUMN`, which D1 rejects. See DESIGN §10.5.
+- `@libsql/client` must stay in `serverExternalPackages` (`next.config.ts`) or the
+  OpenNext build breaks (`Could not resolve @libsql/isomorphic-ws`).
+- Batch DB writes to ≤100 bound params (D1 cap) — see the import chunking.
+- Don't hard-delete; soft-delete via `isDeleted`. The `(slug,domain)` unique index
+  covers deleted rows on purpose (revive-in-place).
+- Never store a raw IP or add a tracking cookie on the redirect path.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/flnk dev          # http://flnk.localhost:3355
+pnpm --filter @cdlab/flnk cf:localdb   # apply migrations to local D1
+pnpm --filter @cdlab/flnk db:gen       # generate a migration from schema.ts
+pnpm --filter @cdlab/flnk test         # vitest units
+pnpm --filter @cdlab/flnk build        # next build (type-check + bundle)
+```

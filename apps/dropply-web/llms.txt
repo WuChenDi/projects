@@ -1,0 +1,128 @@
+# dropply-web usage guide for AI agents
+
+`dropply-web` is the browser client of an end-to-end-encrypted file/text sharing
+pair. All encryption and decryption happen **in the tab** (via `@cdlab/cipher`);
+the 256-bit key travels only in the URL fragment (`#key=…`), which browsers never
+send to a server. It is a Next.js App Router app **statically exported**
+(`output: 'export'`) — no server of its own — and talks to a single backend,
+`dropply-api`, which stores only ciphertext + metadata.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- HTTP client (all endpoints): ./src/lib/api.ts
+- Crypto boundary: ./src/lib/crypto.ts
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/dropply-web <script>`.
+
+## What it is
+
+- **Static export, no backend here.** `next.config.ts` `output: 'export'` →
+  `next build` emits static HTML/JS to `./out`. No SSR, no route handlers, no
+  edge/node functions. `src/middleware.ts` (next-intl) and `generateMetadata`
+  run at dev/build only. All logic is client-side React.
+- **Single-page, two tabs.** `src/app/[locale]/page.tsx` (`'use client'`) is the
+  whole UI: Share (encrypt + upload) and Retrieve (download + decrypt).
+- **Depends entirely on `dropply-api`** — storage, TOTP verification, and email
+  live there. The base URL is `NEXT_PUBLIC_API_URL` (build-time inlined).
+
+## Crypto boundary (src/lib/crypto.ts)
+
+- `generateEncryptionKey()` — 32 random bytes → base64url no-padding; used as the
+  Argon2id *password*, not a raw key.
+- Key rides the URL **fragment**: `encodeKeyForUrl` / `decodeKeyFromUrl` parse
+  `key=` from the hash. Share URL: `…?code=<retrievalCode>#key=<key>`. Code in the
+  query (server-visible), key in the fragment (never transmitted).
+- `encryptFile` / `decryptFile` (streaming), `encryptTextContent` /
+  `decryptTextContent` (base64) wrap `@cdlab/cipher`. Files re-wrapped as
+  `application/octet-stream` so ciphertext MIME leaks nothing.
+
+## Share pipeline (src/lib/api.ts `uploadContent`, hook `usePocketChest`)
+
+1. `getConfig()` → `{ requireTOTP, emailShareEnabled, maxFileSize }` (on mount).
+2. TOTP gate if `requireTOTP` and no token — validated by `createChest(token)`,
+   there is NO dedicated verify endpoint.
+3. `createChest(totpToken?)` → `{ sessionId, uploadToken }`.
+4. Encrypt EACH file/text item in-browser. Encryption = the FIRST 50% of a
+   file's progress bar; then `totalBytes` is replaced with the ciphertext size.
+5. Driver split by size (`CHUNK_SIZE = 20MB`, computed from encrypted sizes):
+   - text → `uploadContentRegular` (one FormData) FIRST.
+   - small ≤20MB → rolling pool, `MAX_CONCURRENT_SMALL_FILES = 3` parallel.
+   - large >20MB → SEQUENTIAL per file; each file multipart, `min(3, totalParts)`
+     parts per batch, `MAX_RETRIES = 3` (linear `1000ms × attempt` backoff).
+6. `completeUpload(...)` → `{ retrievalCode, expiryDate }`.
+7. Build URL; push `{ id, retrievalCode, encryptionKey, shareUrl, timestamp }` to
+   `useShareStore` (id from `@cdlab/driftflake` `genid`).
+
+Key invariants (do not break without reading DESIGN §3, §4, §8):
+
+- The `uploadId` returned by `createMultipartUpload` is itself a JWT
+  (`multipartToken`), DISTINCT from the chest `uploadToken`. Parts + complete use
+  the multipart token; create + regular upload use the chest token.
+- Two concurrency layers: 3 files (small) OR 3 parts of ONE file (large) — large
+  files never upload in parallel with each other.
+- `XMLHttpRequest` is used ONLY when an `onProgress` callback is present (fetch
+  can't report upload progress); `fetch` is the no-progress fallback.
+
+## Retrieve pipeline (usePocketChest `retrieve` / `downloadSingleFile`)
+
+- `page.tsx` reads `?code=` (from `useSearchParams`) and `#key=` (synchronously
+  from `window.location.hash` in a `useState` initializer — the fragment isn't in
+  searchParams). A present code makes the initial tab `retrieve`.
+- `retrieveChest(code)` → `{ files, chestToken, expiryDate }`. Text files
+  decrypted EAGERLY inline; binary files decrypted LAZILY per download.
+- All `/api/download/:fileId` calls carry `Authorization: Bearer <chestToken>`.
+
+## Client storage (src/store/*, src/lib/storage.ts)
+
+- `useShareStore` — `localStorage` `dropply-share-results`. `partialize` REWRITES
+  `encryptionKey` to `''` before persisting — the key is NEVER on disk. Do not
+  change this; it is the threat model.
+- `useRetrieveStore` — `localStorage` `dropply-retrieve-results`. `partialize`
+  strips text `content`; bodies go to IndexedDB (`dbStore`, key
+  `${resultId}:${fileId}`). `onRehydrateStorage` → `rehydrateTextContents()` sets
+  `isHydrated` (errors STILL set it true to avoid deadlock).
+- `useAuthStore` — `{ totpToken }` in `sessionStorage` `dropply-auth`
+  (session-scoped, not durable).
+- No backend DB in this app. API type contracts: `src/types/index.ts`.
+
+## Config & endpoints
+
+- Only build-time env: `NEXT_PUBLIC_API_URL` (`src/lib/api.ts`, default
+  `https://localhost:3014`; `.env.example` points at a Worker URL). Inlined into
+  the static bundle — a change needs a rebuild.
+- Runtime config from `GET /api/config` (`requireTOTP`, `emailShareEnabled`,
+  `maxFileSize`; client default cap `100MB`). No rebuild to change server config.
+- No Cloudflare bindings (no KV/R2/D1/DO). `wrangler.jsonc` serves `./out` as
+  static assets only.
+- Backend endpoints (all via `PocketChestAPI`, envelope `{ code, message, data }`,
+  success `code === 0`): `/api/config`, `/api/chest`, `/api/chest/:id/upload`,
+  `/api/chest/:id/multipart/create`, `/api/chest/:id/multipart/:fileId/part/:n`,
+  `/api/chest/:id/multipart/:fileId/complete`, `/api/chest/:id/complete`,
+  `/api/retrieve/:code`, `/api/download/:fileId`, `/api/email/share`.
+
+## Gotchas for agents
+
+- Zero-knowledge: NEVER send the key to the server; it belongs only in the URL
+  fragment. NEVER persist `encryptionKey` to `localStorage` (the share-store
+  partialize blanks it on purpose).
+- Static export: there is NO server here. Don't add API routes, SSR fetching, or
+  server components expecting a runtime. `middleware.ts` is inert in production.
+- `nodejs_compat` is set in `wrangler.jsonc` for the `next-on-pages` path even
+  though the app is static — do NOT assume Node APIs in the client bundle.
+- The multipart `uploadId` is a JWT (`multipartToken`) — don't confuse it with the
+  chest `uploadToken`.
+- This app is useless without a reachable `dropply-api`; run/deploy one first.
+- No test script and no test files exist — don't invent `pnpm … test`.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/dropply-web dev        # http://dropply-web.localhost:3355
+pnpm --filter @cdlab/dropply-web lint       # next lint
+pnpm --filter @cdlab/dropply-web typecheck  # tsc --noEmit
+pnpm --filter @cdlab/dropply-web build       # next build → static out/
+pnpm --filter @cdlab/dropply-web build:cf    # next-on-pages (Cloudflare Pages)
+```

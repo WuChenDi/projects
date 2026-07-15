@@ -1,0 +1,122 @@
+# vidl usage guide for AI agents
+
+`vidl` is a pure-browser video downloader: it parses M3U8/HLS playlists (and
+direct video URLs), decrypts AES-128 segments, transmuxes TS→MP4 via `mux.js`,
+and writes the result to disk — all client-side, with **no server, no API, no
+upload**. It is a Next.js App Router app **statically exported**
+(`output: 'export'`) and deployed to Cloudflare Pages as static assets. There is
+no runtime server, edge function, database, env var, secret, or binding.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/vidl <script>`.
+
+## What it is
+
+- **Static site, no backend.** All work runs in the tab. `next.config.ts` sets
+  `output: 'export'`; `middleware.ts` is the `next-intl` locale shim only.
+  `build:cf` (`@cloudflare/next-on-pages`) is just the Pages build wrapper.
+- **Framework-agnostic core.** `DownloadEngine` (`src/lib/download-engine.ts`) is
+  a plain class driven imperatively. Two hooks each own a `DownloadEngine` via
+  `useRef` (single + batch) and share one Zustand `download-store`.
+- **Engine state split.** Non-serializable machinery (segment `ArrayBuffer`s,
+  `streamWriter`, `abortController`, timers) lives in private class fields;
+  serializable UI state is pushed into the store. Never move buffers into Zustand.
+
+## Data flow (src/lib/download-engine.ts)
+
+`parseM3U8(url)` → configure → `startDownload`/`streamDownload`/`directDownload`:
+
+1. `isDirectVideoUrl` (pathname ends in a `VIDEO_MIME_MAP` ext) → HEAD for size,
+   done via `directDownload`.
+2. else URL must contain `m3u8`; `fetchData(url)` gets the manifest text.
+3. `isMasterPlaylist` (`#EXT-X-STREAM-INF`) → `parseMasterPlaylistContent`
+   (BANDWIDTH/RESOLUTION/NAME, sorted desc), auto-select highest, re-fetch.
+4. `parseMediaPlaylist` → segment URLs via `applyURL` (relative→absolute,
+   http→https upgrade), default range `[1,N]`, sampled `estimateFileSize` (HEAD
+   on first/middle/last × count).
+5. `startDownload(isGetMP4)`: clamp range, sum `#EXTINF` durations for the muxer.
+6. `#EXT-X-KEY`? → `getAES` fetches key, `AESDecryptor.expandKey`.
+7. `downloadTS`: shared-cursor worker pool, `concurrency = min(setting, pending)`;
+   per-attempt retry `maxRetries` with backoff `retryBaseDelayMs·2^attempt`.
+8. `dealTS`: AES-128-CBC decrypt → `conversionMp4` (dynamic `import('mux.js')`,
+   first segment gets `initSegment`, 10s timeout) → store at
+   `mediaFileList[index-startSegment+1]`.
+9. `checkCompletion`: in-memory → assemble Blob (`triggerBrowserDownload`);
+   stream → write contiguous prefix to `WritableStream`, close writer.
+
+## Key invariants (do not break)
+
+- **Two independent retry mechanisms** — per-attempt exponential backoff (inside
+  a worker, one segment) AND a 2s `retryAll` watchdog (re-queues error/stalled
+  segments; stale = `downloading` older than `timeoutMs + 5000`). Don't merge them.
+- **Shared-cursor pool, not chunking.** `next()` advances `downloadIndex`; every
+  worker iteration re-reads `downloadState` to honor pause/cancel.
+- **Stream vs. in-memory** is chosen by whether a `streamWriter` exists. Stream
+  writes only the contiguous in-order prefix, nulling each buffer after write.
+- **AES IV fallback**: no IV in `#EXT-X-KEY` → 16-byte big-endian segment index.
+  A parsed IV is `TextEncoder`-encoded raw (NOT hex-decoded — hex `0x…` is an edge case).
+- **`applyURL` upgrades http→https** on an HTTPS page — http-only hosts may fail.
+
+## Stream-to-disk (public/static/)
+
+Stream mode uses vendored `StreamSaver.js` + a Service Worker, NOT the File
+System Access API. Assets: `StreamSaver.js` (loaded via `next/script`),
+`mitm.html` (hidden iframe middle-transporter, keep-alive ping), `serviceWorker.js`.
+`onStreamSaverReady()` sets `middleTransporterUrl = origin + '/static/mitm.html'`
+and flips `isStreamSupported` — **only when `!streamSaver.useBlobFallback`**.
+Safari/WebKit sets `useBlobFallback`, so it falls back to in-memory and stream
+format options are hidden (`source-card.tsx`).
+
+## Key files
+
+- `src/lib/download-engine.ts` — the `DownloadEngine` class (orchestration).
+- `src/lib/m3u8-parser.ts` — master/media detection + variant parse.
+- `src/lib/aes-decryptor.ts` — standalone AES-128-CBC (`AESDecryptor`).
+- `src/lib/video-utils.ts` — types, `VIDEO_MIME_MAP`, `fetchData`, `applyURL`,
+  `estimateFileSize`, `triggerBrowserDownload`, constants (`FETCH_TIMEOUT_MS`,
+  `MAX_SEGMENT_RETRIES`, `RETRY_BASE_DELAY_MS`).
+- `src/lib/batch-utils.ts` — `fetchUrlMetadata` for the batch queue.
+- `src/lib/genid.ts` — re-exported from the barrel but UNUSED by the pipeline (vestigial).
+- `src/stores/{download,batch,settings}-store.ts` — Zustand state.
+- `src/hooks/use-download-actions.ts` — single engine + auto-parse from `?url=`/`?source=`.
+- `src/hooks/use-batch-actions.ts` — separate silent engine, sequential loop.
+- `src/components/downloader/*` — the UI cards.
+- `src/app/[locale]/page.tsx` — the app (single/batch tabs, loads StreamSaver.js).
+
+## Config (no env / bindings / secrets)
+
+- Runtime tuning: `settings-store` (`concurrency` 6, `timeoutMs` 30000,
+  `maxRetries` 3, `retryBaseDelayMs` 1000), **persisted to localStorage**
+  `vidl-download-settings`. The engine reads it via injected `getSettings()`.
+- Build-time: `BUILD_TIME` in `next.config.ts` (version footer only).
+- i18n: next-intl, locales `en`/`zh`, single pathname `/`.
+
+## Gotchas for agents
+
+- **No proxy — CORS is the real limit.** Every fetch is a browser request to the
+  third-party host; only CORS-permissive origins download. Don't add a server;
+  the whole point is no backend.
+- **No test script exists** — do not invent `pnpm test`. Gate on `typecheck` /
+  `build`.
+- **Static export** — no server actions, no route handlers, no bindings. Don't
+  add API routes; they won't run.
+- **Don't move `ArrayBuffer`s / the stream writer into the store** — keep them as
+  engine class fields (serializable/non-serializable split).
+- **Lint/format is Biome** (single quotes, no semicolons, 2-space); `import * as
+  z from 'zod'` style rules apply repo-wide. `next lint` is the app lint script.
+- Default store URL is a Mux test stream — expected, not a stray value.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/vidl dev        # http://vidl.localhost:3355 (via @dotns/nsl)
+pnpm --filter @cdlab/vidl build      # next build → static export
+pnpm --filter @cdlab/vidl build:cf   # @cloudflare/next-on-pages (Pages build wrapper)
+pnpm --filter @cdlab/vidl typecheck  # tsc --noEmit
+pnpm --filter @cdlab/vidl lint       # next lint
+```

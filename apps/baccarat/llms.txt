@@ -1,0 +1,140 @@
+# baccarat usage guide for AI agents
+
+`baccarat` is a Telegram Baccarat game bot running as a single Cloudflare Worker
+(Hono + Grammy). The Worker is a stateless HTTP/webhook front; the actual game —
+state machine, timers, and history — lives in one **Durable Object per Telegram
+group** (`BaccaratGameRoom`, keyed by `idFromName(chatId)`). Cards are Telegram
+dice rolls (1–6), points are dice-sum mod 10, and finished rounds are persisted
+to the DO's embedded SQLite.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Runtime config: ./wrangler.jsonc
+- Domain types: ./src/types.ts
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/baccarat <script>`.
+
+## What it is
+
+- **One Worker, two layers.** Worker layer (`src/index.ts` + `src/handlers/routes.ts`):
+  `/webhook`, REST API, health/config — stateless. Durable Object layer
+  (`src/durable-objects/game-room.ts`): per-group game state, timers, storage.
+- **DO addressing.** `GAME_ROOMS.idFromName(chatId)` → stable per-group room.
+  Routed internally by URL pathname on a synthetic `https://game.room<path>` request.
+- **DO export.** `src/index.ts` must `export { BaccaratGameRoom }` alongside
+  `export default { fetch: app.fetch }`, or the binding can't resolve the class.
+
+## Request flow (trace /bet banker 100)
+
+1. `POST /webhook` — new `Bot(BOT_TOKEN)`, `createConfig(env)`,
+   `registerCommands`, `webhookCallback(bot,'hono')` dispatches.
+2. chat-guard middleware — drop silently if chatId ∉ `ALLOWED_CHAT_IDS`.
+3. `bot.command('bet')` parses type+amount, validates ≤ `config.maxBetAmount`.
+4. `callGameRoom(env, chatId, '/place-bet', 'POST', {...})` → DO `.fetch()`.
+5. DO lazily `initEngine()` on first hit → `engine.initialize()` (crash recovery).
+6. pathname switch → `handlePlaceBet` → `engine.placeBet(...)` → `storage.put('game')`.
+7. JSON bubbles DO → `callGameRoom` → `ctx.reply(...)`.
+
+Two entry paths into the DO: Telegram (`commands.ts` `callGameRoom`) and REST
+(`routes.ts` `proxyToGameRoom`). Both end at the same DO pathnames — the DO's
+pathname switch is the single funnel; add new actions there.
+
+DO pathnames: `/start-game`, `/place-bet`, `/process-game`, `/get-status`,
+`/stop-game` (=`/force-stop-game`), `/enable-auto`, `/disable-auto`,
+`/game-history`, `/game-detail`, `/health`.
+
+## Game state machine (src/game/game-engine.ts)
+
+`idle → betting → processing → revealing → finished` (`GameState`). Live game
+persisted to DO KV `'game'` at every transition; auto-game flag in DO KV
+`'autoGame'`. Guards `isProcessing` / `revealingInProgress` prevent double
+work (advisory — the DO is single-threaded).
+
+- `dealCards` deals B1·P1·B2·P2 via `rollDice`. Natural if either side ≥ 8.
+- Third-card matrix: player draws 0–5; banker draws 0–2, stands 7+, 3–6 depends on
+  player's third card (3: any≠8; 4: 2–7; 5: 4–7; 6: 6–7; player stood: banker
+  draws 0–5). See DESIGN §5.
+- Winner = higher final points (mod 10); equal = tie.
+
+## Dice & messaging (src/game/message-sender.ts, src/lib/bot.ts)
+
+- RNG = Telegram `sendDice` `result.dice.value` (1–6); **falls back to
+  `Math.random()` 1–6** if the dice API fails.
+- All sends serialize through a **promise-chain lock** (`this.lock`), NOT a real
+  queue — guarantees dice→animation→result ordering, respects rate limits, and
+  keeps running even if a task throws. `reset()` starts a fresh chain.
+
+## Timers & recovery (src/game/game-engine.ts §7)
+
+- Countdown (20/10/5s), betting auto-process, auto-game loop, and cleanup are
+  plain `setTimeout` in a `Set` — they DO NOT survive DO eviction.
+- Correctness comes from `recoverGameState(now)` in `initialize()`: betting >30s
+  past end → auto-process; betting in-window → re-arm timers; processing/revealing
+  → cleanup (stuck); finished + autoGame → resume the loop.
+- `safeProcessGame` arms a `globalProcessTimeoutMs` watchdog → `forceCleanup` on hang.
+
+## Betting, limits, payouts
+
+- Bets accumulate per (user, type); response flags `isAccumulated`/`isNewBetType`.
+- Caps are HARDCODED (not env): `maxBetAmount = 10000` per type (`src/types.ts`),
+  `maxUserTotalBet = 50000` per user (`game-engine.ts`).
+- Payout (`formatGameResult`): tie ×8, banker/player ×1, losers forfeit stake.
+  Display-only — NO persisted balance/wallet.
+
+## Data model & storage (src/lib/storage.ts, src/types.ts)
+
+- DO KV: `'game'` (live `GameData`), `'autoGame'` (boolean).
+- DO SQLite: one table `game_records(game_number PK, chat_id, data JSON, end_time)`,
+  `INSERT OR REPLACE`; history filtered by `chat_id ORDER BY end_time DESC LIMIT`.
+- `GameRecord` extends `GameData` (drops `bettingEndTime`; adds `endTime`,
+  `totalBets`, `totalAmount`). Game number = `YYYYMMDDHHMMSS` + 6 random digits.
+
+## Config & bindings (wrangler.jsonc, src/types.ts)
+
+- `createConfig(env)` is the single parse site (entry, routes, DO). Parses 7
+  timing knobs (ms strings): `BETTING_DURATION_MS`, `AUTO_GAME_INTERVAL_MS`,
+  `DICE_ANIMATION_WAIT_MS`, `DICE_RESULT_DELAY_MS`, `MESSAGE_DELAY_MS`,
+  `GLOBAL_PROCESS_TIMEOUT_MS`, `CLEANUP_DELAY_MS`, plus hardcoded `maxBetAmount`.
+- Binding: `GAME_ROOMS` (DurableObjectNamespace → `BaccaratGameRoom`,
+  SQLite-backed via `v1` `new_sqlite_classes`). `nodejs_compat` on. No D1/KV/R2.
+- Env: `BOT_TOKEN` (required), `ALLOWED_CHAT_IDS` (optional; UNSET = all chats
+  allowed), `API_SECRET` (optional; gates REST mutations via `X-API-Key`/`api_key`;
+  NOT in wrangler.jsonc — add as a secret).
+
+## Gotchas for agents
+
+- `DICE_ROLL_TIMEOUT_MS`, `DICE_ROLL_MAX_RETRIES`, `CARD_DEAL_DELAY_MS` are
+  declared in `Env`/`wrangler.jsonc` but NEVER read — inert. Don't rely on them.
+  `MESSAGE_DELAY_MS` is parsed and echoed by `/config` but never applied to message
+  pacing (only the two dice waits delay sends) — treat it as inert too.
+- `ALLOWED_CHAT_IDS` unset ⇒ open to every chat; `API_SECRET` unset ⇒ REST
+  mutations unauthenticated. Set both to lock down.
+- `BOT_TOKEN` sits as a plaintext var placeholder in `wrangler.jsonc` — use
+  `wrangler secret put BOT_TOKEN` in production.
+- Grammy `Bot` is constructed PER REQUEST / PER DO init — never cache/reuse one.
+- Timers don't survive DO eviction; never add logic that assumes a `setTimeout`
+  will fire — make it recoverable from persisted `'game'` state (DESIGN §7).
+- There is NO test suite. `build` is a `bun build` sanity check; the real deploy
+  is `wrangler deploy`, not the `dist/` output.
+- `deploy:dev` / `deploy:prod` reference `--env` blocks that DON'T exist in
+  `wrangler.jsonc` — use the plain `deploy` script.
+- `/game-detail` needs a `?chatId=` (to pick the room) and a numeric game number.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/baccarat dev       # http://baccarat.localhost:3355
+pnpm --filter @cdlab/baccarat build     # bun build (bundle-check only)
+pnpm --filter @cdlab/baccarat deploy    # wrangler deploy --minify
+pnpm --filter @cdlab/baccarat cf-typegen # regenerate CloudflareBindings types
+```
+
+After deploy, register the webhook:
+
+```bash
+curl -X POST https://your-worker.workers.dev/set-webhook \
+  -H "Content-Type: application/json" -d '{"url":"https://your-worker.workers.dev/webhook"}'
+```

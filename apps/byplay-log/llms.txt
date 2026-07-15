@@ -1,0 +1,125 @@
+# byplay-log usage guide for AI agents
+
+`byplay-log` is a single-endpoint telemetry sink for the ByPlay video player: a
+Hono Cloudflare Worker that accepts a **batch (array) of playback events**,
+validates each with zod, enriches every row with edge-derived request metadata
+(IP / User-Agent / country), and batch-inserts them into a SQLite-family database
+(D1 or LibSQL/Turso, chosen by `DB_TYPE`) in one atomic statement. It only
+INGESTS — there is no read/query API and no auth (CORS allow-list only).
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Runtime config (annotated): ./wrangler.jsonc
+- Schema: ./src/database/schema.ts
+
+Part of `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/byplay-log <script>`.
+
+## What it is
+
+- **One Worker, two surfaces (no auth).** `GET /` (health/info JSON) and
+  `POST /monitor?bury_content=<tag>` (ingest). The only gate is CORS
+  (`https://byplay.pages.dev`, `http://localhost:3016`, `credentials: true`).
+- **Edge runtime**, `nodejs_compat` on (so winston + libSQL Node paths compile
+  and `process.env` is readable). Default export `{ fetch: app.fetch }`.
+- **Dual DB driver** selected by `DB_TYPE` (`d1` binding `DB` / `libsql` Turso),
+  via a hand-rolled `DatabaseManager` singleton in `src/lib/db.ts` — this app
+  does NOT use `@cdlab/db`.
+
+## The ingest pipeline (src/routes/monitor.ts)
+
+`POST /monitor?bury_content=<tag>` flows through fixed stages:
+
+1. `useDrizzle(c)` — DB handle.
+2. require `bury_content` query param → `400` if absent.
+3. read edge headers: ip = `CF-Connecting-IP` → `X-Forwarded-For` → `X-Real-IP`;
+   ua = `User-Agent`; country = `CF-IPCountry`.
+4. `c.req.json()` → `400 "Invalid JSON body"` on parse failure.
+5. `PlayerLogsArraySchema.safeParse` (body MUST be an array) → `400 "Invalid log
+   data format"` + `error.issues`.
+6. map each event → `NewPlayerLog`:
+   - `topicId` lifted from `playerConfig.topicId` into its own indexed column.
+   - `feature` is a JSON **string** → `JSON.parse`d to an object; parse failure
+     logs `console.warn` and stores `null` (row still inserted — non-fatal).
+   - `ipAddress`/`userAgent`/`country` come from step-3 headers, not the body.
+7. `db.insert(playerLogs).values([…])` — single atomic batch → `500` on error
+   (no partial write).
+8. success → `{ code: 0, message: 'ok' }`.
+
+Key invariants (do not change without reading DESIGN §3):
+
+- The body is an ARRAY of events, even for one event.
+- Success is app-level `code: 0`, distinct from HTTP `200`; error envelopes reuse
+  the HTTP status as `code`.
+- Server reads IP/UA/country from the edge request — never trust the client body
+  for these.
+- A batch is all-or-nothing; a bad row `500`s the whole request.
+
+## Data model (src/database/schema.ts)
+
+Single table `player_logs`, autoincrement `id`. Shares `trackingFields`
+(`createdAt`, `updatedAt` auto, `isDeleted` default 0 — soft-delete is NOT
+enforced anywhere in this service, nothing prunes rows).
+
+- Scalar columns (identity + event): `userId`, `userIdUuid`, `streamId`,
+  `topicId`, `time`, `version`, `ua`, `vendor`, `platform` (only `userId`,
+  `streamId`, `time` are indexed — see the index list below).
+- JSON columns (`text`, `mode: 'json'`) for evolving player payloads: `feature`,
+  `playerConfig`, `vplayerRuntime`, `playerRuntime`, `executeProgressInfos`.
+- Request metadata: `buryContent` (notNull, the event-type tag), `ipAddress`,
+  `userAgent`, `country`.
+- Indexes: `userId`, `streamId`, `time`, `buryContent`, `createdAt`, composite
+  `(userId, streamId)`.
+
+## Database driver (src/lib/db.ts)
+
+- `DatabaseManager` is a **static singleton**: the first request in an isolate
+  binds the driver; later requests reuse it and ignore their own context. Fine
+  for D1 (binding stable per isolate); don't rely on per-request binding
+  differences.
+- Reads `DB_TYPE`/`LIBSQL_URL`/`LIBSQL_AUTH_TOKEN` from `process.env` at the edge.
+  `DB_TYPE=d1` requires `c.env.DB` (throws if absent) and skips instantiating
+  `@libsql/client`.
+- Worker default `DB_TYPE=libsql`, `LIBSQL_URL=file:./web/database/data.db`.
+
+## Config & bindings (wrangler.jsonc, .env.example)
+
+- Vars: `DEPLOY_RUNTIME` (logger: `cf` console wrapper / `node` winston+rotate),
+  `DB_TYPE`, `LIBSQL_URL`, `LIBSQL_AUTH_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`,
+  `CLOUDFLARE_API_TOKEN`.
+- Bindings: `DB` (D1, `database_name: byplay`, `migrations_dir: ./src/database`);
+  observability on (`head_sampling_rate: 1`). KV/R2/AI are commented out.
+- `drizzle.config.ts` ALSO needs `CLOUDFLARE_DATABASE_ID` (for remote `d1-http`)
+  — it is NOT in `.env.example`; export it before remote `db:*`.
+
+## Gotchas for agents
+
+- Body must be a JSON ARRAY of events (not a single object) — `safeParse` fails
+  otherwise with `400`.
+- `feature` is a JSON string that gets re-parsed server-side; bad JSON silently
+  becomes `null` (via `console.warn`, not the global `logger`).
+- The winston daily-rotate filename is hardcoded `logs/dropply-%DATE%.log`
+  (copy-paste leftover from dropply-api, not `byplay`).
+- `DatabaseManager` is a process-wide singleton — do not assume it re-reads
+  context per request.
+- Health `GET /` reports hardcoded `version: '1.0.0'`, not package `0.1.0`.
+- `build` (`bun build src/index.ts --outdir dist --target browser`) emits a
+  standalone `dist/` bundle; NOT needed for `wrangler deploy` (it bundles
+  `src/index.ts` directly).
+- No test script and no test files exist — validate via typecheck/build.
+- CORS allow-list is `https://byplay.pages.dev` + `http://localhost:3016` in
+  `src/index.ts`; update it there if the player origin changes.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/byplay-log dev          # http://byplay-log.localhost:3355
+pnpm --filter @cdlab/byplay-log cf:localdb   # apply migrations to local D1
+pnpm --filter @cdlab/byplay-log cf:remotedb  # apply migrations to remote D1
+pnpm --filter @cdlab/byplay-log db:gen       # generate a migration from schema.ts
+pnpm --filter @cdlab/byplay-log db:studio    # drizzle-kit studio (port 3018)
+pnpm --filter @cdlab/byplay-log cf-typegen   # regenerate CloudflareBindings types
+pnpm --filter @cdlab/byplay-log deploy       # wrangler deploy --minify
+```

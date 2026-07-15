@@ -1,0 +1,114 @@
+# repo-changelog usage guide for AI agents
+
+`repo-changelog` is a backend-less Nuxt 4 (Vue 3) app that merges GitHub release
+changelogs from many repositories into one date-sorted timeline. It has **no
+server of its own**: all data comes from the `ungh.cc` GitHub proxy, the selected
+repo set is carried in the URL `?repos=` query string, and the only persistence
+is browser `localStorage`. Markdown release notes are parsed to an MDC AST at
+fetch time and rendered with `MDCRenderer`. Deploys to Vercel (Nitro node
+serverless, auto-detected preset).
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Nuxt config: ./nuxt.config.ts
+- Wire types: ./shared/types/releases.ts
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/repo-changelog <script>`.
+
+## What it is
+
+- **Two file-based routes only** (`app/pages/`): `index.vue` (`/`, search +
+  selection) and `repos.vue` (`/repos?repos=<csv>`, merged changelog dashboard).
+- **No backend / DB / secret.** Sole data source is `ungh.cc`
+  (`runtimeConfig.public.apiUrl`, override via `API_URL`).
+- **Selection = URL.** Tracked repos live in `?repos=a/b,c/d` — the only
+  shareable cross-session "save" besides `localStorage`.
+
+## Data flow
+
+`/` (index.vue):
+1. `searchRepositories()` accepts `owner/repo`, bare `owner`, or a pasted
+   `github.com/...` URL (regex-extracted). Validates format.
+2. single repo → `GET {apiUrl}/repos/{owner/repo}`; bare owner → org-first
+   `GET /orgs/{owner}/repos`, falling back to `GET /users/{owner}/repos`.
+3. Results render as selectable cards, sorted client-side (stars/forks/name/
+   updated). Clip into `selectedRepos`; `viewReleases()` saves history and
+   navigates to `/repos?repos=<csv>`.
+
+`/repos` (repos.vue):
+1. Derive `selectedRepos` from `route.query.repos` (comma-split, valid
+   `owner/repo` only).
+2. `useAsyncData` fans out `Promise.all` → per repo `fetchRepoReleases()` →
+   `GET {apiUrl}/repos/{owner/repo}/releases`.
+3. Keep non-draft releases; `parseMarkdown(release.markdown)` → MDC AST at fetch
+   time (`@nuxtjs/mdc/runtime`).
+4. Flatten, sort by date desc, **slice(0, 50)**. Render with `MDCRenderer` +
+   client-side keyword filter (`filteredReleases`).
+
+## Key files
+
+- `app/pages/index.vue` — search + selection; `repo-history` localStorage
+  (`MAX_HISTORY = 10`), sort computed props, github.com URL regex.
+- `app/pages/repos.vue` — changelog dashboard; fan-out fetch, markdown parse,
+  50-cap, keyword filter.
+- `app/composables/useFavoriteGroups.ts` — `repo-favorite-groups` localStorage
+  (`FavoriteGroup[]`), CRUD.
+- `app/composables/useRepository.ts` — `getRepoUrl(owner/repo)`.
+- `app/plugins/analytics.client.ts` — Vercel Analytics, client-only, manual
+  `pageview` on ready + `page:finish`.
+- `app/app.vue` — layout shell + SEO/OG/Twitter meta + 4 JSON-LD blocks.
+- `app/app.config.ts` — Nuxt UI theme (`primary: red`, `neutral: stone`).
+- `app/assets/css/main.css` — Tailwind v4 + `@nuxt/ui`, "Release Gazette" theme.
+- `shared/types/releases.ts` — ungh.cc wire types + `Release` (`body: MDCRoot`).
+- `nuxt.config.ts` — modules, MDC langs, runtimeConfig, ISR route rule.
+
+## ungh.cc endpoints
+
+- `GET /repos/{o}/{r}` — single repo validate/fetch.
+- `GET /orgs/{o}/repos` — org repos (tried first for a bare owner).
+- `GET /users/{o}/repos` — user repos (owner fallback).
+- `GET /repos/{o}/{r}/releases` — release list for the timeline.
+
+Unauthenticated — no keys/secrets anywhere.
+
+## Config
+
+- Env (both optional): `API_URL` (data source, default `https://ungh.cc`),
+  `VITE_ALLOWED_HOSTS` (comma-separated Vite dev allowed hosts).
+- `routeRules: { '/': { isr: 60 } }` — `/` is ISR(60s); `/repos` is dynamic.
+- MDC highlight langs: `diff, ts, tsx, vue, css, sh, js, json` — anything else
+  renders unhighlighted.
+- No Cloudflare bindings, no database.
+
+## Gotchas for agents
+
+- The merged feed is **capped at 50 releases** across all selected repos
+  (`repos.vue` `.slice(0, 50)`) — older releases are silently dropped.
+- Owner search is **org-first, user-fallback** — an org and a user with the same
+  name resolve to the org.
+- Every fetch uses `getCachedData` (SSR-payload reuse) with stable keys; do not
+  remove it — it dedupes ungh.cc calls. `/` data can be up to ~60s stale (ISR).
+- A failed per-repo fetch returns `[]` and is silently skipped; there is no
+  per-repo error UI, only a total-failure error state.
+- `runtimeConfig.apiUrl` (private) is defined but **only `public.apiUrl` is
+  read** — the private one is redundant.
+- `components/SkyBg.vue` is **dead code** (nothing references it); `@cdlab/
+  driftflake` is a declared dep imported **nowhere**. Do not treat either as a
+  feature.
+- Hydration-safety is deliberate: date renders only after mount (`IKHeader`);
+  `ThemedBackground` gates on `colorMode` readiness. Don't move these to SSR.
+- This app is **excluded from the root Biome config** and has **no `lint` or
+  `test` script**. Use `typecheck` / `build` as the gate.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/repo-changelog dev        # http://repo-changelog.localhost:3355
+pnpm --filter @cdlab/repo-changelog build      # nuxt build (production Nitro -> Vercel)
+pnpm --filter @cdlab/repo-changelog generate   # nuxt generate (static prerender)
+pnpm --filter @cdlab/repo-changelog preview    # nuxt preview
+pnpm --filter @cdlab/repo-changelog typecheck  # nuxt typecheck (vue-tsc)
+```
