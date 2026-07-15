@@ -15,7 +15,7 @@ Apps fall into three runtime families with different toolchains:
 
 | Family                        | Apps                                                                                                                             | Build tool                      | Deploy target                                                                                        |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Next.js (App Router)**      | `bycut`, `byplay`, `byshot`, `bytts`, `clearify`, `dropply-web`, `flox`, `SecureC`, `text2img`, `value-vision`, `vidl`, `wepush` | `next build` (some `--webpack`) | Cloudflare Pages (`@cloudflare/next-on-pages`); `text2img` and `wepush` use `@opennextjs/cloudflare` |
+| **Next.js (App Router)**      | `bycut`, `byplay`, `byshot`, `bytts`, `clearify`, `dropply-web`, `flox`, `SecureC`, `text2img`, `values`, `vidl`, `wepush` | `next build` (some `--webpack`) | Cloudflare Pages (`@cloudflare/next-on-pages`); `text2img` and `wepush` use `@opennextjs/cloudflare` |
 | **Cloudflare Workers (Hono)** | `baccarat`, `byplay-log`, `dropply-api`, `live-user`                                                                            | `wrangler deploy --minify`      | Cloudflare Workers + Durable Objects / D1                                                            |
 | **Nuxt 4 (Vue 3)**            | `repo-changelog`                                                                                                                 | `nuxt build`/`generate`         | Vercel                                                                                               |
 
@@ -212,7 +212,7 @@ Pure-browser stream download — `mux.js` + Streams API, near-zero memory footpr
 - `src/lib/builtin-apis.ts` — Built-in Azure API definitions; user-added APIs are stored client-side and can override builtins (see recent commits: batch-deletion + builtin-override).
 - `src/store/useApiStore.ts` — Zustand store of user-configured APIs (with custom auth headers per recent feature add).
 
-#### `value-vision` — Crypto/fiat/commodity comparison
+#### `values` — Crypto/fiat/commodity comparison
 
 - `src/lib/currencies.ts`, `rates.ts`, `exchangeRate.ts` — Static currency catalog + live rate fetch.
 - No backend; rates are pulled from public APIs at runtime.

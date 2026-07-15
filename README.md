@@ -39,7 +39,7 @@ there for depth.
 | [repo-changelog](./apps/repo-changelog) | GitHub release / changelog dashboard (Nuxt) | [↗](https://repo-changelog.vercel.app/) |
 | [SecureC](./apps/SecureC) | Client-side file / text encryption (XChaCha20-Poly1305) | [↗](https://securec.pages.dev/) |
 | [text2img](./apps/text2img) | Browser AI text-to-image (Workers AI) | [↗](https://text2img.cdlab.workers.dev/) |
-| [value-vision](./apps/value-vision) | Crypto / fiat / commodity value comparison | [↗](https://values.pages.dev/) |
+| [values](./apps/values) | Crypto / fiat / commodity value comparison | [↗](https://values.pages.dev/) |
 | [vidl](./apps/vidl) | Browser video downloader (M3U8 / HLS → MP4) | [↗](https://vidl.pages.dev/) |
 | [wepush](./apps/wepush) | Multi-tenant WeChat template-message push console | [↗](https://wepush.cdlab.workers.dev/) |
 
@@ -90,9 +90,9 @@ pnpm --filter @cdlab/<name> dev       # → http://<name>.localhost:3355
 pnpm --filter @cdlab/<name> build
 ```
 
-The package name isn't always the directory name (`securec` → `SecureC`, `values`
-→ `value-vision`). See each sub-project's README for its exact scripts, dev URL,
-and deploy command.
+The dev name is the package name with the scope stripped — the directory name,
+lowercased where the directory is capitalized (e.g. `SecureC` → `securec`). See
+each sub-project's README for its exact scripts, dev URL, and deploy command.
 
 ## Layout
 

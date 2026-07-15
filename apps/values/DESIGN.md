@@ -1,4 +1,4 @@
-# value-vision — Design
+# values — Design
 
 > A client-only, statically-exported purchasing-power converter. Crypto, fiat,
 > and fixed-price products share one board; typing an amount into any field
@@ -28,7 +28,7 @@ numbers are stable anchors — reviews and doc-comments reference them as
 Numbers in different units don't compare in the head: "is 0.5 BTC a lot?"
 depends on what a salary, a car, or a phone costs, each in its own currency.
 Standard converters do one pair at a time and never mix in a physical good.
-`value-vision` reframes crypto, fiat, and real-world products as a single unit
+`values` reframes crypto, fiat, and real-world products as a single unit
 system on one board.
 
 Goals:

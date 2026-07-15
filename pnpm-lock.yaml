@@ -1201,7 +1201,7 @@ importers:
         specifier: catalog:dev
         version: 4.110.0(@cloudflare/workers-types@5.20260708.1)
 
-  apps/value-vision:
+  apps/values:
     dependencies:
       '@cdlab/driftflake':
         specifier: catalog:prod

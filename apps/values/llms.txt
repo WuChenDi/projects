@@ -1,6 +1,6 @@
-# value-vision usage guide for AI agents
+# values usage guide for AI agents
 
-`value-vision` (package `@cdlab/values`) is a client-only, statically-exported
+`values` (package `@cdlab/values`) is a client-only, statically-exported
 Next.js App Router app: a purchasing-power converter where crypto, fiat, and
 fixed-price products share one board. Typing an amount into any field re-prices
 every other field. Live rates are fetched in the browser (CoinGecko crypto +
