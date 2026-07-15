@@ -22,8 +22,8 @@ import {
   ArrowRight,
   ArrowUpRight,
   Check,
-  ChevronDown,
   ChevronUp,
+  GripVertical,
   ImageIcon,
   LayoutPanelTop,
   LayoutTemplate,
@@ -159,6 +159,8 @@ export function DesignTab({ config, onChange }: DesignTabProps) {
   const t = useTranslations('launchpads')
   const { theme, profile } = config
   const [showAllSocials, setShowAllSocials] = useState(false)
+  // Drag state for the reorderable socials list.
+  const [socialDrag, setSocialDrag] = useState<number | null>(null)
 
   function setTheme(patch: Partial<Theme>) {
     onChange({ ...config, theme: { ...theme, ...patch } })
@@ -209,6 +211,24 @@ export function DesignTab({ config, onChange }: DesignTabProps) {
     setSocials({
       items: socials.items.map((it, i) => (i === index ? { ...it, url } : it)),
     })
+  }
+  // Normalize a social destination on blur: the Email row accepts a bare address
+  // (e.g. `me@example.com`), which fails the http(s)/mailto schema unless we add
+  // the `mailto:` scheme — otherwise the link silently can't be saved.
+  function normalizeSocial(index: number) {
+    const item = socials.items[index]
+    if (!item) return
+    const v = item.url.trim()
+    if (
+      item.platform === 'gmail' &&
+      v &&
+      v.includes('@') &&
+      !/^(?:https?:\/\/|mailto:)/iu.test(v)
+    ) {
+      updateSocial(index, `mailto:${v}`)
+    } else if (v !== item.url) {
+      updateSocial(index, v)
+    }
   }
   function removeSocial(index: number) {
     setSocials({ items: socials.items.filter((_, i) => i !== index) })
@@ -564,28 +584,26 @@ export function DesignTab({ config, onChange }: DesignTabProps) {
             {socials.items.map((item, i) => {
               const p = SOCIAL_MAP[item.platform]
               return (
-                // biome-ignore lint/suspicious/noArrayIndexKey: rows are positional, platforms may repeat
-                <div key={i} className="flex items-center gap-2">
-                  <div className="flex shrink-0 flex-col">
-                    <button
-                      type="button"
-                      aria-label={t('design.socials.moveUp')}
-                      disabled={i === 0}
-                      onClick={() => moveSocial(i, i - 1)}
-                      className="text-muted-foreground hover:text-foreground disabled:opacity-30"
-                    >
-                      <ChevronUp className="size-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={t('design.socials.moveDown')}
-                      disabled={i === socials.items.length - 1}
-                      onClick={() => moveSocial(i, i + 1)}
-                      className="text-muted-foreground hover:text-foreground disabled:opacity-30"
-                    >
-                      <ChevronDown className="size-3.5" />
-                    </button>
-                  </div>
+                <div
+                  // biome-ignore lint/suspicious/noArrayIndexKey: rows are positional, platforms may repeat
+                  key={i}
+                  draggable
+                  onDragStart={() => setSocialDrag(i)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => {
+                    if (socialDrag !== null) moveSocial(socialDrag, i)
+                    setSocialDrag(null)
+                  }}
+                  onDragEnd={() => setSocialDrag(null)}
+                  className={cn(
+                    'flex items-center gap-2',
+                    socialDrag === i && 'opacity-50',
+                  )}
+                >
+                  <GripVertical
+                    className="size-4 shrink-0 cursor-grab text-muted-foreground"
+                    aria-label={t('design.socials.reorder')}
+                  />
                   <span
                     className="flex size-8 shrink-0 items-center justify-center rounded-md border"
                     style={{ color: p?.color }}
@@ -602,6 +620,7 @@ export function DesignTab({ config, onChange }: DesignTabProps) {
                     maxLength={2048}
                     className="flex-1"
                     onChange={(e) => updateSocial(i, e.target.value)}
+                    onBlur={() => normalizeSocial(i)}
                   />
                   <Button
                     variant="ghost"
