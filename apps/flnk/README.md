@@ -108,6 +108,21 @@ flowchart TD
 The full model — every gate, its ordering rationale, and the security reasoning —
 is in [`DESIGN.md`](DESIGN.md).
 
+## Slugs
+
+A short link's slug comes from one of three paths:
+
+- **Auto** (default) — a random slug over an unambiguous alphabet (no `0/o/1/l/i`),
+  6 chars by default, allocated race-safely (`onConflictDoNothing` + an
+  escalating-length retry, so concurrent creates never collide).
+- **Custom** — a slug you choose; it's validated, and a previously deleted one is
+  revived in place.
+- **AI-suggested** — an opt-in Workers-AI suggestion derived from the destination
+  URL (prompt-injection-guarded, KV-cached), which the dashboard submits as a
+  custom slug.
+
+Details in [`DESIGN.md`](DESIGN.md#64-slug-allocation).
+
 ## Configuration
 
 All knobs are `vars` in [`wrangler.jsonc`](wrangler.jsonc); reads go through a
@@ -209,19 +224,33 @@ pnpm --filter @cdlab/flnk cf:remotedb   # apply migrations to the remote D1
 > Migrations must be generated with the **sqlite** dialect (`DB_TYPE=d1`); the
 > default `libsql` dialect emits `ALTER COLUMN` statements that D1 rejects.
 
-## Performance
+## Performance & engineering
 
-`scripts/bench.mjs` times the resolve path with `redirect: manual`, isolating
-each cache layer — `hit` (KV positive cache), `miss` (negative cache), `cold`
-(fresh random slug → D1 every call):
+The redirect path is the hottest route in the system, so it's built to stay cheap
+and correct under load:
 
-```bash
-node scripts/bench.mjs --url http://flnk.localhost:3355 \
-  --slug <an-existing-slug> --requests 2000 --concurrency 50 --scenario hit,miss,cold
-```
+- **One KV read, zero D1 on a cache hit** — a resolved link is served from a
+  read-through KV cache; D1 is touched only on a cold miss, then the result is
+  backfilled.
+- **Cache-penetration proof** — a missing slug writes a short-TTL negative
+  tombstone, and malformed slugs are shape-rejected before any I/O, so 404 floods
+  and scanners never reach D1.
+- **Logging off the critical path** — click analytics are written via
+  `ctx.waitUntil`, so they never add latency to the redirect itself.
+- **Edge-native rate limiting** — the per-IP resolve limit is a per-colo, in-memory
+  binding, so it costs no D1/KV quota.
+- **Parsed once per isolate** — the env config (Zod-validated) and the auth
+  instance are memoized for the isolate's lifetime, not rebuilt per request.
+- **Race-safe writes** — random slugs are allocated with `onConflictDoNothing`
+  (the unique index arbitrates atomically — no check-then-insert race) plus an
+  escalating-length retry; the click cap pays one KV read on the hot path and
+  increments in the background.
+- **Correct under sampling** — Analytics Engine reads are sampling-weighted
+  (`SUM(_sample_interval)`), and the visitor IP is HMAC-hashed inline, never
+  stored raw.
 
-Comparing `miss` against `cold` shows the negative cache at work. Absolute numbers
-depend on your region and D1 location — run it against your own instance.
+The mechanisms behind each point are specified in [`DESIGN.md`](DESIGN.md) — §4
+(caching) and §5 (gates).
 
 ## Design
 

@@ -25,6 +25,7 @@ are reimplemented on Next.js + OpenNext.
 8. [Launchpads](#8-launchpads)
 9. [Auth & multi-tenancy](#9-auth--multi-tenancy)
 10. [Configuration & deployment](#10-configuration--deployment)
+11. [Performance characteristics](#11-performance-characteristics)
 
 ---
 
@@ -114,22 +115,32 @@ a request, but once built they are stable for the isolate's life.
 gate form submissions). A request flows through a fixed pipeline, each stage a
 guard that can short-circuit:
 
+```mermaid
+flowchart TD
+    Q["GET /&lt;slug&gt;"] --> G1{"reserved slug?"}
+    G1 -->|yes| NF["404"]
+    G1 -->|no| G2{"per-IP rate limit<br/>(native, fails open)"}
+    G2 -->|over| T429["429"]
+    G2 -->|ok| RES["resolveLink(domain, slug)<br/>KV → D1 → backfill · §4"]
+    RES -->|null| NF
+    RES --> G3{"expired · disabled · over click-cap?"}
+    G3 -->|yes| PN["purge cache → 404"]
+    G3 -->|no| G4{"password set & unverified?"}
+    G4 -->|yes| PW["password form · 401/403"]
+    G4 -->|"no / verified"| G5{"cloaking or OG crawler?"}
+    G5 -->|yes| OG["serve OG HTML<br/>(no redirect)"]
+    G5 -->|no| G6{"unsafe & unconfirmed?"}
+    G6 -->|yes| INT["confirm interstitial"]
+    G6 -->|no| DST["resolveDestination<br/>geo → device → query · §3.2"]
+    DST --> G7{"http(s) destination?"}
+    G7 -->|no| NF
+    G7 -->|yes| LOG["writeAccessLog via waitUntil · §7<br/>(off the critical path)"]
+    LOG --> RD["308 · or 303 after a form POST<br/>Location: destination"]
 ```
-GET /<slug>
-  1. reserved-slug guard                → 404          (never shadow /api, /dashboard, …)
-  2. per-IP resolve rate limit          → 429          (native binding, fails open)
-  3. resolveLink(domain, slug)          → 404 if null  (KV → D1 → backfill, §4)
-  4. isExpired(expiresAt)               → purge + 404
-  5. config.disabled                    → 404          (paused, not deleted)
-  6. click-cap (config.maxVisits)       → persist + purge + 404  (§5)
-  7. password gate (config.passwordHash)→ form / verify (§5)
-  8. cloaking / social crawler          → OG HTML instead of 3xx (§5)
-  9. unsafe interstitial (config.unsafe)→ confirm page  (§5)
- 10. resolveDestination                 → geo → device → query merge
- 11. non-http(s) destination guard      → 404
- 12. writeAccessLog via waitUntil       → Analytics Engine (§7), non-blocking
- 13. 308 (or 303 after a form POST)     → Location: <destination>
-```
+
+Each stage is a guard that either short-circuits or falls through to the next.
+The ordering is load-bearing — see §5.1 for why the password gate must precede the
+cloaking/crawler branch.
 
 ### 3.1 Resolution key
 
@@ -313,6 +324,58 @@ The `(slug, domain)` unique index intentionally covers soft-deleted rows.
 Create/import must see a deleted row to revive it rather than colliding — this is
 what makes import non-destructive (§10) and lets a deleted slug be reclaimed.
 
+### 6.4 Slug allocation
+
+A slug is minted one of three ways, all racing for the same `(slug, domain)`
+unique index:
+
+```mermaid
+flowchart TD
+    A["create link"] --> B{"slug supplied?"}
+    B -->|"no — auto"| C["random slug<br/>31-char unambiguous alphabet · len 6"]
+    C --> D["INSERT … onConflictDoNothing()"]
+    D -->|"row returned"| OK["slug assigned"]
+    D -->|"empty → collision"| E{"attempt &lt; 12 ?"}
+    E -->|yes| F["grow length<br/>+1 after 4 tries, +2 after 8"]
+    F --> C
+    E -->|no| X["500 · allocation failed"]
+    B -->|"yes — custom"| G{"validateSlug<br/>grammar · reserved · length"}
+    G -->|invalid| Y["400"]
+    G -->|valid| H{"(slug, domain) exists?"}
+    H -->|"active row"| Z["409 · taken"]
+    H -->|"soft-deleted"| R["revive in place (§6.3)"]
+    H -->|"free"| I["insert"]
+    R --> OK
+    I --> OK
+```
+
+- **Auto (default).** A random slug drawn with `crypto.getRandomValues` over a
+  31-char **unambiguous alphabet** — `23456789abcdefghjkmnpqrstuvwxyz`, dropping
+  `0/o/1/l/i` so slugs stay dictatable and mistype-resistant — of length
+  `SLUG_DEFAULT_LENGTH` (default 6 ≈ 8.9×10⁸ combinations). Insertion is
+  **race-safe without a pre-query**: `onConflictDoNothing().returning()` lets the
+  unique index decide — a returned row means the slug landed; an empty result
+  means another writer took it first, in which case it retries (up to 12×) with an
+  **escalating length** to escape a saturated keyspace before giving up with `500`.
+
+- **Custom.** A chosen slug is grammar-checked (`^[a-z0-9]+(?:-[a-z0-9]+)*$` — no
+  dots, which are reserved for static assets — non-empty, ≤ 2048 chars, not a
+  reserved word) and normalized (lowercased unless `CASE_SENSITIVE`). An active
+  `(slug, domain)` is rejected `409`; a **soft-deleted** row holding it is revived
+  in place rather than duplicated (§6.3).
+
+- **AI-suggested (opt-in).** The dashboard can ask Workers AI (default
+  `llama-3.1-8b-instruct`) for a readable slug derived from the destination URL.
+  Because that URL is attacker-controlled, it is wrapped in explicit
+  untrusted-data markers with a "treat as data, not instructions" directive
+  (prompt-injection guard); the reply is coerced to a valid slug, cached in KV for
+  7 days, and falls back to a random slug when AI is unavailable. The result is
+  only a **suggestion** — it enters through the custom path above; creation never
+  invokes AI on its own.
+
+> Source: `src/lib/data/links/repo.ts` (allocation + retry), `src/lib/redirect/slug.ts`
+> (alphabet + grammar), `src/lib/ai/ai-slug.ts` (AI suggestion).
+
 ---
 
 ## 7. Analytics
@@ -385,6 +448,28 @@ hrefs and CSS `url()` values and auto-contrasts ink against the chosen surface.
 The client `LaunchpadTracker` beacons block clicks to the public,
 rate-limited `/api/launchpad/track`, which verifies the slug is a published
 launchpad before writing a `launchpad_block` point.
+
+```mermaid
+flowchart TD
+    subgraph server["GET /m/&lt;slug&gt; · force-dynamic (server)"]
+      L["load"] --> P{"published · not expired · not deleted?"}
+      P -->|no| NF["404"]
+      P -->|yes| RR["batch-resolve link refs<br/>(skip soft-deleted)"]
+      RR --> V["fire launchpad view point<br/>waitUntil · §7"]
+      V --> RN["render LaunchpadView<br/>sanitize hrefs / CSS url() · auto-contrast ink"]
+    end
+    RN --> CLK["visitor clicks a block"]
+    subgraph client["in the page (client)"]
+      CLK --> TR["beacon → POST /api/launchpad/track<br/>public · rate-limited"]
+      TR --> CK{"slug is a published launchpad?"}
+      CK -->|no| DROP["drop"]
+      CK -->|yes| BP["write launchpad_block point · §7"]
+    end
+```
+
+Because button/shortlink blocks reference a link **id** (§8.2), those clicks route
+through `/<slug>` and land in the link's own analytics; the `launchpad_block`
+point above tracks engagement with non-link blocks.
 
 ---
 
@@ -469,3 +554,41 @@ Deploys run through the `deploy-flnk.yml` GitHub workflow (manual dispatch):
 from repository secrets. The local `pnpm --filter @cdlab/flnk deploy` works but
 skips the secret sync — prefer the workflow. Deployment-affecting changes (new
 secrets, migrations, build steps) must be reflected in that workflow.
+
+---
+
+## 11. Performance characteristics
+
+The redirect path is unauthenticated, internet-facing, and the highest-volume
+route, so its cost model is a design constraint rather than an afterthought. This
+section summarizes the resulting properties; each mechanism is specified in the
+section referenced.
+
+### 11.1 Hot-path cost
+
+A cached, gate-free redirect performs **one KV read and no database round-trip**
+(§4.1). That read returns the entire link — routing, gates, OG, QR — from a single
+JSON value, so no joins or follow-up queries are needed (§6.1). Click analytics
+are emitted through `ctx.waitUntil` (§7.1), off the critical path, so logging adds
+no latency to the response. The env config (Zod-parsed) and the auth instance are
+built once per isolate and memoized (§2), so steady-state requests skip that setup.
+
+### 11.2 Bounded database load
+
+D1 is shielded from the three ways a public redirect gets hammered: the
+read-through cache absorbs repeat **hits** (§4.1); the negative-cache tombstone
+absorbs repeat **misses**; and the slug shape-guard rejects malformed slugs before
+any I/O, so cache-penetration **scans** never reach the database (§4.2). Native
+per-colo rate limiting (§5.6) sheds abusive volume in edge memory, at no D1/KV
+quota cost.
+
+### 11.3 Correctness under concurrency & sampling
+
+Random slug allocation is race-safe by construction: `onConflictDoNothing` lets
+the `(slug, domain)` unique index arbitrate atomically, with an escalating-length
+retry instead of a check-then-insert race (§3.1). The click cap reads one KV
+counter on the hot path and increments in the background, persisting the disable
+to D1 so the cap survives a cache rebuild (§4.4). Analytics reads scale sampled
+counts with `SUM(_sample_interval)` (§7.3), so dashboards stay accurate even when
+Analytics Engine samples under load, and the visitor IP is HMAC-hashed inline and
+never stored raw (§7.2).
