@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-%E2%89%A5%2020-brightgreen.svg)](https://nodejs.org/)
-[![pnpm](https://img.shields.io/badge/pnpm-%E2%89%A5%2010-f69220.svg)](https://pnpm.io/)
+[![pnpm](https://img.shields.io/badge/pnpm-%E2%89%A5%2011-f69220.svg)](https://pnpm.io/)
 [![Turborepo](https://img.shields.io/badge/built%20with-Turborepo-cc00ff.svg)](https://turbo.build/)
 [![NSL](https://img.shields.io/badge/dev%20proxy-%40dotns%2Fnsl-4a9eff.svg)](https://github.com/dotns/nsl)
 
@@ -65,7 +65,7 @@ with its `README.md`:
 
 ## Getting started
 
-**Prerequisites:** Node.js ≥ 20, pnpm ≥ 10.
+**Prerequisites:** Node.js ≥ 20, pnpm ≥ 11.
 
 ```bash
 git clone https://github.com/WuChenDi/projects.git
@@ -106,7 +106,7 @@ packages/     6 shared libraries (ui · utils · cipher · uncrypto · db · tsc
 | Layer | Technology |
 | --- | --- |
 | **Frontend** | React + Next.js 16 (App Router) · Vue 3 + Nuxt 4 |
-| **Language** | TypeScript 5 |
+| **Language** | TypeScript 6 |
 | **UI** | shadcn/ui · Tailwind CSS v4 · Nuxt UI |
 | **Browser APIs** | WebAssembly (FFmpeg.wasm) · WebGPU · Web Workers · Streams API |
 | **Backend** | Cloudflare Workers · Hono + Zod · Durable Objects |
