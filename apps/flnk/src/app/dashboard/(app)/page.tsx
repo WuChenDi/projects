@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@cdlab/ui/components/card'
+import { ScrollArea } from '@cdlab/ui/components/scroll-area'
 import { Skeleton } from '@cdlab/ui/components/skeleton'
 import CountUp from '@cdlab/ui/reactbits/CountUp'
 import { useQuery } from '@tanstack/react-query'
@@ -225,25 +226,27 @@ export default function DashboardOverviewPage() {
                 {t('overview.activityEmpty')}
               </div>
             ) : (
-              <ul className="-my-1 h-full divide-y overflow-y-auto">
-                {events.map((e) => (
-                  <li
-                    key={eventKey(e)}
-                    className="flex items-center justify-between gap-2 py-2 text-sm"
-                  >
-                    <div className="flex min-w-0 items-center gap-2">
-                      <Globe className="size-3.5 shrink-0 text-muted-foreground" />
-                      <span className="font-medium">/{e.slug}</span>
-                      <span className="truncate text-xs text-muted-foreground">
-                        {[e.city, e.country].filter(Boolean).join(', ')}
+              <ScrollArea className="h-full">
+                <ul className="-my-1 divide-y">
+                  {events.map((e) => (
+                    <li
+                      key={eventKey(e)}
+                      className="flex items-center justify-between gap-2 py-2 text-sm"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Globe className="size-3.5 shrink-0 text-muted-foreground" />
+                        <span className="font-medium">/{e.slug}</span>
+                        <span className="truncate text-xs text-muted-foreground">
+                          {[e.city, e.country].filter(Boolean).join(', ')}
+                        </span>
+                      </div>
+                      <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                        {localTime(e.timestamp, locale)}
                       </span>
-                    </div>
-                    <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-                      {localTime(e.timestamp, locale)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+                    </li>
+                  ))}
+                </ul>
+              </ScrollArea>
             )}
           </CardContent>
         </Card>
