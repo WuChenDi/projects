@@ -1,96 +1,219 @@
-# ByPlay Log
+# byplay-log
 
-[English](./README.md) | [中文](./README.zh-CN.md)
+Single-endpoint telemetry sink for the [ByPlay](https://byplay.pages.dev/) video
+player — a **Hono Cloudflare Worker** that validates a batch of client-side
+playback events, enriches them with server-side request metadata, and
+batch-inserts them into a SQLite-family database via Drizzle.
 
-Log ingest service for the [ByPlay](https://byplay.pages.dev/) video player — a single-endpoint Cloudflare Worker that validates, enriches, and persists client-side playback telemetry. Built with **Hono** and **Drizzle ORM**.
+```diff
+- player fetch → self-reported IP/UA/country, ad-hoc shapes, no validation
++ POST /monitor?bury_content=play → zod-validated → CF-Connecting-IP/UA/country stamped server-side → one atomic batch insert
+```
 
-Preview: https://byplay.pages.dev/
+Preview: <https://byplay.pages.dev/>
 
 ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/byplay/og-image.png)
 
-## Features
+Every request is one array of events; every event is schema-checked before a
+single `values([...])` insert, so a malformed payload is a `400` with the parse
+errors — never a partial write. The visitor's IP, User-Agent, and country are
+read from the edge request (`CF-Connecting-IP`, `CF-IPCountry`), so the client
+never self-reports them.
 
-- **Single ingest endpoint** (`POST /monitor?bury_content=<tag>`) — accepts a batch (array) of player log events per request
-- **Schema validation** — each event is validated with `zod` before insertion; malformed payloads return a `400` with the parsing errors, not a partial write
-- **Request enrichment** — captures `CF-Connecting-IP` / `X-Forwarded-For` / `X-Real-IP`, `User-Agent`, and `CF-IPCountry` server-side, so the client never needs to self-report them
-- **Flexible event shape** — `feature`, `playerConfig`, `vplayerRuntime`, `playerRuntime`, and `executeProgressInfos` are stored as JSON columns, so the schema doesn't need to change as the player adds new runtime fields
-- **CORS locked down** — only `https://byplay.pages.dev` and `http://localhost:3016` are allowed origins
-- **Structured logging** — winston with daily rotation; every request is access-logged, and DB/validation failures are logged with full context
-- **Global error/404 handlers** — consistent `{ code, message }` JSON envelope for all failure paths
+## Why
 
-## Tech Stack
+The ByPlay player emits playback telemetry (buffering, stalls, runtime config,
+progress) that has to land somewhere queryable, but the event shape keeps
+changing as the player gains features. A rigid, per-field schema would force a
+migration on every player change; a schemaless dump would lose the query keys.
 
-- **Framework** — Hono
-- **Database** — Drizzle ORM over Cloudflare D1 or LibSQL / Turso (selectable via `DB_TYPE`)
-- **Validation** — zod
-- **Logging** — winston + winston-daily-rotate-file
-- **Platform** — Cloudflare Workers
+`byplay-log` splits the difference:
 
-## Getting Started
+- **Stable keys, flexible payloads** — the columns worth indexing (`userId`,
+  `streamId`, `topicId`, `time`, `buryContent`) are real columns; the volatile
+  runtime shapes (`feature`, `playerConfig`, `vplayerRuntime`, `playerRuntime`,
+  `executeProgressInfos`) are JSON columns, so the player can add fields with no
+  migration.
+- **Server-authoritative metadata** — IP, UA, and country come from the edge
+  request, not the client, so they can't be spoofed or omitted.
+- **Batch-atomic ingest** — all events in a request insert in one statement; any
+  row error fails the whole batch with a `500`, so there's no half-written batch
+  to reconcile.
+- **One Worker, no servers** — Hono on Cloudflare Workers, backed by D1 or a
+  LibSQL/Turso database chosen at deploy time by `DB_TYPE`.
 
-### Install
+## Quick start
 
-```bash
-pnpm install
-```
-
-### Development
-
-```bash
-# Start the dev server on http://byplay-log.localhost:3355 (via nsl)
-pnpm --filter @cdlab/byplay-log dev
-```
-
-### Type-check Cloudflare bindings
+`byplay-log` is part of the [`@cdlab/projects-monorepo`](../../README.md); run
+everything from the repo root.
 
 ```bash
-pnpm --filter @cdlab/byplay-log cf-typegen
+pnpm install                                   # builds workspace packages too
+pnpm --filter @cdlab/byplay-log cf:localdb     # apply migrations to the local D1
+pnpm --filter @cdlab/byplay-log dev            # -> http://byplay-log.localhost:3355
 ```
 
-### Database
+The dev URL is fixed by [`@dotns/nsl`](https://github.com/dotns/nsl) — no port
+hunting. `GET /` returns a health/info JSON; the ingest route is
+`POST /monitor?bury_content=<tag>`:
 
 ```bash
-# Generate a migration from schema.ts
-pnpm --filter @cdlab/byplay-log db:gen
-
-# Apply migrations to the local D1 database
-pnpm --filter @cdlab/byplay-log cf:localdb
-
-# Apply migrations to the remote D1 database
-pnpm --filter @cdlab/byplay-log cf:remotedb
-
-# Open Drizzle Studio (port 3018)
-pnpm --filter @cdlab/byplay-log db:studio
+curl -X POST 'http://byplay-log.localhost:3355/monitor?bury_content=play' \
+  -H 'content-type: application/json' \
+  -d '[{"time":1720000000000,"userId":1,"userIdUuid":"u-1","streamId":"s-1","version":"1.0.0","playerConfig":{"topicId":42}}]'
+# -> { "code": 0, "message": "ok" }
 ```
 
-Copy `.env.example` to `.env` and fill in the database credentials for your `DB_TYPE`.
+Copy `.env.example` to `.env` and fill the credentials for your `DB_TYPE` before
+running migrations against a remote database.
 
-### Deploy
+## How ingest works
 
-```bash
-pnpm --filter @cdlab/byplay-log deploy
+```
+POST /monitor?bury_content=<tag>
+  1. useDrizzle(c)                     obtain the DB handle (D1 or libSQL)
+  2. require bury_content query param  → 400 if absent
+  3. read edge headers server-side     CF-Connecting-IP → X-Forwarded-For → X-Real-IP; UA; CF-IPCountry
+  4. parse JSON body                   → 400 "Invalid JSON body" on malformed JSON
+  5. PlayerLogsArraySchema.safeParse    → 400 with error.issues on shape mismatch
+  6. map each event → NewPlayerLog     feature (JSON string) is JSON.parse'd; bad JSON → null (row kept)
+  7. db.insert(playerLogs).values([…]) one atomic batch → 500 on DB error
+  8. { code: 0, message: 'ok' }
 ```
 
-Requires a Cloudflare D1 database bound as `DB` (see `wrangler.jsonc`), or `LIBSQL_URL` + `LIBSQL_AUTH_TOKEN` if `DB_TYPE=libsql`.
+```mermaid
+flowchart TD
+    A["POST /monitor?bury_content=tag"] --> B{"bury_content present?"}
+    B -->|no| E4["400 Missing bury_content"]
+    B -->|yes| C["read CF-Connecting-IP / UA / CF-IPCountry"]
+    C --> D{"body is valid JSON?"}
+    D -->|no| E1["400 Invalid JSON body"]
+    D -->|yes| V{"array matches zod schema?"}
+    V -->|no| E2["400 + error.issues"]
+    V -->|yes| M["map events → rows (parse feature string)"]
+    M --> I{"batch insert ok?"}
+    I -->|no| E3["500 Database insertion failed"]
+    I -->|yes| OK["200 { code: 0, message: 'ok' }"]
+```
 
-## Architecture
-
-- `src/index.ts` — Hono app entry. Wires access logging, `prettyJSON`, `requestId`, and CORS (`https://byplay.pages.dev` + `http://localhost:3016`); mounts `monitorRoutes` at `/`; global `onError` / `notFound` handlers return `{ code, message, stack? }` (`stack` only when `isDebug`).
-- `src/routes/monitor.ts` — The only business route: `POST /monitor`. Requires a `bury_content` query parameter, parses and validates the JSON body (an array of player log events) against a zod schema, enriches each row with request metadata, and batch-inserts into `playerLogs`.
-- `src/database/schema.ts` — `playerLogs` table (auto-increment `id`). Core fields (`userId`, `userIdUuid`, `streamId`, `topicId`, `time`, `version`, `ua`, `vendor`, `platform`) plus JSON columns (`feature`, `playerConfig`, `vplayerRuntime`, `playerRuntime`, `executeProgressInfos`) for flexible event shapes, and request metadata (`buryContent`, `ipAddress`, `userAgent`, `country`). Indexes on `userId`, `streamId`, `time`, `buryContent`, `createdAt`, and the composite `(userId, streamId)`.
-- `src/global.ts` — Sets up the global `logger` (winston) and `isDebug` flag, imported for side effects from `index.ts`.
+Note the two-level status scheme: a successful insert returns app-level
+`code: 0` (distinct from HTTP `200`); error envelopes reuse the HTTP status as
+`code`.
 
 ## Configuration
 
-| Variable | Description |
-|---|---|
-| `DEPLOY_RUNTIME` | Runtime preset for deployment (`cf` or `node`) |
-| `DB_TYPE` | Driver selector — `libsql` (Turso) or `d1` (Cloudflare D1) |
-| `LIBSQL_URL` / `LIBSQL_AUTH_TOKEN` | LibSQL / Turso connection (used when `DB_TYPE=libsql`) |
-| `CLOUDFLARE_ACCOUNT_ID` / `CLOUDFLARE_API_TOKEN` | Used by drizzle-kit for remote D1 migrations |
+Runtime knobs are `vars` in [`wrangler.jsonc`](wrangler.jsonc), mirrored in
+`.env.example`. The Worker reads them from `process.env` (injected via
+`nodejs_compat`).
 
-See `.env.example` and `wrangler.jsonc` for the full set of defaults.
+| Var | Default | Meaning |
+| --- | --- | --- |
+| `DEPLOY_RUNTIME` | `cf` | Logger selection: `cf` → `console.*` wrapper; `node` → winston + daily-rotate file. |
+| `DB_TYPE` | `libsql` (worker) / `d1` (wrangler) | Driver: `d1` (the `DB` binding) or `libsql` (Turso). |
+| `LIBSQL_URL` | `file:./web/database/data.db` | LibSQL/Turso URL (used when `DB_TYPE=libsql`). |
+| `LIBSQL_AUTH_TOKEN` | *(empty)* | LibSQL/Turso auth token. |
+| `CLOUDFLARE_ACCOUNT_ID` | — | Used by drizzle-kit for remote D1 (`d1-http` driver). |
+| `CLOUDFLARE_API_TOKEN` | — | Used by drizzle-kit for remote D1. |
+
+`drizzle.config.ts` additionally reads `CLOUDFLARE_DATABASE_ID` for the remote
+`d1-http` driver — it is **not** in `.env.example`, so export it before running
+`db:*` against a remote D1. `NODE_ENV === 'dev'` sets `isDebug`, which gates
+debug logs and error-stack exposure.
+
+## Bindings
+
+| Binding | Type | Purpose | Required |
+| --- | --- | --- | --- |
+| `DB` | D1 | `player_logs` storage, `database_name: byplay`. | ✓ (when `DB_TYPE=d1`) |
+| — | LibSQL/Turso | Alternative store via `LIBSQL_URL` + `LIBSQL_AUTH_TOKEN`. | ✓ (when `DB_TYPE=libsql`) |
+| `observability` | — | Worker logs, `head_sampling_rate: 1`. | on |
+
+KV, R2, and AI bindings are present but commented out in `wrangler.jsonc`.
+
+## Endpoints
+
+| Route | Purpose |
+| --- | --- |
+| `GET /` | Health/info JSON (`status: 'ok'`, endpoint list). |
+| `POST /monitor?bury_content=<tag>` | Ingest a JSON **array** of player-log events. |
+
+Unknown routes hit the `notFound` handler; all failures return a consistent
+`{ code, message, stack? }` envelope (`stack` only when `isDebug`).
+
+## Data model
+
+Single table `player_logs` (`src/database/schema.ts`), autoincrement `id`:
+
+| Group | Columns |
+| --- | --- |
+| Identity | `userId`, `userIdUuid`, `streamId`, `topicId` (lifted from `playerConfig.topicId`) |
+| Event | `time`, `version`, `ua`, `vendor`, `platform` |
+| JSON (flexible) | `feature`, `playerConfig`, `vplayerRuntime`, `playerRuntime`, `executeProgressInfos` |
+| Request metadata | `buryContent`, `ipAddress`, `userAgent`, `country` |
+| Tracking mixin | `createdAt`, `updatedAt` (auto), `isDeleted` (soft-delete default 0) |
+
+Indexes: `userId`, `streamId`, `time`, `buryContent`, `createdAt`, and composite
+`(userId, streamId)`.
+
+## Project structure
+
+```
+src/
+  index.ts             app assembly, middleware, CORS, health route, error/404 handlers
+  routes/
+    monitor.ts         the only business route: POST /monitor + the zod schema
+    index.ts           barrel re-export
+  lib/db.ts            DatabaseManager singleton + useDrizzle(c) factory (D1 / libSQL)
+  database/
+    schema.ts          Drizzle player_logs table + trackingFields mixin + types
+    0000_mysterious_shape.sql   generated migration
+    meta/              drizzle journal + snapshot
+  global.ts            installs globalThis.logger + globalThis.isDebug (side-effect import)
+DESIGN.md              architecture + ingest / data-model / config spec
+llms.txt               agent-oriented usage guide
+```
+
+## Build, deploy & database
+
+```bash
+pnpm --filter @cdlab/byplay-log cf-typegen   # regenerate CloudflareBindings types
+pnpm --filter @cdlab/byplay-log deploy        # wrangler deploy --minify
+```
+
+There is no test script and no test files. `pnpm --filter @cdlab/byplay-log build`
+runs `bun build src/index.ts --outdir dist --target browser` to emit a standalone
+`dist/` bundle; it is **not** needed for `wrangler deploy`, which bundles
+`src/index.ts` directly.
+
+Migrations:
+
+```bash
+pnpm --filter @cdlab/byplay-log db:gen        # generate a migration from schema.ts
+pnpm --filter @cdlab/byplay-log cf:localdb    # apply to local D1
+pnpm --filter @cdlab/byplay-log cf:remotedb   # apply to remote D1 (--remote)
+pnpm --filter @cdlab/byplay-log db:studio     # drizzle-kit studio (port 3018)
+```
+
+CORS is locked to `https://byplay.pages.dev` and `http://localhost:3016` with
+`credentials: true` — update the allow-list in `src/index.ts` if the player
+origin changes.
+
+## Non-goals
+
+- Not a query/analytics API — this Worker only **ingests**; reads happen directly
+  against D1/Turso (drizzle-studio, dashboards).
+- Not multi-tenant — a single dataset for one player; there is no per-owner
+  scoping or auth on the ingest endpoint (origin allow-list only).
+- No retention/cleanup job — `isDeleted` exists per the shared convention but
+  nothing soft-deletes or prunes rows; rows accumulate until pruned externally.
+
+## Design
+
+[`DESIGN.md`](DESIGN.md) is the authoritative spec — the ingest pipeline, the
+stable-keys/flexible-JSON data model, the dual-driver DB manager, the logger
+split, and the configuration/deployment story. Read it before changing the
+schema, the validation shape, or the insert path.
 
 ## License
 
-[MIT](../../LICENSE) License &copy; 2025-PRESENT [wudi](https://github.com/WuChenDi)
+[MIT](../../LICENSE) © 2025-PRESENT [wudi](https://github.com/WuChenDi)

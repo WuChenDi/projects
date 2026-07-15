@@ -1,0 +1,122 @@
+# @cdlab/db usage guide for AI agents
+
+`@cdlab/db` is a build-only TypeScript library (tsdown → ESM + CJS + `.d.mts`):
+the shared Drizzle DB factory and query helpers for the monorepo's SQLite-backed
+apps (`dropply-api`, `flnk`, `wepush`). It has **no server, no routes, no
+runtime of its own** — it is imported, and the consumer's chosen entry decides
+Node vs Workers-edge. It replaces the hand-rolled `DatabaseManager` / `getDb`
+copies each app used to carry.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Core: ./src/core.ts — entries: ./src/node.ts, ./src/web.ts — helpers: ./src/utils.ts
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/db <script>`.
+
+## What it is
+
+- **`defineDb(schema)` → `getDb(env)`.** Bind a Drizzle schema once at module
+  scope; call `getDb(env)` per request. The returned closure owns a per-app
+  client cache (one per `defineDb` call — NOT global).
+- **Dual driver, chosen at request time** by `env.DB_TYPE`: `'d1'` (the `DB`
+  binding) or `'libsql'` (Turso). `'libsql'` is the default. Both run in prod.
+- **Three subpath exports, no root export.** `@cdlab/db/node`,
+  `@cdlab/db/web`, `@cdlab/db/utils`. `./node` and `./web` both re-export
+  `./core` and `./utils`.
+
+## Architecture / data flow
+
+`node.ts` and `web.ts` are near-identical shims — they differ in ONE line, which
+`createClient` they import — and both call `createGetDb(schema, createClient)`
+in `core.ts`. All driver logic is in `core.ts`; `utils.ts` is independent.
+
+`getDb(env)` (src/core.ts:36-77):
+
+1. `dbType = env.DB_TYPE || 'libsql'`.
+2. cache key: `'d1'` (fixed) for D1, or `libsql:<url>` for libSQL (a changed
+   `LIBSQL_URL` rebuilds the client; a stable one is reused).
+3. cache hit → return cached `Db`.
+4. miss → switch:
+   - `d1`: require `env.DB` (else throw `D1 binding "DB" not found in env`) →
+     `drizzleD1(env.DB, { schema })`.
+   - `libsql`: `createLibsqlClient({ url: env.LIBSQL_URL || DEFAULT_LIBSQL_URL,
+     authToken: env.LIBSQL_AUTH_TOKEN })` → `drizzleLibsql(client, { schema })`.
+   - other → throw `Unsupported DB_TYPE: <value>`.
+5. cache under key, return. Both branches cast `as unknown as Db<TSchema>`.
+
+`DEFAULT_LIBSQL_URL = 'file:./src/database/data.db'` (core.ts:34) — local dev
+SQLite, reachable ONLY via the `/node` entry (the web client rejects `file:`).
+
+## Entries & the bundler boundary (src/node.ts, src/web.ts)
+
+Pick by bundler — NOT auto-selected. A wrong pick breaks the build or local DB.
+
+- `@cdlab/db/node` → `createClient` from `@libsql/client` (native, supports
+  `file:`). Use for plain-wrangler Hono workers (`dropply-api`) + Node tests.
+- `@cdlab/db/web` → `createClient` from `@libsql/client/web` (pure fetch/ws,
+  bundles under OpenNext esbuild). Use for Next.js/OpenNext apps (`flnk`,
+  `wepush`). Remote Turso only, no `file:`.
+
+## The `Db` type (src/core.ts:23-27)
+
+`Db<TSchema> = BaseSQLiteDatabase<'async', unknown, TSchema>` — the lowest common
+supertype of `DrizzleD1Database` and `LibSQLDatabase`. Standard query-builder
+methods are typed; driver-specific extras (e.g. `.batch`) are NOT — narrow to
+the concrete driver type at the call site if you need them.
+
+## Config / bindings (src/core.ts:10-17)
+
+`DbEnv = { DB_TYPE?, DB?, LIBSQL_URL?, LIBSQL_AUTH_TOKEN? }` — the ENTIRE config
+surface. The app adapts its own source (Hono `c.env`, OpenNext injected env /
+`getCloudflareContext()`, or `process.env`) into this before calling `getDb`.
+
+- `DB_TYPE` — `'libsql'` (default) | `'d1'`.
+- `DB` — Cloudflare D1 binding; required only when `DB_TYPE='d1'`.
+- `LIBSQL_URL` — falls back to `file:./src/database/data.db`.
+- `LIBSQL_AUTH_TOKEN` — Turso auth token.
+
+This package declares NO Cloudflare bindings and NO secrets of its own — the D1
+binding is passed in by the consumer's `wrangler.jsonc`.
+
+## Query helpers (src/utils.ts, re-exported from /node and /web)
+
+Over `trackingFields` columns `isDeleted` / `expiresAt` / `updatedAt`:
+
+- `notDeleted(table)` → `eq(isDeleted, 0)`.
+- `withNotDeleted(table, condition?)` → `and(notDeleted, condition)`.
+- `softDelete()` → `{ isDeleted: 1, updatedAt: Date }`.
+- `isNotExpired(table)` → `or(isNull(expiresAt), gt(expiresAt, unixepoch()))`.
+- `withNotDeletedAndNotExpired(table, condition?)`.
+- `withUpdatedTimestamp(data)` → spread + fresh `updatedAt`.
+- `isExpired(expiresAt: number | null)` → `Date.now() > expiresAt`; false when falsy.
+
+## Gotchas for agents
+
+- **Expiry unit mismatch:** SQL `isNotExpired` uses `unixepoch()` (SECONDS); JS
+  `isExpired` uses `Date.now()` (MILLISECONDS). Do NOT mix — keep a column's unit
+  consistent with the check you run against it. See DESIGN §7.1.
+- **Pick the entry deliberately** — `/node` vs `/web` is NOT auto-detected.
+  Wrong entry = broken OpenNext build or missing local `file:` DB.
+- **Keep `@libsql/client` + `drizzle-orm` external.** They are `dependencies`
+  and NOT bundled, so consumers resolve their own copy and the OpenNext apps'
+  `serverExternalPackages` (`@libsql/client`, `@libsql/hrana-client`,
+  `@libsql/isomorphic-ws` in `next.config.ts`) keep matching → wrangler resolves
+  the libsql chain via the `workerd` export condition. Don't bundle them.
+- **The cache is per-`defineDb` closure, not global.** Call `defineDb(schema)`
+  ONCE at module scope so requests reuse the cache.
+- **This package owns no schema and no migrations.** The consumer supplies the
+  schema; migrations (drizzle-kit, `db:gen`, `cf:remotedb`) live in the apps.
+- **Rebuild after editing** — consumers resolve from `dist/`, so edits are
+  invisible until `pnpm --filter @cdlab/db build` (or `dev --watch`, or a fresh
+  `pnpm install`).
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/db build       # tsdown -> dist/{node,web,utils}.{mjs,cjs} + .d.mts
+pnpm --filter @cdlab/db dev         # tsdown --watch
+pnpm --filter @cdlab/db typecheck   # tsc --noEmit (no test/lint/deploy script exists)
+```

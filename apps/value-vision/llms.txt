@@ -1,0 +1,119 @@
+# value-vision usage guide for AI agents
+
+`value-vision` (package `@cdlab/values`) is a client-only, statically-exported
+Next.js App Router app: a purchasing-power converter where crypto, fiat, and
+fixed-price products share one board. Typing an amount into any field re-prices
+every other field. Live rates are fetched in the browser (CoinGecko crypto +
+exchangerate-api fiat), cross-rated through USD into an N×N matrix, with a
+bundled snapshot as an offline fallback. No backend, no database, no accounts,
+no secrets.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/values <script>`.
+
+## What it is
+
+- **`output: 'export'` static SPA** — no server runtime (no `app/api`, no route
+  handlers, no middleware). Entry: `src/app/layout.tsx` (bg effects, metadata,
+  GA) + `src/app/page.tsx` (`'use client'`, the single converter page).
+- **Two hooks drive everything.** `useExchangeRates` (rate matrix: fetch +
+  fallback + refresh) and `useCurrencyConverter(rates)` (board state +
+  conversion). `page.tsx` wires them.
+- **Deploy target: Cloudflare Pages** via `@cloudflare/next-on-pages`
+  (`build:cf`). Live at https://values.pages.dev/. No `wrangler.jsonc`, no
+  bindings.
+
+## Data flow
+
+On mount / manual refresh (`useExchangeRates.ts`):
+
+1. `ExchangeRate.fetchExchangeRates()` runs `Promise.all([fetchCryptoPrices(),
+   fetchFiatRates()])` — CoinGecko + exchangerate-api in parallel.
+2. `getProductPrices(fiatRates)` — each product's fixed price ÷ its home fiat
+   rate = USD price (or the price directly when home currency is USD).
+3. `calculateCrossRates()` builds the dense N×N matrix; `1` on the diagonal,
+   every pair via `calculateRate` (all routed through USD). Unhandled pair ⇒ `0`.
+4. On any fetch error: catch, set error, `setRates(defaultRates)` (bundled
+   fallback, `src/lib/rates.ts`).
+
+User types (`useCurrencyConverter.ts`):
+
+5. `handleAmountChange(index, value)` updates the field, records
+   `lastInputIndex`, schedules `convert(index, newFields)` via `setTimeout(0)`
+   (passes fresh fields to avoid stale closure).
+6. `convert` reads the source, `parseAmount` (strips commas), and for every OTHER
+   field: same currency ⇒ copy; else `amount × rates[from][to]`; else `0`.
+   Formats to 2 decimals via `toLocaleString`.
+7. A `useEffect` keyed on `rates` re-converts `lastInputIndex` when new rates
+   arrive.
+
+## Key files
+
+- `src/app/page.tsx` — the board; wires the two hooks, renders one row
+  (`CurrencySelector` + `AmountInput`) per field.
+- `src/app/layout.tsx` — metadata, JSON-LD, GA `G-FPHG7CDDVQ`, full-screen
+  `Plasma` + 400-particle `Particles` background, dark default theme.
+- `src/app/error.tsx` — error boundary (copy still says "storefront" — leftover
+  template text).
+- `src/hooks/useExchangeRates.ts` — fetch + parallel APIs + `defaultRates`
+  fallback + `refreshRates`.
+- `src/hooks/useCurrencyConverter.ts` — field state, `convert`, distinct-currency
+  helper `getUsedCurrencies`.
+- `src/lib/currencies.ts` — `CURRENCY_CONFIG` (crypto/fiat/products) +
+  `DEFAULT_FIELDS`.
+- `src/lib/exchangeRate.ts` — `ExchangeRate` class; live fetch + all cross-rate
+  math. ONLY file that hits the network.
+- `src/lib/rates.ts` — `defaultRates` bundled fallback matrix.
+- `src/types/currency.ts` — `CurrencyConfig`, `ExchangeRates` (`{[from]:{[to]:
+  number}}`), `ConverterField`, API response shapes.
+- `src/components/{AmountInput,CurrencySelector}.tsx`,
+  `src/components/layout/*` — presentational; `client-providers.tsx` holds theme
+  + version badge.
+
+## Config & bindings
+
+- **No runtime config, no secrets, no bindings.** Only build input is
+  `BUILD_TIME` (`next.config.ts` `env` → `client-providers.tsx` footer badge).
+- Rate APIs are keyless, hardcoded in `exchangeRate.ts`: CoinGecko
+  `api/v3/simple/price` (crypto USD) + exchangerate-api `v4/latest/USD` (fiat).
+- `next.config.ts`: `output:'export'`, `images.unoptimized`, remote host
+  whitelist (`res.cloudinary.com`, `wcd.pages.dev`).
+
+## Gotchas for agents
+
+- **Static export = client-only.** `page.tsx` is `'use client'`; rate fetching is
+  browser-side and CORS-dependent. Do NOT add server code, `app/api`, or a proxy
+  — `output:'export'` forbids a server runtime.
+- **No caching/retry/debounce** on fetches; refresh re-fetches everything.
+  CoinGecko's public endpoint is rate-limited — expect fallback to `defaultRates`.
+- **Fallback matrix drift.** `src/lib/rates.ts` is hand-maintained, independent of
+  the catalog/live math, and holds retired assets (`ZHUJIAO`, `KFC`, `IN11`,
+  `ROLEX`) absent from `CURRENCY_CONFIG`. If you add/remove a catalog asset, hand-
+  update this file too or the fallback goes stale/incomplete.
+- **Cross-rates pivot on USD.** Products are normalized to USD first
+  (`getProductPrices`), then cross-rated. Unhandled pairs return `0`; `convert`
+  renders a missing/`0` rate as blank/zero, never an error.
+- **Distinct currency per row** is enforced via `excludeCurrencies` (from
+  `getUsedCurrencies`), disabling in-use options in the selector.
+- **Deferred conversion**: handlers dispatch `convert` inside `setTimeout(0)` with
+  freshly-built `newFields`; `convert` early-returns while `updating` is true.
+- No database, no localStorage — state is ephemeral and resets on reload.
+- Lint is `next lint`, but source uses Biome ignore directives — mixed tooling.
+  `removeConsole` is commented out, so console logs ship.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/values dev        # http://values.localhost:3355
+pnpm --filter @cdlab/values build      # next build → static export in out/
+pnpm --filter @cdlab/values build:cf   # @cloudflare/next-on-pages (Pages bundle)
+pnpm --filter @cdlab/values typecheck  # tsc --noEmit
+pnpm --filter @cdlab/values lint       # next lint
+```
+
+No test script exists.

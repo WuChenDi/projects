@@ -1,0 +1,122 @@
+# @cdlab/cipher usage guide for AI agents
+
+`@cdlab/cipher` is a client-side stream cipher library. It encrypts an
+arbitrarily large `File` in 10 MB chunks with XChaCha20-Poly1305, deriving the
+key from an Argon2id password hash (mode `ns1`) or an ECIES-wrapped random key
+(mode `ns0`, or `ns2` when secp256k1-signed). Output is a self-describing binary
+`Blob`: a magic-prefixed AEAD-encrypted header, then per-chunk
+`[size][sha256] + ciphertext` records. Pure-JS primitives (`@noble/*`,
+`eciesjs`) + a `getRandomValues` shim → runs in browser, Web Worker, and Node.
+No server, no network, no persisted state, no secrets of its own.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Format contract: ./src/constants.ts (CONFIG, MAGIC_BYTES)
+- Wire format: ./src/header.ts + ./src/stream-cipher.ts
+
+Build-only library in the `@cdlab/projects-monorepo`. Run scripts from the repo
+root: `pnpm --filter @cdlab/cipher <script>`. No dev server (it's a package).
+Consumed by `SecureC` (Web Worker) and `dropply-web` via `workspace:*`.
+
+## What it is
+
+- Barrel `src/index.ts`. Two grouped facades:
+  - `streamCrypto.encrypt.withPassword` / `.withPublicKey`,
+    `streamCrypto.decrypt.withPassword` / `.withPrivateKey` — take/return `File`/`Blob`.
+  - `textCrypto.encrypt` / `.decrypt` — string ⇄ magic-prefixed base64.
+- Low-level exports: `StreamCipher`, `parseStreamHeader`, `detect`, error classes
+  + `ERROR_MESSAGES`, `CONFIG`, `MAGIC_BYTES`, all types.
+- File-centric by design; text mode wraps strings in a `File` and reuses the
+  stream pipeline. Tests run under happy-dom for `File`/`Blob`/`FileReader`.
+
+## Data flow (encrypt)
+
+`streamEncryptWithPassword` (src/password.ts) / `streamEncryptWithPublicKey`
+(src/publickey.ts):
+
+1. `totalChunks = ceil(file.size / CONFIG.CHUNK.SIZE)` (10 MB); `ext` from name.
+2. Establish key — password: `argon2id(password, randomSalt(16))`; public-key:
+   random 32B `symmetricKey`, `ecies.encrypt(receiverPubKey, symmetricKey)`,
+   optional `secp256k1.sign(hashFile(file), sender.privKeyBytes)` → magic `ns2`.
+3. `createStreamHeader` → chunk 0: magic + `len(2 LE)` + [`salt(16)` | `keyLen(2)`
+   + `encryptedKey`] + AEAD(header JSON `{e,c,s?}`). Header JSON is itself
+   XChaCha20-Poly1305-encrypted under the key.
+4. Per 10 MB slice: `readFileChunk` → `onProgress` → `await setTimeout(0)` (yield)
+   → `encryptChunk`: prepend `[uint32 size LE][sha256 32B]` to the ciphertext.
+5. `cipher.destroy()` + `finally secureClear(key)`; return `Blob([header,...chunks])`.
+
+Decrypt: read first `HEADER_MAX=2048` bytes, check magic, `parseStreamHeader`
+re-derives key (Argon2id from stored salt, or ECIES-unwrap), reads chunk count,
+walks chunks via `readAndExtractChunk` (36B metadata first, then `36+size`) and
+`decryptChunk` (constant-time SHA-256 verify), reassembles `Blob`.
+
+## Wire format (src/header.ts, src/constants.ts)
+
+- Header ns1 (password): `magic(3)` + `len(2 LE)` + `salt(16)` + AEAD(`{e,c}`).
+- Header ns0/ns2 (public-key): `magic(3)` + `len(2 LE)` + `keyLen(2 LE)` +
+  `eciesEncryptedSymKey` + AEAD(`{e,c,s?}`). `s` = signature, only in `ns2`.
+- Per chunk (both): `[size uint32 LE][sha256 32B]` + XChaCha20-Poly1305 ciphertext.
+  The 24B XChaCha nonce is prepended INSIDE the ciphertext by `managedNonce`, not
+  in metadata. `size` counts nonce + ciphertext + tag.
+- `MAGIC_BYTES`: PASSWORD `ns1`, PUBLIC_KEY `ns0`, SIGNED `ns2`.
+
+## Key files
+
+- `src/constants.ts` — CONFIG (CHUNK.SIZE 10MB, BUFFER 20MB, MAX_MEMORY 100MB;
+  ARGON2 t=3/m=1280KiB/p=4; SIZES SALT=16 NONCE=12 SYM_KEY=32 SIGNATURE=64
+  HEADER_MAX=2048) + MAGIC_BYTES. The on-disk contract.
+- `src/header.ts` — `createStreamHeader` / `parseStreamHeader`; two layouts.
+- `src/stream-cipher.ts` — `StreamCipher`: `encryptChunk`, `decryptChunk`
+  (constant-time `compareArrays`), `destroy`.
+- `src/password.ts` / `src/publickey.ts` — mode orchestration + chunk loop.
+- `src/text.ts` — string↔File↔base64 wrappers.
+- `src/detect.ts` — first-3-bytes → `{ encryptionType: 'pwd'|'pubk'|'signed'|'unencrypted', isText }`.
+- `src/utils.ts` — `readFileChunk`, `readAndExtractChunk`, metadata
+  serialize/deserialize, `hashFile` (streaming SHA-256), `secureClear`
+  (random-fill then zero), `waitForMemory`.
+- `src/errors.ts` — `CryptoError` base (`code`) + subclasses + `ERROR_MESSAGES`.
+- `src/types.ts` — `HeaderData {e,c,s?}`, option/callback shapes.
+
+## Config / bindings / deps
+
+- No env, no bindings, no network, no secrets. Keys/passwords are caller args.
+- All tunables are compile-time constants in `src/constants.ts` — no override path.
+- Deps (`catalog:prod`): `@noble/ciphers` (XChaCha20-Poly1305, `managedNonce`),
+  `@noble/hashes` (argon2id, sha256), `@noble/curves` (secp256k1),
+  `eciesjs` (ECIES), `@scure/base` (base64); plus `@cdlab/uncrypto` (`workspace:*`,
+  getRandomValues shim).
+
+## Gotchas for agents
+
+- The `gcm` import alias is XChaCha20-Poly1305, NOT AES-GCM
+  (`import { xchacha20poly1305 as gcm }`). `SIZES.NONCE=12` "for GCM" is dead —
+  the real XChaCha nonce is 24B, managed by `managedNonce`.
+- CONFIG (chunk sizes / Argon2 params / magic bytes / offsets) is the binary
+  format. Do NOT edit in place — any change makes existing ciphertexts unreadable.
+  Evolve by adding a new magic byte + parallel decode path (DESIGN §8).
+- Signature verify is NON-FATAL: a bad/missing signature only fires an `onStage`
+  message and sets `signatureValid=false`; decryption still completes. Callers
+  must check the returned flag (publickey.ts:125, DESIGN §6.2).
+- `parseStreamHeader` copies `ecies.decrypt` output into an owned `Uint8Array`
+  before use — it aliases Node's Buffer pool, so `secureClear` on the raw buffer
+  would corrupt unrelated memory (header.ts:139, DESIGN §6.4).
+- `decryptText` forwards `receiver`/`sender` into `streamDecryptWithPassword`,
+  which ignores them in password mode — harmless dead params.
+- `waitForMemory` / `performance.memory` / `gc` only work in Chromium / flagged
+  Node; elsewhere it's a silent no-op.
+- Password-mode decrypt returns `signatureValid: undefined` (signatures are a
+  public-key concern).
+- Rebuild after editing: consumers resolve `dist/`. Run
+  `pnpm --filter @cdlab/cipher build` (or repo-root `pnpm prepare`) or new exports
+  won't be visible.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/cipher build       # tsdown → dist/ (ESM + CJS + .d.mts)
+pnpm --filter @cdlab/cipher dev         # tsdown --watch
+pnpm --filter @cdlab/cipher test        # vitest --run (happy-dom)
+pnpm --filter @cdlab/cipher typecheck   # tsc --noEmit
+```

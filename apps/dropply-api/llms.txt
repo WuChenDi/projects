@@ -1,0 +1,143 @@
+# dropply-api usage guide for AI agents
+
+`dropply-api` is a zero-knowledge file-sharing backend running as a single Hono
+Cloudflare Worker. It stores **only ciphertext + metadata** — encryption happens
+in the browser (`dropply-web`), which keeps the key in the URL fragment and never
+sends it here. A share is a **session** (UUID owning one or more files) unlocked
+by a **6-char retrieval code**; access is a short-lived, session-scoped signed
+JWT, not a login; expired/abandoned shares are swept hourly by a cron.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Runtime config: ./wrangler.jsonc
+- Schema: ./src/database/schema.ts
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/dropply-api <script>`.
+
+## What it is
+
+- **One Hono Worker.** `src/index.ts` = `new Hono()` with
+  `export default { fetch, scheduled }`. Middleware order: `accesslog` →
+  `prettyJSON` → `requestId` → open `cors()`. Five route groups mount under
+  `/api`; `GET /` is a static health JSON.
+- **No accounts, no auth library.** Access is capability tokens (hand-rolled
+  HS256 JWT over Web Crypto). Optional TOTP gate (hand-rolled base32 + HMAC-SHA1).
+- **Dual DB driver** selected by `DB_TYPE`: `libsql` (Turso, default) or `d1`
+  (the `DB` binding). Wired via `@cdlab/db/node` (Node entry — this is a plain
+  wrangler worker, NOT OpenNext, so use `/node` not `/web`).
+- **Blobs in R2** (`R2_STORAGE`, bucket `dropply`), key `${sessionId}/${fileId}`.
+
+## Share lifecycle (src/routes/chest.ts, retrieve.ts, download.ts)
+
+1. `POST /api/chest` — optional TOTP gate → mint `sessionId` + `upload` JWT (24h),
+   insert `sessions` row `uploadComplete: 0`. Returns `{ sessionId, uploadToken, expiresIn: 86400 }`.
+2. `POST /api/chest/:sessionId/upload` — Bearer upload JWT matched to `:sessionId`.
+   Stream each `files` File to R2, store each `textItems` JSON as text; R2 puts +
+   batched `files` insert run in one `Promise.all`.
+3. `POST /api/chest/:sessionId/complete` — Bearer upload JWT. Ownership check by
+   COUNT (`files count === fileIds.length`, NOT identity — see gotchas). Mint
+   6-char CSPRNG `retrievalCode`, set `expiresAt`, flip `uploadComplete: 1`.
+4. `GET /api/retrieve/:retrievalCode` — find complete + non-expired session,
+   return file list + `chest` JWT (tied to session expiry).
+5. `GET /api/download/:fileId` — `chest` JWT via `Authorization: Bearer` OR
+   `?token=`; join files⨝sessions, re-check expiry, stream R2 object with RFC 5987
+   `Content-Disposition`.
+
+## Upload paths
+
+- **Direct form** (`/upload`) — small payloads + inline text; files stream via
+  `value.stream()`, no full-body buffering.
+- **R2 native multipart** (large files): `.../multipart/create` (mint 48h
+  `multipart` JWT embedding R2 `uploadId` + filename/mimeType/fileSize — returned
+  in the response field named `uploadId`) → `PUT .../part/:n` (returns etag) →
+  `.../multipart/:fileId/complete` (sort parts, R2 complete, THEN insert `files`
+  row from JWT metadata). The `files` row exists only after completion, so an
+  abandoned multipart upload has no DB row — reclaimed by the 48h sweep.
+
+## Token model (src/lib/jwt.ts)
+
+All HS256, signed with `JWT_SECRET` over Web Crypto. Each `verifyX` asserts
+`payload.type` — tokens can't be used cross-scope.
+
+- `upload` (24h): `sessionId`. Write capability; matched to URL `:sessionId`.
+- `multipart` (48h): `sessionId`, `fileId`, R2 `uploadId`, filename, mimeType,
+  fileSize. One file within a session.
+- `chest` (session `expiresAt`, else +365d): `sessionId`. Read capability; can't
+  outlive the files it unlocks.
+
+## Data model (src/database/schema.ts)
+
+Both tables share `trackingFields` (`createdAt`, `updatedAt`, `isDeleted` soft
+delete — NEVER hard-delete; filter via `withNotDeleted` from `@cdlab/db/node`).
+
+- `sessions` — `retrievalCode` (unique idx), `uploadComplete` (0=filling,
+  1=sealed), `expiresAt` (nullable = permanent, indexed).
+- `files` — `sessionId` FK → `sessions.id` `onDelete: cascade` (indexed),
+  `originalFilename`, `mimeType`, `fileSize`, `fileExtension`, `isText`. `id` is
+  also the R2 object suffix.
+- R2 key everywhere: `${sessionId}/${fileId}`. Only R2 blobs are truly deleted.
+
+## Cleanup (src/cron/cleanup.ts)
+
+`triggers.crons: ["0 * * * *"]` (hourly) → `scheduled()` →
+`cleanupExpiredContent(env)`. Sweeps (a) expired sessions (`expiresAt < now`;
+NULL excluded) and (b) stale-incomplete (`uploadComplete=0`, `createdAt` >48h old
+— matches the multipart JWT TTL). Per session: `R2.list({prefix})` + delete, then
+soft-delete files then session. Failure-tolerant: per-session errors go into
+`errors[]`, never throw. Cron has no Hono context → uses `useDrizzle({ env } as any)`.
+
+## Response envelopes
+
+- Business routes: `ApiResponse<T>` = `{ code, message, data? }`, `code: 0` on
+  success. `code` is app-level, distinct from HTTP status.
+- Global `onError`/`notFound`: `{ statusCode, message, stack? }` — `stack`
+  (line-split) only when `isDebug` (`NODE_ENV === 'dev'`).
+
+## Config & bindings (wrangler.jsonc, src/types/index.ts)
+
+- Handlers read `c.env.*` directly (no central config object). Booleans are
+  `=== 'true'`; `MAX_FILE_SIZE_MB` via `Number.parseInt`.
+- Vars: `DEPLOY_RUNTIME` (`cf`), `DB_TYPE` (`libsql`), `LIBSQL_URL`/`_AUTH_TOKEN`,
+  `MAX_FILE_SIZE_MB` (100, advisory — hard cap is 5GB in zod), `REQUIRE_TOTP`,
+  `TOTP_SECRETS` (`name:secret,...`), `JWT_SECRET`, `ENABLE_EMAIL_SHARE`,
+  `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_WEB_URL`.
+- `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_DATABASE_ID`/`CLOUDFLARE_API_TOKEN` are used
+  ONLY by drizzle-kit's `d1-http` driver for remote migrations, not by the Worker
+  runtime.
+- Bindings: `R2_STORAGE` (required, bucket `dropply`); `DB` (D1, COMMENTED OUT by
+  default — uncomment + set `database_id` and `DB_TYPE=d1` to use D1).
+- Secrets (`JWT_SECRET`, `TOTP_SECRETS`, `RESEND_API_KEY`, `LIBSQL_AUTH_TOKEN`) go
+  in `.dev.vars` / `wrangler secret put`, never committed vars.
+
+## Gotchas for agents
+
+- **Use `@cdlab/db/node`, not `/web`** — this is a plain wrangler Hono worker, not
+  OpenNext. `src/lib/db.ts` re-exports `@cdlab/db/node` (so `@/lib` surfaces
+  `withNotDeleted` etc.).
+- **Ownership check is by COUNT, not identity** (`complete`): it asserts
+  `files count === fileIds.length`, never that the `fileIds` are the session's
+  files. Preserve or tighten — don't loosen. See DESIGN §9.2.
+- **The download token can arrive via `?token=`** (query string) for anchor
+  downloads — it will appear in URLs/logs. Keep it narrowly scoped.
+- **CORS is intentionally open** — not a security boundary; access = the token.
+- **Never hard-delete** — soft-delete via `isDeleted`; only R2 blobs are deleted.
+- **Multipart `files` row is written only at completion** — abandoned uploads have
+  no DB row and are reclaimed by the 48h stale-incomplete sweep.
+- **No test suite exists.** Pre-deploy gate is type-check + a manual smoke of
+  create→retrieve→download.
+- `global.ts` reads `DEPLOY_RUNTIME`/`NODE_ENV` from `process.env` at module load
+  — relies on `nodejs_compat` surfacing wrangler vars.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/dropply-api dev          # http://dropply-api.localhost:3355
+pnpm --filter @cdlab/dropply-api cf:localdb   # apply migrations to local D1
+pnpm --filter @cdlab/dropply-api db:gen       # generate a migration from schema.ts
+pnpm --filter @cdlab/dropply-api db:migrate   # apply (LibSQL / Turso)
+pnpm --filter @cdlab/dropply-api cf-typegen   # regenerate CloudflareBindings types
+pnpm --filter @cdlab/dropply-api deploy       # wrangler deploy --minify
+```

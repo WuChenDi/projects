@@ -1,0 +1,156 @@
+# flox usage guide for AI agents
+
+`flox` is a multi-source video aggregator on **Next.js 16 App Router + React 19**.
+Search is an **Edge SSE fan-out** that fires one `fetch` per enabled source and
+streams each source's results as it replies; playback runs through a custom
+`hls.js` engine with a 4-layer M3U8 ad filter. It is **server-stateless**: no
+database, no Cloudflare binding, no accounts — every persisted thing lives in the
+browser's `localStorage` (Zustand persist).
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Env template: ./.env.example
+- Types: ./src/lib/types/index.ts
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/flox <script>`.
+
+## What it is
+
+- **Two halves.** Server = stateless Edge routes under `src/app/api/*` (all
+  `export const runtime = 'edge'`) that only fan out / proxy / probe upstream.
+  Client = React UI holding ALL durable state in `localStorage` via Zustand.
+- **No bindings, no DB.** There is **no `wrangler.jsonc`** and no KV/D1/R2/DO.
+  Deploy target is Cloudflare Pages via `@cloudflare/next-on-pages` (`build:cf`);
+  `output: 'standalone'` also makes it a runnable Node/Docker server.
+- **Sources ship EMPTY.** `DEFAULT_SOURCES` / `PREMIUM_SOURCES` are `[]`. The app
+  is inert until the user imports the remote curated list or adds sources.
+
+## Parallel search pipeline
+
+Edge route `src/app/api/search-parallel/route.ts` (`POST { query, sources, page }`):
+
+1. validate → SSE `error` + close on empty query / empty sources (route has NO
+   built-in sources; the client must supply them).
+2. emit `start { totalSources }`.
+3. `Promise.all`: one `fetch` per source (`searchVideos`, timed with
+   `performance.now()` for `latency`). Unbounded fan-out — no server pool.
+4. source resolves → SSE `videos` (+ latency) + `progress`; source fails →
+   `progress` only.
+5. all settled → SSE `complete`.
+
+Frame types: `start | videos | progress | complete | error`. Headers:
+`text/event-stream`, `no-cache`, `keep-alive`.
+
+Client (`src/lib/hooks/useParallelSearch.ts` + `src/lib/utils/search-stream.ts`):
+
+- TanStack `useMutation`; if no sources passed, assembles them from
+  `useSettingsStore` (`.sources` + enabled `.subscriptions`). Uses an
+  `AbortController` — a new search aborts the prior one.
+- `processSearchStream` parses SSE line-by-line, filters each video with
+  `hasMinimumMatch` + scores with `calculateRelevanceScore`.
+- **Watchdog invariant:** a 3s no-progress timer auto-fires `onComplete()` so a
+  hung source can't stall the UI.
+- Merges via `binaryInsertVideos` (sorted insert); on complete → `sortVideos` →
+  push to search cache.
+
+## Source registry (src/lib/api/*)
+
+- `VideoSource` = `{ id, name, baseUrl, searchPath, detailPath, headers?, enabled,
+  priority, group: 'normal'|'premium' }`.
+- `client.ts` re-exports `searchVideos` / `getVideoDetail`. `search-api.ts` hits
+  MacCMS JSON `${baseUrl}${searchPath}?ac=detail&wd=&pg=` (UA-spoofed
+  `Mozilla/5.0`). `detail-api.ts` parses `$$$`-delimited multi-play-sources.
+- Curated 38+ list is REMOTE:
+  `BUILTIN_SOURCES_URL = https://cdn.jsdelivr.net/gh/WuChenDi/static/flox/sources-link-all.json`,
+  fetched **through `/api/proxy`** on one-click import (CORS dodge).
+
+## Proxy & ad filter
+
+- `/api/proxy?url=` (`src/app/api/proxy/route.ts`): forwards ONLY `cookie`/`range`
+  upstream; detects M3U8 by content-type / `.m3u8` / body sniff (`#EXTM3U`);
+  rewrites manifest segment URLs back through itself (`processM3u8Content`); adds
+  CORS to every response; strips `content-encoding/length/transfer-encoding`.
+- `filterM3u8Ad()` (`src/lib/utils/m3u8-utils.ts`), gated by `adFilterMode`
+  (`off|keyword|heuristic|aggressive`): (1) heuristic block scoring over
+  DISCONTINUITY blocks, (2) SCTE-35 `#EXT-X-CUE-OUT…IN` state machine, (3) keyword
+  match, (4) aggressive = strip ALL `#EXT-X-DISCONTINUITY`. Runs both in the proxy
+  and in the client hls.js loader.
+
+## Custom HLS player (src/components/player/)
+
+- `VideoPlayer.tsx` dispatches on `playerEngine` (`veplayer|native`): `FloxPlayer`
+  (Volcengine VePlayer) vs `CustomVideoPlayer` → `DesktopVideoPlayer` → `desktop/*`.
+- State: `hooks/useDesktopPlayerState.ts` + `useDesktopPlayerLogic.ts` →
+  `refs`/`data`/`actions` over `hooks/desktop/*`.
+- `hooks/useHlsPlayer.ts` (HLS core): subclasses hls.js `DefaultLoader` to run
+  `filterM3u8Ad` on manifest/level responses (FORCES hls.js when ad filter is on,
+  even with native HLS); HEVC/H.264 level-locking on `MANIFEST_PARSED`; iOS/native
+  path rebuilds filtered playlists as blob URLs with `/api/proxy` + 8s-timeout
+  fallback; capped fatal-error recovery (MAX_RETRIES=3); revokes blob URLs on
+  teardown.
+
+## Storage model (src/lib/store/*)
+
+- All persistence = browser `localStorage` via Zustand persist, keys `flox:<scope>`.
+- `create-persisted-store.ts` auto-registers each store in `registry.ts`; entries
+  carry `includeInBackup` (default true). `store/init.ts` (imported by
+  `layout.tsx`) force-registers all stores so global reset/export never misses one.
+- Registry ops: `resetAllStores`, `exportAllStores`/`importAllStores` (backup-only),
+  `clearAppCaches` (wipes segment Cache Storage + metadata index).
+- Persisted keys: `flox:settings`, `flox:favorites`, `flox:history`,
+  `flox:watch-later`, `flox:search-history`, `flox:tag-orders`, `flox:unlock` —
+  several have a `:premium` sibling. `flox:unlock` is `includeInBackup: false`.
+- UI-only (non-persisted): `sidebar-store`, `header-reset-store`.
+
+## Password gate & premium (src/components/{PasswordGate,premium}/)
+
+- `PasswordGate` wraps the app; fetches `/api/config` for status, hashes the
+  password client-side (`hashPasswordFn`), verifies via `POST /api/config`
+  (`verifyPasswordFn` vs `ACCESS_PASSWORD`). Env value NEVER leaves the server.
+- `flox:unlock` is `includeInBackup:false` so an exported settings file can't
+  replay-unlock. This is casual gating, NOT auth (no accounts).
+- Premium isolation (`usePremiumContent`) keeps sources/history/favorites
+  separate; `/player?premium=1` selects the premium history bucket.
+
+## Config & routes (.env.example, src/app/api/*)
+
+- Env only (no bindings/secrets): `ACCESS_PASSWORD`, `PERSIST_PASSWORD`,
+  `NEXT_PUBLIC_SUBSCRIPTION_SOURCES` (also read as `SUBSCRIPTION_SOURCES`),
+  `AD_KEYWORDS`, `AD_KEYWORDS_FILE`, `NEXT_PUBLIC_SITE_{NAME,TITLE,DESCRIPTION}`.
+- Edge routes: `search-parallel`, `proxy`, `probe-resolution` (batch cap 100,
+  6-worker pool), `detail`, `check-source`, `ping`, `config`,
+  `douban/{filter,image,ranking,recommend,suggest,tags}`, `premium/{category,types}`.
+- Pages: `/`, `/player`, `/ranking`, `/settings`, `/premium`, `/premium/settings`.
+- `src/middleware.ts` applies CORS to `/api/*` (allow-list `floxx.pages.dev`,
+  `flox.localhost:3355`).
+
+## Gotchas for agents
+
+- **Sources are empty by default** — nothing searches until the curated list is
+  imported (via `/api/proxy`) or sources are added. Don't treat `[]` as a bug.
+- **No `wrangler.jsonc`, no bindings, no DB.** Don't add KV/D1/R2 wiring; all
+  state is `localStorage`. Server routes are stateless Edge handlers.
+- **Keep `src/middleware.ts` named `middleware.ts`** — Next 16 wants `proxy.ts`
+  but `next-on-pages` doesn't support it yet (see the file's comment).
+- **Every `src/app/api/*` route MUST stay `runtime = 'edge'`.** No `fs` in edge
+  routes — `AD_KEYWORDS_FILE` is read only in the Node root `layout.tsx`.
+- **Two live domains disagree:** middleware/README use `floxx.pages.dev`
+  (double-x); `layout.tsx` metadata uses `flox.pages.dev` (single-x). Don't
+  "fix" one without checking OG + CORS impact.
+- **Don't reorder the search pipeline or SSE frame shapes** without reading
+  DESIGN §3 — the client parser and the 3s watchdog depend on them.
+- **`build` is `next build --webpack`** — Turbopack is intentionally not used.
+- **No test suite exists** — there is no `test` script.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/flox dev          # http://flox.localhost:3355 (or: pnpm dev:flox)
+pnpm --filter @cdlab/flox build        # next build --webpack (NOT Turbopack)
+pnpm --filter @cdlab/flox build:cf     # next-on-pages (Cloudflare Pages build)
+pnpm --filter @cdlab/flox lint         # next lint
+pnpm --filter @cdlab/flox typecheck    # tsc --noEmit
+```

@@ -1,0 +1,152 @@
+# wepush usage guide for AI agents
+
+`wepush` is a multi-tenant WeChat official-account template-message push console
+that runs as a single Cloudflare Worker (Next.js App Router via OpenNext). One
+deployment serves many accounts; every recipient, template, credential, and log
+is isolated by `ownerId === user.id`. A push resolves live per-recipient
+variables (weather / calendar / quotes), renders a `{{var.DATA}}` template, sends
+via the WeChat template-message API, and writes an auditable log — driven
+identically by the UI, an authenticated HTTP API, or a per-owner cron.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Runtime config: ./wrangler.jsonc
+- Schema: ./src/database/schema.ts
+
+Part of `@cdlab/projects-monorepo`; run commands as `pnpm --filter @cdlab/wepush
+<script>` from the repo root.
+
+## What it is
+
+- **One Worker.** No KV / DO / queues; the only stateful dep is SQLite (D1 or
+  libSQL/Turso, selected at request time by `DB_TYPE` via `@cdlab/db/web`).
+- **Custom worker entry** `src/worker/index.ts` wraps OpenNext's `fetch` and adds
+  `scheduled()` → `runScheduledPush(env)`. `env` is threaded explicitly through
+  the whole push stack because `getCloudflareContext()` is only set in the fetch
+  path (its context symbol is getter-only — assigning throws).
+- **Layers:** `app/api/*` (gate → validate → call service) → `services/*` (push,
+  template, wechat, sources, calendar) → `lib/*` (auth, db, http).
+
+## Multi-tenancy (enforced, not aspirational)
+
+- Every business table has `ownerId` FK→`user.id` (cascade): `user_config`,
+  `templates`, `users` (recipients), `push_batches`, `push_logs`. `festivals` +
+  `custom_dates` hang off `users.id` and inherit isolation TRANSITIVELY (no own
+  ownerId).
+- Every read/write filters by `ownerId`. The only cross-owner query is the cron
+  scan, which iterates owners on purpose.
+- `templates.code` is unique per `(ownerId, code)`, NOT globally.
+  `user_config.pushApiToken` IS globally unique (it's a Bearer credential — a
+  collision would resolve to the wrong owner).
+- Per-owner config lives in `user_config` (PK = ownerId), replacing the old
+  singleton `global_config`.
+
+## Auth — two gates (src/lib/auth.ts)
+
+- better-auth, social-only (Google + GitHub), login == registration, built PER
+  REQUEST. `accountLinking.trustedProviders` links same-email accounts to one
+  tenant. IP pinned to `cf-connecting-ip`.
+- `requireSession(request)` — cookie only; used by ALL console `/api/*`. Returns
+  `{ user }` or 401.
+- `requireOwner(request)` — cookie OR `Authorization: Bearer <pushApiToken>`
+  (looked up in `user_config`, `isDeleted=0`, resolved to ownerId). Used ONLY by
+  the send routes: `/api/push/run`, `/api/push/retry`, batch retry.
+- `GET /api/settings` MASKS `wechatAppSecret` + `pushApiToken` (returns `''` +
+  `has*` booleans); secrets are only writable (PATCH) or revealed once on rotate.
+- Signup is open by design; restrict via Cloudflare Access / IP allow-list / an
+  email allow-list in `getAuth()`.
+
+## Push pipeline (src/services/push/runner.ts)
+
+`runPush({ ownerId, trigger, userIds?, env? })` — the single path all triggers use:
+
+1. `loadConfig(ownerId)` (throws if `user_config` missing) + `loadTargetUsers`
+   (owner-scoped, `enabled=true`, `isDeleted=0`).
+2. insert `push_batches` (status=running).
+3. `getAccessToken` ONCE per batch (not per-send, not cached across batches). On
+   failure the batch still runs — each recipient logs a failure.
+4. sequential per-recipient: `aggregateUserData` → `renderTemplate` →
+   `sendTemplateMessage` → insert `push_logs` (success|failed + snapshot + error
+   payload). `processUser` is isolated — a throw becomes a failed log, loop continues.
+5. throttle: sleep `sleepTime` (default 65s) every `maxPushOneMinute` sends; else
+   `min(2000, sleepTime)` between sends. Knobs from the owner's `user_config`.
+6. finalize batch: success | partial | failed from counts.
+
+Template id precedence: `user.wechatTemplateId || config.defaultWechatTemplateId`.
+
+Triggers: manual/api = `POST /api/push/run` (requireOwner); cron =
+`runScheduledPush(env)` scans `user_config WHERE cronEnabled` and runs per owner
+for `cronUserIds` (sequential, per-owner errors logged not thrown). Cron expr in
+`wrangler.jsonc` (`30 23 * * *` = 07:30 Asia/Shanghai).
+
+## Template rendering (src/services/template/render.ts)
+
+- `{{name.DATA}}` global replace in title + desc; key is regex-escaped.
+- Empty/missing value → `''` (never leaks the raw placeholder). Only keys present
+  in the data map substitute — that's why aggregate pre-seeds all 10 `birthday_N`
+  slots.
+- WeChat data is `{ value, color }`. Color: variable's own → per-key default
+  (birthday_* → pink) → `#000000`. `showColor=false` forces all to `#000000`.
+
+## Data sources + calendar (src/services/sources|calendar)
+
+- Sources (`weather` itboy, `hitokoto`, `iciba`) NEVER throw — failures go into an
+  `errors` map (logged as a warning on the successful send). Wrapped in `withRetry`.
+- `aggregateUserData` is pure (no DB) and shared by runner + preview + dry-run →
+  preview parity with real sends.
+- Calendar uses `tyme4ts`; all "today" math pinned to `Asia/Shanghai` (TZDate) —
+  Workers run UTC and cron 23:30 UTC = 07:30 next-day CST, so UTC math would be
+  off by a day. `isLunar` converts lunar MM-DD → next solar occurrence (±1 year
+  probe). `weatherCityCode` is a 9-digit CMA code with district→city fallback
+  (`xxxxxx01`); picker data in `public/data/city-codes.json`.
+
+## Data model (src/database/schema.ts)
+
+`trackingFields` on every business table (`createdAt`, `updatedAt`, `isDeleted`
+soft-delete — NEVER hard-delete). Tables: better-auth core (`user`/`session`/
+`account`/`verification`); `user_config` (PK=ownerId, creds+throttle+cron+token);
+`templates` ((ownerId,code) unique); `users` (recipients); `festivals` +
+`custom_dates` (off users.id); `push_batches`; `push_logs` (audit trail:
+variableSnapshot + rendered message + errorPayload).
+
+> TYPE GOTCHA: `User`/`NewUser` = recipient rows (table `users`). The auth account
+> is `AuthUser` (table `user`). The UI calls recipients "users" — don't confuse them.
+
+## API routes (src/app/api/*)
+
+requireOwner (send routes): `push/run`, `push/retry`, `batches/[id]/retry`.
+requireSession (everything else): `push/dry-run`, `push/preview`, `batches/[id]`,
+`logs`, `logs/[id]`, `templates(/[id])`, `users(/[id])`, `stats/overview`,
+`stats/trend`, `debug/source/[name]`, `settings`. Public: `auth/[...all]`.
+
+## Config & bindings
+
+- Deployment env/secrets: `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, Google/GitHub
+  client id+secret, `DB_TYPE`, `LIBSQL_URL`/`LIBSQL_AUTH_TOKEN`. Secrets NEVER vars.
+- Per-owner runtime (in `user_config`, edited in Settings): WeChat creds,
+  `maxPushOneMinute`, `sleepTime`, `apiTimeout`, `maxRetries`, `retryDelay`,
+  `cronEnabled`, `cronUserIds`, `pushApiToken`, `defaultWechatTemplateId`.
+- Bindings: `DB` (D1), `ASSETS`. Flags: `nodejs_compat`, `global_fetch_strictly_public`.
+
+## Gotchas for agents
+
+- For D1, generate migrations with the sqlite dialect (`DB_TYPE=d1`) — libSQL
+  default emits `ALTER COLUMN`, which D1 rejects.
+- `@libsql/client` must stay in `serverExternalPackages` (`next.config.ts`).
+- Thread `env` through the push stack — don't call `getCloudflareContext()` on the
+  cron path.
+- Don't hard-delete; soft-delete via `isDeleted`, filter `is_deleted=0`.
+- Never widen a query past its `ownerId` filter — that breaks tenant isolation.
+- Date math must use Asia/Shanghai, not the UTC Worker clock.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/wepush dev          # http://wepush.localhost:3355
+pnpm --filter @cdlab/wepush db:migrate   # libsql/Turso  (cf:localdb for D1)
+pnpm --filter @cdlab/wepush db:gen       # generate a migration from schema.ts
+pnpm --filter @cdlab/wepush gen:cities   # refresh weather city-codes.json
+pnpm --filter @cdlab/wepush build        # next build
+```

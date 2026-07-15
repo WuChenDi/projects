@@ -1,0 +1,130 @@
+# text2img usage guide for AI agents
+
+`text2img` is a free, no-registration AI text-to-image tool that runs as a single
+Cloudflare Worker (Next.js App Router compiled through OpenNext). The browser
+POSTs a prompt to `/api/generate`; the Worker resolves a model, runs it through a
+per-model **adapter** onto the Cloudflare Workers AI binding (`env.AI.run`), and
+streams a PNG back. There is **no server-side database** — generation history is
+browser-local (IndexedDB blobs + localStorage metadata), and the optional access
+password is Argon2id-hashed client-side.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Runtime config (annotated): ./wrangler.jsonc
+- Model catalog + prompts: ./src/lib/data.ts
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/text2img <script>`.
+
+## What it is
+
+- **One Worker, two surfaces.** UI page `/[locale]` (`en`/`zh`, client
+  component). API: `POST /api/generate`, `GET /api/models`, `GET /api/prompts`.
+- **No server DB, no auth.** History lives in the browser. Optional `PASSWORDS`
+  gate on the generate endpoint only.
+- **Runtime:** OpenNext `.open-next/worker.js` on Workers `nodejs_compat` — NOT
+  the classic Next edge runtime (no `export const runtime` anywhere). `env` /
+  bindings come from `getCloudflareContext()`; `next dev` gets real bindings only
+  because `next.config.ts` calls `initOpenNextCloudflareForDev()`.
+
+## The generate flow (src/app/api/generate/route.ts + src/lib/hooks/useGeneration.ts)
+
+Client (`useGeneration.ts`, TanStack useMutation):
+1. `onMutate` — `genid.nextId()` → insert PENDING record; record `performance.now()`.
+2. `generateImage` — if password set, replace with `hashPasswordFn(pw)` (Argon2id)
+   BEFORE POST; consume response as `Blob`.
+3. `onSuccess` → `completeResult(id, blob, time)`; `onError` → mark FAILED.
+
+Server (`route.ts` POST):
+1. parse JSON → `GenerateParams`; `env = getCloudflareContext().env`.
+2. password gate: if `process.env.PASSWORDS` non-empty → 401 (missing) / 403
+   (no `verifyPasswordFn` match). Empty = open.
+3. require `prompt` AND `model` in body → 400.
+4. `findModelById(AVAILABLE_MODELS, model)` → 400 unknown; `disabled` → 400.
+5. adapter = `MODEL_TYPE_CONFIGS[type]` ?? `MODEL_GROUP_CONFIGS[group]` ?? default.
+6. `adapter.prepareInputs(data)` → `env.AI.run(model.key, inputs)` → `adapter.processResponse`.
+7. thrown errors → JSON 500.
+
+## Model adapters (the core logic — src/app/api/generate/route.ts)
+
+Each adapter is `{ prepareInputs, processResponse }`. Selection precedence: TYPE
+config (img2img/inpainting) OVERRIDES group config.
+
+- `defaultModelConfig` — bytedance, lykon, stabilityai, runwayml groups. Plain
+  JSON inputs (1024×1024, num_steps 20, guidance 7.5); raw bytes → image/png.
+- `blackForestLabsConfig` — black-forest-labs group. `flux-1-schnell`:
+  `{prompt, steps}` with steps CLAMPED 4–8. Other FLUX: builds `multipart`
+  FormData body → `{multipart:{body,contentType}}`; response is base64 JSON
+  (`image` field) → decode → PNG.
+- `leonardoConfig` — leonardo (disabled). steps 25, guidance 4; base64 or binary.
+- `img2imgConfig` — img2img type. decodes `image_b64` → number-array `image`;
+  512×512, strength 0.75.
+- `inpaintingConfig` — inpainting type. adds `mask` from `mask_b64`, strength 1;
+  reuses img2img processResponse.
+
+Key invariants (do not "simplify" without reading DESIGN §4):
+- TYPE config beats GROUP config — a runwayml img2img model uses img2imgConfig.
+- Non-schnell FLUX needs a multipart body AND returns base64 JSON; SDXL/DreamShaper
+  return raw PNG bytes. These are different Workers AI contracts, not redundancy.
+- `flux-1-schnell` clamps steps to [4,8]; others pass steps through.
+
+## Catalog & prompts (src/lib/data.ts)
+
+- `AVAILABLE_MODELS: ModelGroup[]` — each `Model` has `id`, `name`, `key` (full
+  `@cf/...` id for `env.AI.run`), `group`, `type` (text2img|img2img|inpainting),
+  `disabled`. `/api/models` and `/api/prompts` are trivial `NextResponse.json`.
+- Enabled: FLUX.2 klein 9B/4B, FLUX.2 dev, FLUX.1 schnell, ByteDance SDXL
+  Lightning, Lykon DreamShaper 8 LCM, Stability SDXL Base 1.0, Runway v1.5
+  img2img/inpainting. Disabled: Leonardo Lucid Origin/Phoenix.
+- Disabled models STAY in the catalog (served by `/api/models`) but are rejected
+  at generate time (400). `findModelById` (src/lib/utils.ts) flattens groups.
+- Model `description` strings are Chinese-only display copy — not a contract.
+
+## Client storage (src/store/useImageStore.ts + src/lib/storage.ts)
+
+No server DB. Two browser stores:
+- IndexedDB `text2img-images` (`createIDBStore<Blob>`) — PNG blobs by result id.
+- localStorage `text2img-results` — Zustand persist, metadata only.
+
+`partialize` persists ONLY completed results and STRIPS `imageUrl` + params
+`password`/`image_b64`/`mask_b64` (no secrets / source bytes in localStorage).
+`onRehydrateStorage` → `rehydrateBlobs()` re-reads blobs from IndexedDB and
+rebuilds object URLs; a missing blob → FAILED `'Data lost'`. Object URLs are
+session-only, revoked on remove/clearAll.
+
+## Config & bindings (wrangler.jsonc, .env.example)
+
+- `PASSWORDS` (`process.env.PASSWORDS`) — comma-separated access passwords for
+  `/api/generate`; empty = open. `BUILD_TIME` — optional version badge value.
+- Bindings: `AI` (Workers AI — REQUIRED), `ASSETS` (static), `IMAGES` (declared,
+  UNUSED in code), `WORKER_SELF_REFERENCE`. Flags: `nodejs_compat`,
+  `global_fetch_strictly_public`.
+- `PASSWORDS` is NOT a `wrangler` var (as a var it shadows the Worker secret on
+  every deploy). Set via `.env` locally, or GitHub secret `TEXT2IMG_PASSWORDS`
+  synced by the deploy workflow.
+
+## Gotchas for agents
+
+- `env.AI` only exists inside a request via `getCloudflareContext()`; in `next dev`
+  it works ONLY because of `initOpenNextCloudflareForDev()` in next.config.ts.
+- The password plaintext NEVER goes over the wire — client hashes with Argon2id;
+  server verifies hash-vs-configured-plaintext. Don't add plaintext logging.
+- Non-schnell FLUX needs the multipart FormData wrapper; do not collapse the FLUX
+  and default adapters.
+- Disabled models are catalog-visible but rejected at generate time (400).
+- `src/app/page.tsx` (redirect) and root `layout.tsx` are static-export/not-found
+  shims — real routing is under `[locale]`.
+- No tests exist (no test script, no test files). `build` is `next build`, which
+  is NOT the deploy path — deploy is OpenNext (`opennextjs-cloudflare build && deploy`).
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/text2img dev       # http://text2img.localhost:3355 (real bindings)
+pnpm --filter @cdlab/text2img build     # next build (type-check + bundle; NOT deploy)
+pnpm --filter @cdlab/text2img preview    # local Workers preview (OpenNext)
+pnpm --filter @cdlab/text2img deploy     # OpenNext build & deploy (prefer deploy-text2img.yml)
+pnpm --filter @cdlab/text2img cf-typegen # regenerate cloudflare-env.d.ts
+```

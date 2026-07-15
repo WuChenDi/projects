@@ -1,0 +1,124 @@
+# byplay usage guide for AI agents
+
+`byplay` is an in-browser HLS/M3U8 diagnostic player: paste a stream URL, tune
+hls.js ABR / buffer / retry / ad-filter knobs live, and watch a real-time stats
++ event-log panel. It is a **fully static Next.js export** (`output: 'export'`)
+— no backend, no API routes, no worker, no database, no env/secrets, no
+Cloudflare bindings. All playback, ad filtering, and telemetry are client-side.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/byplay <script>`.
+
+## What it is
+
+- **One screen, one hook.** `src/app/[locale]/page.tsx` (`HlsPage`) holds `url`
+  / `HlsConfig` / `playbackRate` and wires config cards to `useHlsPlayer`.
+- **The core is `src/hooks/use-hls-player.ts`** — owns `HlsConfig`,
+  `DEFAULT_HLS_CONFIG`, driver selection, the retry loop, the ad-filter loader,
+  and a 200-entry newest-first log ring.
+- **Static export.** No server runtime. `src/middleware.ts` (next-intl locale
+  middleware) does NOT execute; locale routing is static + `/` → `/en` redirect
+  (`src/app/page.tsx`). Do not describe an edge/SSR runtime.
+
+## Playback flow (loadSource in use-hls-player.ts)
+
+`loadSource(url, config)` destroys any prior `Hls`, clears native `src`, then
+picks ONE driver:
+
+1. `/\.(mp4|webm|ogg|ogv|mov|avi|mkv)(\?.*)?$/i` matches → native `<video src>`
+   (direct file). Sets `isDirectVideo`, which hides all HLS-only config cards.
+2. else `Hls.isSupported()` → `new Hls(mergedConfig)` + `loadSource` +
+   `attachMedia` (hls.js MSE path).
+3. else `canPlayType('application/vnd.apple.mpegurl')` → native `<video src>`
+   (Safari HLS).
+4. else → `state.error = 'HLS is not supported in this browser'`.
+
+Key behaviors:
+
+- **Autoplay muted-fallback**: `play()` unmuted first, on reject set `muted` and
+  retry (browser autoplay policy).
+- **Two retry layers**: hls.js `*LoadingMaxRetry` config AND an app-level loop —
+  fatal `NETWORK_ERROR` → `hls.startLoad()` (≤3), fatal `MEDIA_ERROR` →
+  `hls.recoverMediaError()` (≤3), then `hls.destroy()`. Non-fatal errors are
+  logged only.
+- **HEVC/H.265** sets a SOFT warning on `MANIFEST_PARSED` but still plays.
+- hls.js config merges user knobs with fixed constants (`abrEwmaFast/Slow=3/9`,
+  `*MaxRetryTimeout=64000`, `*RetryDelay=1000`) — these are not UI-exposed.
+
+## Config model (HlsConfig)
+
+`HlsConfig` = a `Pick` of hls.js `HlsConfig` (18 fields: enableWorker,
+lowLatencyMode, maxBufferLength/maxMaxBufferLength/maxBufferSize/maxBufferHole/
+backBufferLength, startFragPrefetch, abrEwmaDefaultEstimate/abrBandWidthFactor/
+abrBandWidthUpFactor, frag/manifest/levelLoadingMaxRetry, fragLoadingRetryDelay,
+frag/manifest/levelLoadingTimeOut) + app-level `autoPlay`, `adFilterMode`,
+`adKeywords`. Defaults in `DEFAULT_HLS_CONFIG`.
+
+- Config knobs take effect only on the NEXT Load (baked into the `Hls`
+  constructor). Playback rate and manual level apply live via `setPlaybackRate`
+  / `setLevel` (NOT part of `HlsConfig`).
+- Each card under `src/components/player/` is controlled via
+  `onUpdateConfig(key, value)`; barrel `index.ts` exports them.
+
+## Ad filter (src/lib/m3u8-utils.ts + m3u8-ad-detector.ts)
+
+- Active only when `adFilterMode !== 'off'`. Injected as a subclass of
+  `Hls.DefaultConfig.loader` that rewrites `manifest`/`level` responses with
+  `filterM3u8Ad` before hls.js parses them — per request, in the browser.
+- `filterM3u8Ad(content, baseUrl, mode, keywords, stats)` — 5 stages: heuristic
+  block scoring → SCTE-35 CUE strip → keyword backtracking → aggressive
+  discontinuity strip → relative→absolute URL normalization.
+- Thresholds: `heuristic` ≥ 5.0, `aggressive` ≥ 3.0. Modes: off/keyword/
+  heuristic/aggressive.
+- `m3u8-ad-detector.ts`: `parseBlocks`, `learnMainPattern`, `scoreBlock`,
+  `shouldFilterBlock`, `AD_PATH_KEYWORDS`. Each run logs a `FilterStats` summary.
+
+## Cross-tool integration
+
+`source-card.tsx` renders a link to `https://vidl.pages.dev/<locale>?url=<url>`
+(jump-to-vidl to download the current stream). Locale is preserved.
+
+## Data model / storage
+
+NONE. No database, no localStorage, no persistence. `HlsPlayerState`,
+`HlsLogEntry` (200-cap ring), and `FilterStats` are the only "schemas" — all
+ephemeral React state, reset on reload.
+
+## Config / bindings
+
+- No env vars, no secrets, no Cloudflare bindings. Only build-time input is
+  `BUILD_TIME` injected in `next.config.ts`; the sole `process.env` read in
+  `src` is `process.env.BUILD_TIME` (footer stamp).
+- Deep link: `?url=` / `?source=` auto-loads on mount if the URL ends in a media
+  extension (`.m3u8/.m3u/.mp4/.webm/.ogg/.ts/.mpd`).
+- i18n: two locales `['en','zh']` (`src/i18n/routing.ts`), messages typed via
+  next-intl (`messages/en.d.json.ts` generated).
+
+## Gotchas for agents
+
+- The README's "playback events are reported to the byplay-log worker" is
+  ASPIRATIONAL — NOT implemented. There is no `fetch`/`sendBeacon`/endpoint or
+  any `byplay-log` reference in `src`. Do not document it as a feature.
+- `public/vplayer.js` + `src/types/vplayer.d.ts` (createVzanPlayer/window.vplayer)
+  are DEAD leftover from a prior player; nothing in `src` uses them. Some
+  `messages/*` keys also date from it.
+- `@cdlab/driftflake` is declared in `package.json` but never imported in `src`.
+- `output: 'export'` means no server: middleware is inert, no SSR/edge, no env.
+- HLS-only cards hide when `isDirectVideo` — a direct file skips hls.js entirely.
+- Config changes need a re-Load to apply; rate/level apply live.
+- No tests exist (no runner, no test files).
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/byplay dev        # http://byplay.localhost:3355
+pnpm --filter @cdlab/byplay lint       # next lint
+pnpm --filter @cdlab/byplay typecheck  # tsc --noEmit
+pnpm --filter @cdlab/byplay build      # next build → static out/
+pnpm --filter @cdlab/byplay build:cf   # @cloudflare/next-on-pages
+```

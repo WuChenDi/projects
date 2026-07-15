@@ -1,0 +1,127 @@
+# bytts usage guide for AI agents
+
+`bytts` is a free, browser-based text-to-speech app (Next.js App Router, React 19).
+Two Edge Runtime routes proxy Microsoft's free "Edge Read Aloud" speech pipeline
+(SSML in, `audio/mpeg` out) and gate an optional password. Everything else —
+voice/rate/pitch controls, long-text splitting, generation history, and a
+pluggable provider registry — runs in the browser. **No server database, no
+Cloudflare bindings, no tests.**
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Built-in providers: ./src/lib/builtin-apis.ts
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/bytts <script>` (or `pnpm dev:bytts`).
+
+## What it is
+
+- **Two server surfaces, both Edge Runtime** (`export const runtime = 'edge'`):
+  `POST /api/tts` (synthesis) and `GET|POST /api/config` (password). No other
+  server code. No KV/D1/R2, no `wrangler.jsonc`.
+- **All persistence is client-side:** Zustand + localStorage + IndexedDB.
+- **Deploy target:** Cloudflare Pages via `@cloudflare/next-on-pages` (Pages
+  Functions, not a raw Worker). `output: 'standalone'` is a Node fallback.
+- **Live:** https://bytts.pages.dev/
+
+## Data flow (generate a clip)
+
+TTSForm (`src/components/tts-form.tsx`) → `splitText` → per-segment request →
+merge blobs → history.
+
+1. `splitText(text, splitLength)` — width-aware, punctuation-preferring split.
+2. `genid.nextId()` → requestId; `addHistory(PROCESSING)`.
+3. Per segment: for `edge-api`, POST `{text, voice, rate, pitch, preview}` to
+   `/api/tts`.
+4. Server `/api/tts`: `refreshEndpoint()` (cached MS token) → `generateSsml()` +
+   `escapeXml` → POST `{region}.tts.speech.microsoft.com/cognitiveservices/v1` →
+   return `audio/mpeg`.
+5. Client merges segment blobs into one `Blob`; `updateHistory(COMPLETED,
+   audioBlob)`.
+6. Blob → IndexedDB (`tts-history-data`, keyed by id); metadata → localStorage
+   (`bytts-results`).
+
+**Preview** = `generateVoice(true)`: synthesizes `text.slice(0,20)`, plays via an
+object URL, writes **no** history.
+
+## Key files
+
+- `src/app/api/tts/route.ts` — Edge synthesis proxy. Module-scoped token cache
+  (`expiredAt`/`endpoint`), `refreshInFlight` de-dup, HMAC `X-MT-Signature`
+  (hardcoded key), SSML build, `escapeXml` before assembly, voice regex
+  `VOICE_NAME_RE`.
+- `src/app/api/config/route.ts` — password endpoint; plain string compare.
+- `src/lib/utils.ts` — `escapeXml` (preserves `<break time="…s"/>`), `splitText`
+  (non-ASCII = width 2, 300-unit back-scan, 6 priority tiers).
+- `src/lib/builtin-apis.ts` — `BUILTIN_APIS` (`edge-api`, `oai-tts`),
+  `isBuiltinId`.
+- `src/components/tts-form.tsx` — input + controls; builds per-provider request
+  bodies; drives split/dispatch/preview/history.
+- `src/components/api-manager.tsx` — add/edit custom providers, built-in
+  override/restore, batch delete, JSON import/export.
+- `src/components/history-section.tsx` — history grid, waveform player,
+  download-one / download-all-as-ZIP.
+- `src/components/PasswordGate.tsx` — client render gate (reads `/api/config`).
+- `src/store/useApiStore.ts` — providers (`bytts-custom-apis`).
+- `src/store/useHistoryStore.ts` — history split-storage (`bytts-results` + IDB).
+- `src/lib/storage.ts` — `createIDBStore('tts-history-data')`.
+- `src/lib/genid.ts` — `GenidOptimized({workerId:1})` (`@cdlab/driftflake`).
+- `public/speakers.json` — static ~290 edge voices for the picker.
+
+## Providers (src/lib/builtin-apis.ts, useApiStore.ts)
+
+- Two formats: `edge` (`{text,voice,rate,pitch,preview}`) and `openai`
+  (`/v1/audio/speech`).
+- Built-ins: `edge-api` (edge, `/api/tts`, max 50000 / split 5000) and `oai-tts`
+  (openai, `https://oai-tts.zwei.de.eu.org/v1/audio/speech`, 9 voices, max 4096).
+- Custom providers persist in localStorage `bytts-custom-apis`
+  (id `custom-${Date.now()}`); built-in overrides merge as
+  `{...BUILTIN_APIS[id], ...override}` (restorable).
+- Request-shape rules:
+  - `oai-tts`: `{model:'tts-1', input:cleanText, voice:<speaker>, response_format}`,
+    `<break>` stripped.
+  - custom `openai`: `{model:<speaker>, input:cleanText, voice:'alloy',
+    response_format}` — selected voice becomes the model, voice hardcoded `alloy`.
+  - custom `edge`: `{text:escapeXml(text), voice, rate, pitch, preview}`.
+- Auth header: configured name carries the key VERBATIM on TTS requests; only the
+  model-list fetch auto-prefixes `Bearer ` when the header is `Authorization`.
+
+## Config / bindings
+
+- No bindings. Config is `process.env`, read directly in routes/layout:
+  `ACCESS_PASSWORD` (empty = no gate), `PERSIST_PASSWORD` (`false` = re-enter each
+  session), `MICROSOFT_CLIENTTRACEID` (optional trace seed), `BUILD_TIME`
+  (injected in `next.config.ts`, version footer). All optional — app runs with
+  none set.
+
+## Gotchas for agents
+
+- `/api/tts` is UNAUTHENTICATED — `PasswordGate` gates the UI only, not the API.
+  Do not describe the password as backend access control.
+- SSML injection defense is SERVER-SIDE: the route always calls `escapeXml`
+  before building SSML, and validates `voice` against `VOICE_NAME_RE`. Built-in
+  `edge-api` sends raw text (server escapes); custom `edge` also escapes
+  client-side. Do not remove the server escape.
+- `escapeXml` deliberately PRESERVES `<break time="…s"/>` tags — don't "simplify"
+  it into a plain XML-escape.
+- Token cache is module-scoped = per warm isolate only (not shared across edge
+  isolates); `refreshInFlight` de-dups concurrent refreshes. This is intentional.
+- The built-in voice depends on a reverse-engineered MS endpoint (hardcoded HMAC
+  key, spoofed headers) — not official Azure. Flag as a durability/ToS risk.
+- History storage is SPLIT: blobs in IndexedDB, metadata in localStorage;
+  `partialize` strips blobs and drops `PROCESSING` items. Don't persist blobs to
+  localStorage.
+- `build` forces the WEBPACK builder (`next build --webpack`) — do not switch to
+  Turbopack. There is NO test script; there is NO `wrangler.jsonc`.
+
+## Common commands
+
+```bash
+pnpm dev:bytts                          # http://bytts.localhost:3355
+pnpm --filter @cdlab/bytts typecheck    # tsc --noEmit
+pnpm --filter @cdlab/bytts lint         # next lint
+pnpm --filter @cdlab/bytts build        # next build --webpack
+pnpm --filter @cdlab/bytts run build:cf # next-on-pages (Cloudflare Pages)
+```

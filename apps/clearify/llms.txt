@@ -1,0 +1,125 @@
+# clearify usage guide for AI agents
+
+`clearify` is a privacy-first, **100% client-side** image & video toolbox — a
+Next.js App Router SPA deployed as static assets to Cloudflare Pages. Three
+tools each run a full decode → transform → encode pipeline **in the browser**:
+`/bg` (background removal via Transformers.js on WebGPU, WASM fallback),
+`/squish` (image compression via jSquash WebAssembly codecs), `/compress`
+(video compression via `mediabunny` / WebCodecs). There is **no backend** — no
+API routes, no server actions, no middleware, no `runtime` export, no server
+DB — and no file is ever uploaded.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Next config: ./next.config.ts
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/clearify <script>`.
+
+## CRITICAL — route ↔ tool mapping (do not trust older README prose)
+
+- `/squish` = **IMAGE** compression (jSquash WASM). NOT video.
+- `/compress` = **VIDEO** compression (`mediabunny` / WebCodecs). NOT image.
+- `/bg` = background removal (Transformers.js).
+- The landing page `src/app/page.tsx` (`Image Squish` → `/squish`, `Video
+  Compress` → `/compress`) is the correct reference; verify against it.
+- The video engine is **`mediabunny` / WebCodecs**, NOT FFmpeg.wasm (no ffmpeg
+  dependency exists). Batch ZIP is **`@cdlab/utils`** `downloadFilesAsZip`, NOT
+  jszip (no jszip dependency exists).
+
+## Architecture / data flow
+
+- All four route pages are `'use client'`. `src/app/layout.tsx` is the only
+  layout (fonts, JSON-LD, `GoogleAnalytics` `G-FPHG7CDDVQ`, `IKHeader`,
+  `Toaster`). No `src/app/api/`.
+- Files are read with `URL.createObjectURL` and processed in-tab. Outbound
+  network is ONLY: Hugging Face Hub (model weights, `/bg`), Cloudinary (sample
+  images), Google Analytics. Never user files.
+- **Three different concurrency models — do not unify them:** `/squish` = bounded
+  parallel queue (3); `/bg` = strictly sequential; `/compress` = single file.
+
+## Key files (with paths)
+
+- `src/app/{page,bg/page,squish/page,compress/page}.tsx` — landing + 3 tools.
+- `src/hooks/useImageQueue.ts` — the `/squish` queue, `MAX_PARALLEL_PROCESSING = 3`.
+- `src/lib/wasm.ts` — `ensureWasmLoaded(format)`: lazy dynamic-import `@jsquash/*`,
+  memoized in a `Map`.
+- `src/lib/imageProcessing.ts` — `decode` / `encode` / `getFileType`. AVIF
+  `effort:4`; PNG lossless (ignores quality); `getFileType` maps `jpeg`→`jpg`,
+  `.jxl` by extension.
+- `src/lib/process.ts` — background-removal engine: model cascade + WebGPU/iOS
+  handling.
+- `src/lib/storage.ts` — IndexedDB stores (`clearify-bg-blobs`,
+  `clearify-squish-blobs`) via `@cdlab/utils` `createIDBStore`.
+- `src/lib/formatDefaults.ts` — `DEFAULT_QUALITY_SETTINGS` (avif 50, jpeg/jxl/webp 75).
+- `src/store/{useBgStore,useSquishStore}.ts` — Zustand `persist` metadata stores.
+- `src/types/{squish,compress,bg,encoders}.ts` — `OutputType`, `ConversionSettings`, etc.
+- `src/hooks/useImageProcessing.ts` — DEAD CODE, not imported by any page.
+
+## /squish pipeline (the canonical one)
+
+1. drop/paste/sample → `ImageFile[]` (genid id + objectURL) → `addImages` →
+   `addToQueue`.
+2. `useImageQueue` runs ≤3 in parallel; `options`/`outputType` held in refs.
+3. per image: `file.arrayBuffer()` → `getFileType` → `decode` → `encode({quality})`.
+4. `decode`/`encode` call `ensureWasmLoaded(format)` first (lazy `@jsquash/*`).
+5. `Blob(image/<out>)` → objectURL; `updateImage(status:'complete', blob, …)`.
+6. `updateImage` also persists the blob's bytes to IndexedDB.
+7. download: single `downloadFile`; many `downloadFilesAsZip(files, 'clearify')`.
+
+## /bg model cascade (process.ts)
+
+- `wuchendi/modnet` (WebGPU) → `briaai/RMBG-2.0` (WASM) → `briaai/RMBG-1.4`
+  (WASM, cross-browser). iOS is **force-pinned to RMBG-1.4**.
+- WebGPU gated on `navigator.gpu.requestAdapter()`; ONNX WASM `proxy=true`,
+  `numThreads=1`, `initTimeout=10000`, 100 ms warm-up.
+- `env.cacheDir = ''` — model cache DISABLED; weights re-fetched from HF Hub each
+  session. The "offline" claim is the app shell, not the first matte.
+- Output: mask → alpha channel on a canvas → PNG `File` `<name>-bg-blasted.png`.
+
+## /compress (compress/page.tsx)
+
+- `mediabunny` `Conversion`, `Mp4OutputFormat` + `BufferTarget` (in-memory).
+- Methods: `quality` (preset), `bitrate` (`'2500k'`→bps), `filesize` (from
+  duration, floor 100 kbps minus audio).
+- Capability negotiation: `canEncodeVideo(hevc)` fails → fall back to `avc`
+  (toast); neither → throw. `canEncodeAudio('aac')` false → muted (`discard`).
+- Local `useState` only — no store, no IndexedDB, single file.
+
+## Persistence
+
+- Zustand `persist` (localStorage keys `clearify-bg-images`,
+  `clearify-squish-images`): `partialize` keeps ONLY `status:'complete'` items,
+  strips `file`/`preview`/`blob`/objectURLs.
+- Blobs live in IndexedDB. `rehydrateBlobs()` reloads bytes + rebuilds
+  objectURLs on reload; missing blob → `status:'error', error:'Data lost'`.
+
+## Config & bindings
+
+- NO env vars, NO secrets, NO bindings, NO server DB. Only build-time input:
+  `BUILD_TIME` (`next.config.ts` → logged to console by `IKVersionInfo`).
+- `next.config.ts`: `images.unoptimized:true` (required for CF Pages),
+  remotePatterns (`res.cloudinary.com`, `wcd.pages.dev`), `allowedDevOrigins`.
+
+## Gotchas for agents
+
+- `build`/`dev` MUST keep `--webpack` — the WASM + worker mix does not build
+  under Turbopack. Do not remove the flag.
+- Do not describe FFmpeg.wasm (video is `mediabunny`) or jszip (ZIP is
+  `@cdlab/utils`) — neither dependency exists.
+- Do not unify the three tools' concurrency/persistence — they differ on purpose.
+- `src/hooks/useImageProcessing.ts` is dead code; the live path is `useImageQueue`.
+- There is NO test script and NO test files. Do not invent `pnpm … test`.
+- jSquash WASM is lazy per format (first use pays the load; memoized after).
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/clearify dev         # http://clearify.localhost:3355 (via nsl)
+pnpm --filter @cdlab/clearify build       # next build --webpack
+pnpm --filter @cdlab/clearify build:cf    # @cloudflare/next-on-pages build
+pnpm --filter @cdlab/clearify lint        # next lint
+pnpm --filter @cdlab/clearify typecheck   # tsc --noEmit
+```

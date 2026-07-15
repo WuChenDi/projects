@@ -1,0 +1,115 @@
+# byshot usage guide for AI agents
+
+`byshot` is a zero-infrastructure personal photography site. A Cloudinary folder
+is the entire backend: at build time it fetches the folder listing, projects it
+into a lean image shape, and statically exports a masonry gallery plus one
+deep-linkable page per photo. No database, no app-side storage, no image server —
+every rendered image URL is a Cloudinary transform. Next.js App Router (RSC),
+`output: 'export'`, deployed to Cloudflare Pages via `@cloudflare/next-on-pages`.
+
+Primary docs:
+
+- README: ./README.md
+- Design spec (authoritative): ./DESIGN.md
+- Types: ./src/utils/types.ts
+
+Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
+`pnpm --filter @cdlab/byshot <script>`.
+
+## What it is
+
+- **Two static surfaces.** Home `/` (masonry `Gallery`, RSC) and deep link
+  `/p/[photoId]` (SSG per photo). In-grid photo viewing is a query-param modal
+  (`/?photoId=<asset_id>`), not a separate route.
+- **No backend.** No database, no `wrangler.jsonc`, no Cloudflare binding. The
+  only "data store" is Cloudinary's folder listing; the only in-process
+  persistence is two per-build in-memory caches.
+- **Cloudinary does image work.** `images.unoptimized: true` disables the Next
+  optimizer; resizing/format is done in delivery-URL transforms.
+
+## Architecture / data flow (src/app/page.tsx)
+
+Home page render (build time):
+
+1. `getResults()` (`src/utils/cachedImages.ts`) — Cloudinary Admin
+   `search.expression('folder:${CLOUDINARY_FOLDER}/*').max_results(400)`, stored
+   in a **module-level `cachedResults` singleton** (1 API call per build, shared
+   with the deep-link route).
+2. Map resources → `ImageProps[]` (`id`=array index, `asset_id`, `width`,
+   `height`, `public_id`, `format`).
+3. Blur the first `BLUR_PLACEHOLDER_COUNT = 30` via
+   `Promise.all(getBase64ImageUrl)` — capped for the Workers subrequest limit.
+4. `<Gallery images=…/>` (client) renders masonry grid; `?photoId=<asset_id>`
+   mounts `<Modal>` in-grid.
+
+Deep link (`src/app/p/[photoId]/page.tsx`): `generateStaticParams` pre-renders all
+photos; `dynamicParams = false` → unknown ids 404. Reuses the singleton via
+`loadPhoto`, renders `<Carousel>`, emits per-photo OG (`w_2560`).
+
+## Key files
+
+- `src/app/page.tsx` — home RSC; folder listing → blur → Gallery.
+- `src/app/p/[photoId]/page.tsx` — deep-link SSG page (+ OG metadata).
+- `src/app/layout.tsx` — SEO metadata, two JSON-LD blobs (`<`-escaped),
+  preconnect hints, `ClientProviders`, Vercel `<Analytics/>`.
+- `src/utils/cachedImages.ts` — the `cachedResults` singleton (the only "store").
+- `src/utils/cloudinary.ts` — singleton SDK config (`secure: true`).
+- `src/utils/generateBlurPlaceholder.ts` — Edge-safe base64 blur (`Uint8Array` +
+  `btoa`, no Node `Buffer`), memoized in a module-level `Map`.
+- `src/components/Gallery.tsx` — masonry grid + modal orchestration + scroll
+  restore.
+- `src/components/SharedModal.tsx` — shared lightbox UI (motion + swipe +
+  thumbnail strip ±15).
+- `src/components/Modal.tsx` — in-grid lightbox; prev/next via
+  `history.replaceState`, close via `router.push('/')`. `navigation=true`.
+- `src/components/Carousel.tsx` — deep-link viewer; blur backdrop, `changePhotoId`
+  is a **no-op**. `navigation=false`.
+- `src/utils/useLastViewedPhoto.ts` — Zustand store for scroll restoration.
+- `src/utils/types.ts` — `ImageProps`, `SharedModalProps`.
+
+## Config / bindings (next.config.ts, .env.example)
+
+- Env (all runtime-required): `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` (public, used in
+  client delivery URLs), `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (secrets,
+  Admin API), `CLOUDINARY_FOLDER`. Configured once in `src/utils/cloudinary.ts`.
+- `BUILD_TIME` injected at build in `next.config.ts` (footer version badge).
+- `next.config.ts`: `output: 'export'`, `images.unoptimized: true`,
+  `remotePatterns` allow-list (`res.cloudinary.com`, `wcd.pages.dev`),
+  `allowedDevOrigins: ['byshot.a.wd.ds.cc']`.
+- **No Cloudflare binding, no wrangler config, no cron, no tests.**
+
+## Transform widths (Cloudinary delivery URLs)
+
+`720` grid (Gallery) · `1280` nav lightbox · `1920` deep-link lightbox · `180`
+thumbnail strip · `8` blur placeholder · `2560` deep-link OG image.
+
+## Gotchas for agents
+
+- **Route by `asset_id`, never `id`.** `id` is the array index, used only for
+  animation direction and thumbnail-strip windowing. URLs, scroll-restore, and
+  share links all key on `asset_id` (stable across reordering).
+- **Blur cap is the load-bearing constraint.** Keep the blur pass ≤
+  `BLUR_PLACEHOLDER_COUNT` (30) — Cloudflare Workers cap outgoing subrequests
+  (50 free / 1000 paid). Photos past the cap render sharp (no blur), which is fine.
+- **`max_results(400)` at two call sites.** `cachedImages.ts` and
+  `p/[photoId]/page.tsx`. Raise both together; more than 400 photos are silently
+  truncated and their deep links 404.
+- **Keep `images.unoptimized: true`.** A static export has no Next image server;
+  Cloudinary transforms do all resizing.
+- **`output: 'export'` + `dynamicParams = false`.** Every photo must be known at
+  build (`generateStaticParams`). Adding a runtime-dynamic route breaks the export.
+- **Edge-safe base64 only** in the blur helper — no Node `Buffer`.
+- **In-grid modal nav must not churn the router** — prev/next uses
+  `history.replaceState`; only close uses `router.push`.
+- **Deep-link vs modal actions diverge in one component** — `SharedModal`
+  branches on `navigation`: modal → open full-size; deep link → Share on X.
+
+## Common commands
+
+```bash
+pnpm --filter @cdlab/byshot dev        # http://byshot.localhost:3355 (nsl)
+pnpm --filter @cdlab/byshot build      # next build → static export (out/)
+pnpm --filter @cdlab/byshot build:cf   # next-on-pages (Cloudflare Pages deploy build)
+pnpm --filter @cdlab/byshot typecheck  # tsc --noEmit
+pnpm --filter @cdlab/byshot lint       # next lint
+```
