@@ -1,19 +1,7 @@
 import * as z from 'zod'
 
-export const totpTokenSchema = z.object({
-  totpToken: z
-    .string()
-    .length(6, 'TOTP token must be 6 digits')
-    .regex(/^\d{6}$/, 'TOTP token must contain only digits')
-    .optional(),
-})
-
 export const createChestRequestSchema = z.object({
-  totpToken: z
-    .string()
-    .length(6, 'TOTP token must be 6 digits')
-    .regex(/^\d{6}$/, 'TOTP token must contain only digits')
-    .optional(),
+  password: z.string().min(1).max(256).optional(),
 })
 
 export const completeUploadRequestSchema = z.object({
