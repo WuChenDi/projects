@@ -151,8 +151,8 @@ export function ShareResults({
   const showProgress = uploadStatus === 'uploading' || uploadStatus === 'error'
 
   return (
-    <Card className="flex flex-col shadow-none h-full">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="flex flex-col gap-3 border-0 border-t border-border bg-transparent shadow-none pt-5">
+      <CardHeader className="flex flex-row items-center justify-between p-0">
         <CardTitle>{t('results')}</CardTitle>
         <CardAction>
           {results.length > 0 && (
@@ -181,7 +181,7 @@ export function ShareResults({
           )}
         </CardAction>
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col gap-4 overflow-auto">
+      <CardContent className="flex flex-col gap-4 p-0">
         {showProgress || results.length > 0 ? (
           <div className="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             {showProgress && (

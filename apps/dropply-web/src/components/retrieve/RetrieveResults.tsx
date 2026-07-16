@@ -77,8 +77,8 @@ export function RetrieveResults({
   const t = useTranslations('retrieve')
 
   return (
-    <Card className="flex flex-col shadow-none h-full">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="flex flex-col gap-3 border-0 border-t border-border bg-transparent shadow-none pt-5">
+      <CardHeader className="flex flex-row items-center justify-between p-0">
         <CardTitle>{t('results')}</CardTitle>
         <CardAction>
           {results.length > 0 && (
@@ -107,7 +107,7 @@ export function RetrieveResults({
           )}
         </CardAction>
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col gap-4 overflow-auto">
+      <CardContent className="flex flex-col gap-4 p-0">
         {error && (
           <div className="flex items-center justify-between gap-3 p-4 rounded-lg border border-red-200/50 bg-red-50/80 dark:bg-red-950/30 dark:border-red-800/50">
             <div className="flex items-center gap-2">

@@ -1,13 +1,32 @@
 import { Button } from '@cdlab/ui/components/button'
 import { CopyButton } from '@cdlab/ui/components/copy-button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@cdlab/ui/components/dialog'
 import { IKAssetFailed, IKAssetLoading, IKAssetRenderer } from '@cdlab/ui/IK'
 import { cn } from '@cdlab/ui/lib/utils'
-import { formatFileSize } from '@cdlab/utils'
-import { Download, Eye, FileText, Lock, Unlock, X } from 'lucide-react'
+import { copyToClipboard, formatFileSize } from '@cdlab/utils'
+import {
+  CheckCircle,
+  Copy,
+  Download,
+  Eye,
+  FileText,
+  Loader2,
+  Lock,
+  Share2,
+  Unlock,
+  X,
+} from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { getFileIcon } from '@/lib/fileIcon'
+import { shareEncryptedBlob } from '@/lib/share-blob'
 import type { ProcessResult } from '@/types/crypto'
 import { InputModeEnum, ModeEnum } from '@/types/crypto'
 import { LocalResultDialog } from './LocalResultDialog'
@@ -25,7 +44,41 @@ export function LocalResultCard({
 }: LocalResultCardProps) {
   const t = useTranslations('localCrypto')
   const isMessage = result.inputMode === InputModeEnum.MESSAGE
+  const isEncrypt = result.mode === ModeEnum.ENCRYPT
   const [dialogOpen, setDialogOpen] = useState(false)
+
+  // Share = upload this finished ciphertext and get a retrieval code + link.
+  const [shareOpen, setShareOpen] = useState(false)
+  const [sharing, setSharing] = useState(false)
+  const [share, setShare] = useState<{ code: string; url: string } | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const handleShare = async () => {
+    if (share) {
+      setShareOpen(true)
+      return
+    }
+    setSharing(true)
+    try {
+      const filename =
+        result.fileInfo?.name || `encrypted_${result.timestamp}.enc`
+      const blob = new Blob([result.data], { type: 'application/octet-stream' })
+      const res = await shareEncryptedBlob(blob, filename)
+      setShare(res)
+      setShareOpen(true)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('share.failed'))
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  const copyLink = async () => {
+    if (share && (await copyToClipboard(share.url))) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   return (
     <div
@@ -90,6 +143,22 @@ export function LocalResultCard({
                     title={t('card.copy')}
                   />
                 )}
+                {isEncrypt && (
+                  <Button
+                    variant="secondary"
+                    size="icon-xs"
+                    className="bg-black/40 backdrop-blur-[2px]"
+                    onClick={handleShare}
+                    disabled={sharing}
+                    title={t('card.share')}
+                  >
+                    {sharing ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <Share2 />
+                    )}
+                  </Button>
+                )}
                 <Button
                   variant="secondary"
                   size="icon-xs"
@@ -138,6 +207,43 @@ export function LocalResultCard({
           onDownload={onDownload}
         />
       )}
+
+      <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('share.title')}</DialogTitle>
+            <DialogDescription>{t('share.desc')}</DialogDescription>
+          </DialogHeader>
+          {share && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {t('share.code')}
+                </span>
+                <code className="font-mono text-lg font-semibold tracking-widest text-primary">
+                  {share.code}
+                </code>
+              </div>
+              <code className="block break-all rounded-lg bg-muted/50 p-2 font-mono text-xs text-muted-foreground">
+                {share.url}
+              </code>
+              <Button className="w-full" variant="outline" onClick={copyLink}>
+                {copied ? (
+                  <>
+                    <CheckCircle className="size-4" />
+                    {t('share.copied')}
+                  </>
+                ) : (
+                  <>
+                    <Copy className="size-4" />
+                    {t('share.copyLink')}
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

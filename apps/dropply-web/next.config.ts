@@ -10,6 +10,9 @@ const withNextIntl = createNextIntlPlugin({
 const nextConfig: NextConfig = {
   /* config options here */
   output: 'export',
+  // Allow the nsl public dev domain to reach the dev server (Next 16 blocks
+  // cross-origin dev requests from non-localhost hosts by default).
+  allowedDevOrigins: ['dropply.a.wd.ds.cc'],
   env: {
     BUILD_TIME: new Date().toLocaleString(),
   },

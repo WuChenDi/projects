@@ -1,4 +1,150 @@
 {
+  "landing": {
+    "hero": {
+      "badge": "客户端 · 零知识",
+      "titleLead": "无需信任服务器，",
+      "titleHighlight": "也能加密与分享。",
+      "subtitle": "Dropply 直接在浏览器里用密码或公钥加密你的文件和文本。把成品密文用一个取回码分享出去 —— 链接里永远不含密钥。",
+      "trust": "无账户 · 无追踪 · 开源"
+    },
+    "features": {
+      "title": "隐私源于设计，而非承诺",
+      "subtitle": "强密码学完全在你的设备上运行 —— 无服务器、无账户、无需信任。",
+      "items": {
+        "local": {
+          "title": "本地加密",
+          "desc": "在浏览器里加解密任意文件或文本，不上传任何内容。"
+        },
+        "keys": {
+          "title": "密码或公钥",
+          "desc": "用密码上锁，或加密给对方的公钥，只有对方能打开。"
+        },
+        "share": {
+          "title": "零知识分享",
+          "desc": "上传成品密文并分享一个取回码，链接里不含任何密钥。"
+        },
+        "private": {
+          "title": "无账户 · 无追踪",
+          "desc": "无需注册、无需登录、无分析统计 —— 只有工具本身。"
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "工作原理",
+      "subtitle": "关于密钥、加密与隐私，你需要了解的一切。",
+      "faq": {
+        "create": {
+          "q": "在哪里创建密钥对？",
+          "a": "点顶部「密钥」→ 我的密钥 → 新建。12 词助记词派生出你的密钥对；只有助记词会保存在本设备。"
+        },
+        "encryptFile": {
+          "q": "如何加密文件？",
+          "a": "选「文件」，选择密码或公钥模式，拖入文件，填入密钥，点击加密。"
+        },
+        "decryptFile": {
+          "q": "如何解密收到的加密文件？",
+          "a": "把加密文件丢进工具 —— 它会识别格式并自动切到解密。填入密码或你的私钥即可。"
+        },
+        "encryptText": {
+          "q": "可以加密文本吗？",
+          "a": "可以 —— 切到「消息」，输入或粘贴即可。结果可复制或下载。"
+        },
+        "share": {
+          "q": "如何分享？",
+          "a": "先加密，然后在结果卡上点「分享」。你会得到 6 位取回码和链接；接收方用「取回」打开。"
+        },
+        "uploaded": {
+          "q": "我的文件会上传吗？",
+          "a": "只有分享时才上传。本地加解密从不上传；分享的内容也只是密文。"
+        },
+        "canRead": {
+          "q": "你们能读取我的密钥或文件吗？",
+          "a": "不能。密钥只留在你的浏览器，服务器只存密文 —— 是零知识的。"
+        },
+        "forgotPin": {
+          "q": "忘记 PIN 怎么办？",
+          "a": "PIN 只锁定密钥管理界面。忘记可以重置，但会清空本设备上所有已保存的密钥。"
+        }
+      }
+    },
+    "footer": {
+      "tagline": "客户端加密与零知识分享。你的密钥永不离开浏览器。",
+      "trust": "无账户 · 无追踪 · 开源",
+      "learn": "了解",
+      "howItWorks": "工作原理",
+      "project": "项目",
+      "github": "GitHub",
+      "copyright": "© 2025 Dropply",
+      "builtWith": "基于 XChaCha20-Poly1305 · Argon2id · ECIES"
+    }
+  },
+  "keys": {
+    "title": "密钥管理",
+    "description": "生成密钥对、保存接收方、设置 PIN。一切都只留在本设备。",
+    "tabs": {
+      "owner": "我的密钥",
+      "receiver": "接收方",
+      "password": "PIN"
+    },
+    "lock": {
+      "hint": "输入 6 位 PIN 解锁。",
+      "unlock": "解锁",
+      "forgot": "忘记 PIN",
+      "incorrect": "PIN 不正确",
+      "resetTitle": "重置全部?",
+      "resetDesc": "这会从本设备删除所有已保存的密钥和 PIN,且不可恢复。",
+      "reset": "重置"
+    },
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "copy": "复制",
+    "copied": "已复制",
+    "notePlaceholder": "备注(可选)",
+    "owner": {
+      "create": "新建",
+      "import": "导入",
+      "mnemonic": "助记词",
+      "mnemonicPlaceholder": "输入或生成 12 词助记词",
+      "generate": "生成",
+      "invalidMnemonic": "助记词无效",
+      "saved": "密钥对已保存",
+      "empty": "还没有密钥对。",
+      "untitled": "未命名",
+      "view": "查看助记词",
+      "deleteTitle": "删除密钥对?",
+      "deleteDesc": "助记词将从本设备移除。"
+    },
+    "receiver": {
+      "add": "添加接收方",
+      "keyPlaceholder": "接收方的 Base58 公钥",
+      "invalid": "公钥无效",
+      "saved": "接收方已保存",
+      "empty": "还没有接收方。",
+      "deleteTitle": "删除接收方?",
+      "deleteDesc": "该公钥将从本设备移除。"
+    },
+    "password": {
+      "everyTime": "PIN 只在每次打开密钥管理时锁定界面,不会加密已保存的密钥。",
+      "current": "当前 PIN",
+      "new": "新 PIN",
+      "confirm": "确认 PIN",
+      "mismatch": "两次 PIN 不一致",
+      "set": "设置 PIN",
+      "change": "修改 PIN",
+      "changed": "PIN 已更新",
+      "remove": "移除",
+      "removed": "PIN 已移除"
+    },
+    "modePassword": "密码",
+    "modePublicKey": "公钥",
+    "manage": "密钥",
+    "publicKeyLabel": "接收方公钥",
+    "privateKeyLabel": "你的私钥或助记词",
+    "publicKeyPlaceholder": "Base58 公钥,或选择已保存的接收方",
+    "privateKeyPlaceholder": "十六进制私钥或 12 词助记词",
+    "useSavedKey": "已保存的密钥"
+  },
   "theme": {
     "toggle": "切换主题"
   },
@@ -47,9 +193,14 @@
     "emptyHint": "在左侧添加文件或文本，然后点击上传",
     "copyLink": "复制链接",
     "copied": "已复制！",
+    "fragmentNote": "只留在你的浏览器，永不发送到服务器。",
+    "unavailable": "分享暂不可用 —— 无法连接服务器。本地加密和解密仍可正常使用。",
     "retry": "重试"
   },
   "retrieve": {
+    "open": "取回",
+    "openDesc": "输入 6 位取回码，把分享的内容取回到工具里。",
+    "fetched": "已取回 —— 在下方解密",
     "retrievalCode": "提取码",
     "retrievalCodePlaceholder": "输入您收到的 6 位提取码",
     "encryptionKey": "加密密钥",
@@ -174,7 +325,10 @@
       "emptyDescription": "加密和解密的项目将显示在这里。",
       "emptyHint": "所有操作均在浏览器本地完成。",
       "messageResult": "消息结果",
-      "unnamedFile": "未命名文件"
+      "unnamedFile": "未命名文件",
+      "history": "历史记录",
+      "historyDesc": "你最近的加解密结果(仅本浏览器)。",
+      "empty": "还没有历史记录。"
     },
     "dialog": {
       "encryptedText": "加密文本",
@@ -188,15 +342,16 @@
       "view": "查看",
       "copy": "复制",
       "download": "下载",
-      "remove": "移除"
+      "remove": "移除",
+      "share": "分享"
     },
-    "features": {
-      "title": "关于本地加密",
-      "aesEncrypt": "XChaCha20-Poly1305 认证加密",
-      "argon2id": "基于 Argon2id 的密码密钥派生",
-      "chunked": "分块流式处理，让大文件远离主线程",
-      "download": "结果直接从浏览器下载",
-      "localNote": "所有处理均在本地完成——绝不上传任何内容。"
+    "share": {
+      "title": "分享这份结果",
+      "desc": "成品密文原样上传,链接不含任何密钥 —— 接收方用密码或自己的私钥解密。",
+      "code": "取回码",
+      "copyLink": "复制链接",
+      "copied": "已复制!",
+      "failed": "分享失败"
     },
     "toast": {
       "resultRemoved": "结果已移除",
@@ -208,6 +363,11 @@
     "selectFile": "请先选择一个文件",
     "enterMessage": "请输入要处理的消息",
     "enterPassword": "请输入密码",
+    "enterPublicKey": "请输入接收方的公钥",
+    "enterPrivateKey": "请输入你的私钥或助记词",
+    "invalidPublicKey": "公钥无效",
+    "invalidPrivateKey": "私钥或助记词无效",
+    "invalidKey": "密钥无效",
     "encryptionStarted": "开始加密",
     "decryptionStarted": "开始解密",
     "fileEncrypted": "文件加密成功！",
