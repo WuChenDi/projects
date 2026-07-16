@@ -6,7 +6,6 @@ import {
   parseStatsQuery,
   viewsSql,
 } from '@/lib/analytics/analytics-query'
-import { getOwnerSlugs } from '@/lib/analytics/owner-scope'
 import { requireSession } from '@/lib/platform/auth'
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000
@@ -17,7 +16,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   const { env } = getCloudflareContext()
   const q = parseStatsQuery(new URL(request.url).searchParams)
-  q.ownerSlugs = await getOwnerSlugs(env, auth.user)
+  q.ownerKey = auth.user.email
   // Short ranges bucket by hour, longer ones by day.
   const span =
     q.startAt && q.endAt ? q.endAt - q.startAt : Number.POSITIVE_INFINITY

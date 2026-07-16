@@ -33,6 +33,10 @@ account:
 - **Analytics you own** — clicks land in *your* Analytics Engine dataset. The
   visitor IP is HMAC-hashed with a daily-rotating salt before storage, so
   uniqueness counts work but the raw IP is never persisted or recoverable.
+  Owner-scoping begins at deploy time: every data point is tagged with an owner
+  key (`blob20`) and dashboard queries filter by it, so clicks recorded before
+  this deploy carry no owner tag, never surface in your dashboard, and age out
+  of Analytics Engine's retention on their own.
 - **Gates, not dead ends** — a link can require a password, show a safety
   interstitial, cloak behind an OG preview, or expire after N clicks — all
   enforced at the edge before the redirect fires.

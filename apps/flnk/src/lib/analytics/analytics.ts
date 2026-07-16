@@ -28,6 +28,10 @@ interface AccessLog {
   // 'launchpad' for a `/m/<slug>` page view, 'launchpad_block' for a launchpad
   // block/button click. Append-only blob19 — legacy points lack it (read as '').
   type: string
+  // Owner key that scopes the data point: link points carry the owner EMAIL
+  // (link.createdBy), launchpad points the owner USER.ID (launchpad.ownerId).
+  // Append-only blob20 (last free AE slot) — legacy points lack it (read as '').
+  owner: string
   latitude: number
   longitude: number
 }
@@ -39,6 +43,7 @@ export function extractAccessLog(
   url: string,
   cf: IncomingRequestCfProperties | undefined,
   type = 'link',
+  ownerKey = '',
 ): AccessLog {
   const ua = request.headers.get('user-agent') || ''
   const uaResult = new UAParser(ua).getResult()
@@ -84,6 +89,7 @@ export function extractAccessLog(
     domain: new URL(request.url).hostname,
     source,
     type,
+    owner: ownerKey,
     latitude: Number(props.latitude) || 0,
     longitude: Number(props.longitude) || 0,
   }
@@ -165,6 +171,7 @@ export async function writeAccessLog(
         data.domain,
         data.source,
         data.type,
+        data.owner,
       ],
       doubles: [data.latitude, data.longitude],
     })

@@ -36,7 +36,14 @@ export async function POST(request: Request): Promise<Response> {
     Promise.resolve().then(() =>
       writeAccessLog(
         env,
-        extractAccessLog(request, slug, blockId, cf, 'launchpad_block'),
+        extractAccessLog(
+          request,
+          slug,
+          blockId,
+          cf,
+          'launchpad_block',
+          launchpad.ownerId,
+        ),
       ),
     ),
   )

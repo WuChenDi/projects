@@ -140,7 +140,10 @@ async function redirectTo(
   // the Location header below.
   ctx.waitUntil(
     Promise.resolve().then(() =>
-      writeAccessLog(env, extractAccessLog(request, slug, link.url, cf)),
+      writeAccessLog(
+        env,
+        extractAccessLog(request, slug, link.url, cf, 'link', link.createdBy),
+      ),
     ),
   )
 
