@@ -60,10 +60,8 @@ export function LocalResultCard({
     }
     setSharing(true)
     try {
-      const filename =
-        result.fileInfo?.name || `encrypted_${result.timestamp}.enc`
       const blob = new Blob([result.data], { type: 'application/octet-stream' })
-      const res = await shareEncryptedBlob(blob, filename)
+      const res = await shareEncryptedBlob(blob)
       setShare(res)
       setShareOpen(true)
     } catch (err) {
