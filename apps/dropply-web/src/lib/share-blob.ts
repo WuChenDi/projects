@@ -4,14 +4,18 @@ import { PocketChestAPI } from '@/lib'
  * Model A share: upload an already-encrypted blob as-is (no re-encryption, no
  * key in the URL) and return a retrieval code + link. The recipient fetches the
  * ciphertext and decrypts it with the password or their own private key.
+ * Uploads carry a neutral name/MIME (`share.enc` + `application/octet-stream`);
+ * the original filename lives inside the encrypted header and reappears when
+ * the recipient decrypts locally.
  */
 export async function shareEncryptedBlob(
   blob: Blob,
-  filename: string,
 ): Promise<{ code: string; url: string }> {
   const api = new PocketChestAPI()
   const { sessionId, uploadToken } = await api.createChest()
-  const file = new File([blob], filename, { type: 'application/octet-stream' })
+  const file = new File([blob], 'share.enc', {
+    type: 'application/octet-stream',
+  })
   const { uploadedFiles } = await api.uploadContent(
     sessionId,
     uploadToken,
