@@ -29,6 +29,10 @@ export const sessions = sqliteTable(
   (table) => [
     uniqueIndex('idx_sessions_retrieval_code').on(table.retrievalCode),
     index('idx_sessions_expires_at').on(table.expiresAt),
+    index('idx_sessions_upload_complete_created_at').on(
+      table.uploadComplete,
+      table.createdAt,
+    ),
   ],
 )
 
@@ -49,7 +53,22 @@ export const files = sqliteTable(
   (table) => [index('idx_files_session_id').on(table.sessionId)],
 )
 
+export const multipartUploads = sqliteTable(
+  'multipart_uploads',
+  {
+    fileId: text('file_id').primaryKey(), // UUID v4
+    sessionId: text('session_id')
+      .notNull()
+      .references(() => sessions.id, { onDelete: 'cascade' }),
+    r2UploadId: text('r2_upload_id').notNull(),
+    ...trackingFields,
+  },
+  (table) => [index('idx_multipart_uploads_session_id').on(table.sessionId)],
+)
+
 export type Session = typeof sessions.$inferSelect
 export type NewSession = typeof sessions.$inferInsert
 export type File = typeof files.$inferSelect
 export type NewFile = typeof files.$inferInsert
+export type MultipartUpload = typeof multipartUploads.$inferSelect
+export type NewMultipartUpload = typeof multipartUploads.$inferInsert

@@ -1,7 +1,7 @@
 import { zValidator } from '@hono/zod-validator'
 import { and, eq } from 'drizzle-orm'
 import { Hono } from 'hono'
-import { files, sessions } from '@/database/schema'
+import { files, multipartUploads, sessions } from '@/database/schema'
 import {
   calculateExpiry,
   completeMultipartUploadRequestSchema,
@@ -211,10 +211,26 @@ chestRoutes.post(
     const r2Operations: Promise<any>[] = []
     const fileInserts: any[] = []
 
+    const maxBytes =
+      (c.env.MAX_FILE_SIZE_MB
+        ? Number.parseInt(c.env.MAX_FILE_SIZE_MB, 10)
+        : 100) *
+      1024 *
+      1024
+
     // Process file uploads
     for (const [key, entry] of formData.entries()) {
       const value = entry as unknown as File
       if (key === 'files' && value instanceof File) {
+        if (value.size > maxBytes) {
+          return c.json<ApiResponse>(
+            {
+              code: 413,
+              message: 'File too large',
+            },
+            413,
+          )
+        }
         const fileId = generateUUID()
         const filename = value.name || 'unnamed-file'
         const mimeType = value.type || 'application/octet-stream'
@@ -237,35 +253,6 @@ chestRoutes.post(
         })
 
         uploadedFiles.push({ fileId, filename, isText: false })
-      }
-    }
-
-    // Process text items
-    const textItems = formData.getAll('textItems')
-    for (const textItem of textItems) {
-      if (typeof textItem === 'string') {
-        const textData = JSON.parse(textItem)
-        const fileId = generateUUID()
-        const filename = textData.filename || `text-${Date.now()}.txt`
-        const content = textData.content
-        const mimeType = 'text/plain'
-        const fileSize = new TextEncoder().encode(content).length
-
-        r2Operations.push(
-          c.env.R2_STORAGE.put(`${sessionId}/${fileId}`, content),
-        )
-
-        fileInserts.push({
-          id: fileId,
-          sessionId,
-          originalFilename: filename,
-          mimeType,
-          fileSize,
-          fileExtension: getFileExtension(filename),
-          isText: 1,
-        })
-
-        uploadedFiles.push({ fileId, filename, isText: true })
       }
     }
 
@@ -356,13 +343,14 @@ chestRoutes.post(
       )
     }
 
-    // Verify file ownership
-    const fileCount = await db
+    // Verify file ownership — every submitted fileId must belong to this session
+    const sessionFiles = await db
       ?.select()
       .from(files)
       .where(withNotDeleted(files, eq(files.sessionId, sessionId)))
 
-    if (fileCount?.length !== fileIds.length) {
+    const sessionFileIds = new Set(sessionFiles?.map((f) => f.id) ?? [])
+    if (fileIds.some((id) => !sessionFileIds.has(id))) {
       return c.json<ApiResponse>(
         {
           code: 400,
@@ -450,6 +438,22 @@ chestRoutes.post(
     const { sessionId } = c.req.valid('param')
     const { filename, mimeType, fileSize } = c.req.valid('json')
 
+    const maxBytes =
+      (c.env.MAX_FILE_SIZE_MB
+        ? Number.parseInt(c.env.MAX_FILE_SIZE_MB, 10)
+        : 100) *
+      1024 *
+      1024
+    if (fileSize > maxBytes) {
+      return c.json<ApiResponse>(
+        {
+          code: 413,
+          message: 'File too large',
+        },
+        413,
+      )
+    }
+
     // Validate JWT token
     const authHeader = c.req.header('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
@@ -515,6 +519,13 @@ chestRoutes.post(
       const multipartUpload = await c.env.R2_STORAGE.createMultipartUpload(
         `${sessionId}/${fileId}`,
       )
+
+      // Track the multipart upload so orphans can be aborted by cleanup
+      await db?.insert(multipartUploads).values({
+        fileId,
+        sessionId,
+        r2UploadId: multipartUpload.uploadId,
+      })
 
       // Create multipart JWT (valid for 48 hours)
       const multipartToken = await createMultipartJWT(
@@ -733,6 +744,17 @@ chestRoutes.post(
         fileExtension: getFileExtension(payload.filename),
         isText: 0,
       })
+
+      // Soft-delete the multipart tracking row — upload is no longer orphanable
+      await db
+        ?.update(multipartUploads)
+        .set({
+          isDeleted: 1,
+          updatedAt: new Date(),
+        })
+        .where(
+          withNotDeleted(multipartUploads, eq(multipartUploads.fileId, fileId)),
+        )
 
       logger.info('Multipart upload completed', {
         sessionId,
