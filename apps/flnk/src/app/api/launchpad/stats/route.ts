@@ -29,6 +29,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   const q = parseStatsQuery(new URL(request.url).searchParams)
   q.filters.slug = launchpad.slug
+  q.ownerKey = auth.user.id
   try {
     const [totals, blocks, series] = await Promise.all([
       executeAeSql(env, launchpadStatsSql(env, q)),

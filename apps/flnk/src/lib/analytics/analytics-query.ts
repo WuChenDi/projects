@@ -23,6 +23,7 @@ const FIELD = {
   domain: 'blob17',
   source: 'blob18',
   type: 'blob19',
+  owner: 'blob20',
 } as const
 
 // Entity kinds carried in blob19 (`type`). Launchpad points are excluded from
@@ -66,11 +67,12 @@ export interface StatsQuery {
   startAt?: number // epoch ms
   endAt?: number // epoch ms
   filters: Partial<Record<Dimension, string>>
-  // Owner allow-list of slugs. When defined, results are restricted to these
-  // slugs (an empty list yields zero rows — fail-closed). Injected by the
-  // stats/* + logs/* routes from the caller's owned slugs; never parsed from
-  // request params. Launchpad SQL does not set this (it pins its own slug).
-  ownerSlugs?: string[]
+  // Owner tenant key. When defined, results are restricted to points whose
+  // owner blob (blob20) matches — link scope filters by owner EMAIL, launchpad
+  // scope by owner USER.ID. Injected by the stats/* + logs/* + launchpad routes
+  // from the session; never parsed from request params. An undefined key is
+  // internal/unscoped only (adds no owner filter).
+  ownerKey?: string
 }
 
 export class AnalyticsNotConfiguredError extends Error {
@@ -116,15 +118,13 @@ function whereClause(
     const list = LAUNCHPAD_TYPES.map((t) => `'${t}'`).join(', ')
     conditions.push(`${FIELD.type} NOT IN (${list})`)
   }
-  // Owner-scoped slug allow-list (fail-closed): an empty list means the caller
-  // owns nothing, so force zero rows instead of matching everything.
-  if (query.ownerSlugs !== undefined) {
-    if (query.ownerSlugs.length === 0) {
-      conditions.push('1=0')
-    } else {
-      const list = query.ownerSlugs.map((s) => `'${sanitize(s)}'`).join(', ')
-      conditions.push(`${FIELD.slug} IN (${list})`)
-    }
+  // Owner tenant filter (fail-closed): every dashboard route sets ownerKey, so
+  // an unscoped query only happens on internal calls. Owner-key skew invariant:
+  // link scope filters blob20 by owner EMAIL, launchpad scope by owner USER.ID;
+  // this is safe because `scope` never mixes the two entity families in one
+  // query (there is no email<->id join anywhere).
+  if (query.ownerKey !== undefined) {
+    conditions.push(`${FIELD.owner} = '${sanitize(query.ownerKey)}'`)
   }
   if (query.startAt) {
     conditions.push(

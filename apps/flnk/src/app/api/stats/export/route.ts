@@ -5,7 +5,6 @@ import {
   executeAeSql,
   parseStatsQuery,
 } from '@/lib/analytics/analytics-query'
-import { getOwnerSlugs } from '@/lib/analytics/owner-scope'
 import { generateCsv } from '@/lib/format/csv'
 import { requireSession } from '@/lib/platform/auth'
 
@@ -15,7 +14,7 @@ export async function GET(request: Request): Promise<Response> {
 
   const { env } = getCloudflareContext()
   const q = parseStatsQuery(new URL(request.url).searchParams)
-  q.ownerSlugs = await getOwnerSlugs(env, auth.user)
+  q.ownerKey = auth.user.email
 
   let rows: Record<string, string>[] = []
   try {

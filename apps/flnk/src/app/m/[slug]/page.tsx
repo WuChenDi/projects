@@ -71,6 +71,7 @@ async function recordView(
   cf: IncomingRequestCfProperties | undefined,
   ctx: { waitUntil: (p: Promise<unknown>) => void },
   slug: string,
+  ownerId: string,
 ): Promise<void> {
   const h = await headers()
   const host = h.get('host') ?? 'localhost'
@@ -83,7 +84,7 @@ async function recordView(
     Promise.resolve().then(() =>
       writeAccessLog(
         env,
-        extractAccessLog(request, slug, pageUrl, cf, 'launchpad'),
+        extractAccessLog(request, slug, pageUrl, cf, 'launchpad', ownerId),
       ),
     ),
   )
@@ -97,7 +98,7 @@ export default async function LaunchpadPage({ params }: PageProps) {
   if (!launchpad) notFound()
 
   const linkRefs = await resolveLinkRefs(env, launchpad)
-  await recordView(env, cf, ctx, launchpad.slug)
+  await recordView(env, cf, ctx, launchpad.slug, launchpad.ownerId)
 
   return (
     <>
