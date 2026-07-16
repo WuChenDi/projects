@@ -71,7 +71,6 @@ export const partNumberParamSchema = z.object({
 })
 
 export const downloadQuerySchema = z.object({
-  token: z.string().optional(),
   filename: z.string().optional(),
 })
 

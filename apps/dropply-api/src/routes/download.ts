@@ -21,18 +21,11 @@ downloadRoutes.get(
   async (c) => {
     const db = useDrizzle(c)
     const { fileId } = c.req.valid('param')
-    const { token: tokenFromQuery, filename: filenameFromQuery } =
-      c.req.valid('query')
+    const { filename: filenameFromQuery } = c.req.valid('query')
 
-    // Extract token
+    // Extract token (Authorization Bearer header only)
     const authHeader = c.req.header('Authorization')
-
-    let token: string
-    if (authHeader?.startsWith('Bearer ')) {
-      token = authHeader.substring(7)
-    } else if (tokenFromQuery) {
-      token = tokenFromQuery
-    } else {
+    if (!authHeader?.startsWith('Bearer ')) {
       return c.json<ApiResponse>(
         {
           code: 401,
@@ -41,6 +34,7 @@ downloadRoutes.get(
         401,
       )
     }
+    const token = authHeader.substring(7)
 
     let payload: ChestJWTPayload
     try {
