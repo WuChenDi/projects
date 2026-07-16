@@ -3,6 +3,12 @@
 import { Button } from '@cdlab/ui/components/button'
 import { Card } from '@cdlab/ui/components/card'
 import { Input } from '@cdlab/ui/components/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@cdlab/ui/components/input-group'
 import { Label } from '@cdlab/ui/components/label'
 import {
   Select,
@@ -260,24 +266,25 @@ export function DesignTab({ config, onChange }: DesignTabProps) {
           )}
           <div className="min-w-0 flex-1 space-y-1.5">
             <Label className="text-xs">{t('design.profile.avatar')}</Label>
-            <div className="flex items-center gap-2">
-              <Input
+            <InputGroup>
+              <InputGroupInput
                 value={profile.avatar ?? ''}
                 maxLength={2048}
                 placeholder="https://…"
                 onChange={(e) => setProfile({ avatar: e.target.value })}
               />
               {profile.avatar && (
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={t('design.profile.remove')}
-                  onClick={() => setProfile({ avatar: '' })}
-                >
-                  <X className="size-4" />
-                </Button>
+                <InputGroupAddon align="inline-end">
+                  <InputGroupButton
+                    size="icon-xs"
+                    aria-label={t('design.profile.remove')}
+                    onClick={() => setProfile({ avatar: '' })}
+                  >
+                    <X />
+                  </InputGroupButton>
+                </InputGroupAddon>
               )}
-            </div>
+            </InputGroup>
           </div>
         </div>
 
@@ -614,22 +621,24 @@ export function DesignTab({ config, onChange }: DesignTabProps) {
                       <Share2 className="size-4" />
                     )}
                   </span>
-                  <Input
-                    value={item.url}
-                    placeholder={t('design.socials.urlPlaceholder')}
-                    maxLength={2048}
-                    className="flex-1"
-                    onChange={(e) => updateSocial(i, e.target.value)}
-                    onBlur={() => normalizeSocial(i)}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={t('design.socials.remove')}
-                    onClick={() => removeSocial(i)}
-                  >
-                    <Trash2 className="size-4 text-destructive" />
-                  </Button>
+                  <InputGroup className="flex-1">
+                    <InputGroupInput
+                      value={item.url}
+                      placeholder={t('design.socials.urlPlaceholder')}
+                      maxLength={2048}
+                      onChange={(e) => updateSocial(i, e.target.value)}
+                      onBlur={() => normalizeSocial(i)}
+                    />
+                    <InputGroupAddon align="inline-end">
+                      <InputGroupButton
+                        size="icon-xs"
+                        aria-label={t('design.socials.remove')}
+                        onClick={() => removeSocial(i)}
+                      >
+                        <Trash2 className="text-destructive" />
+                      </InputGroupButton>
+                    </InputGroupAddon>
+                  </InputGroup>
                 </div>
               )
             })}
@@ -1003,17 +1012,19 @@ function OptionalColor({
     )
   }
   return (
-    <div className="flex items-center gap-1.5">
-      <ColorInput value={value} onChange={onChange} />
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label={autoLabel}
-        onClick={() => onChange(undefined)}
-      >
-        <X className="size-4" />
-      </Button>
-    </div>
+    <ColorInput
+      value={value}
+      onChange={onChange}
+      trailing={
+        <InputGroupButton
+          size="icon-xs"
+          aria-label={autoLabel}
+          onClick={() => onChange(undefined)}
+        >
+          <X />
+        </InputGroupButton>
+      }
+    />
   )
 }
 
@@ -1022,9 +1033,11 @@ function OptionalColor({
 function ColorInput({
   value,
   onChange,
+  trailing,
 }: {
   value: string
   onChange: (value: string) => void
+  trailing?: React.ReactNode
 }) {
   return (
     <div className="flex items-center gap-2">
@@ -1041,12 +1054,17 @@ function ColorInput({
           aria-label={value}
         />
       </label>
-      <Input
-        value={value}
-        maxLength={7}
-        className="h-8 w-24 font-mono text-xs"
-        onChange={(e) => onChange(e.target.value)}
-      />
+      <InputGroup className="w-28">
+        <InputGroupInput
+          value={value}
+          maxLength={7}
+          className="font-mono text-xs"
+          onChange={(e) => onChange(e.target.value)}
+        />
+        {trailing && (
+          <InputGroupAddon align="inline-end">{trailing}</InputGroupAddon>
+        )}
+      </InputGroup>
     </div>
   )
 }
