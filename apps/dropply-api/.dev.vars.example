@@ -1,0 +1,7 @@
+# Local dev secrets for `wrangler dev` — copy to `.dev.vars` (gitignored) and fill in.
+# Production: `wrangler secret put <NAME>`.
+JWT_SECRET=
+# Optional — when set, creating a share requires this password
+SHARE_PASSWORD=
+RESEND_API_KEY=
+LIBSQL_AUTH_TOKEN=
