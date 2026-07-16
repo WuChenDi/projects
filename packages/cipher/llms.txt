@@ -18,7 +18,7 @@ Primary docs:
 
 Build-only library in the `@cdlab/projects-monorepo`. Run scripts from the repo
 root: `pnpm --filter @cdlab/cipher <script>`. No dev server (it's a package).
-Consumed by `SecureC` (Web Worker) and `dropply-web` via `workspace:*`.
+Consumed by `dropply-web` (Web Worker) via `workspace:*`.
 
 ## What it is
 

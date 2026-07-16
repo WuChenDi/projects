@@ -15,7 +15,7 @@ Apps fall into three runtime families with different toolchains:
 
 | Family                        | Apps                                                                                                                             | Build tool                      | Deploy target                                                                                        |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Next.js (App Router)**      | `bycut`, `byplay`, `byshot`, `bytts`, `clearify`, `dropply-web`, `flnk`, `flox`, `SecureC`, `text2img`, `values`, `vidl`, `wepush` | `next build` (some `--webpack`) | Cloudflare Pages (`@cloudflare/next-on-pages`); `text2img`, `wepush`, and `flnk` use `@opennextjs/cloudflare` |
+| **Next.js (App Router)**      | `bycut`, `byplay`, `byshot`, `bytts`, `clearify`, `dropply-web`, `flnk`, `flox`, `text2img`, `values`, `vidl`, `wepush` | `next build` (some `--webpack`) | Cloudflare Pages (`@cloudflare/next-on-pages`); `text2img`, `wepush`, and `flnk` use `@opennextjs/cloudflare` |
 | **Cloudflare Workers (Hono)** | `baccarat`, `byplay-log`, `dropply-api`, `live-user`                                                                            | `wrangler deploy --minify`      | Cloudflare Workers + Durable Objects / D1                                                            |
 | **Nuxt 4 (Vue 3)**            | `repo-changelog`                                                                                                                 | `nuxt build`/`generate`         | Vercel                                                                                               |
 
@@ -148,15 +148,6 @@ Three modes split into separate routes: `/bg` (background removal via Transforme
 - `src/components/pages/{bg,compress,squish}/` — One subdirectory per mode, mirroring the route structure.
 - Builds with `--webpack` (Turbopack does not currently handle the wasm + worker mix here).
 
-#### `SecureC` — Client-side file/text encryption
-
-Uses `@cdlab/cipher` (XChaCha20-Poly1305 + Argon2id + ECIES) and runs all crypto in a Web Worker.
-
-- `src/workers/cryptoWorker.ts` — Posts progress messages back as `{ progress, stage }`. Handles both file-stream mode (10 MB chunks via `streamCrypto`) and text mode (`textCrypto`). Reads cipher header to auto-detect mode on decrypt.
-- `src/store/` — Zustand stores for the crypto session.
-- `src/lib/storage.ts` — IndexedDB-backed history of past operations.
-- `src/scripts/generateKeys.js` (run via `pnpm --filter @cdlab/securec gk`) — generates ECIES key pairs.
-
 #### `dropply-web` — Dropply file sharing frontend (paired with `dropply-api`)
 
 - `src/lib/crypto.ts` — AES-GCM + Argon2id, all client-side. Encryption key is **embedded in the URL fragment** (`#key=…`) so the server never receives it.
@@ -270,7 +261,7 @@ Pure-browser stream download — `mux.js` + Streams API, near-zero memory footpr
   - `textCrypto.encrypt | decrypt`
   - Also exports the lower-level `StreamCipher`, `parseStreamHeader`, `detect`, error classes.
 - `src/constants.ts` — `MAGIC_BYTES` and `CONFIG` (chunk sizes, KDF params). Don't change without bumping the header version — old ciphertexts would become unreadable.
-- Used by `SecureC` and `dropply-web`.
+- Used by `dropply-web`.
 - Tested with vitest + happy-dom.
 
 #### `@cdlab/uncrypto` — Cross-runtime crypto shim

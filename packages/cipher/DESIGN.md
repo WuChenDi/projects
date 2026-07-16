@@ -38,7 +38,7 @@ loop freezes the tab, and each use case (a password the user types vs. a
 recipient's public key) needs a different key-establishment path but the same
 ciphertext container.
 
-`@cdlab/cipher` is the shared crypto core behind `SecureC` and `dropply-web`. It
+`@cdlab/cipher` is the shared crypto core behind `dropply-web`. It
 holds itself to these goals:
 
 - **G1 — Stream, don't buffer.** Encrypt a `File` in fixed 10 MB slices so the
@@ -63,8 +63,7 @@ holds itself to these goals:
 - **Not a versioned/upgradable format.** There is no in-band version field to
   negotiate. The magic bytes + constants *are* the version; evolving them is §8.
 - **Not a key manager.** No key generation, storage, or transport. Callers pass
-  passwords and raw key bytes. (`SecureC`'s `gk` script generates ECIES pairs
-  out of band.)
+  passwords and raw key bytes; ECIES key pairs are generated out of band.
 - **Not a generic buffer AEAD.** The public API is `File`-centric by design
   (text is wrapped into a `File`), because the consumers are browser file tools.
 - **No streaming random access.** Decrypt walks chunks in order from the header;
@@ -359,7 +358,7 @@ where needed.
 ### 10.3 Consumption
 
 There is no deploy — the package is consumed via `"@cdlab/cipher": "workspace:*"`
-by `SecureC` (in a Web Worker) and `dropply-web`. Consumers resolve `dist/`, so
+by `dropply-web` (in a Web Worker). Consumers resolve `dist/`, so
 after editing source you must rebuild (`build`, `dev --watch`, or the repo-root
 `pnpm prepare`, which builds workspace packages in topological order) or the
 consumer will not see new exports. All primitive versions come from the pnpm

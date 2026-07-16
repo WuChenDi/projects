@@ -92,7 +92,6 @@
         "apps/clearify/**/*",
         "apps/dropply-web/**/*",
         "apps/vidl/**/*",
-        "apps/SecureC/**/*",
         "apps/txt2img/**/*",
         "apps/values/**/*",
         "apps/flox/**/*",

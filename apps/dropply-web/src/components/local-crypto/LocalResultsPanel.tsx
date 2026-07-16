@@ -9,50 +9,46 @@ import {
 import { IKEmpty, StatusEnum } from '@cdlab/ui/IK'
 import { Archive, Download, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import type { ProcessResult } from '@/types'
-import { SCResultCard } from './SCResultCard'
+import type { ProcessResult } from '@/types/crypto'
+import { LocalResultCard } from './LocalResultCard'
 
-interface SCResultsPanelProps {
+interface LocalResultsPanelProps {
   results: ProcessResult[]
   onDownload: (result: ProcessResult) => void
   onRemove: (id: string) => void
   onClearAll: () => void
 }
 
-export function SCResultsPanel({
+export function LocalResultsPanel({
   results,
   onDownload,
   onRemove,
   onClearAll,
-}: SCResultsPanelProps) {
-  const t = useTranslations('results')
+}: LocalResultsPanelProps) {
+  const t = useTranslations('localCrypto')
+  const completed = results.filter((r) => r.status === StatusEnum.COMPLETED)
 
   return (
     <Card className="flex flex-col p-4 border-none h-full">
       <CardHeader className="p-0 flex flex-row items-center justify-between">
-        <CardTitle>{t('title')}</CardTitle>
+        <CardTitle>{t('results.title')}</CardTitle>
         <CardAction>
           {results.length > 0 && (
             <div className="flex gap-2">
               <Button
                 onClick={() => {
-                  results
-                    .filter((r) => r.status === StatusEnum.COMPLETED)
-                    .forEach((result) => onDownload(result))
+                  completed.forEach((result) => onDownload(result))
                 }}
                 size="sm"
                 variant="secondary"
-                disabled={
-                  results.filter((r) => r.status === StatusEnum.COMPLETED)
-                    .length === 0
-                }
+                disabled={completed.length === 0}
               >
                 <Download />
-                {t('downloadAll')}
+                {t('results.downloadAll')}
               </Button>
               <Button onClick={onClearAll} size="sm" variant="secondary">
                 <Trash2 />
-                {t('clearAll')}
+                {t('results.clearAll')}
               </Button>
             </div>
           )}
@@ -62,7 +58,7 @@ export function SCResultsPanel({
         {results.length > 0 ? (
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 p-0.5">
             {results.map((result) => (
-              <SCResultCard
+              <LocalResultCard
                 key={result.id}
                 result={result}
                 onDownload={onDownload}
@@ -75,9 +71,9 @@ export function SCResultsPanel({
             className="min-h-65"
             icon={Archive}
             iconClassName="size-5"
-            title={t('emptyTitle')}
-            description={t('emptyDescription')}
-            hint={t('emptyHint')}
+            title={t('results.emptyTitle')}
+            description={t('results.emptyDescription')}
+            hint={t('results.emptyHint')}
           />
         )}
       </CardContent>

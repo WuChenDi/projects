@@ -2,8 +2,8 @@ import { StatusEnum } from '@cdlab/ui/IK'
 import { logger } from '@cdlab/utils'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { dbStore } from '@/lib/storage'
-import type { ProcessResult } from '@/types'
+import { cryptoDbStore as dbStore } from '@/lib/storage'
+import type { ProcessResult } from '@/types/crypto'
 
 interface ProcessStore {
   processResults: ProcessResult[]
@@ -129,7 +129,7 @@ export const useProcessStore = create<ProcessStore>()(
       },
     }),
     {
-      name: 'securec-process-results',
+      name: 'dropply-process-results',
       partialize: (state) => ({
         processResults: state.processResults
           .filter((r) => r.status === StatusEnum.COMPLETED)

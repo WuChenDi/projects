@@ -36,7 +36,6 @@
 | [flox](./apps/flox) | 多源视频聚合与播放(SSE) | [↗](https://floxx.pages.dev/) |
 | [live-user](./apps/live-user) | 实时在线人数统计(WebSocket Hibernation DO) | [↗](https://live-user.cdlab.workers.dev/) |
 | [repo-changelog](./apps/repo-changelog) | GitHub 发布 / 更新日志看板(Nuxt) | [↗](https://repo-changelog.vercel.app/) |
-| [SecureC](./apps/SecureC) | 客户端文件 / 文本加密(XChaCha20-Poly1305) | [↗](https://securec.pages.dev/) |
 | [text2img](./apps/text2img) | 浏览器 AI 文生图(Workers AI) | [↗](https://text2img.cdlab.workers.dev/) |
 | [values](./apps/values) | 加密货币 / 法币 / 大宗商品价值对比 | [↗](https://values.pages.dev/) |
 | [vidl](./apps/vidl) | 浏览器视频下载器(M3U8 / HLS → MP4) | [↗](https://vidl.pages.dev/) |
@@ -82,13 +81,13 @@ pnpm lint                    # Biome 检查
 pnpm format                  # Biome 格式化 --write
 pnpm clean                   # 清除 node_modules / 缓存 / 构建产物
 
-# 单个项目 —— <name> 是包名(如 securec、values、flnk)
+# 单个项目 —— <name> 是包名(如 values、flnk)
 pnpm --filter @cdlab/<name> dev       # → http://<name>.localhost:3355
 pnpm --filter @cdlab/<name> build
 ```
 
-dev 名是去掉 scope 的包名 —— 即目录名(目录首字母大写时取小写,如 `SecureC`
-→ `securec`)。具体脚本、开发地址和部署命令见各子项目的 README。
+dev 名是去掉 scope 的包名 —— 即目录名(如 `values`、`flnk`)。具体脚本、开发
+地址和部署命令见各子项目的 README。
 
 ## 目录结构
 
