@@ -147,5 +147,74 @@
     "sending": "Sending...",
     "sendEmail": "Send Email",
     "cancel": "Cancel"
+  },
+  "localCrypto": {
+    "input": {
+      "encryptTitle": "Encrypt",
+      "decryptTitle": "Decrypt",
+      "encryptDescription": "Encrypt files and text locally in your browser.",
+      "decryptDescription": "Decrypt files and text locally in your browser.",
+      "inputMode": "Input mode",
+      "file": "File",
+      "message": "Message",
+      "password": "Password",
+      "passwordPlaceholder": "Enter a password",
+      "selectFile": "Select file",
+      "clickToSelect": "Click or drop files here to select",
+      "messagePlaceholderEncrypt": "Enter the text you want to encrypt",
+      "messagePlaceholderDecrypt": "Paste the ciphertext you want to decrypt",
+      "encrypt": "Encrypt",
+      "decrypt": "Decrypt"
+    },
+    "results": {
+      "title": "Results",
+      "downloadAll": "Download all",
+      "clearAll": "Clear all",
+      "emptyTitle": "No results yet",
+      "emptyDescription": "Encrypted and decrypted items will appear here.",
+      "emptyHint": "Everything runs locally in your browser.",
+      "messageResult": "Message result",
+      "unnamedFile": "Unnamed file"
+    },
+    "dialog": {
+      "encryptedText": "Encrypted text",
+      "decryptedText": "Decrypted text",
+      "encryptedSuccess": "Your text has been encrypted locally.",
+      "decryptedSuccess": "Your text has been decrypted locally.",
+      "encryptedContent": "Encrypted content",
+      "decryptedContent": "Decrypted content"
+    },
+    "card": {
+      "view": "View",
+      "copy": "Copy",
+      "download": "Download",
+      "remove": "Remove"
+    },
+    "features": {
+      "title": "About local encryption",
+      "aesEncrypt": "XChaCha20-Poly1305 authenticated encryption",
+      "argon2id": "Argon2id password-based key derivation",
+      "chunked": "Chunked streaming keeps large files off the main thread",
+      "download": "Results download straight from your browser",
+      "localNote": "All processing happens locally — nothing is ever uploaded."
+    },
+    "toast": {
+      "resultRemoved": "Result removed",
+      "allCleared": "All results cleared"
+    }
+  },
+  "toast": {
+    "downloadSuccess": "File downloaded successfully",
+    "selectFile": "Please select a file first",
+    "enterMessage": "Please input the message for processing",
+    "enterPassword": "Please enter a password",
+    "encryptionStarted": "Encryption started",
+    "decryptionStarted": "Decryption started",
+    "fileEncrypted": "File encrypted successfully!",
+    "fileDecrypted": "File decrypted successfully!",
+    "textEncrypted": "Text encrypted successfully! Check the results to view it.",
+    "textDecrypted": "Text decrypted successfully! Check the results to view it.",
+    "resultRemoved": "Result removed",
+    "allCleared": "All results cleared"
   }
 }

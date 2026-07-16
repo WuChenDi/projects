@@ -147,5 +147,74 @@
     "sending": "发送中...",
     "sendEmail": "发送邮件",
     "cancel": "取消"
+  },
+  "localCrypto": {
+    "input": {
+      "encryptTitle": "加密",
+      "decryptTitle": "解密",
+      "encryptDescription": "在浏览器本地加密文件和文本。",
+      "decryptDescription": "在浏览器本地解密文件和文本。",
+      "inputMode": "输入模式",
+      "file": "文件",
+      "message": "消息",
+      "password": "密码",
+      "passwordPlaceholder": "请输入密码",
+      "selectFile": "选择文件",
+      "clickToSelect": "点击或拖拽文件到此处",
+      "messagePlaceholderEncrypt": "输入要加密的文本",
+      "messagePlaceholderDecrypt": "粘贴要解密的密文",
+      "encrypt": "加密",
+      "decrypt": "解密"
+    },
+    "results": {
+      "title": "结果",
+      "downloadAll": "全部下载",
+      "clearAll": "全部清除",
+      "emptyTitle": "暂无结果",
+      "emptyDescription": "加密和解密的项目将显示在这里。",
+      "emptyHint": "所有操作均在浏览器本地完成。",
+      "messageResult": "消息结果",
+      "unnamedFile": "未命名文件"
+    },
+    "dialog": {
+      "encryptedText": "加密文本",
+      "decryptedText": "解密文本",
+      "encryptedSuccess": "您的文本已在本地加密。",
+      "decryptedSuccess": "您的文本已在本地解密。",
+      "encryptedContent": "加密内容",
+      "decryptedContent": "解密内容"
+    },
+    "card": {
+      "view": "查看",
+      "copy": "复制",
+      "download": "下载",
+      "remove": "移除"
+    },
+    "features": {
+      "title": "关于本地加密",
+      "aesEncrypt": "XChaCha20-Poly1305 认证加密",
+      "argon2id": "基于 Argon2id 的密码密钥派生",
+      "chunked": "分块流式处理，让大文件远离主线程",
+      "download": "结果直接从浏览器下载",
+      "localNote": "所有处理均在本地完成——绝不上传任何内容。"
+    },
+    "toast": {
+      "resultRemoved": "结果已移除",
+      "allCleared": "已清除所有结果"
+    }
+  },
+  "toast": {
+    "downloadSuccess": "文件下载成功",
+    "selectFile": "请先选择一个文件",
+    "enterMessage": "请输入要处理的消息",
+    "enterPassword": "请输入密码",
+    "encryptionStarted": "开始加密",
+    "decryptionStarted": "开始解密",
+    "fileEncrypted": "文件加密成功！",
+    "fileDecrypted": "文件解密成功！",
+    "textEncrypted": "文本加密成功！请在结果中查看。",
+    "textDecrypted": "文本解密成功！请在结果中查看。",
+    "resultRemoved": "结果已移除",
+    "allCleared": "已清除所有结果"
   }
 }

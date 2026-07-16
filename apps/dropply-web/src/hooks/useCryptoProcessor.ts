@@ -7,10 +7,10 @@ import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useShallow } from 'zustand/react/shallow'
-import { genid } from '@/lib'
+import { genid } from '@/lib/genid'
 import { useProcessStore } from '@/store/useProcessStore'
-import type { FileInfo, ProcessResult } from '@/types'
-import { InputModeEnum, ModeEnum } from '@/types'
+import type { FileInfo, ProcessResult } from '@/types/crypto'
+import { InputModeEnum, ModeEnum } from '@/types/crypto'
 
 export function useCryptoProcessor() {
   const t = useTranslations('toast')

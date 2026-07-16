@@ -1,3 +1,5 @@
+'use client'
+
 import { Card } from '@cdlab/ui/components/card'
 import { Separator } from '@cdlab/ui/components/separator'
 import { cn } from '@cdlab/ui/lib/utils'
@@ -5,14 +7,19 @@ import { ChevronDown, Info } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
-export function SCFeaturesSection() {
+export function LocalFeaturesSection() {
+  const t = useTranslations('localCrypto')
   const [showFeatures, setShowFeatures] = useState(true)
-  const t = useTranslations('features')
 
-  const features = [t('aesEncrypt'), t('argon2id'), t('chunked'), t('download')]
+  const features = [
+    t('features.aesEncrypt'),
+    t('features.argon2id'),
+    t('features.chunked'),
+    t('features.download'),
+  ]
 
   return (
-    <Card className="p-0 ">
+    <Card className="p-0">
       <div
         className="w-full flex items-center justify-between p-4 rounded-lg"
         onClick={() => setShowFeatures(!showFeatures)}
@@ -20,7 +27,7 @@ export function SCFeaturesSection() {
         <div className="flex items-center gap-2.5">
           <Info className="size-4 text-primary" />
           <span className="text-base font-medium text-gray-800 dark:text-gray-200">
-            {t('title')}
+            {t('features.title')}
           </span>
         </div>
         <ChevronDown
@@ -34,7 +41,7 @@ export function SCFeaturesSection() {
       {showFeatures && (
         <div className="px-4 pb-4 space-y-3">
           {features.map((feature, index) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders don't need stable keys
+            // biome-ignore lint/suspicious/noArrayIndexKey: static feature list has no stable id
             <div key={index} className="flex items-start gap-3">
               <div className="size-1.5 rounded-full bg-primary dark:bg-primary mt-2 shrink-0" />
               <p className="text-muted-foreground text-sm leading-relaxed">
@@ -44,7 +51,7 @@ export function SCFeaturesSection() {
           ))}
           <Separator />
           <p className="text-muted-foreground text-xs text-center">
-            {t('localNote')}
+            {t('features.localNote')}
           </p>
         </div>
       )}

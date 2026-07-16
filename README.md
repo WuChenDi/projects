@@ -37,7 +37,6 @@ there for depth.
 | [flox](./apps/flox) | Multi-source video aggregation & playback (SSE) | [↗](https://floxx.pages.dev/) |
 | [live-user](./apps/live-user) | Real-time online-user counter (WebSocket Hibernation DO) | [↗](https://live-user.cdlab.workers.dev/) |
 | [repo-changelog](./apps/repo-changelog) | GitHub release / changelog dashboard (Nuxt) | [↗](https://repo-changelog.vercel.app/) |
-| [SecureC](./apps/SecureC) | Client-side file / text encryption (XChaCha20-Poly1305) | [↗](https://securec.pages.dev/) |
 | [text2img](./apps/text2img) | Browser AI text-to-image (Workers AI) | [↗](https://text2img.cdlab.workers.dev/) |
 | [values](./apps/values) | Crypto / fiat / commodity value comparison | [↗](https://values.pages.dev/) |
 | [vidl](./apps/vidl) | Browser video downloader (M3U8 / HLS → MP4) | [↗](https://vidl.pages.dev/) |
@@ -85,14 +84,14 @@ pnpm lint                    # Biome lint
 pnpm format                  # Biome format --write
 pnpm clean                   # wipe node_modules / caches / build output
 
-# A single project — <name> is the package name (e.g. securec, values, flnk)
+# A single project — <name> is the package name (e.g. values, flnk)
 pnpm --filter @cdlab/<name> dev       # → http://<name>.localhost:3355
 pnpm --filter @cdlab/<name> build
 ```
 
-The dev name is the package name with the scope stripped — the directory name,
-lowercased where the directory is capitalized (e.g. `SecureC` → `securec`). See
-each sub-project's README for its exact scripts, dev URL, and deploy command.
+The dev name is the package name with the scope stripped — the directory name
+(e.g. `values`, `flnk`). See each sub-project's README for its exact scripts,
+dev URL, and deploy command.
 
 ## Layout
 

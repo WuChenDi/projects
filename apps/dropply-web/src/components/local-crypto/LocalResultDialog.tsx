@@ -13,37 +13,36 @@ import { Label } from '@cdlab/ui/components/label'
 import { Textarea } from '@cdlab/ui/components/textarea'
 import { Download } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import type { ProcessResult } from '@/types'
-import { ModeEnum } from '@/types'
+import type { ProcessResult } from '@/types/crypto'
+import { ModeEnum } from '@/types/crypto'
 
-interface SCResultDialogProps {
+interface LocalResultDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   result: ProcessResult | null
   onDownload: (result: ProcessResult) => void
 }
 
-export function SCResultDialog({
+export function LocalResultDialog({
   open,
   onOpenChange,
   result,
   onDownload,
-}: SCResultDialogProps) {
-  const t = useTranslations('dialog')
+}: LocalResultDialogProps) {
+  const t = useTranslations('localCrypto')
+  const isEncrypt = result?.mode === ModeEnum.ENCRYPT
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>
-            {result?.mode === ModeEnum.ENCRYPT
-              ? t('encryptedText')
-              : t('decryptedText')}
+            {isEncrypt ? t('dialog.encryptedText') : t('dialog.decryptedText')}
           </DialogTitle>
           <DialogDescription>
-            {result?.mode === ModeEnum.ENCRYPT
-              ? t('encryptedSuccess')
-              : t('decryptedSuccess')}
+            {isEncrypt
+              ? t('dialog.encryptedSuccess')
+              : t('dialog.decryptedSuccess')}
           </DialogDescription>
         </DialogHeader>
 
@@ -51,9 +50,9 @@ export function SCResultDialog({
           <div>
             <div className="flex items-center justify-between mb-2">
               <Label className="text-sm font-medium">
-                {result?.mode === ModeEnum.ENCRYPT
-                  ? t('encryptedContent')
-                  : t('decryptedContent')}
+                {isEncrypt
+                  ? t('dialog.encryptedContent')
+                  : t('dialog.decryptedContent')}
               </Label>
               <div className="flex gap-2">
                 <Button

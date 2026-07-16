@@ -1,6 +1,6 @@
 import { parseStreamHeader, streamCrypto, textCrypto } from '@cdlab/cipher'
-import { clampProgress, generateDownloadFilename } from '@/lib'
-import { ModeEnum } from '@/types'
+import { clampProgress, generateDownloadFilename } from '@/lib/crypto-utils'
+import { ModeEnum } from '@/types/crypto'
 
 interface WorkerInput {
   mode: keyof typeof ModeEnum

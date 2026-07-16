@@ -1,9 +1,4 @@
-import { ModeEnum } from '@/types'
-
-export function getFileExtension(filename: string) {
-  const parts = filename.split('.')
-  return parts.length > 1 ? parts.pop()! : 'txt'
-}
+import { ModeEnum } from '@/types/crypto'
 
 export function getFilenameWithoutExtension(filename: string) {
   const parts = filename.split('.')

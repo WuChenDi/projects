@@ -7,20 +7,47 @@ import { Loader2, X } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import { EmailShare } from '@/components/EmailShare'
+import { LocalCryptoPanel } from '@/components/local-crypto/LocalCryptoPanel'
 import { RetrieveTab } from '@/components/retrieve/RetrieveTab'
 import { ShareTab } from '@/components/share/ShareTab'
 import { TOTPModal } from '@/components/TOTPModal'
+import { TopTabs } from '@/components/TopTabs'
+import { useCryptoProcessor } from '@/hooks/useCryptoProcessor'
 import { PocketChestAPI } from '@/lib'
 import { useAuthStore } from '@/store/useAuthStore'
+import { ModeEnum } from '@/types/crypto'
 
-type TabMode = 'share' | 'retrieve'
+type TabMode = 'encrypt' | 'decrypt' | 'share' | 'retrieve'
 
 function HomeContent() {
   const searchParams = useSearchParams()
   const codeFromUrl = searchParams.get('code')
 
-  const initialTab: TabMode = codeFromUrl ? 'retrieve' : 'share'
+  // Retrieve URL params — parse hash synchronously for initial render
+  const [retrieveEncryptionKey] = useState<string | null>(() => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const match = window.location.hash.match(/key=([^&]+)/)
+      if (match?.[1]) return decodeURIComponent(match[1])
+    }
+    return null
+  })
+
+  // Deep link: ?code=... or #key=... lands on the Retrieve tab, prefilled as before.
+  const initialTab: TabMode =
+    codeFromUrl || retrieveEncryptionKey ? 'retrieve' : 'share'
   const [activeTab, setActiveTab] = useState<TabMode>(initialTab)
+
+  // Local (client-side) encrypt/decrypt engine — shared across the Encrypt and
+  // Decrypt tabs so input/results survive the auto-switch below.
+  const crypto = useCryptoProcessor()
+
+  // detect() auto-switch: when the engine detects ciphertext it flips its internal
+  // mode to DECRYPT; reflect that to the top-level tab so the user lands on Decrypt.
+  useEffect(() => {
+    if (crypto.activeTab === ModeEnum.DECRYPT) {
+      setActiveTab((prev) => (prev === 'encrypt' ? 'decrypt' : prev))
+    }
+  }, [crypto.activeTab])
 
   // Config state
   const [isConfigLoaded, setIsConfigLoaded] = useState(false)
@@ -40,15 +67,6 @@ function HomeContent() {
 
   // Error state
   const [configError, setConfigError] = useState<string | null>(null)
-
-  // Retrieve URL params — parse hash synchronously for initial render
-  const [retrieveEncryptionKey] = useState<string | null>(() => {
-    if (typeof window !== 'undefined' && window.location.hash) {
-      const match = window.location.hash.match(/key=([^&]+)/)
-      if (match?.[1]) return decodeURIComponent(match[1])
-    }
-    return null
-  })
 
   const api = new PocketChestAPI()
 
@@ -133,9 +151,25 @@ function HomeContent() {
 
         <Tabs
           value={activeTab}
-          onValueChange={(v) => setActiveTab(v as TabMode)}
+          onValueChange={(v) => {
+            const tab = v as TabMode
+            setActiveTab(tab)
+            // Keep the shared engine's mode in sync with the top-level tab.
+            if (tab === 'encrypt') crypto.handleTabChange(ModeEnum.ENCRYPT)
+            else if (tab === 'decrypt') crypto.handleTabChange(ModeEnum.DECRYPT)
+          }}
           className={isConfigLoaded ? 'h-full' : 'hidden'}
         >
+          <TopTabs />
+
+          <TabsContent value="encrypt" className="h-full">
+            <LocalCryptoPanel crypto={crypto} mode={ModeEnum.ENCRYPT} />
+          </TabsContent>
+
+          <TabsContent value="decrypt" className="h-full">
+            <LocalCryptoPanel crypto={crypto} mode={ModeEnum.DECRYPT} />
+          </TabsContent>
+
           <TabsContent value="share" className="h-full">
             <ShareTab
               requireTOTP={requireTOTP}

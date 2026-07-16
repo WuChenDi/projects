@@ -5,42 +5,27 @@ import { cn } from '@cdlab/ui/lib/utils'
 import { formatFileSize } from '@cdlab/utils'
 import { Download, Eye, FileText, Lock, Unlock, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
-import { getFileIcon } from '@/lib'
-import type { ProcessResult } from '@/types'
-import { InputModeEnum, ModeEnum } from '@/types'
-import { SCResultDialog } from './SCResultDialog'
+import { getFileIcon } from '@/lib/fileIcon'
+import type { ProcessResult } from '@/types/crypto'
+import { InputModeEnum, ModeEnum } from '@/types/crypto'
+import { LocalResultDialog } from './LocalResultDialog'
 
-interface SCResultCardProps {
+interface LocalResultCardProps {
   result: ProcessResult
   onDownload: (result: ProcessResult) => void
   onRemove: (id: string) => void
 }
 
-function isMediaType(type?: string): 'image' | 'video' | null {
-  if (!type) return null
-  if (type.startsWith('image/')) return 'image'
-  if (type.startsWith('video/')) return 'video'
-  return null
-}
-
-export function SCResultCard({
+export function LocalResultCard({
   result,
   onDownload,
   onRemove,
-}: SCResultCardProps) {
+}: LocalResultCardProps) {
+  const t = useTranslations('localCrypto')
   const isMessage = result.inputMode === InputModeEnum.MESSAGE
   const [dialogOpen, setDialogOpen] = useState(false)
-  const t = useTranslations()
-
-  const mediaType =
-    result.mode === ModeEnum.DECRYPT ? isMediaType(result.fileInfo?.type) : null
-
-  const previewUrl = useMemo(() => {
-    if (!mediaType || !result.downloadUrl) return null
-    return result.downloadUrl
-  }, [mediaType, result.downloadUrl])
 
   return (
     <div
@@ -63,24 +48,9 @@ export function SCResultCard({
                     <FileText className="size-8 text-primary" />
                   </div>
                 ) : result.fileInfo ? (
-                  (() => {
-                    const config = getFileIcon(
-                      result.fileInfo.name,
-                      result.fileInfo.type,
-                    )
-                    const Icon = config.icon
-                    return (
-                      <div
-                        className={cn(
-                          'p-3 rounded-lg transition-transform duration-500 group-hover:scale-110',
-                          config.bgColor,
-                          config.darkBgColor,
-                        )}
-                      >
-                        <Icon className={cn('size-8', config.color)} />
-                      </div>
-                    )
-                  })()
+                  <div className="p-3 rounded-lg bg-muted transition-transform duration-500 group-hover:scale-110">
+                    {getFileIcon(result.fileInfo.name, 32)}
+                  </div>
                 ) : null}
               </div>
 
@@ -106,7 +76,7 @@ export function SCResultCard({
                     size="icon-xs"
                     className="bg-black/40 backdrop-blur-[2px]"
                     onClick={() => setDialogOpen(true)}
-                    title={t('common.view')}
+                    title={t('card.view')}
                   >
                     <Eye />
                   </Button>
@@ -117,7 +87,7 @@ export function SCResultCard({
                     size="icon-xs"
                     className="bg-black/40 backdrop-blur-[2px]"
                     value={result.text}
-                    title={t('common.copy')}
+                    title={t('card.copy')}
                   />
                 )}
                 <Button
@@ -125,7 +95,7 @@ export function SCResultCard({
                   size="icon-xs"
                   className="bg-black/40 backdrop-blur-[2px]"
                   onClick={() => onDownload(result)}
-                  title={t('common.download')}
+                  title={t('card.download')}
                 >
                   <Download />
                 </Button>
@@ -137,7 +107,7 @@ export function SCResultCard({
                     onRemove(result.id)
                     toast.success(t('toast.resultRemoved'))
                   }}
-                  title={t('common.remove')}
+                  title={t('card.remove')}
                 >
                   <X />
                 </Button>
@@ -161,7 +131,7 @@ export function SCResultCard({
       />
 
       {isMessage && (
-        <SCResultDialog
+        <LocalResultDialog
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           result={result}

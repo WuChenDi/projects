@@ -16,13 +16,11 @@ import { formatFileSize } from '@cdlab/utils'
 import { FileText, Lock, Unlock, Upload, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { RefObject } from 'react'
-import type { FileInfo } from '@/types'
-import { InputModeEnum, ModeEnum } from '@/types'
-import { SCEncryptDecryptTabs } from './SCEncryptDecryptTabs'
+import type { FileInfo } from '@/types/crypto'
+import { InputModeEnum, ModeEnum } from '@/types/crypto'
 
-interface SCInputPanelProps {
-  activeTab: ModeEnum
-  onTabChange: (value: ModeEnum) => void
+interface LocalInputPanelProps {
+  mode: ModeEnum
   inputMode: InputModeEnum
   onInputModeChange: (mode: InputModeEnum) => void
   password: string
@@ -37,9 +35,8 @@ interface SCInputPanelProps {
   isProcessDisabled: boolean
 }
 
-export function SCInputPanel({
-  activeTab,
-  onTabChange,
+export function LocalInputPanel({
+  mode,
   inputMode,
   onInputModeChange,
   password,
@@ -52,13 +49,13 @@ export function SCInputPanel({
   onTextInputChange,
   onProcess,
   isProcessDisabled,
-}: SCInputPanelProps) {
-  const isEncrypt = activeTab === ModeEnum.ENCRYPT
-  const t = useTranslations()
+}: LocalInputPanelProps) {
+  const t = useTranslations('localCrypto')
+  const isEncrypt = mode === ModeEnum.ENCRYPT
   const hasFiles = fileInfos.length > 0
 
   return (
-    <Card className="shadow-none ">
+    <Card className="shadow-none">
       <CardHeader>
         <CardTitle>
           {isEncrypt ? t('input.encryptTitle') : t('input.decryptTitle')}
@@ -83,7 +80,6 @@ export function SCInputPanel({
             e.target.value = ''
           }}
         />
-        <SCEncryptDecryptTabs activeTab={activeTab} onTabChange={onTabChange} />
 
         <div className="space-y-4">
           <Field>
@@ -97,7 +93,7 @@ export function SCInputPanel({
                 className="flex-1 flex items-center justify-center gap-2"
               >
                 <Upload className="size-4" />
-                {t('common.file')}
+                {t('input.file')}
               </Button>
               <Button
                 variant={
@@ -107,7 +103,7 @@ export function SCInputPanel({
                 className="flex-1 flex items-center justify-center gap-2"
               >
                 <FileText className="size-4" />
-                {t('common.messages')}
+                {t('input.message')}
               </Button>
             </div>
           </Field>
@@ -180,12 +176,8 @@ export function SCInputPanel({
                     >
                       {hasFiles
                         ? fileInfos.length === 1
-                          ? t('input.selectedOne', {
-                              filename: fileInfos[0].name,
-                            })
-                          : t('input.selectedMultiple', {
-                              count: fileInfos.length,
-                            })
+                          ? fileInfos[0].name
+                          : `${fileInfos.length} files selected`
                         : t('input.clickToSelect')}
                     </span>
                   </div>
@@ -228,8 +220,8 @@ export function SCInputPanel({
                   onChange={(e) => onTextInputChange(e.target.value)}
                   placeholder={
                     isEncrypt
-                      ? t('input.encryptPlaceholder')
-                      : t('input.decryptPlaceholder')
+                      ? t('input.messagePlaceholderEncrypt')
+                      : t('input.messagePlaceholderDecrypt')
                   }
                   className="min-h-37 max-h-75 text-sm"
                 />
@@ -252,12 +244,12 @@ export function SCInputPanel({
               {isEncrypt ? (
                 <>
                   <Lock />
-                  {t('common.encrypt')}
+                  {t('input.encrypt')}
                 </>
               ) : (
                 <>
                   <Unlock />
-                  {t('common.decrypt')}
+                  {t('input.decrypt')}
                 </>
               )}
             </Button>

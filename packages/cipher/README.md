@@ -6,9 +6,8 @@ so the browser never holds the whole plaintext in memory. Encrypt files and text
 in the tab (or a Web Worker) and hand the server only ciphertext.
 
 A build-only library (`workspace:*`, no dev server, no network, no secrets of its
-own) consumed by [`SecureC`](../../apps/SecureC) (file/text encryption UI, in a
-Web Worker) and [`dropply-web`](../../apps/dropply-web) (end-to-end encrypted file
-sharing). All primitives are pure-JS [`@noble/*`](https://github.com/paulmillr/noble-hashes)
+own) consumed by [`dropply-web`](../../apps/dropply-web) (end-to-end encrypted file
+sharing, in a Web Worker). All primitives are pure-JS [`@noble/*`](https://github.com/paulmillr/noble-hashes)
 + [`eciesjs`](https://github.com/ecies/js), so it runs in a browser, a Web
 Worker, and Node alike.
 
@@ -218,8 +217,7 @@ the test files that need it — it is not a global vitest setup file).
   every existing ciphertext unreadable — you must bump the magic byte / header
   version, not edit a constant in place.
 - **Not a key manager.** It never generates, stores, or transports keys; the
-  caller supplies passwords and key bytes. (`SecureC` has a `gk` script for
-  generating ECIES pairs.)
+  caller supplies passwords and key bytes; ECIES pairs are generated out of band.
 - **Not a general AEAD wrapper.** The API is deliberately `File`-centric —
   string inputs are wrapped into `File` objects — because its consumers are
   browser / Web-Worker file tools.

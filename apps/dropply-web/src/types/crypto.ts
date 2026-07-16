@@ -7,11 +7,6 @@ export interface FileInfo {
   originalExtension?: string
 }
 
-export interface KeyPair {
-  publicKey: string
-  privateKey: string
-}
-
 export enum ModeEnum {
   ENCRYPT = 'ENCRYPT',
   DECRYPT = 'DECRYPT',
