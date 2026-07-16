@@ -8,6 +8,7 @@ import {
   useDrizzle,
   withNotDeleted,
 } from '@/lib'
+import { rateLimit } from '@/lib/rate-limit'
 import type { ApiResponse, CloudflareEnv, RetrieveChestResponse } from '@/types'
 
 export const retrieveRoutes = new Hono<{ Bindings: CloudflareEnv }>()
@@ -15,6 +16,7 @@ export const retrieveRoutes = new Hono<{ Bindings: CloudflareEnv }>()
 // GET /retrieve/:retrievalCode - Retrieve chest contents
 retrieveRoutes.get(
   '/retrieve/:retrievalCode',
+  rateLimit({ limit: 30, windowMs: 60_000, keyPrefix: 'retrieve' }),
   zValidator('param', retrievalCodeParamSchema),
   async (c) => {
     const requestId = c.get('requestId')
@@ -42,18 +44,18 @@ retrieveRoutes.get(
         return c.json<ApiResponse>(
           {
             code: 404,
-            message: 'Session not found or already completed',
+            message: 'Retrieval code invalid or expired',
           },
           404,
         )
       }
 
-      // Check if expired
+      // Check if expired — same generic body as a miss to avoid oracle
       if (session.expiresAt && session.expiresAt < new Date()) {
         return c.json<ApiResponse>(
           {
             code: 404,
-            message: 'Retrieval code expired',
+            message: 'Retrieval code invalid or expired',
           },
           404,
         )
