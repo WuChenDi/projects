@@ -214,11 +214,6 @@ export default async function LocaleLayout({
               description:
                 'Zero-knowledge file sharing with client-side XChaCha20-Poly1305 encryption. No accounts, no tracking, just pure privacy.',
               inLanguage,
-              potentialAction: {
-                '@type': 'SearchAction',
-                target: 'https://dropply.pages.dev/?q={search_term_string}',
-                'query-input': 'required name=search_term_string',
-              },
             }),
           }}
         />
