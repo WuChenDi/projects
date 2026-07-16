@@ -4,6 +4,9 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-05-04",
   "compatibility_flags": ["nodejs_compat"],
+  // Secrets (JWT_SECRET, SHARE_PASSWORD — optional share-password gate, RESEND_API_KEY,
+  // LIBSQL_AUTH_TOKEN) are NEVER set in `vars`. Locally they come from `.dev.vars`
+  // (see `.dev.vars.example`); in production set them via `wrangler secret put <NAME>`.
   "vars": {
     // The Service runtime preset to use for deployment.
     "DEPLOY_RUNTIME": "cf",
@@ -12,19 +15,12 @@
     // LibSQL Configuration
     // The URL for connecting to the LibSQL database. Default is a local SQLite file.
     "LIBSQL_URL": "your_libsql_url",
-    // The authentication token for accessing the LibSQL
-    "LIBSQL_AUTH_TOKEN": "your_libsql_auth_token",
 
     // Max file size in MB (default: 100)
     "MAX_FILE_SIZE_MB": "100",
 
-    "REQUIRE_TOTP": "false",
-    "JWT_SECRET": "your_jwt_secret",
-    "TOTP_SECRETS": "your_totp_secrets",
-
     // Email Configuration
     "ENABLE_EMAIL_SHARE": "false",
-    "RESEND_API_KEY": "your_resend_api_key",
     "RESEND_FROM_EMAIL": "noreply@resend.dev",
     "RESEND_WEB_URL": "your_resend_web_url"
   },
