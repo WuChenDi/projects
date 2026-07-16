@@ -20,7 +20,10 @@ import type {
 } from '@/types'
 import { encryptFile, encryptTextContent } from './crypto'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:3014'
+// Empty default = same-origin relative `/api` — in dev, nsl serves dropply-api
+// under `dropply.localhost:3355/api`. Production sets NEXT_PUBLIC_API_URL to the
+// dropply-api Worker URL (different origin from the static frontend).
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 export class PocketChestAPI {
   constructor(private baseUrl: string = API_BASE_URL) {}
