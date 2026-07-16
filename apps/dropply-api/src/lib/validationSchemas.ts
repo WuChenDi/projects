@@ -90,9 +90,10 @@ export const downloadQuerySchema = z.object({
 export const retrievalCodeParamSchema = z.object({
   retrievalCode: z
     .string()
-    .length(6, 'Retrieval code must be 6 characters')
+    .min(6, 'Retrieval code must be 6-8 characters')
+    .max(8, 'Retrieval code must be 6-8 characters')
     .regex(
-      /^[A-Z0-9]{6}$/,
+      /^[A-Z0-9]{6,8}$/,
       'Retrieval code must contain only uppercase letters and numbers',
     ),
 })
@@ -100,8 +101,9 @@ export const retrievalCodeParamSchema = z.object({
 export const emailShareSchema = z.object({
   retrievalCode: z
     .string()
-    .length(6, 'Retrieval code must be 6 characters')
-    .regex(/^[A-Z0-9]{6}$/, 'Invalid retrieval code format'),
+    .min(6, 'Retrieval code must be 6-8 characters')
+    .max(8, 'Retrieval code must be 6-8 characters')
+    .regex(/^[A-Z0-9]{6,8}$/, 'Invalid retrieval code format'),
   recipientEmail: z
     .string()
     .email('Invalid email address')

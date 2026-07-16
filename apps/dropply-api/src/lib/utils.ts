@@ -5,12 +5,23 @@ export function generateUUID(): string {
   return randomUUID()
 }
 
-// Generate 6-digit alphanumeric retrieval code using CSPRNG
+// Generate 8-char alphanumeric retrieval code using CSPRNG.
+// Rejection sampling (accept only bytes < 252, the largest multiple of 36
+// below 256) removes modulo bias.
 export function generateRetrievalCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-  const bytes = new Uint8Array(6)
-  getRandomValues(bytes)
-  return Array.from(bytes, (b) => chars[b % chars.length]).join('')
+  const length = 8
+  let code = ''
+  while (code.length < length) {
+    const bytes = new Uint8Array(length - code.length)
+    getRandomValues(bytes)
+    for (const b of bytes) {
+      if (b < 252 && code.length < length) {
+        code += chars[b % 36]
+      }
+    }
+  }
+  return code
 }
 
 // Validate UUID format
@@ -22,7 +33,7 @@ export function isValidUUID(uuid: string): boolean {
 
 // Validate retrieval code format
 export function isValidRetrievalCode(code: string): boolean {
-  const codeRegex = /^[A-Z0-9]{6}$/
+  const codeRegex = /^[A-Z0-9]{6,8}$/
   return codeRegex.test(code)
 }
 
