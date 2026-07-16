@@ -78,7 +78,7 @@ export function LinkPicker({
               {t('block.noLinks')}
             </p>
           ) : (
-            <div className="p-1">
+            <div className="space-y-1 p-1">
               {filtered.map((link) => {
                 const active = selected.includes(link.id)
                 return (

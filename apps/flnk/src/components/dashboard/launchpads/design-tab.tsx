@@ -1,7 +1,12 @@
 'use client'
 
 import { Button } from '@cdlab/ui/components/button'
-import { Card } from '@cdlab/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@cdlab/ui/components/card'
 import { Input } from '@cdlab/ui/components/input'
 import {
   InputGroup,
@@ -766,12 +771,14 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <Card className="p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <Icon className="size-4 text-muted-foreground" />
-        <h3 className="text-sm font-semibold">{title}</h3>
-      </div>
-      <div className="space-y-4">{children}</div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+          <Icon className="size-4 text-muted-foreground" />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">{children}</CardContent>
     </Card>
   )
 }
