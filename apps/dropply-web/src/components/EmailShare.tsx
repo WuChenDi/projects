@@ -103,9 +103,7 @@ export function EmailShare({
             <Mail className="size-5 text-primary" />
             <DialogTitle>{t('title')}</DialogTitle>
           </div>
-          <DialogDescription className="sr-only">
-            {t('title')}
-          </DialogDescription>
+          <DialogDescription>{t('securityNote')}</DialogDescription>
         </DialogHeader>
 
         {sent ? (

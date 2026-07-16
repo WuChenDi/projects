@@ -1,5 +1,13 @@
 import { PocketChestAPI } from '@/lib'
 
+/** Thrown when the blob exceeds the server's max file size. */
+export class ShareTooLargeError extends Error {
+  constructor(public maxFileSize: number) {
+    super('File exceeds the maximum share size')
+    this.name = 'ShareTooLargeError'
+  }
+}
+
 /**
  * Model A share: upload an already-encrypted blob as-is (no re-encryption, no
  * key in the URL) and return a retrieval code + link. The recipient fetches the
@@ -10,9 +18,14 @@ import { PocketChestAPI } from '@/lib'
  */
 export async function shareEncryptedBlob(
   blob: Blob,
+  password?: string,
 ): Promise<{ code: string; url: string }> {
   const api = new PocketChestAPI()
-  const { sessionId, uploadToken } = await api.createChest()
+  const { maxFileSize } = await api.getConfig()
+  if (blob.size > maxFileSize) {
+    throw new ShareTooLargeError(maxFileSize)
+  }
+  const { sessionId, uploadToken } = await api.createChest(password)
   const file = new File([blob], 'share.enc', {
     type: 'application/octet-stream',
   })
