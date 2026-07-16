@@ -44,8 +44,8 @@ export class PocketChestAPI {
     }
   }
 
-  async createChest(totpToken?: string) {
-    const body = totpToken ? { totpToken } : {}
+  async createChest(password?: string) {
+    const body = password ? { password } : {}
 
     const response = await fetch(`${this.baseUrl}/api/chest`, {
       method: 'POST',

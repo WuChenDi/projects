@@ -199,10 +199,10 @@
   },
   "retrieve": {
     "open": "取回",
-    "openDesc": "输入 6 位取回码，把分享的内容取回到工具里。",
+    "openDesc": "输入 6-8 位取回码，把分享的内容取回到工具里。",
     "fetched": "已取回 —— 在下方解密",
     "retrievalCode": "提取码",
-    "retrievalCodePlaceholder": "输入您收到的 6 位提取码",
+    "retrievalCodePlaceholder": "输入您收到的 6-8 位提取码",
     "encryptionKey": "加密密钥",
     "encryptionKeyPlaceholder": "从链接自动填充或手动输入",
     "keyDetected": "已从链接检测到密钥",
@@ -233,7 +233,8 @@
     "previewRetry": "重试",
     "keyRequired": "需要加密密钥才能访问文件",
     "enterKeyToUnlock": "输入加密密钥以解锁",
-    "unlock": "解锁"
+    "unlock": "解锁",
+    "fileTooLarge": "{name} 超过大小限制，已跳过"
   },
   "fileUpload": {
     "dropHere": "拖放文件到这里",
@@ -297,7 +298,8 @@
     "messageHint": "此留言将包含在邮件中",
     "sending": "发送中...",
     "sendEmail": "发送邮件",
-    "cancel": "取消"
+    "cancel": "取消",
+    "securityNote": "邮件仅包含提取码，接收方仍需解密密码或自己的私钥才能读取内容。"
   },
   "localCrypto": {
     "input": {
@@ -351,7 +353,14 @@
       "code": "取回码",
       "copyLink": "复制链接",
       "copied": "已复制!",
-      "failed": "分享失败"
+      "failed": "分享失败",
+      "passwordTitle": "需要分享密码",
+      "passwordDesc": "该服务器需要密码才能创建分享。",
+      "passwordLabel": "分享密码",
+      "passwordSubmit": "继续",
+      "passwordInvalid": "分享密码错误，请重试。",
+      "tooLarge": "文件超过 {max} 大小限制",
+      "emailAction": "通过邮件分享"
     },
     "toast": {
       "resultRemoved": "结果已移除",
