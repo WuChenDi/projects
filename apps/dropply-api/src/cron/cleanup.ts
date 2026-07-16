@@ -1,5 +1,5 @@
 import { and, eq, lt } from 'drizzle-orm'
-import { files, sessions } from '@/database/schema'
+import { files, multipartUploads, sessions } from '@/database/schema'
 import { useDrizzle, withNotDeleted } from '@/lib'
 import type { CloudflareEnv } from '@/types'
 
@@ -113,7 +113,46 @@ export async function cleanupExpiredContent(
         const fileCount = sessionFiles.length
         logger.info(`Session ${sessionId} (${reason}) has ${fileCount} files`)
 
-        // 4. Delete all objects in R2
+        // 4. Abort orphaned multipart uploads for this session
+        const pendingMultiparts = await db
+          ?.select()
+          .from(multipartUploads)
+          .where(
+            withNotDeleted(
+              multipartUploads,
+              eq(multipartUploads.sessionId, sessionId),
+            ),
+          )
+
+        if (pendingMultiparts && pendingMultiparts.length > 0) {
+          for (const row of pendingMultiparts) {
+            try {
+              await env.R2_STORAGE.resumeMultipartUpload(
+                `${sessionId}/${row.fileId}`,
+                row.r2UploadId,
+              ).abort()
+            } catch (error) {
+              errors.push(
+                `Failed to abort multipart upload ${row.fileId} for session ${sessionId}: ${error}`,
+              )
+            }
+          }
+
+          await db
+            ?.update(multipartUploads)
+            .set({
+              isDeleted: 1,
+              updatedAt: new Date(),
+            })
+            .where(
+              withNotDeleted(
+                multipartUploads,
+                eq(multipartUploads.sessionId, sessionId),
+              ),
+            )
+        }
+
+        // 5. Delete all objects in R2
         try {
           const listResult = await env.R2_STORAGE.list({
             prefix: `${sessionId}/`,
@@ -135,7 +174,7 @@ export async function cleanupExpiredContent(
           )
         }
 
-        // 5. Soft delete database records (delete files first, then session)
+        // 6. Soft delete database records (delete files first, then session)
         const filesUpdateResult = await db
           ?.update(files)
           .set({
