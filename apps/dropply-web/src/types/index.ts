@@ -84,26 +84,6 @@ export interface CompleteUploadResponse {
   expiryDate: string | null
 }
 
-export interface FileInfo {
-  fileId: string
-  filename: string
-  size: number
-  mimeType: string
-  isText: boolean
-  fileExtension: string
-}
-
-export interface RetrieveResponse {
-  files: FileInfo[]
-  chestToken: string
-  expiryDate: string
-}
-
-export interface TextItem {
-  content: string
-  filename?: string
-}
-
 export type ValidityDays = number
 
 // Multipart upload types
@@ -156,9 +136,4 @@ export interface EmailShareRequest {
   recipientName?: string
   senderName?: string
   message?: string
-}
-
-export interface EmailShareResponse {
-  success: boolean
-  message: string
 }

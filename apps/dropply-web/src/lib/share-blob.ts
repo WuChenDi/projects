@@ -29,12 +29,9 @@ export async function shareEncryptedBlob(
   const file = new File([blob], 'share.enc', {
     type: 'application/octet-stream',
   })
-  const { uploadedFiles } = await api.uploadContent(
-    sessionId,
-    uploadToken,
-    [file],
-    [],
-  )
+  const { uploadedFiles } = await api.uploadContent(sessionId, uploadToken, [
+    file,
+  ])
   const fileIds = uploadedFiles.map((f) => f.fileId)
   const { retrievalCode } = await api.completeUpload(
     sessionId,

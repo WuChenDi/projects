@@ -1,4 +1,3 @@
-import { downloadFile as downloadFileUtil } from '@cdlab/utils'
 import type {
   ApiResponse,
   CompleteMultipartUploadResponse,
@@ -11,14 +10,12 @@ import type {
   FileUploadProgress,
   MultipartUploadProgress,
   RetrieveChestResponse,
-  TextItem,
   UploadFileResponse,
   UploadPart,
   UploadPartResponse,
   UploadResponse,
   ValidityDays,
 } from '@/types'
-import { encryptFile, encryptTextContent } from './crypto'
 
 // Empty default = same-origin relative `/api` — in dev, nsl serves dropply-api
 // under `dropply.localhost:3355/api`. Production sets NEXT_PUBLIC_API_URL to the
@@ -70,14 +67,12 @@ export class PocketChestAPI {
     sessionId: string,
     uploadToken: string,
     files: File[],
-    textItems: TextItem[],
     onProgress?: (progress: {
       loaded: number
       total: number
       percentage: number
     }) => void,
     onFileProgress?: (progress: FileUploadProgress[]) => void,
-    encryptionPassword?: string,
   ): Promise<{
     uploadedFiles: Array<{ fileId: string; filename: string; isText: boolean }>
   }> {
@@ -99,103 +94,15 @@ export class PocketChestAPI {
       })
     })
 
-    // Initialize progress for text items as waiting
-    textItems.forEach((textItem, index) => {
-      const textSize = new TextEncoder().encode(textItem.content).length
-      fileProgressMap.set(textItem.filename || `text-${index + 1}`, {
-        fileId: '',
-        filename: textItem.filename || `text-${index + 1}`,
-        uploadedBytes: 0,
-        totalBytes: textSize,
-        percentage: 0,
-        isText: true,
-        status: 'waiting',
-      })
-    })
-
     const updateFileProgress = () => {
       if (onFileProgress) {
         onFileProgress(Array.from(fileProgressMap.values()))
       }
     }
 
-    // --- Encrypt files if encryption is enabled ---
-    let processedFiles = files
-    let processedTextItems = textItems
-
-    if (encryptionPassword) {
-      // Encrypt each file
-      const encryptedFiles: File[] = []
-      for (const file of files) {
-        const fp = fileProgressMap.get(file.name)
-        if (fp) {
-          fp.status = 'encrypting'
-        }
-        updateFileProgress()
-
-        const encryptedBlob = await encryptFile(
-          file,
-          encryptionPassword,
-          (pct) => {
-            const fp = fileProgressMap.get(file.name)
-            if (fp) {
-              fp.percentage = Math.round(pct / 2) // encrypting is first 50%
-              fp.uploadedBytes = Math.round((file.size * pct) / 100)
-            }
-            updateFileProgress()
-          },
-        )
-
-        const encryptedFile = new File([encryptedBlob], file.name, {
-          type: 'application/octet-stream',
-        })
-        encryptedFiles.push(encryptedFile)
-
-        // Update totalBytes to encrypted size for accurate upload progress
-        if (fp) {
-          fp.totalBytes = encryptedFile.size
-          fp.status = 'waiting'
-          fp.percentage = 0
-          fp.uploadedBytes = 0
-        }
-        updateFileProgress()
-      }
-      processedFiles = encryptedFiles
-
-      // Encrypt text items
-      const encryptedTextItems: TextItem[] = []
-      for (const textItem of textItems) {
-        const key =
-          textItem.filename || `text-${textItems.indexOf(textItem) + 1}`
-        const fp = fileProgressMap.get(key)
-        if (fp) {
-          fp.status = 'encrypting'
-        }
-        updateFileProgress()
-
-        const encryptedContent = await encryptTextContent(
-          textItem.content,
-          encryptionPassword,
-        )
-        encryptedTextItems.push({
-          content: encryptedContent,
-          filename: textItem.filename,
-        })
-
-        if (fp) {
-          fp.totalBytes = new TextEncoder().encode(encryptedContent).length
-          fp.status = 'waiting'
-          fp.percentage = 0
-          fp.uploadedBytes = 0
-        }
-        updateFileProgress()
-      }
-      processedTextItems = encryptedTextItems
-    }
-
-    // Separate small and large files based on (possibly encrypted) sizes
-    const smallFiles = processedFiles.filter((file) => file.size <= CHUNK_SIZE)
-    const largeFiles = processedFiles.filter((file) => file.size > CHUNK_SIZE)
+    // Separate small and large files
+    const smallFiles = files.filter((file) => file.size <= CHUNK_SIZE)
+    const largeFiles = files.filter((file) => file.size > CHUNK_SIZE)
 
     const uploadedFiles: Array<{
       fileId: string
@@ -203,51 +110,9 @@ export class PocketChestAPI {
       isText: boolean
     }> = []
 
-    // Calculate total size for overall progress (using processed sizes)
-    const totalSize =
-      processedFiles.reduce((sum, file) => sum + file.size, 0) +
-      processedTextItems.reduce(
-        (sum, textItem) =>
-          sum + new TextEncoder().encode(textItem.content).length,
-        0,
-      )
+    // Calculate total size for overall progress
+    const totalSize = files.reduce((sum, file) => sum + file.size, 0)
     let completedSize = 0
-
-    // Upload text items first if any
-    if (processedTextItems.length > 0) {
-      processedTextItems.forEach((textItem, index) => {
-        const key = textItem.filename || `text-${index + 1}`
-        const fileProgress = fileProgressMap.get(key)
-        if (fileProgress) {
-          fileProgress.status = 'starting'
-        }
-      })
-      updateFileProgress()
-
-      const result = await this.uploadContentRegular(
-        sessionId,
-        uploadToken,
-        [],
-        processedTextItems,
-      )
-
-      result.uploadedFiles.forEach((uploadedFile) => {
-        if (uploadedFile.isText) {
-          const key = uploadedFile.filename
-          const fileProgress = fileProgressMap.get(key)
-          if (fileProgress) {
-            fileProgress.fileId = uploadedFile.fileId
-            fileProgress.status = 'completed'
-            fileProgress.uploadedBytes = fileProgress.totalBytes
-            fileProgress.percentage = 100
-            completedSize += fileProgress.totalBytes
-          }
-        }
-      })
-      updateFileProgress()
-
-      uploadedFiles.push(...result.uploadedFiles)
-    }
 
     // Upload small files with rolling concurrency (max 3 at a time)
     if (smallFiles.length > 0) {
@@ -276,7 +141,6 @@ export class PocketChestAPI {
             sessionId,
             uploadToken,
             [file],
-            [],
             (progress) => {
               // Mark as uploading when progress starts
               const fileProgress = fileProgressMap.get(file.name)
@@ -438,7 +302,6 @@ export class PocketChestAPI {
     sessionId: string,
     uploadToken: string,
     files: File[],
-    textItems: TextItem[],
     onProgress?: (progress: {
       loaded: number
       total: number
@@ -449,16 +312,6 @@ export class PocketChestAPI {
 
     files.forEach((file) => {
       formData.append('files', file)
-    })
-
-    textItems.forEach((textItem) => {
-      formData.append(
-        'textItems',
-        JSON.stringify({
-          content: textItem.content,
-          filename: textItem.filename || `text-${Date.now()}.txt`,
-        }),
-      )
     })
 
     // Use XMLHttpRequest for progress tracking if onProgress is provided
@@ -593,46 +446,6 @@ export class PocketChestAPI {
     }
 
     return response.blob()
-  }
-
-  async downloadTextContent(
-    fileId: string,
-    chestToken: string,
-  ): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/api/download/${fileId}`, {
-      headers: {
-        Authorization: `Bearer ${chestToken}`,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to download text')
-    }
-
-    return response.text()
-  }
-
-  triggerDownload(blob: Blob, filename: string) {
-    downloadFileUtil({ data: blob, filename })
-  }
-
-  async downloadFileDirectly(
-    fileId: string,
-    chestToken: string,
-    filename: string,
-  ): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/api/download/${fileId}`, {
-      headers: {
-        Authorization: `Bearer ${chestToken}`,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to download file')
-    }
-
-    const blob = await response.blob()
-    this.triggerDownload(blob, filename)
   }
 
   // Multipart upload methods
