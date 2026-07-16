@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@cdlab/ui/components/button'
-import { Card, CardContent, CardHeader } from '@cdlab/ui/components/card'
+import { Card, CardContent } from '@cdlab/ui/components/card'
 import { Field, FieldDescription } from '@cdlab/ui/components/field'
 import {
   InputGroup,
@@ -13,7 +13,6 @@ import { Loader2, RefreshCw, ShieldCheck, Upload } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { ExpirySelector } from '@/components/ExpirySelector'
 import { FileUpload } from '@/components/FileUpload'
-import { TabSwitcher } from '@/components/TabSwitcher'
 import { TextInput } from '@/components/TextInput'
 import { generateEncryptionKey } from '@/lib'
 import type { TextItem, ValidityDays } from '@/types'
@@ -52,15 +51,10 @@ export function ShareForm({
   const t = useTranslations('share')
 
   return (
-    <Card className="relative shadow-none overflow-hidden">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <TabSwitcher />
-        </div>
-      </CardHeader>
+    <Card className="relative border-none bg-transparent shadow-none overflow-hidden pt-0">
       {locked && (
         <div
-          className="absolute inset-0 top-[60px] z-10 cursor-pointer bg-background/60 backdrop-blur-[2px] flex items-center justify-center"
+          className="absolute inset-0 z-10 cursor-pointer bg-background/60 backdrop-blur-[2px] flex items-center justify-center"
           onClick={onUnlock}
         >
           <div className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-primary-foreground shadow-lg text-sm font-medium">
@@ -69,7 +63,7 @@ export function ShareForm({
           </div>
         </div>
       )}
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-5 px-0">
         <Field>
           <Label>{t('text')}</Label>
           <TextInput

@@ -8,13 +8,30 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useShallow } from 'zustand/react/shallow'
 import { genid } from '@/lib/genid'
+import {
+  deriveKeyPair,
+  isHexString,
+  isMnemonicPhrase,
+  validateBase58PublicKey,
+} from '@/lib/keys'
 import { useProcessStore } from '@/store/useProcessStore'
 import type { FileInfo, ProcessResult } from '@/types/crypto'
 import { InputModeEnum, ModeEnum } from '@/types/crypto'
+import type { EncryptionMode } from '@/types/keys'
+
+interface KeyPayload {
+  encryptionMode: EncryptionMode
+  password?: string
+  publicKey?: string
+  privateKey?: string
+}
 
 export function useCryptoProcessor() {
   const t = useTranslations('toast')
   const [password, setPassword] = useState('')
+  const [encryptionMode, setEncryptionMode] =
+    useState<EncryptionMode>('password')
+  const [keyInput, setKeyInput] = useState('')
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [fileInfos, setFileInfos] = useState<FileInfo[]>([])
   const [textInput, setTextInput] = useState('')
@@ -49,12 +66,18 @@ export function useCryptoProcessor() {
     setSelectedFiles((prev) => [...prev, ...newFiles])
 
     let hasEncrypted = false
+    let detectedMode: EncryptionMode | null = null
     const newInfos: FileInfo[] = []
 
     for (const file of newFiles) {
       const { encryptionType } = await detect(file)
       const isEncrypted = encryptionType !== 'unencrypted'
-      if (isEncrypted) hasEncrypted = true
+      if (isEncrypted) {
+        hasEncrypted = true
+        if (!detectedMode) {
+          detectedMode = encryptionType === 'pwd' ? 'password' : 'publickey'
+        }
+      }
       newInfos.push({
         name: file.name,
         size: file.size,
@@ -63,8 +86,13 @@ export function useCryptoProcessor() {
     }
 
     setFileInfos((prev) => [...prev, ...newInfos])
+    // The mode is derived from the input: ciphertext → decrypt (with the mode
+    // read from its magic bytes), anything else → encrypt. No manual tabs.
     if (hasEncrypted) {
       setActiveTab(ModeEnum.DECRYPT)
+      if (detectedMode) setEncryptionMode(detectedMode)
+    } else {
+      setActiveTab(ModeEnum.ENCRYPT)
     }
   }, [])
 
@@ -75,8 +103,11 @@ export function useCryptoProcessor() {
       const { encryptionType } = await detect(trimmed)
       if (encryptionType !== 'unencrypted') {
         setActiveTab(ModeEnum.DECRYPT)
+        setEncryptionMode(encryptionType === 'pwd' ? 'password' : 'publickey')
+        return
       }
     }
+    setActiveTab(ModeEnum.ENCRYPT)
   }, [])
 
   const removeFile = useCallback((index: number) => {
@@ -88,6 +119,7 @@ export function useCryptoProcessor() {
     setSelectedFiles([])
     setFileInfos([])
     setTextInput('')
+    setActiveTab(ModeEnum.ENCRYPT)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -124,8 +156,40 @@ export function useCryptoProcessor() {
     [t],
   )
 
+  const resolveKeyPayload = useCallback(
+    (mode: ModeEnum): KeyPayload => {
+      if (encryptionMode === 'password') {
+        return { encryptionMode, password }
+      }
+      const trimmed = keyInput.trim()
+      if (mode === ModeEnum.ENCRYPT) {
+        if (!validateBase58PublicKey(trimmed).isValid) {
+          throw new Error(t('invalidPublicKey'))
+        }
+        return { encryptionMode, publicKey: trimmed }
+      }
+      // Decrypt: accept a 64-char hex private key or a mnemonic to derive it.
+      if (isHexString(trimmed) && trimmed.length === 64) {
+        return { encryptionMode, privateKey: trimmed }
+      }
+      if (isMnemonicPhrase(keyInput)) {
+        return {
+          encryptionMode,
+          privateKey: deriveKeyPair(keyInput).privateKey,
+        }
+      }
+      throw new Error(t('invalidPrivateKey'))
+    },
+    [encryptionMode, password, keyInput, t],
+  )
+
   const processOneFile = useCallback(
-    (file: File, taskId: string, mode: ModeEnum): Promise<void> => {
+    (
+      file: File,
+      taskId: string,
+      mode: ModeEnum,
+      keyPayload: KeyPayload,
+    ): Promise<void> => {
       return new Promise(async (resolve) => {
         try {
           const worker = workerRef.current
@@ -155,8 +219,8 @@ export function useCryptoProcessor() {
               mode,
               file,
               filename: file.name,
-              password,
               isTextMode: false,
+              ...keyPayload,
             })
           })
 
@@ -189,7 +253,7 @@ export function useCryptoProcessor() {
         resolve()
       })
     },
-    [password, updateResult],
+    [updateResult],
   )
 
   const processInput = useCallback(async () => {
@@ -203,8 +267,21 @@ export function useCryptoProcessor() {
       toast.error(t('enterMessage'))
       return
     }
-    if (!password) {
+    if (encryptionMode === 'password' && !password) {
       toast.error(t('enterPassword'))
+      return
+    }
+    if (encryptionMode === 'publickey' && !keyInput.trim()) {
+      toast.error(
+        mode === ModeEnum.ENCRYPT ? t('enterPublicKey') : t('enterPrivateKey'),
+      )
+      return
+    }
+    let keyPayload: KeyPayload
+    try {
+      keyPayload = resolveKeyPayload(mode)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('invalidKey'))
       return
     }
 
@@ -239,7 +316,7 @@ export function useCryptoProcessor() {
 
       // Process files sequentially through the single worker
       for (let i = 0; i < filesToProcess.length; i++) {
-        await processOneFile(filesToProcess[i], taskIds[i], mode)
+        await processOneFile(filesToProcess[i], taskIds[i], mode, keyPayload)
       }
 
       toast.success(
@@ -287,8 +364,8 @@ export function useCryptoProcessor() {
           worker.postMessage({
             mode,
             text: textInput,
-            password,
             isTextMode: true,
+            ...keyPayload,
           })
         })
 
@@ -329,6 +406,9 @@ export function useCryptoProcessor() {
     fileInfos,
     textInput,
     password,
+    encryptionMode,
+    keyInput,
+    resolveKeyPayload,
     addResult,
     updateResult,
     clearInput,
@@ -336,14 +416,19 @@ export function useCryptoProcessor() {
     t,
   ])
 
+  const needsKey = encryptionMode === 'password' ? !password : !keyInput.trim()
   const isProcessDisabled =
     (inputMode === InputModeEnum.FILE && selectedFiles.length === 0) ||
     (inputMode === InputModeEnum.MESSAGE && !textInput.trim()) ||
-    !password
+    needsKey
 
   return {
     password,
     setPassword,
+    encryptionMode,
+    setEncryptionMode,
+    keyInput,
+    setKeyInput,
     selectedFiles,
     fileInfos,
     textInput,

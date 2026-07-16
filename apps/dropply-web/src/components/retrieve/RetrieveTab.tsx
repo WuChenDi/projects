@@ -70,7 +70,7 @@ export function RetrieveTab({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[420px_1fr] gap-4 h-full">
+    <div className="w-full space-y-5">
       <RetrieveForm
         retrievalCode={retrievalCode}
         encryptionKey={encryptionKey}

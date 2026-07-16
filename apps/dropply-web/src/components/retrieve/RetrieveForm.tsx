@@ -1,13 +1,12 @@
 'use client'
 
 import { Button } from '@cdlab/ui/components/button'
-import { Card, CardContent, CardHeader } from '@cdlab/ui/components/card'
+import { Card, CardContent } from '@cdlab/ui/components/card'
 import { Field, FieldDescription } from '@cdlab/ui/components/field'
 import { Input } from '@cdlab/ui/components/input'
 import { Label } from '@cdlab/ui/components/label'
 import { CheckCircle, Download, Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { TabSwitcher } from '@/components/TabSwitcher'
 
 interface RetrieveFormProps {
   retrievalCode: string
@@ -36,13 +35,8 @@ export function RetrieveForm({
     !alreadyRetrieved
 
   return (
-    <Card className="shadow-none">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <TabSwitcher />
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <Card className="border-none bg-transparent shadow-none pt-0">
+      <CardContent className="space-y-5 px-0">
         <Field>
           <Label htmlFor="retrieval-code">{t('retrievalCode')}</Label>
           <Input

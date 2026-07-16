@@ -1,40 +1,104 @@
 'use client'
 
+import { cn } from '@cdlab/ui/lib/utils'
+import { FileText, KeyRound, Lock, Upload } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { toast } from 'sonner'
 import type { useCryptoProcessor } from '@/hooks/useCryptoProcessor'
-import type { ModeEnum } from '@/types/crypto'
-import { LocalFeaturesSection } from './LocalFeaturesSection'
+import { useKeysStore } from '@/store/useKeysStore'
+import { InputModeEnum, ModeEnum } from '@/types/crypto'
 import { LocalInputPanel } from './LocalInputPanel'
-import { LocalResultsPanel } from './LocalResultsPanel'
 
 interface LocalCryptoPanelProps {
-  /** Shared engine hook lifted to the page so state survives Encrypt↔Decrypt switches. */
   crypto: ReturnType<typeof useCryptoProcessor>
-  /** Which top-level tab this panel renders — fixes the encrypt/decrypt flow. */
-  mode: ModeEnum
 }
 
-/**
- * Local (client-side) encrypt/decrypt panel. The encrypt vs decrypt selection is
- * driven by the top-level Dropply tab (`mode`), so the ported inner encrypt/decrypt
- * switcher is intentionally not rendered here.
- */
-export function LocalCryptoPanel({ crypto, mode }: LocalCryptoPanelProps) {
-  const t = useTranslations('localCrypto')
+const segItem =
+  'flex items-center gap-1.5 rounded-md px-3 py-1 text-sm transition-colors'
 
-  const handleClearAll = () => {
-    crypto.processResults.forEach((result) => crypto.removeResult(result.id))
-    toast.success(t('toast.allCleared'))
-  }
+/**
+ * The single local encrypt/decrypt tool. Encrypt vs decrypt is derived from the
+ * input; the key manager and retrieve live in the app header.
+ */
+export function LocalCryptoPanel({ crypto }: LocalCryptoPanelProps) {
+  const t = useTranslations('localCrypto')
+  const tk = useTranslations('keys')
+  const mode = crypto.activeTab
+  const isEncrypt = mode === ModeEnum.ENCRYPT
+  const publicKeys = useKeysStore((s) => s.publicKeys)
+  const keyPairs = useKeysStore((s) => s.keyPairs)
+
+  // Encrypt picks a recipient public key; decrypt picks one of your own keys.
+  const savedKeys = isEncrypt ? publicKeys : keyPairs
 
   return (
-    <div className="w-full h-full grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-4">
-      <div className="space-y-4">
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-3">
+        <div className="inline-flex rounded-lg border border-border p-0.5">
+          <button
+            type="button"
+            onClick={() => crypto.setInputMode(InputModeEnum.FILE)}
+            className={cn(
+              segItem,
+              crypto.inputMode === InputModeEnum.FILE
+                ? 'bg-background shadow-sm'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            <Upload className="size-4" />
+            {t('input.file')}
+          </button>
+          <button
+            type="button"
+            onClick={() => crypto.setInputMode(InputModeEnum.MESSAGE)}
+            className={cn(
+              segItem,
+              crypto.inputMode === InputModeEnum.MESSAGE
+                ? 'bg-background shadow-sm'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            <FileText className="size-4" />
+            {t('input.message')}
+          </button>
+        </div>
+
+        {/* Encrypt: choose the mode. Decrypt: it's auto-detected — no toggle. */}
+        {isEncrypt && (
+          <div className="inline-flex rounded-lg border border-border p-0.5">
+            <button
+              type="button"
+              onClick={() => crypto.setEncryptionMode('password')}
+              className={cn(
+                segItem,
+                crypto.encryptionMode === 'password'
+                  ? 'bg-background shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              <Lock className="size-4" />
+              {tk('modePassword')}
+            </button>
+            <button
+              type="button"
+              onClick={() => crypto.setEncryptionMode('publickey')}
+              className={cn(
+                segItem,
+                crypto.encryptionMode === 'publickey'
+                  ? 'bg-background shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              <KeyRound className="size-4" />
+              {tk('modePublicKey')}
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-5 p-4 sm:p-5">
         <LocalInputPanel
           mode={mode}
           inputMode={crypto.inputMode}
-          onInputModeChange={crypto.setInputMode}
           password={crypto.password}
           onPasswordChange={crypto.setPassword}
           fileInfos={crypto.fileInfos}
@@ -45,16 +109,12 @@ export function LocalCryptoPanel({ crypto, mode }: LocalCryptoPanelProps) {
           onTextInputChange={crypto.setTextInput}
           onProcess={crypto.processInput}
           isProcessDisabled={crypto.isProcessDisabled}
+          encryptionMode={crypto.encryptionMode}
+          keyInput={crypto.keyInput}
+          onKeyInputChange={crypto.setKeyInput}
+          savedKeys={savedKeys}
         />
-        <LocalFeaturesSection />
       </div>
-
-      <LocalResultsPanel
-        results={crypto.processResults}
-        onDownload={crypto.handleDownloadResult}
-        onRemove={crypto.removeResult}
-        onClearAll={handleClearAll}
-      />
-    </div>
+    </>
   )
 }

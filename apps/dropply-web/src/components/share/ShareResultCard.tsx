@@ -33,35 +33,47 @@ export function ShareResultCard({
     }
   }
 
+  // Signature: split the share URL at the `#`. The left half (?code=…) is what
+  // the server sees; the `#key=…` fragment stays in the browser and is never
+  // transmitted — render it detached and glowing.
+  const hashIdx = result.shareUrl.indexOf('#')
+  const urlBase =
+    hashIdx >= 0 ? result.shareUrl.slice(0, hashIdx) : result.shareUrl
+  const urlFragment = hashIdx >= 0 ? result.shareUrl.slice(hashIdx) : ''
+
   return (
-    <Card
-      className={cn(
-        'relative p-4 border',
-        'bg-linear-to-br from-blue-50/30 to-indigo-50/30 border-blue-200/30',
-        'dark:from-blue-950/10 dark:to-indigo-950/10 dark:border-blue-800/20',
-      )}
-    >
+    <Card className="relative p-4 border border-border bg-card">
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Link2 className="size-4 text-primary shrink-0" />
-            <code className="font-mono font-bold text-primary text-lg">
+            <code className="font-mono font-semibold text-primary text-lg tracking-tight">
               {result.retrievalCode}
             </code>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 w-6 p-0 text-muted-foreground hover:text-red-500"
+            className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
             onClick={() => onRemove(result.id)}
           >
             <X className="size-4" />
           </Button>
         </div>
 
-        <code className="block text-xs font-mono text-muted-foreground bg-muted/50 p-2 rounded-lg break-all leading-relaxed">
-          {result.shareUrl}
+        <code className="block text-xs font-mono bg-muted/50 p-2 rounded-lg break-all leading-relaxed">
+          <span className="text-muted-foreground">{urlBase}</span>
+          {urlFragment && (
+            <span className="text-foreground">{urlFragment}</span>
+          )}
         </code>
+
+        {urlFragment && (
+          <p className="text-[11px] leading-snug text-muted-foreground">
+            <span className="font-mono text-foreground">#key</span>{' '}
+            {t('fragmentNote')}
+          </p>
+        )}
 
         <div className="flex items-center gap-2">
           <Button
@@ -70,8 +82,7 @@ export function ShareResultCard({
             variant="outline"
             className={cn(
               'flex-1 text-xs',
-              copied &&
-                'text-emerald-600 border-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/30',
+              copied && 'text-foreground border-border bg-muted',
             )}
           >
             {copied ? (

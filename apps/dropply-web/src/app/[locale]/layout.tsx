@@ -9,12 +9,8 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 
 import '@cdlab/ui/globals.css'
-import { IKHeader } from '@cdlab/ui/IK'
-import {
-  ClientProviders,
-  LanguageSelector,
-  ThemeToggle,
-} from '@/components/layout'
+import '../dropply.css'
+import { ClientProviders } from '@/components/layout'
 import { routing } from '@/i18n/routing'
 
 const geistSans = Geist({
@@ -48,7 +44,7 @@ export async function generateMetadata({
       title: 'Dropply - 安全文件分享平台',
       icons: 'https://wcd.pages.dev/logo.png',
       description:
-        '即时分享文件，军事级加密保护。无需账户，无追踪，纯粹的隐私保护。',
+        '客户端 XChaCha20-Poly1305 加密，密钥永不离开你的浏览器。无需账户，无追踪。',
       keywords: [
         '文件分享',
         '加密传输',
@@ -76,7 +72,7 @@ export async function generateMetadata({
       openGraph: {
         title: 'Dropply - 安全文件分享平台',
         description:
-          '即时分享文件，军事级加密保护。无需账户，无追踪，纯粹的隐私保护。',
+          '客户端 XChaCha20-Poly1305 加密，密钥永不离开你的浏览器。无需账户，无追踪。',
         url: 'https://dropply.pages.dev/',
         siteName: 'Dropply',
         images: [
@@ -94,7 +90,7 @@ export async function generateMetadata({
         card: 'summary_large_image',
         title: 'Dropply - 安全文件分享平台',
         description:
-          '即时分享文件，军事级加密保护。无需账户，无追踪，纯粹的隐私保护。',
+          '客户端 XChaCha20-Poly1305 加密，密钥永不离开你的浏览器。无需账户，无追踪。',
         images: [
           'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Dropply/index.png',
         ],
@@ -116,7 +112,7 @@ export async function generateMetadata({
     title: 'Dropply - Secure File Sharing Platform',
     icons: 'https://wcd.pages.dev/logo.png',
     description:
-      'Share files instantly with military-grade encryption. No accounts, no tracking, just pure privacy.',
+      'Client-side XChaCha20-Poly1305 encryption — your key never leaves your browser. No accounts, no tracking.',
     keywords: [
       'file sharing',
       'encrypted transfer',
@@ -146,7 +142,7 @@ export async function generateMetadata({
     openGraph: {
       title: 'Dropply - Secure File Sharing Platform',
       description:
-        'Share files instantly with military-grade encryption. No accounts, no tracking, just pure privacy.',
+        'Client-side XChaCha20-Poly1305 encryption — your key never leaves your browser. No accounts, no tracking.',
       url: 'https://dropply.pages.dev/',
       siteName: 'Dropply',
       images: [
@@ -164,7 +160,7 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title: 'Dropply - Secure File Sharing Platform',
       description:
-        'Share files instantly with military-grade encryption. No accounts, no tracking, just pure privacy.',
+        'Client-side XChaCha20-Poly1305 encryption — your key never leaves your browser. No accounts, no tracking.',
       images: [
         'https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/Dropply/index.png',
       ],
@@ -216,7 +212,7 @@ export default async function LocaleLayout({
               name: 'Dropply',
               url: 'https://dropply.pages.dev/',
               description:
-                'Secure file sharing platform with military-grade encryption. No accounts, no tracking, just pure privacy.',
+                'Zero-knowledge file sharing with client-side XChaCha20-Poly1305 encryption. No accounts, no tracking, just pure privacy.',
               inLanguage,
               potentialAction: {
                 '@type': 'SearchAction',
@@ -236,7 +232,7 @@ export default async function LocaleLayout({
               '@type': 'WebApplication',
               name: 'Dropply',
               description:
-                'Share files instantly with military-grade encryption. No accounts, no tracking, just pure privacy.',
+                'Client-side XChaCha20-Poly1305 encryption — your key never leaves your browser. No accounts, no tracking.',
               url: 'https://dropply.pages.dev/',
               applicationCategory: 'UtilitiesApplication',
               operatingSystem: 'Web',
@@ -272,7 +268,7 @@ export default async function LocaleLayout({
               },
               softwareVersion: '2.0.0',
               featureList: [
-                'Military-grade AES-256 encryption',
+                'XChaCha20-Poly1305 authenticated encryption',
                 'No account required',
                 'No tracking or logging',
                 'File and text sharing',
@@ -335,13 +331,6 @@ export default async function LocaleLayout({
       >
         <NextIntlClientProvider messages={messages}>
           <ClientProviders>
-            <IKHeader
-              brand="Dropply"
-              githubHref="https://github.com/WuChenDi/projects/tree/main/apps/dropply-web"
-            >
-              <LanguageSelector />
-              <ThemeToggle />
-            </IKHeader>
             {children}
             <Toaster richColors position="top-center" duration={3000} />
           </ClientProviders>

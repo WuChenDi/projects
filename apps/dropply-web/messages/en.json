@@ -1,4 +1,150 @@
 {
+  "landing": {
+    "hero": {
+      "badge": "Client-side · Zero-knowledge",
+      "titleLead": "Encrypt and share,",
+      "titleHighlight": "trusting no server.",
+      "subtitle": "Dropply encrypts your files and text right in the browser — with a password or a public key. Share the finished ciphertext with a code; the link never carries the key.",
+      "trust": "No accounts · No tracking · Open source"
+    },
+    "features": {
+      "title": "Privacy by design, not by promise",
+      "subtitle": "Strong cryptography runs entirely on your device — no server, no account, no trust required.",
+      "items": {
+        "local": {
+          "title": "Local encryption",
+          "desc": "Encrypt or decrypt any file or text in your browser. Nothing is uploaded."
+        },
+        "keys": {
+          "title": "Password or public key",
+          "desc": "Lock with a password, or encrypt to someone's public key so only they can open it."
+        },
+        "share": {
+          "title": "Zero-knowledge sharing",
+          "desc": "Upload the finished ciphertext and share a code. The link carries no key."
+        },
+        "private": {
+          "title": "No account, no tracking",
+          "desc": "No sign-up, no logins, no analytics — just the tool."
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "subtitle": "Everything you need to know about keys, encryption, and privacy.",
+      "faq": {
+        "create": {
+          "q": "Where do I create a key pair?",
+          "a": "Open Keys in the header → Your keys → Create. A 12-word recovery phrase derives your key pair; only the phrase is stored, on this device."
+        },
+        "encryptFile": {
+          "q": "How do I encrypt a file?",
+          "a": "Pick File, choose Password or Public key, drop a file, enter the key, and click Encrypt."
+        },
+        "decryptFile": {
+          "q": "How do I decrypt a file I received?",
+          "a": "Drop the encrypted file into the tool — it detects the format and switches to Decrypt. Enter the password or your private key."
+        },
+        "encryptText": {
+          "q": "Can I encrypt text?",
+          "a": "Yes — switch to Message and type or paste. The result can be copied or downloaded."
+        },
+        "share": {
+          "q": "How do I share something?",
+          "a": "Encrypt it, then click Share on the result card. You get a 6-character code and link; the recipient uses Retrieve."
+        },
+        "uploaded": {
+          "q": "Are my files uploaded?",
+          "a": "Only when you Share. Local encrypt and decrypt never upload. A shared item is ciphertext only."
+        },
+        "canRead": {
+          "q": "Can you read my keys or files?",
+          "a": "No. Keys stay in your browser and the server only ever stores ciphertext — it's zero-knowledge."
+        },
+        "forgotPin": {
+          "q": "What if I forget my PIN?",
+          "a": "The PIN only locks the key-manager UI. If you forget it you can reset it, which wipes all saved keys on this device."
+        }
+      }
+    },
+    "footer": {
+      "tagline": "Client-side encryption and zero-knowledge sharing. Your keys never leave your browser.",
+      "trust": "No accounts · No tracking · Open source",
+      "learn": "Learn",
+      "howItWorks": "How it works",
+      "project": "Project",
+      "github": "GitHub",
+      "copyright": "© 2025 Dropply",
+      "builtWith": "Built with XChaCha20-Poly1305 · Argon2id · ECIES"
+    }
+  },
+  "keys": {
+    "title": "Key manager",
+    "description": "Generate a key pair, save recipients, and set a PIN. Everything stays on this device.",
+    "tabs": {
+      "owner": "Your keys",
+      "receiver": "Recipients",
+      "password": "PIN"
+    },
+    "lock": {
+      "hint": "Enter your 6-digit PIN to unlock.",
+      "unlock": "Unlock",
+      "forgot": "Forgot PIN",
+      "incorrect": "Incorrect PIN",
+      "resetTitle": "Reset everything?",
+      "resetDesc": "This deletes all saved keys and the PIN from this device. It cannot be undone.",
+      "reset": "Reset"
+    },
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "copy": "Copy",
+    "copied": "Copied",
+    "notePlaceholder": "Note (optional)",
+    "owner": {
+      "create": "Create",
+      "import": "Import",
+      "mnemonic": "Recovery phrase",
+      "mnemonicPlaceholder": "Enter or generate a 12-word recovery phrase",
+      "generate": "Generate",
+      "invalidMnemonic": "Invalid recovery phrase",
+      "saved": "Key pair saved",
+      "empty": "No key pairs yet.",
+      "untitled": "Untitled",
+      "view": "View phrase",
+      "deleteTitle": "Delete key pair?",
+      "deleteDesc": "The recovery phrase will be removed from this device."
+    },
+    "receiver": {
+      "add": "Add recipient",
+      "keyPlaceholder": "Recipient's Base58 public key",
+      "invalid": "Invalid public key",
+      "saved": "Recipient saved",
+      "empty": "No recipients yet.",
+      "deleteTitle": "Delete recipient?",
+      "deleteDesc": "This public key will be removed from this device."
+    },
+    "password": {
+      "everyTime": "The PIN locks the key manager each time it opens. It does not encrypt your stored keys.",
+      "current": "Current PIN",
+      "new": "New PIN",
+      "confirm": "Confirm PIN",
+      "mismatch": "PINs do not match",
+      "set": "Set PIN",
+      "change": "Change PIN",
+      "changed": "PIN updated",
+      "remove": "Remove",
+      "removed": "PIN removed"
+    },
+    "modePassword": "Password",
+    "modePublicKey": "Public key",
+    "manage": "Keys",
+    "publicKeyLabel": "Recipient public key",
+    "privateKeyLabel": "Your private key or recovery phrase",
+    "publicKeyPlaceholder": "Base58 public key, or pick a saved recipient",
+    "privateKeyPlaceholder": "Hex private key or 12-word phrase",
+    "useSavedKey": "Saved keys"
+  },
   "theme": {
     "toggle": "Toggle theme"
   },
@@ -47,9 +193,14 @@
     "emptyHint": "Add files or text on the left, then click upload",
     "copyLink": "Copy Link",
     "copied": "Copied!",
+    "fragmentNote": "stays in your browser — never sent to the server.",
+    "unavailable": "Sharing is unavailable — the server couldn't be reached. Local Encrypt and Decrypt still work.",
     "retry": "Retry"
   },
   "retrieve": {
+    "open": "Retrieve",
+    "openDesc": "Enter a 6-character code to fetch a shared item into the tool.",
+    "fetched": "Fetched — decrypt it below",
     "retrievalCode": "Retrieval Code",
     "retrievalCodePlaceholder": "Enter the 6-character code you received",
     "encryptionKey": "Encryption Key",
@@ -174,7 +325,10 @@
       "emptyDescription": "Encrypted and decrypted items will appear here.",
       "emptyHint": "Everything runs locally in your browser.",
       "messageResult": "Message result",
-      "unnamedFile": "Unnamed file"
+      "unnamedFile": "Unnamed file",
+      "history": "History",
+      "historyDesc": "Your recent encrypt/decrypt results (this browser only).",
+      "empty": "No history yet."
     },
     "dialog": {
       "encryptedText": "Encrypted text",
@@ -188,15 +342,16 @@
       "view": "View",
       "copy": "Copy",
       "download": "Download",
-      "remove": "Remove"
+      "remove": "Remove",
+      "share": "Share"
     },
-    "features": {
-      "title": "About local encryption",
-      "aesEncrypt": "XChaCha20-Poly1305 authenticated encryption",
-      "argon2id": "Argon2id password-based key derivation",
-      "chunked": "Chunked streaming keeps large files off the main thread",
-      "download": "Results download straight from your browser",
-      "localNote": "All processing happens locally — nothing is ever uploaded."
+    "share": {
+      "title": "Share this result",
+      "desc": "The finished ciphertext is uploaded as-is. The link carries no key — the recipient decrypts it with the password or their own private key.",
+      "code": "Code",
+      "copyLink": "Copy link",
+      "copied": "Copied!",
+      "failed": "Share failed"
     },
     "toast": {
       "resultRemoved": "Result removed",
@@ -208,6 +363,11 @@
     "selectFile": "Please select a file first",
     "enterMessage": "Please input the message for processing",
     "enterPassword": "Please enter a password",
+    "enterPublicKey": "Please enter the recipient's public key",
+    "enterPrivateKey": "Please enter your private key or mnemonic",
+    "invalidPublicKey": "Invalid public key",
+    "invalidPrivateKey": "Invalid private key or mnemonic",
+    "invalidKey": "Invalid key",
     "encryptionStarted": "Encryption started",
     "decryptionStarted": "Decryption started",
     "fileEncrypted": "File encrypted successfully!",

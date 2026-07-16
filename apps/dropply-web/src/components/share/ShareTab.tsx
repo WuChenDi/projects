@@ -119,24 +119,22 @@ export function ShareTab({
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-4 h-full">
-      <div className="space-y-4">
-        <ShareForm
-          locked={requireTOTP && !isShareUnlocked}
-          maxFileSize={maxFileSize}
-          onUnlock={onUnlockTOTP}
-          files={files}
-          textItems={textItems}
-          validityDays={validityDays}
-          encryptionKey={encryptionKey}
-          isUploading={isUploading || isStarting}
-          onFilesChange={setFiles}
-          onTextItemsChange={setTextItems}
-          onValidityDaysChange={setValidityDays}
-          onEncryptionKeyChange={setEncryptionKey}
-          onUpload={handleUpload}
-        />
-      </div>
+    <div className="w-full space-y-5">
+      <ShareForm
+        locked={requireTOTP && !isShareUnlocked}
+        maxFileSize={maxFileSize}
+        onUnlock={onUnlockTOTP}
+        files={files}
+        textItems={textItems}
+        validityDays={validityDays}
+        encryptionKey={encryptionKey}
+        isUploading={isUploading || isStarting}
+        onFilesChange={setFiles}
+        onTextItemsChange={setTextItems}
+        onValidityDaysChange={setValidityDays}
+        onEncryptionKeyChange={setEncryptionKey}
+        onUpload={handleUpload}
+      />
       <ShareResults
         results={shareResults}
         emailShareEnabled={emailShareEnabled}
