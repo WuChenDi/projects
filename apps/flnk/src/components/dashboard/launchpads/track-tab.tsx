@@ -3,6 +3,7 @@
 import { Card } from '@cdlab/ui/components/card'
 import type { DateRangePreset } from '@cdlab/ui/components/date-range-picker'
 import { DateRangePicker } from '@cdlab/ui/components/date-range-picker'
+import { Label } from '@cdlab/ui/components/label'
 import { Skeleton } from '@cdlab/ui/components/skeleton'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -163,9 +164,9 @@ export function TrackTab({ launchpadId, config }: TrackTabProps) {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-sm font-medium text-muted-foreground">
+        <Label className="text-sm font-medium text-muted-foreground">
           {t('track.overview')}
-        </h3>
+        </Label>
         {picker}
       </div>
 
@@ -217,10 +218,10 @@ export function TrackTab({ launchpadId, config }: TrackTabProps) {
           </Card>
 
           <div className="space-y-2">
-            <h3 className="flex items-center gap-1.5 text-sm font-medium">
+            <Label className="flex items-center gap-1.5 text-sm font-medium">
               <BarChart3 className="size-4" />
               {t('track.perBlock')}
-            </h3>
+            </Label>
             {config.blocks.length === 0 ? (
               <p className="py-4 text-center text-sm text-muted-foreground">
                 {t('track.noBlocks')}
