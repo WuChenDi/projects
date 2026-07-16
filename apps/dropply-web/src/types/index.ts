@@ -63,12 +63,6 @@ export interface emailShareResponse {
   message: string
 }
 
-export interface CreateChestResponse {
-  sessionId: string
-  uploadToken: string
-  expiresIn: number
-}
-
 export interface UploadedFile {
   fileId: string
   filename: string
@@ -79,24 +73,9 @@ export interface UploadResponse {
   uploadedFiles: UploadedFile[]
 }
 
-export interface CompleteUploadResponse {
-  retrievalCode: string
-  expiryDate: string | null
-}
-
 export type ValidityDays = number
 
 // Multipart upload types
-export interface CreateMultipartUploadResponse {
-  fileId: string
-  uploadId: string
-}
-
-export interface UploadPartResponse {
-  etag: string
-  partNumber: number
-}
-
 export interface UploadPart {
   partNumber: number
   etag: string
