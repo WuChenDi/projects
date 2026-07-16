@@ -18,6 +18,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@cdlab/ui/components/sidebar'
+import { GitHubIcon } from '@cdlab/ui/icon/GitHubIcon'
 import {
   BookOpen,
   ChevronsUpDown,
@@ -38,19 +39,6 @@ import { authClient } from '@/lib/platform/auth-client'
 const DOCS_HREF =
   'https://github.com/WuChenDi/projects/blob/main/apps/flnk/README.md'
 const REPO_HREF = 'https://github.com/WuChenDi/projects/tree/main/apps/flnk'
-
-function GitHubIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="size-4"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M12 1A11 11 0 0 0 8.52 22.44c.55.1.75-.24.75-.53v-1.86c-3.06.67-3.71-1.48-3.71-1.48-.5-1.28-1.22-1.62-1.22-1.62-1-.68.08-.67.08-.67 1.1.08 1.68 1.14 1.68 1.14.98 1.68 2.57 1.2 3.2.92.1-.71.38-1.2.69-1.47-2.44-.28-5.01-1.22-5.01-5.43 0-1.2.43-2.18 1.13-2.95-.11-.28-.49-1.4.11-2.91 0 0 .92-.3 3.02 1.13a10.5 10.5 0 0 1 5.5 0c2.1-1.43 3.02-1.13 3.02-1.13.6 1.51.22 2.63.11 2.91.7.77 1.13 1.75 1.13 2.95 0 4.22-2.58 5.15-5.03 5.42.4.34.75 1.01.75 2.04v3.03c0 .29.2.64.76.53A11 11 0 0 0 12 1Z" />
-    </svg>
-  )
-}
 
 function initials(name?: string | null, email?: string | null): string {
   const source = name?.trim() || email?.trim() || '?'
@@ -183,7 +171,7 @@ export function NavUser() {
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href={REPO_HREF} target="_blank" rel="noopener noreferrer">
-                <GitHubIcon />
+                <GitHubIcon className="size-4" />
                 {t('repo')}
               </Link>
             </DropdownMenuItem>
