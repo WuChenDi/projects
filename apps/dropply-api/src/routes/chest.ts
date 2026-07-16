@@ -372,25 +372,37 @@ chestRoutes.post(
       )
     }
 
-    const retrievalCode = generateRetrievalCode()
+    let retrievalCode = generateRetrievalCode()
     const expiryDate = calculateExpiry(validityDays)
 
     try {
-      // Update session
-      await db
-        ?.update(sessions)
-        .set({
-          retrievalCode,
-          uploadComplete: 1,
-          expiresAt: expiryDate,
-          updatedAt: new Date(),
-        })
-        .where(
-          withNotDeleted(
-            sessions,
-            and(eq(sessions.id, sessionId), eq(sessions.uploadComplete, 0)),
-          ),
-        )
+      // Update session; retry with a fresh code on unique-index collisions
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await db
+            ?.update(sessions)
+            .set({
+              retrievalCode,
+              uploadComplete: 1,
+              expiresAt: expiryDate,
+              updatedAt: new Date(),
+            })
+            .where(
+              withNotDeleted(
+                sessions,
+                and(eq(sessions.id, sessionId), eq(sessions.uploadComplete, 0)),
+              ),
+            )
+          break
+        } catch (error) {
+          const message = error instanceof Error ? error.message : ''
+          if (/unique|constraint/i.test(message) && attempt < 3) {
+            retrievalCode = generateRetrievalCode()
+            continue
+          }
+          throw error
+        }
+      }
 
       logger.info('Chest upload completed', {
         sessionId,
