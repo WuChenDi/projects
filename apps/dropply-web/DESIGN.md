@@ -338,8 +338,9 @@ is the fragment key, held only by whoever has the full share URL.
 ### 10.1 Config
 
 The only build-time env var is `NEXT_PUBLIC_API_URL` (read once in `api.ts`,
-default `https://localhost:3014`; `.env.example` points it at a Worker URL). It
-is inlined into the static bundle at build time — changing it requires a rebuild.
+default `''` = same-origin relative `/api`, which nsl serves in dev;
+`.env.example` points it at a Worker URL for production). It is inlined into the
+static bundle at build time — changing it requires a rebuild.
 All *behavioral* config (`requireTOTP`, `emailShareEnabled`, `maxFileSize`) is
 fetched at runtime from `GET /api/config`, so the deployed static bundle adapts
 to the server without a rebuild. Client default `maxFileSize` fallback is

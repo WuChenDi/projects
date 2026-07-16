@@ -90,9 +90,10 @@ Key invariants (do not break without reading DESIGN §3, §4, §8):
 
 ## Config & endpoints
 
-- Only build-time env: `NEXT_PUBLIC_API_URL` (`src/lib/api.ts`, default
-  `https://localhost:3014`; `.env.example` points at a Worker URL). Inlined into
-  the static bundle — a change needs a rebuild.
+- Only build-time env: `NEXT_PUBLIC_API_URL` (`src/lib/api.ts`, default `''` =
+  same-origin relative `/api`, served by nsl in dev; `.env.example` points at a
+  Worker URL for production). Inlined into the static bundle — a change needs a
+  rebuild.
 - Runtime config from `GET /api/config` (`requireTOTP`, `emailShareEnabled`,
   `maxFileSize`; client default cap `100MB`). No rebuild to change server config.
 - No Cloudflare bindings (no KV/R2/D1/DO). `wrangler.jsonc` serves `./out` as

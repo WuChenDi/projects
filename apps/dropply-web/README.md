@@ -43,9 +43,12 @@ everything from the repo root. It needs a running
 
 ```bash
 pnpm install                              # builds workspace packages too
-echo "NEXT_PUBLIC_API_URL=https://localhost:3014" > apps/dropply-web/.env.local
-pnpm --filter @cdlab/dropply-web dev      # -> http://dropply-web.localhost:3355
+pnpm dev:dropply                          # web + api together -> http://dropply.localhost:3355
 ```
+
+nsl serves the backend at the same origin under `/api`
+(`http://dropply.localhost:3355/api`), so no `NEXT_PUBLIC_API_URL` is needed in
+dev — the client uses a relative `/api` base.
 
 The dev URL is fixed by [`@dotns/nsl`](https://github.com/dotns/nsl) — no port
 hunting. The whole UI is one page with two tabs: **Share** (encrypt + upload)
@@ -106,7 +109,7 @@ whether email share is on — is fetched from the server at page load via
 
 | Var | Default | Meaning |
 | --- | --- | --- |
-| `NEXT_PUBLIC_API_URL` | `https://localhost:3014` | Base URL of the `dropply-api` backend (`.env.example` points it at a Worker URL). |
+| `NEXT_PUBLIC_API_URL` | `''` (relative `/api`) | Base URL of the `dropply-api` backend. Empty = same-origin `/api` (nsl in dev); production points it at the Worker URL (`.env.example`). |
 
 Server-driven runtime config (fetched at mount, `page.tsx`):
 
