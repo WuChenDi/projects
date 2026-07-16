@@ -1,5 +1,4 @@
 export * from './db'
 export * from './jwt'
-export * from './totp'
 export * from './utils'
 export * from './validationSchemas'

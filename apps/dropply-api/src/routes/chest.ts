@@ -17,11 +17,11 @@ import {
   partNumberParamSchema,
   sessionIdParamSchema,
   useDrizzle,
-  verifyAnyTOTP,
   verifyMultipartJWT,
   verifyUploadJWT,
   withNotDeleted,
 } from '@/lib'
+import { rateLimit } from '@/lib/rate-limit'
 import type {
   ApiResponse,
   CloudflareEnv,
@@ -37,45 +37,52 @@ import type {
 
 export const chestRoutes = new Hono<{ Bindings: CloudflareEnv }>()
 
+// Constant-time string compare: digest both sides so lengths match, then
+// XOR-compare the digest bytes.
+async function constantTimeEqual(a: string, b: string): Promise<boolean> {
+  const encoder = new TextEncoder()
+  const [digestA, digestB] = await Promise.all([
+    crypto.subtle.digest('SHA-256', encoder.encode(a)),
+    crypto.subtle.digest('SHA-256', encoder.encode(b)),
+  ])
+  const bytesA = new Uint8Array(digestA)
+  const bytesB = new Uint8Array(digestB)
+  let diff = 0
+  for (let i = 0; i < bytesA.length; i++) {
+    diff |= bytesA[i] ^ bytesB[i]
+  }
+  return diff === 0
+}
+
 // POST /chest - Create new chest
 chestRoutes.post(
   '/chest',
+  rateLimit({ limit: 20, windowMs: 60_000, keyPrefix: 'chest' }),
   zValidator('json', createChestRequestSchema),
   async (c) => {
     const requestId = c.get('requestId')
 
     const db = useDrizzle(c)
-    const requireTOTP = c.env.REQUIRE_TOTP === 'true'
-    const { totpToken } = c.req.valid('json')
+    const { password } = c.req.valid('json')
 
-    // TOTP verification
-    if (requireTOTP) {
-      if (!totpToken) {
+    // Optional share-password gate
+    if (c.env.SHARE_PASSWORD) {
+      if (!password) {
         return c.json<ApiResponse>(
           {
             code: 401,
-            message: 'TOTP token required',
+            message: 'Password required',
           },
           401,
         )
       }
 
-      if (!c.env.TOTP_SECRETS) {
-        return c.json<ApiResponse>(
-          {
-            code: 500,
-            message: 'TOTP not configured on server',
-          },
-          500,
-        )
-      }
-
-      const isValidTOTP = await verifyAnyTOTP(totpToken, c.env.TOTP_SECRETS)
-      if (!isValidTOTP) {
+      const isValid = await constantTimeEqual(password, c.env.SHARE_PASSWORD)
+      if (!isValid) {
         return c.json<ApiResponse>(
           {
             code: 401,
-            message: 'Invalid TOTP token',
+            message: 'Invalid password',
           },
           401,
         )

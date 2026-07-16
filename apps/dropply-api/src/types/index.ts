@@ -8,8 +8,8 @@ export interface CloudflareEnv {
   LIBSQL_AUTH_TOKEN?: string
 
   JWT_SECRET: string
-  TOTP_SECRETS?: string
-  REQUIRE_TOTP?: string
+  // Optional share-password gate; set as a secret
+  SHARE_PASSWORD?: string
 
   // Storage limits
   MAX_FILE_SIZE_MB?: string
@@ -55,7 +55,7 @@ export interface ApiResponse<T = any> {
 }
 
 export interface ConfigResponse {
-  requireTOTP: boolean
+  requirePassword: boolean
   emailShareEnabled: boolean
   maxFileSize: number
 }

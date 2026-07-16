@@ -16,7 +16,7 @@ configRoutes.get('/config', async (c) => {
     code: 0,
     message: 'ok',
     data: {
-      requireTOTP: c.env.REQUIRE_TOTP === 'true',
+      requirePassword: !!c.env.SHARE_PASSWORD,
       emailShareEnabled: !!(
         c.env.RESEND_API_KEY && c.env.ENABLE_EMAIL_SHARE === 'true'
       ),
