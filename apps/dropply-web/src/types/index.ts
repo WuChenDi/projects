@@ -6,7 +6,7 @@ export interface ApiResponse<T = any> {
 }
 
 export interface ConfigResponse {
-  requireTOTP: boolean
+  requirePassword: boolean
   emailShareEnabled: boolean
   maxFileSize: number
 }

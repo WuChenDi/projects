@@ -44,19 +44,28 @@ export function RetrieveEntry({ crypto, initialCode }: RetrieveEntryProps) {
 
   const retrieve = async () => {
     const c = code.trim().toUpperCase()
-    if (c.length !== 6) return
+    if (c.length < 6 || c.length > 8) return
     setLoading(true)
     try {
       const api = new PocketChestAPI()
+      const { maxFileSize } = await api.getConfig()
       const { files, chestToken } = await api.retrieveChest(c)
       if (files.length === 0) throw new Error(t('emptyHint'))
-      const f = files[0]
-      const blob = await api.downloadFile(f.fileId, chestToken)
-      const file = new File([blob], f.filename || `${c}.enc`, {
-        type: 'application/octet-stream',
-      })
+      const retrieved: File[] = []
+      for (const f of files) {
+        const name = f.filename || `${c}.enc`
+        if (f.size > maxFileSize) {
+          toast.error(t('fileTooLarge', { name }))
+          continue
+        }
+        const blob = await api.downloadFile(f.fileId, chestToken)
+        retrieved.push(
+          new File([blob], name, { type: 'application/octet-stream' }),
+        )
+      }
+      if (retrieved.length === 0) return
       crypto.setInputMode(InputModeEnum.FILE)
-      await crypto.handleFileSelect([file])
+      await crypto.handleFileSelect(retrieved)
       toast.success(t('fetched'))
       setOpen(false)
       setCode('')
@@ -90,7 +99,7 @@ export function RetrieveEntry({ crypto, initialCode }: RetrieveEntryProps) {
               <Input
                 id="retrieve-code"
                 value={code}
-                maxLength={6}
+                maxLength={8}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 onKeyDown={(e) => e.key === 'Enter' && retrieve()}
                 placeholder={t('retrievalCodePlaceholder')}
@@ -99,7 +108,9 @@ export function RetrieveEntry({ crypto, initialCode }: RetrieveEntryProps) {
             </div>
             <Button
               className="w-full"
-              disabled={loading || code.trim().length !== 6}
+              disabled={
+                loading || code.trim().length < 6 || code.trim().length > 8
+              }
               onClick={retrieve}
             >
               {loading ? (

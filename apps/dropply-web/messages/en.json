@@ -199,10 +199,10 @@
   },
   "retrieve": {
     "open": "Retrieve",
-    "openDesc": "Enter a 6-character code to fetch a shared item into the tool.",
+    "openDesc": "Enter a 6-8 character code to fetch a shared item into the tool.",
     "fetched": "Fetched — decrypt it below",
     "retrievalCode": "Retrieval Code",
-    "retrievalCodePlaceholder": "Enter the 6-character code you received",
+    "retrievalCodePlaceholder": "Enter the 6-8 character code you received",
     "encryptionKey": "Encryption Key",
     "encryptionKeyPlaceholder": "Auto-filled from link or enter manually",
     "keyDetected": "Key detected from link",
@@ -233,7 +233,8 @@
     "previewRetry": "Retry",
     "keyRequired": "Encryption key required to access files",
     "enterKeyToUnlock": "Enter encryption key to unlock",
-    "unlock": "Unlock"
+    "unlock": "Unlock",
+    "fileTooLarge": "{name} exceeds the size limit and was skipped"
   },
   "fileUpload": {
     "dropHere": "Drop files here",
@@ -297,7 +298,8 @@
     "messageHint": "This message will be included in the email",
     "sending": "Sending...",
     "sendEmail": "Send Email",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "securityNote": "The email contains only the retrieval code. The recipient still needs the decryption password or their private key to read the content."
   },
   "localCrypto": {
     "input": {
@@ -351,7 +353,14 @@
       "code": "Code",
       "copyLink": "Copy link",
       "copied": "Copied!",
-      "failed": "Share failed"
+      "failed": "Share failed",
+      "passwordTitle": "Share password required",
+      "passwordDesc": "This server requires a password to create shares.",
+      "passwordLabel": "Share password",
+      "passwordSubmit": "Continue",
+      "passwordInvalid": "Invalid share password. Please try again.",
+      "tooLarge": "File exceeds the {max} size limit",
+      "emailAction": "Share via email"
     },
     "toast": {
       "resultRemoved": "Result removed",
