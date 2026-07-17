@@ -1,11 +1,11 @@
 # dropply-web — Design
 
-> The client half of an end-to-end-encrypted file/text sharing pair. All
-> encryption and decryption happen **in the browser**; the 256-bit key lives
-> only in the URL fragment (`#key=…`), which is never sent to a server. The app
-> is a **static export** (`output: 'export'`) — no server of its own — and talks
-> to a single backend, [`dropply-api`](../dropply-api), which only ever stores
-> ciphertext and metadata.
+> A local-first browser encryption tool with optional sharing. All encryption
+> and decryption happen **in the browser** (a Web Worker running
+> `@cdlab/cipher`); sharing uploads the **finished ciphertext** to
+> [`dropply-api`](../dropply-api) and returns an 8-character retrieval code —
+> no key material ever appears in a URL or a request. The app is a **static
+> export** (`output: 'export'`) with no server of its own.
 
 This is the authoritative design spec; the implementation follows it. Section
 numbers are stable anchors — source comments and reviews reference them as
@@ -16,11 +16,11 @@ the browser client only.
 
 1. [Background & goals](#1-background--goals)
 2. [Architecture](#2-architecture)
-3. [The crypto boundary](#3-the-crypto-boundary)
-4. [Share (upload) pipeline](#4-share-upload-pipeline)
-5. [Retrieve (download) pipeline](#5-retrieve-download-pipeline)
-6. [Client state & storage](#6-client-state--storage)
-7. [Auth (TOTP gate)](#7-auth-totp-gate)
+3. [The crypto engine](#3-the-crypto-engine)
+4. [The key manager](#4-the-key-manager)
+5. [Share (model A)](#5-share-model-a)
+6. [Retrieve (back into the tool)](#6-retrieve-back-into-the-tool)
+7. [Client state & storage](#7-client-state--storage)
 8. [Security model](#8-security-model)
 9. [Internationalization & theming](#9-internationalization--theming)
 10. [Configuration & deployment](#10-configuration--deployment)
@@ -29,293 +29,256 @@ the browser client only.
 
 ## 1. Background & goals
 
-A file-sharing tool that uploads plaintext asks the user to trust the operator.
-`dropply-web` removes that trust by moving the entire crypto boundary into the
-browser: the server stores ciphertext it cannot read, and the only secret that
-can decrypt it never reaches the server. The client holds itself to these goals:
+Earlier iterations were "a file-drop with client-side crypto": encryption
+existed to serve the upload. The current app inverts that — it is an
+**encryption tool first** (fully offline-capable), and sharing is an optional
+action applied to an already-encrypted result.
 
-- **G1 — Zero-knowledge server.** Encryption and decryption are 100% client-side.
-  The 256-bit key is generated in the browser and shared only via the URL
-  fragment (`#key=…`), which browsers never transmit. The server receives
-  ciphertext + metadata, never plaintext or the key.
-- **G2 — No durable key on the device.** The share history persists to
-  `localStorage`, but the key field is stripped before writing. A stolen device
-  cannot recover past keys from local storage.
-- **G3 — Large files without large memory.** Files above the chunk threshold
-  upload as bounded multipart parts, not one buffered blob, with per-part retry.
-- **G4 — No server of its own.** The deployed artifact is static assets; there is
-  no SSR, no route handler, no runtime backend to operate beyond `dropply-api`.
-- **G5 — One knob to point at a backend.** The only build-time config is the API
-  base URL; runtime behavior (size cap, TOTP, email) is fetched from the server.
+- **G1 — Local by default.** Encrypt/decrypt requires no network, no account,
+  no config. The API being unreachable degrades *sharing only*; the tool keeps
+  working.
+- **G2 — Zero-knowledge sharing.** What uploads is a sealed ciphertext under a
+  neutral name; the password / private key is exchanged out-of-band by humans
+  and never appears in a URL, a request body, or an email.
+- **G3 — No mode switches.** Encrypt vs decrypt is *derived from the input*:
+  ciphertext is recognized by its magic bytes (`@cdlab/cipher detect()`),
+  which also reveal whether it needs a password or a private key. The user
+  never picks a tab.
+- **G4 — Keys are a first-class object.** A built-in key manager owns BIP39
+  mnemonic key pairs and contacts' public keys, so public-key mode is usable
+  by non-cryptographers.
+- **G5 — No server of its own.** The deployed artifact is static assets; the
+  only backend dependency is `dropply-api`, and only for share/retrieve.
 
 ### Non-goals
 
-- **Not standalone.** Storage, TOTP verification, and email delivery all live in
-  [`dropply-api`](../dropply-api); this app is inert without it.
+- **Not a key-exchange channel.** Neither the share link nor the share email
+  carries key material — only the retrieval code.
 - **Not a server runtime.** No SSR data fetching, no API routes, no edge/node
   functions — static export only (§2, §10).
-- **Not key recovery.** Losing the fragment means the data is unrecoverable by
-  design; the server holds no key to fall back on.
+- **Not key recovery.** Losing the password / mnemonic means the data is
+  unrecoverable by design; the server holds only ciphertext.
 
 ---
 
 ## 2. Architecture
 
 ```
-                         browser (static assets from ./out)
-  user ── Share tab ──►┌──────────────────────────────────────────┐
-                       │ src/app/[locale]/page.tsx  (client UI)    │
-  user ── Retrieve ───►│   ShareTab / RetrieveTab                  │
-                       │   usePocketChest (orchestration hook)     │
-                       │   crypto.ts  (@cdlab/cipher, in-browser)  │
-                       └───────┬───────────────────┬──────────────┘
-                               │ ciphertext + meta  │ key stays local
-                               ▼                    (URL fragment only)
-                        dropply-api  (the only backend: storage, TOTP, email)
+                      browser (static assets from ./out)
+ ┌────────────────────────────────────────────────────────────────┐
+ │ [locale]/page.tsx — ScrollArea shell                           │
+ │   AppHeader (history · retrieve · keys · lang · theme)         │
+ │   Hero ─ embeds ─ LocalCryptoPanel (the tool)                  │
+ │   Features / HowItWorks / FAQ · AppFooter                      │
+ │                                                                │
+ │ useCryptoProcessor (one shared engine)                         │
+ │   └─ workers/cryptoWorker.ts (@cdlab/cipher)   ← crypto here   │
+ │ LocalResultCard ── Share ──► lib/share-blob.ts ─┐              │
+ │ RetrieveEntry ─── code ────► lib/api.ts ────────┤ ciphertext   │
+ └─────────────────────────────────────────────────┼──────────────┘
+                                                   ▼  only
+                                    dropply-api (storage, password gate, email)
 ```
 
 **Static export.** `next.config.ts` sets `output: 'export'`: `next build`
-prerenders everything to static HTML/JS in `./out`. There is no Next.js server,
-no edge/node function, and no route handler. `src/middleware.ts` (next-intl
-locale middleware) and `generateMetadata` run only during dev/build; the shipped
-artifact is plain files. `generateStaticParams` in `[locale]/layout.tsx` emits
-`en` and `zh`.
+prerenders everything to static HTML/JS in `./out`. There is no Next.js server.
+`src/middleware.ts` (next-intl locale middleware) and `generateMetadata` run
+only during dev/build; the shipped artifact is plain files.
+`generateStaticParams` in `[locale]/layout.tsx` emits `en` and `zh`.
 
 **Entry points.**
 
-- `src/app/layout.tsx` — trivial root layout (passes children through; required
-  because a root `not-found.tsx` exists).
-- `src/app/page.tsx` — root page, `redirect('/en')` (only meaningful in export).
+- `src/app/layout.tsx` — trivial root layout (a root `not-found.tsx` exists).
+- `src/app/page.tsx` — root page, `redirect('/en')`.
 - `src/app/[locale]/layout.tsx` — the real layout: Geist fonts, EN + ZH SEO
-  metadata (`generateMetadata`), 4 JSON-LD blocks, `NextIntlClientProvider`,
-  `ClientProviders`, `IKHeader` (brand "Dropply"), `LanguageSelector`,
-  `ThemeToggle`, `Toaster`.
-- `src/app/[locale]/page.tsx` — **the entire app UI** (`'use client'`). Holds tab
-  state (`share`/`retrieve`), fetches server config on mount, gates share behind
-  TOTP, renders `ShareTab` / `RetrieveTab` inside `Tabs`, plus `EmailShare` and
-  `TOTPModal`. Wrapped in `Suspense` because it reads `useSearchParams()`.
+  metadata (`generateMetadata`), JSON-LD blocks, `NextIntlClientProvider`,
+  `ClientProviders`, `Toaster`. Imports `../dropply.css` (app keyframes).
+- `src/app/[locale]/page.tsx` — the page shell (`'use client'`): a shared
+  `ScrollArea` wraps header + landing + footer so scrollbars are consistent;
+  a scroll listener on the ScrollArea viewport drives the header's
+  transparent→solid transition. Reads `?code=` via `useSearchParams`
+  (`Suspense`-wrapped) and passes it to the header's `RetrieveEntry`.
 
-**Orchestration.** `src/hooks/usePocketChest.ts` is the single React hook that
-sequences the API calls and owns progress/status state. `src/lib/api.ts`
-(`PocketChestAPI`) is the sole HTTP client; `src/lib/crypto.ts` is the only place
-crypto happens.
+**One engine.** `useCryptoProcessor` is instantiated once in `page.tsx` and
+passed down to the tool, the header (retrieve + history) and the result cards —
+so a retrieved ciphertext lands in the *same* state the tool uses.
 
 ---
 
-## 3. The crypto boundary
+## 3. The crypto engine
 
-Everything in `src/lib/crypto.ts` runs in the browser; it is a thin wrapper over
-[`@cdlab/cipher`](../../packages/cipher) (XChaCha20-Poly1305 stream + Argon2id
-password KDF).
+### 3.1 Worker
 
-### 3.1 Key generation
+`src/workers/cryptoWorker.ts` runs all crypto off the main thread. It speaks a
+small message protocol (`encrypt` / `decrypt` × file / text) and reports chunk
+progress back for the result card's progress bar.
 
-`generateEncryptionKey()` reads 32 random bytes (`crypto.getRandomValues`) and
-base64url-encodes them **without padding** (`+`→`-`, `/`→`_`, strip `=`). This
-string is used as the *password* for Argon2id derivation, not as a raw symmetric key.
-A share reuses a caller-supplied key if given (`finalKey = encryptionKey ||
-generateEncryptionKey()`, `usePocketChest.ts`), else generates one.
-
-### 3.2 URL-fragment contract
-
-The key travels only in the location **hash**:
-
-- `encodeKeyForUrl(key)` = `encodeURIComponent(key)`.
-- `decodeKeyFromUrl(hash)` matches `key=([^&]+)` and `decodeURIComponent`s it;
-  returns `null` if absent.
-
-The share URL is built as
-`` `${origin}${pathname}?code=${retrievalCode}#key=${encodeURIComponent(key)}` ``
-(`ShareTab.tsx`). **Invariant:** the code goes in the query (server-visible), the
-key goes in the fragment (never transmitted). `page.tsx` also parses the hash
-synchronously in a `useState` initializer so the retrieve key is available on
-first render (the fragment isn't in `useSearchParams`).
-
-### 3.3 Encrypt / decrypt primitives
-
-| Function | In → out | Backing call |
+| Input | Mode | Backing call |
 | --- | --- | --- |
-| `encryptFile(file, password, onProgress)` | `File` → encrypted `Blob` | `streamEncryptWithPassword` (chunked stream) |
-| `decryptFile(blob, password, filename)` | `Blob` → `Blob` | `streamDecryptWithPassword` |
-| `encryptTextContent(text, password)` | `string` → base64 `string` | `textCrypto.encrypt` |
-| `decryptTextContent(text, password)` | base64 `string` → `string` | `textCrypto.decrypt` |
+| file, password | encrypt | `streamCrypto.encrypt.withPassword` |
+| file, receiver public key | encrypt | `streamCrypto.encrypt.withPublicKey` |
+| file (magic `ns1`), password | decrypt | `streamCrypto.decrypt.withPassword` |
+| file (magic `ns0`), private key | decrypt | `streamCrypto.decrypt.withPrivateKey` |
+| text ± password / keys | either | `textCrypto.encrypt` / `textCrypto.decrypt` |
 
-Files are re-wrapped as `application/octet-stream` before/after so the ciphertext
-MIME never leaks the original type to the server.
+`@cdlab/cipher` = XChaCha20-Poly1305 stream cipher; password mode derives the
+key with Argon2id, public-key mode is ECIES over secp256k1. The original
+filename is stored inside the encrypted header and restored on decrypt.
 
----
+### 3.2 Auto-detection (no tabs)
 
-## 4. Share (upload) pipeline
+`useCryptoProcessor.handleFileSelect` / text input runs `detect()` from
+`@cdlab/cipher` on the input:
 
-**Entry:** `ShareTab` → `usePocketChest.uploadWithSession` →
-`PocketChestAPI.uploadContent`. The flow, each stage able to short-circuit on
-error:
+- `'pwd'` / `'pubk'` → the input is ciphertext → mode flips to **decrypt**,
+  and `encryptionMode` is preset to `password` or `publickey` accordingly.
+- `'unencrypted'` → mode is **encrypt**.
 
-```
-1. api.getConfig()                     → { requireTOTP, emailShareEnabled, maxFileSize }   (on mount)
-2. TOTP gate (if requireTOTP & no token) → prompt; validated by createChest(token)  (§7)
-3. api.createChest(totpToken?)          → { sessionId, uploadToken }
-4. encrypt EACH file / text item        → in-browser; counts as the FIRST 50% of per-file progress
-5. driver split by size (CHUNK_SIZE=20MB):
-     text items  → uploadContentRegular (one multipart FormData) FIRST
-     small ≤20MB → rolling concurrency, max 3 parallel POST .../upload
-     large >20MB → sequential per file; each file multipart (§4.2)
-6. api.completeUpload(sessionId, uploadToken, fileIds, validityDays)  → { retrievalCode, expiryDate }
-7. build share URL (§3.2); push { id, retrievalCode, encryptionKey, shareUrl, timestamp } to useShareStore
-```
+The key input accepts several shapes, classified by `lib/keys.ts` helpers:
+a mnemonic phrase (`isMnemonicPhrase` → derive private key), a 64-hex private
+key (`isHexString`), or a base58 public key (`validateBase58PublicKey`).
 
-### 4.1 Driver selection & concurrency
+### 3.3 Results
 
-`uploadContent` (`api.ts`) computes `smallFiles ≤ 20MB` and `largeFiles > 20MB`
-**from the encrypted sizes** (encryption runs first, so the split reflects the
-ciphertext). Two independent concurrency layers:
-
-- **File-level (small files):** a rolling worker pool, `MAX_CONCURRENT_SMALL_FILES
-  = 3`. As each `uploadNextFile` finishes it pulls the next index until the queue
-  drains — at most 3 files in flight.
-- **Part-level (within one large file):** `concurrencyLimit = min(3, totalParts)`
-  parts uploaded per batch. **Large files themselves upload one at a time**
-  (sequential `for` loop), so the peak is 3 parts of a single file, never 3 files.
-
-### 4.2 Multipart upload (`uploadLargeFile`)
-
-A large file is split into 20 MB slices and uploaded as an S3-style multipart:
-
-```
-createMultipartUpload   → { fileId, uploadId }   (uploadId is itself a JWT = multipartToken)
-for each batch of ≤3 parts:
-   uploadPart(sessionId, multipartToken, fileId, partNumber, arrayBuffer)   → { etag }
-      retry up to MAX_RETRIES=3 with linear backoff (1000ms × attempt), progress reset on retry
-completeMultipartUpload(sessionId, multipartToken, fileId, sortedParts)     → { fileId, filename }
-```
-
-**Two distinct tokens:** the chest `uploadToken` (from `createChest`) authorizes
-`create` and the regular upload; the `multipartToken` (the `uploadId` a
-create returns, a JWT) authorizes every `uploadPart` and the `complete` call.
-Parts are collected as `{ partNumber, etag }`, sorted by number before complete.
-
-### 4.3 Progress accounting
-
-Progress is manual and stateful (`fileProgressMap`, keyed by filename / `text-N`):
-
-- **Encrypting is the first 50%** of a file's bar (`Math.round(pct / 2)`); once
-  encrypted, `totalBytes` is **replaced with the ciphertext size** and the bar
-  resets to 0 for the upload phase, so byte counts stay accurate.
-- Per-file status is a small machine:
-  `waiting → encrypting → waiting → starting → uploading → finalizing → completed`
-  (or `error`). `calculateTotalProgress` sums completed part sizes plus
-  in-flight part bytes for the overall bar.
-- **XHR vs fetch split:** `uploadContentRegular` / `uploadPart` use
-  `XMLHttpRequest` **only when an `onProgress` callback is present** — `fetch`
-  cannot report upload progress. With no callback they fall back to `fetch`.
-
-### 4.4 Cancel / retry
-
-`usePocketChest` holds an `AbortController`. `cancelUpload` aborts and resets all
-progress state; `retryUpload` aborts any in-flight upload, clears state, and
-re-invokes `uploadWithSession` with the same key so the resulting share URL is
-stable.
+Each operation appends a `ProcessResult` (`src/types/crypto.ts`) to
+`useProcessStore`: `{ id, mode, inputMode, data: ArrayBuffer, text?, fileInfo?,
+status, progress, stage, downloadUrl? }`. Local row IDs come from
+`@cdlab/driftflake` (`lib/genid.ts`). Cards render download / view / copy /
+share / remove actions; message results open in `LocalResultDialog`.
 
 ---
 
-## 5. Retrieve (download) pipeline
+## 4. The key manager
 
-**Entry:** `RetrieveTab` → `usePocketChest.retrieve`. `page.tsx` reads `?code=`
-from `useSearchParams` and `#key=` synchronously from `window.location.hash`; if
-a code is present the initial tab is `retrieve`.
+`components/keys/KeyManagerDialog.tsx`, opened from the header key icon.
 
-```
-1. api.retrieveChest(code)             → { files, chestToken, expiryDate }
-2. for each file:
-     isText → GET /api/download/:fileId (Bearer chestToken) → decryptTextContent → content (inline)
-     binary → deferred; downloaded on demand
-3. store { files, chestToken, expiryDate } in useRetrieveStore (text bodies to IndexedDB, §6)
-4. downloadSingleFile(fileId, chestToken, filename, key):
-     api.downloadFile → Blob → decryptFile → triggerDownload (browser save)
-```
-
-Text items are decrypted **eagerly** during retrieve (so previews render);
-binary files are decrypted **lazily** per download to avoid holding large
-plaintext blobs in memory. All download requests carry `Authorization: Bearer
-<chestToken>` — a short-lived token scoped to the retrieved chest.
+- **Own key pairs.** `generateMnemonic()` (BIP39, 128-bit) →
+  `deriveKeyPair(mnemonic)`: seed → BIP32 HD node at `m/44'/0'/0'/0/0` →
+  secp256k1. Private key = 32-byte hex; public key = base58 of the compressed
+  33-byte point (`lib/keys.ts`). Import accepts an existing mnemonic.
+- **Contacts.** A list of saved recipient public keys (base58) with notes, fed
+  into public-key encrypt mode as the receiver.
+- **PIN gate.** An optional PIN protects the manager UI: `lib/pin.ts` stores
+  `saltHex:hashHex` where hash = Argon2id(pin, salt). `PinInput` collects it.
+- **Persistence caveat (§8).** The store persists to `localStorage`
+  (`dropply-keys`) through `store/keys-storage.ts`, which base64-encodes the
+  JSON — **obfuscation, not encryption** (it defeats shoulder-surfing and
+  naive greps, nothing more). Only the mnemonic is persisted; private keys are
+  re-derived on demand. Encrypting the keystore with a PIN-derived key is a
+  known deferred hardening (D2).
 
 ---
 
-## 6. Client state & storage
+## 5. Share (model A)
 
-Three Zustand stores; there is **no backend DB in this app** (that is
-`dropply-api`). API type contracts live in `src/types/index.ts`.
+Sharing operates on a **finished encrypted result** — it never encrypts, never
+re-wraps, and never sees a key.
+
+**Entry:** the share button on an encrypted `LocalResultCard` →
+`lib/share-blob.ts shareEncryptedBlob(blob, password?)`:
+
+```
+1. api.getConfig()                  → { requirePassword, emailShareEnabled, maxFileSize }
+2. size check                       → ShareTooLargeError before any upload
+3. api.createChest(password?)       → { sessionId, uploadToken }
+4. upload the blob as `share.enc` (application/octet-stream)
+     small → direct form upload | >20MB → multipart (20MB parts, ≤3 concurrent, 3 retries)
+5. api.completeUpload(...)          → { retrievalCode }        (8-char)
+6. link = `${origin}${pathname}?code=${retrievalCode}`
+```
+
+**Opaque metadata.** The uploaded name is always `share.enc` and the MIME is
+always `application/octet-stream`; the real filename lives inside the
+encrypted header and reappears when the recipient decrypts locally. The server
+learns nothing from the upload beyond size and expiry.
+
+**Share-password gate.** When the server sets `SHARE_PASSWORD`,
+`config.requirePassword` is true and `createChest` must carry the password:
+
+- First share → a password dialog on the card; success caches it in
+  `useAuthStore` (`sessionStorage`, tab-scoped).
+- A later `401` (password rotated server-side) clears the cache, re-opens the
+  dialog with an error state, and retries from scratch.
+- There is no dedicated verify endpoint — `createChest` doubles as the check.
+
+**Email share.** When `config.emailShareEnabled`, the share dialog offers
+`EmailShare` → `POST /api/email/share`. The email contains the retrieval code
+and a link — never a key; copy in the dialog says exactly that.
+
+The share dialog shows the code + link with copy actions; the result of a
+share is cached per card so re-opening it doesn't re-upload.
+
+---
+
+## 6. Retrieve (back into the tool)
+
+There is no retrieve screen. `components/retrieve/RetrieveEntry.tsx` is a
+header icon + dialog:
+
+```
+1. user enters the 6–8 char code (or a ?code= deep link auto-opens the dialog)
+2. api.getConfig()                  → maxFileSize
+3. api.retrieveChest(code)          → { files, chestToken }
+4. per file: api.downloadFile(fileId, chestToken)   (Authorization: Bearer header)
+     oversized files are skipped with a toast
+5. wrap blobs as File objects → crypto.handleFileSelect(files)
+6. detect() sees ciphertext → the tool switches to decrypt (§3.2)
+```
+
+The recipient then enters the password / private key they received
+out-of-band. Multi-file shares retrieve every file in one pass; an empty chest
+or a fully-skipped list surfaces as an error toast instead of a silent no-op.
+
+---
+
+## 7. Client state & storage
+
+Three Zustand stores; there is **no backend DB in this app**. API type
+contracts live in `src/types/index.ts`.
 
 | Store | Shape | Persistence | Security rule |
 | --- | --- | --- | --- |
-| `useShareStore` | `ShareResult { id, retrievalCode, encryptionKey, shareUrl, timestamp }` | `localStorage` `dropply-share-results` | **`partialize` rewrites `encryptionKey` to `''`** before persisting — the key is never written to disk (§8). |
-| `useRetrieveStore` | `RetrieveResult { id, retrievalCode, encryptionKey, files[], chestToken, expiryDate, timestamp }` | `localStorage` `dropply-retrieve-results` | **`partialize` strips text `content`** from files; bodies go to IndexedDB instead (below). |
-| `useAuthStore` | `{ totpToken }` | **`sessionStorage`** `dropply-auth` | TOTP token is **session-scoped**, not durable — closing the tab forgets it (§7). |
+| `useProcessStore` | `ProcessResult[]` history | `localStorage` `dropply-process-results` (metadata) + IndexedDB `dropply-process-data` (the `ArrayBuffer` payloads) | `partialize` keeps only **completed** results; payload bytes never enter `localStorage`. |
+| `useKeysStore` | own `KeyPair[]` (mnemonic + note), contact `PublicKey[]`, `passwordHash` | `localStorage` `dropply-keys` via base64-obfuscating `keys-storage.ts` | Only mnemonics persist (private keys re-derived); PIN stored as Argon2id hash. See §4 caveat. |
+| `useAuthStore` | `{ sharePassword }` | **`sessionStorage`** `dropply-auth` | The share password is **tab-scoped**, not durable — closing the tab forgets it. |
 
-### 6.1 Text bodies in IndexedDB
+**Rehydration.** `useProcessStore` restores result payloads from IndexedDB on
+hydrate, rebuilding `downloadUrl` object URLs; a missing blob marks that row
+`FAILED ("Data lost")` rather than crashing. `isHydrated` gates the history UI.
 
-Decrypted text content is **not** kept in `localStorage` (size + exposure).
-`src/lib/storage.ts` creates `dbStore = createIDBStore<string>(
-'dropply-retrieve-data', 'text-contents')` (from `@cdlab/utils`). `addResult`
-writes each text body keyed `` `${resultId}:${fileId}` ``; `removeResult` /
-`clearResults` clean the matching IDB keys.
-
-### 6.2 Rehydration race guard
-
-`onRehydrateStorage` calls `rehydrateTextContents()`, which reloads bodies from
-IDB back into the in-memory results and sets `isHydrated = true`. The UI waits on
-`isHydrated` before rendering retrieved text. **Errors still set `isHydrated =
-true`** so a failed reload can't deadlock the UI.
-
-### 6.3 Local IDs
-
-`src/lib/genid.ts` = `GenidOptimized({ workerId: 1 })` from
-`@cdlab/driftflake` — snowflake-style IDs for local result rows (`id:
-String(genid.nextId())`), independent of the server's `retrievalCode`.
-
----
-
-## 7. Auth (TOTP gate)
-
-TOTP is an **optional, server-configured** gate on the Share tab only; retrieval
-is never gated.
-
-- On mount, `page.tsx` reads `requireTOTP` from `GET /api/config`. If false, or a
-  token already exists in `useAuthStore`, share unlocks immediately.
-- When required and no token, `ShareTab` shows a lock; `TOTPModal` collects a
-  code. **There is no dedicated verify endpoint** — `handleTOTPSubmit` validates
-  by calling `api.createChest(token)`; success stores the token (sessionStorage)
-  and unlocks share.
-- `handleAuthExpired` clears the token, re-locks share, and re-prompts. Because
-  the token lives in `sessionStorage`, it is forgotten when the tab closes.
-
-The token is carried on `createChest` (`{ totpToken }` body) and every server-side
-TOTP check happens in `dropply-api`.
+**History.** `HistoryDialog` (header icon, shown only when history is
+non-empty) lists past results from the same store; removing a result also
+deletes its IndexedDB blob.
 
 ---
 
 ## 8. Security model
 
-- **Zero-knowledge (G1).** No plaintext or key ever reaches the network. Crypto
-  is client-side; the key rides the URL fragment, which browsers do not send.
-- **Key never persisted (G2).** `useShareStore.partialize` blanks `encryptionKey`
-  before it hits `localStorage`. In-memory results keep the key for the session;
-  disk never does. **Do not change this partialize without understanding it
-  defeats the whole threat model.**
-- **Least-plaintext-at-rest.** Retrieved binary files are decrypted per-download,
-  not all at once; text bodies live in IndexedDB (evictable, origin-scoped), not
-  `localStorage`.
-- **Session-scoped auth.** The TOTP token is `sessionStorage`, so it neither
-  survives a tab close nor leaks into durable storage.
-- **Ciphertext MIME.** Files are uploaded as `application/octet-stream`, so the
-  server never learns the original content type from the blob.
-- **Static-export caveat.** `nodejs_compat` is set in `wrangler.jsonc` for the
-  `next-on-pages` build path even though the deployed app is static — **do not
-  assume Node APIs exist** in the client bundle.
+- **Local-first crypto (G1).** All encryption/decryption happens in a Web
+  Worker in the tab; plaintext never leaves the browser.
+- **No key material in transit or URLs (G2).** Share links carry only
+  `?code=`. The share email carries only the code. `createChest` carries the
+  *share password* (an access-control credential for the server's paid
+  storage), never an encryption key.
+- **Opaque uploads.** `share.enc` + `application/octet-stream` + encrypted
+  header ⇒ the server cannot learn filenames or content types.
+- **Keystore at rest.** `dropply-keys` is base64-obfuscated, not encrypted —
+  a device compromise exposes stored mnemonics. The PIN gates the *UI*, not
+  the data (its hash cannot decrypt anything). D2 (encrypt keystore with a
+  PIN-derived key) is deferred, documented, and should be assumed absent.
+- **Tab-scoped share password.** `sessionStorage` only; a 401 from a rotated
+  server password clears it immediately.
+- **Result history is plaintext-adjacent.** Decrypt results (plaintext bytes)
+  persist to IndexedDB so history survives reload — deliberate UX; users who
+  decrypt secrets on shared machines should remove those rows (which deletes
+  the IDB blob).
+- **Static-export caveat.** `nodejs_compat` in `wrangler.jsonc` serves the
+  build path only — **do not assume Node APIs exist** in the client bundle.
 
 Trust boundary: everything the server sees (retrieval code, chest token,
-ciphertext, sizes, MIME `octet-stream`, expiry) is non-secret. The single secret
-is the fragment key, held only by whoever has the full share URL.
+ciphertext, size, expiry, share password) is either non-secret or a revocable
+access credential. Confidentiality rests entirely on the out-of-band
+password / private key.
 
 ---
 
@@ -323,13 +286,12 @@ is the fragment key, held only by whoever has the full share URL.
 
 - **i18n:** next-intl. `src/i18n/routing.ts` declares locales `['en','zh']`,
   default `en`; `request.ts` loads `messages/{locale}.json`; `navigation.ts`
-  gives locale-aware `Link`/router. `LanguageSelector` switches locale.
-  `messages/en.d.json.ts` (typed messages) is generated (`next.config.ts`
-  `createMessagesDeclaration`) and gitignored.
-- **Theming:** `ClientProviders` wraps `ThemeProvider` with **default `dark` and
-  `enableSystem={false}`**, a `TooltipProvider`, an animated gradient background
-  (per-theme), and `IKVersionInfo` (package name/version + build `BUILD_TIME`).
-  `ThemeToggle` flips light/dark.
+  gives locale-aware `Link`/router. `LanguageSelector` sits in the header.
+  `messages/en.d.json.ts` (typed messages) is generated and gitignored.
+- **Theming:** `ClientProviders` wraps `ThemeProvider` (default **`dark`**,
+  `enableSystem={false}`), a `TooltipProvider`, a plain `bg-background`
+  surface, and `IKVersionInfo` (name/version + `BUILD_TIME`). `ThemeToggle`
+  lives in the header. `dropply.css` adds the hero shine keyframes.
 
 ---
 
@@ -337,47 +299,40 @@ is the fragment key, held only by whoever has the full share URL.
 
 ### 10.1 Config
 
-The only build-time env var is `NEXT_PUBLIC_API_URL` (read once in `api.ts`,
+The only build-time env var is `NEXT_PUBLIC_API_URL` (read in `api.ts`,
 default `''` = same-origin relative `/api`, which nsl serves in dev;
-`.env.example` points it at a Worker URL for production). It is inlined into the
-static bundle at build time — changing it requires a rebuild.
-All *behavioral* config (`requireTOTP`, `emailShareEnabled`, `maxFileSize`) is
-fetched at runtime from `GET /api/config`, so the deployed static bundle adapts
-to the server without a rebuild. Client default `maxFileSize` fallback is
-`100 MB`.
+`.env.example` points it at a Worker URL for production). It is inlined into
+the static bundle at build time — changing it requires a rebuild. All
+*behavioral* config (`requirePassword`, `emailShareEnabled`, `maxFileSize`) is
+fetched at share/retrieve time from `GET /api/config`, so the deployed bundle
+adapts to the server without a rebuild.
 
-Hardcoded tuning (change in `src/lib/api.ts` / `ExpirySelector.tsx`):
-`CHUNK_SIZE = 20 MB`, `MAX_CONCURRENT_SMALL_FILES = 3`, part `concurrencyLimit =
-min(3, totalParts)`, `MAX_RETRIES = 3` (linear `1000ms × attempt`), expiry steps
-`[1,2,3,4,5,6,7,14,30,90,180,365]` days (default `7`).
+Hardcoded tuning (in `src/lib/api.ts`): `CHUNK_SIZE = 20 MB`, part
+`concurrencyLimit = min(3, totalParts)`, `MAX_RETRIES = 3` (linear
+`1000ms × attempt`).
 
 ### 10.2 Build
 
-`next build` produces a static `out/` because of `output: 'export'`. Images are
-`unoptimized`; remote hosts `res.cloudinary.com` and `wcd.pages.dev` are
-allowlisted (`next.config.ts`). `BUILD_TIME` is injected at build via
-`next.config.ts` `env`.
+`next build` produces a static `out/` because of `output: 'export'`. Images
+are `unoptimized`. `BUILD_TIME` is injected at build via `next.config.ts`
+`env`; `allowedDevOrigins` whitelists the tunneled dev origin.
 
 ### 10.3 Deploy
 
-Two coexisting paths:
-
 - **Static assets (primary).** `wrangler.jsonc` serves `./out` directly
-  (`assets.directory`, `not_found_handling: "404-page"`,
-  `compatibility_flags: ["nodejs_compat"]`, `compatibility_date: 2026-05-04`).
-  Live at `dropply.pages.dev`.
+  (`assets.directory`, `not_found_handling: "404-page"`). Live at
+  `dropply.pages.dev`.
 - **`next-on-pages`.** `pnpm --filter @cdlab/dropply-web build:cf` runs
   `@cloudflare/next-on-pages` for a Cloudflare Pages build.
 
-There are **no Cloudflare bindings** — no KV/R2/D1/DO. The app is a static asset
-deployment that depends solely on a reachable `dropply-api`.
+There are **no Cloudflare bindings** — no KV/R2/D1/DO. The app is a static
+asset deployment whose only backend dependency is a reachable `dropply-api`.
 
 ### 10.4 Commands
 
 ```bash
-pnpm --filter @cdlab/dropply-web dev        # nsl → http://dropply-web.localhost:3355
-pnpm --filter @cdlab/dropply-web lint       # next lint
-pnpm --filter @cdlab/dropply-web typecheck  # tsc --noEmit
+pnpm dev:dropply                             # web + api → http://dropply.localhost:3355
+pnpm --filter @cdlab/dropply-web typecheck   # tsc --noEmit
 pnpm --filter @cdlab/dropply-web build       # static out/
 pnpm --filter @cdlab/dropply-web build:cf    # Cloudflare Pages build
 ```

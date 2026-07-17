@@ -9,7 +9,8 @@ sweeps them when they expire.
 Preview (paired frontend): <https://dropply.pages.dev/>
 
 Every share is a **session** (a random UUID owning one or more files) unlocked by
-a **6-character retrieval code**. The code resolves to a scoped download token;
+an **8-character retrieval code** (legacy 6-char codes still resolve). The code
+resolves to a scoped download token;
 files live as `${sessionId}/${fileId}` objects in R2 and are soft-deleted from D1
 and hard-deleted from R2 by an hourly cron once they expire.
 
@@ -18,17 +19,19 @@ and hard-deleted from R2 by an hourly cron once they expire.
 Most file-drop services can read what you upload — the server holds the bytes and
 often the key. `dropply-api` is built so it *structurally can't*:
 
-- **The server never holds a key.** `dropply-web` encrypts client-side and puts
-  the key in the URL fragment; the Worker only ever receives and returns
-  ciphertext. This backend has no decrypt path — there is nothing to leak.
+- **The server never holds a key.** `dropply-web` encrypts client-side and the
+  password / private key is shared out-of-band — it never appears in a URL or a
+  request. The Worker only ever receives and returns ciphertext (uploaded as an
+  opaque `share.enc`); this backend has no decrypt path — there is nothing to leak.
 - **Access is a capability, not a login.** There are no user accounts. A share is
-  reachable only by its 6-char retrieval code, which mints a short-lived,
+  reachable only by its 8-char retrieval code, which mints a short-lived,
   session-scoped JWT; downloads require that token, and it expires with the share.
 - **Nothing lingers.** Expired shares and abandoned uploads are swept hourly — R2
   objects are deleted, DB rows soft-deleted — so storage doesn't accrete.
-- **No auth library, no Node crypto.** JWT (HS256) and TOTP (base32 + HMAC-SHA1)
-  are hand-rolled over Web Crypto so they run on the edge with zero dependencies
-  beyond the platform.
+- **No auth library, no Node crypto.** JWT (HS256) is hand-rolled over Web
+  Crypto, and the optional share gate is a constant-time password check — zero
+  dependencies beyond the platform. Chest creation and retrieval are
+  per-IP rate-limited to keep abuse (and R2 spend) bounded.
 - **Two upload paths, one model.** Small payloads go through a direct multipart
   form; large files use R2 native multipart (create → part → complete) — both end
   as the same `files` rows keyed the same way.
@@ -46,18 +49,18 @@ pnpm --filter @cdlab/dropply-api dev        # -> http://dropply-api.localhost:33
 
 The dev URL is fixed by [`@dotns/nsl`](https://github.com/dotns/nsl) — no port
 hunting. A health check lives at `GET /`; all business routes are under `/api`.
-Copy `.env.example` to `.env` (and set `vars` / secrets in `wrangler.jsonc` /
-`.dev.vars`) before enabling TOTP or email.
+Copy `.env.example` to `.env` (drizzle-kit only) and `.dev.vars.example` to
+`.dev.vars` (runtime secrets) before enabling the share password or email.
 
 ## How a share flows
 
 ```
-POST /api/chest                       → sessionId + upload JWT (24h)   [TOTP gate optional]
-POST /api/chest/:id/upload            → stream files/text to R2 + files rows
-POST /api/chest/:id/complete          → mint 6-char retrieval code + expiry
+POST /api/chest                       → sessionId + upload JWT (24h)   [password gate optional; 20/min per IP]
+POST /api/chest/:id/upload            → stream files to R2 + files rows
+POST /api/chest/:id/complete          → mint 8-char retrieval code + expiry
 ─────────────────────────────────────  (share the code out-of-band)
-GET  /api/retrieve/:code              → file list + chest JWT (tied to expiry)
-GET  /api/download/:fileId            → stream bytes from R2   [Bearer OR ?token=]
+GET  /api/retrieve/:code              → file list + chest JWT (tied to expiry)   [30/min per IP]
+GET  /api/download/:fileId            → stream bytes from R2   [Authorization: Bearer only]
 ```
 
 Large files swap the middle step for R2 native multipart:
@@ -72,18 +75,20 @@ flowchart TD
 ```
 
 1. **Create** mints a `sessionId` (UUID) and an `upload` JWT, inserting a
-   `sessions` row with `uploadComplete = 0`. If `REQUIRE_TOTP=true`, a valid
-   6-digit code is required first.
-2. **Upload** streams each `files` entry to R2 at `${sessionId}/${fileId}` and
-   each `textItems` snippet as text at the same key; R2 puts and the batched
-   `files` insert run in parallel.
-3. **Complete** mints a CSPRNG 6-char retrieval code and an expiry, flipping the
-   session to `uploadComplete = 1`.
+   `sessions` row with `uploadComplete = 0`. If the `SHARE_PASSWORD` secret is
+   set, the request body must carry the matching `password` (compared in
+   constant time).
+2. **Upload** streams each `files` entry to R2 at `${sessionId}/${fileId}`
+   (size-capped by `MAX_FILE_SIZE_MB` → 413); R2 puts and the batched `files`
+   insert run in parallel.
+3. **Complete** verifies the submitted `fileIds` are a subset of the session's
+   own files, then mints a CSPRNG 8-char retrieval code (rejection-sampled, no
+   modulo bias) and an expiry, flipping the session to `uploadComplete = 1`.
 4. **Retrieve** resolves the code to the file list and issues a `chest` JWT
    scoped to the session and its expiry.
-5. **Download** verifies the `chest` token (header or `?token=` query, so plain
-   `<a>` links work), re-checks expiry, and streams the R2 object back with an
-   RFC 5987 `Content-Disposition`.
+5. **Download** verifies the `chest` token (`Authorization: Bearer` header
+   only — tokens never appear in URLs or logs), re-checks expiry, and streams
+   the R2 object back with an RFC 5987 `Content-Disposition`.
 
 The full model — token scoping, the ownership-by-count nuance, the cleanup
 windows, and the security reasoning — is in [`DESIGN.md`](DESIGN.md).
@@ -93,15 +98,15 @@ windows, and the security reasoning — is in [`DESIGN.md`](DESIGN.md).
 | Route | File | Purpose |
 | --- | --- | --- |
 | `GET /` | `src/index.ts` | Static health / status JSON. |
-| `GET /api/config` | `routes/config.ts` | Frontend knobs: `requireTOTP`, `emailShareEnabled`, `maxFileSize`. |
-| `POST /api/chest` | `routes/chest.ts` | Create a session (optional TOTP gate); returns an `upload` JWT (24h). |
-| `POST /api/chest/:sessionId/upload` | `routes/chest.ts` | Direct multipart-form upload of files + text into R2 + `files` rows. |
+| `GET /api/config` | `routes/config.ts` | Frontend knobs: `requirePassword`, `emailShareEnabled`, `maxFileSize`. |
+| `POST /api/chest` | `routes/chest.ts` | Create a session (optional password gate, 20/min per IP); returns an `upload` JWT (24h). |
+| `POST /api/chest/:sessionId/upload` | `routes/chest.ts` | Direct multipart-form upload of files into R2 + `files` rows. |
 | `POST /api/chest/:sessionId/complete` | `routes/chest.ts` | Verify file count, mint the retrieval code + expiry. |
 | `POST /api/chest/:sessionId/multipart/create` | `routes/chest.ts` | Start an R2 multipart upload; returns a `multipart` JWT (48h). |
 | `PUT /api/chest/:sessionId/multipart/:fileId/part/:partNumber` | `routes/chest.ts` | Upload one part, resuming via the `multipart` JWT; returns its etag. |
 | `POST /api/chest/:sessionId/multipart/:fileId/complete` | `routes/chest.ts` | Complete the R2 upload, insert the `files` row from JWT-carried metadata. |
-| `GET /api/retrieve/:retrievalCode` | `routes/retrieve.ts` | Resolve a code to its file list; returns a `chest` JWT. |
-| `GET /api/download/:fileId` | `routes/download.ts` | Stream a file from R2, authorized by a `chest` JWT (`Authorization: Bearer` **or** `?token=`). |
+| `GET /api/retrieve/:retrievalCode` | `routes/retrieve.ts` | Resolve a code to its file list (30/min per IP); returns a `chest` JWT. |
+| `GET /api/download/:fileId` | `routes/download.ts` | Stream a file from R2, authorized by a `chest` JWT (`Authorization: Bearer` header only). |
 | `POST /api/email/share` | `routes/email.ts` | Send the retrieval code + file summary via Resend (gated). |
 
 **Response envelope.** Business routes return `ApiResponse<T>` =
@@ -128,14 +133,14 @@ verifier asserts `payload.type`, so tokens can't be used cross-scope.
 | `src/index.ts` | Hono entry: `accesslog` → `prettyJSON` → `requestId` → open `cors`; mounts route groups under `/api`; exports `fetch` + the cron `scheduled()`. |
 | `src/routes/` | Five Hono sub-apps (`chest`, `retrieve`, `download`, `config`, `email`), barrel-exported from `routes/index.ts`. |
 | `src/lib/jwt.ts` | Hand-rolled HS256 JWT sign/verify + the three `create*`/`verify*` token helpers. |
-| `src/lib/totp.ts` | Hand-rolled TOTP (base32 + HMAC-SHA1, 30s step, ±1 window); `parseTOTPSecrets` reads `name:secret,name2:secret2`; `verifyAnyTOTP` matches any. |
+| `src/lib/rate-limit.ts` | Per-IP fixed-window rate limiter middleware (chest 20/min, retrieve 30/min). |
 | `src/lib/db.ts` | Thin adapter over `@cdlab/db/node`'s `defineDb`; `useDrizzle(c)` builds a driver from `c.env` per `DB_TYPE`. Re-exports the `withNotDeleted` / `softDelete` helpers. |
 | `src/lib/utils.ts` | `generateUUID`, `generateRetrievalCode` (CSPRNG), format validators, `calculateExpiry`, `getFileExtension`. |
 | `src/lib/validationSchemas.ts` | All zod schemas for params / body / query. |
 | `src/cron/cleanup.ts` | `cleanupExpiredContent(env)` — sweeps expired + stale-incomplete sessions from R2 and D1. |
 | `src/global.ts` | Sets global `logger` (winston or a `cf` console shim) + `isDebug`; imported for side effects. |
 | `src/database/schema.ts` | Drizzle SQLite schema: `sessions` + `files`, sharing `trackingFields`. |
-| `scripts/generate-secrets.sh` | Emits a `JWT_SECRET`, a base32 TOTP secret, and an `otpauth://` URI (+ optional QR). |
+| `scripts/generate-secrets.sh` | Emits a fresh `JWT_SECRET` and `SHARE_PASSWORD` ready to paste into `.dev.vars` / `wrangler secret put`. |
 
 ## Configuration
 
@@ -148,9 +153,8 @@ All knobs are `vars` in [`wrangler.jsonc`](wrangler.jsonc); secrets belong in
 | `DB_TYPE` | `libsql` | Driver: `libsql` (Turso) or `d1` (the `DB` binding). |
 | `LIBSQL_URL` / `LIBSQL_AUTH_TOKEN` | — | LibSQL / Turso connection (used when `DB_TYPE=libsql`). |
 | `MAX_FILE_SIZE_MB` | `100` | Max file size reported by `GET /api/config` (advisory; the hard cap is 5 GB per file in zod). |
-| `REQUIRE_TOTP` | `false` | Require a valid TOTP code to create a chest session. |
-| `TOTP_SECRETS` | — | `name:secret,name2:secret2` list of base32 TOTP secrets. |
-| `JWT_SECRET` | — | HMAC secret for the `upload` / `multipart` / `chest` JWTs. |
+| `SHARE_PASSWORD` | — | **Secret.** When set, `POST /api/chest` requires this password (constant-time check); unset keeps sharing open. |
+| `JWT_SECRET` | — | **Secret.** HMAC key for the `upload` / `multipart` / `chest` JWTs. |
 | `ENABLE_EMAIL_SHARE` | `false` | Enable `POST /api/email/share` (also needs `RESEND_API_KEY`). |
 | `RESEND_API_KEY` | — | Resend API key. |
 | `RESEND_FROM_EMAIL` | `noreply@resend.dev` | Sender address for share emails. |
@@ -176,7 +180,8 @@ Drizzle over SQLite (`src/database/schema.ts`); both tables share a
 | Table | Purpose | Key constraints |
 | --- | --- | --- |
 | `sessions` | One share: `retrievalCode`, `uploadComplete`, `expiresAt` (nullable = permanent). | `retrievalCode` **unique**; index on `expiresAt`. |
-| `files` | One file/text item: `originalFilename`, `mimeType`, `fileSize`, `fileExtension`, `isText`. | `sessionId` FK → `sessions.id` **`onDelete: cascade`**; index on `sessionId`. |
+| `files` | One file: `originalFilename`, `mimeType`, `fileSize`, `fileExtension`, `isText`. | `sessionId` FK → `sessions.id` **`onDelete: cascade`**; index on `sessionId`. |
+| `multipart_uploads` | Tracks in-flight R2 multipart uploads so abandoned ones can be aborted by the cron. | `sessionId` FK → `sessions.id` **`onDelete: cascade`**. |
 
 Object key convention everywhere: `${sessionId}/${fileId}`.
 
@@ -189,9 +194,10 @@ Object key convention everywhere: `${sessionId}/${fileId}`.
 - **Stale-incomplete** sessions (`uploadComplete = 0`, older than 48h — matching
   the multipart JWT window, so abandoned multipart uploads get reclaimed).
 
-Per session it lists + deletes R2 objects under `${sessionId}/`, then soft-deletes
-the `files` rows and the `session`. Failures are accumulated into an `errors[]`
-tally and never abort the sweep.
+Per session it aborts any in-flight R2 multipart uploads (via the
+`multipart_uploads` rows), lists + deletes R2 objects under `${sessionId}/`, then
+soft-deletes the `files` rows and the `session`. Failures are accumulated into an
+`errors[]` tally and never abort the sweep.
 
 ## Build, test & deploy
 

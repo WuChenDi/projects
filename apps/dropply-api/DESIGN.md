@@ -3,15 +3,15 @@
 > A zero-knowledge file-sharing backend on Cloudflare Workers. Encryption happens
 > entirely in the browser (`dropply-web`); this Worker only ever stores and
 > returns **ciphertext**. A share is a **session** (a UUID owning one or more
-> files) unlocked by a **6-character retrieval code**; access is a short-lived,
+> files) unlocked by an **8-character retrieval code**; access is a short-lived,
 > session-scoped signed token, never a login; and every share is swept from R2
 > and soft-deleted from the database once it expires.
 
 This is the authoritative design spec; the implementation follows it. Section
 numbers are stable anchors — source comments and reviews reference them as
 `design §N`. It is the server half of the Dropply pair: `dropply-web` owns all
-cryptography and the URL-fragment key; `dropply-api` is a blind blob store with a
-capability gate.
+cryptography (keys/passwords are shared out-of-band, never sent anywhere);
+`dropply-api` is a blind blob store with a capability gate.
 
 **Contents**
 
@@ -22,7 +22,7 @@ capability gate.
 5. [Upload paths](#5-upload-paths)
 6. [Data model & storage](#6-data-model--storage)
 7. [Cleanup & expiry](#7-cleanup--expiry)
-8. [Auxiliary services (TOTP, email, config)](#8-auxiliary-services-totp-email-config)
+8. [Auxiliary services (share password, email, config)](#8-auxiliary-services-share-password-email-config)
 9. [Security model](#9-security-model)
 10. [Configuration & deployment](#10-configuration--deployment)
 
@@ -33,23 +33,26 @@ capability gate.
 A file-drop service is trivial to stand up and hard to make *trustworthy*: the
 naïve design has the server holding both the bytes and (often) the key, so "we
 can't read your files" is a promise, not a property. Dropply splits the problem —
-`dropply-web` does all encryption in the browser and carries the key in the URL
-fragment (never sent to the server); `dropply-api` is what's left: a store that
-holds ciphertext it cannot decrypt, gated by a capability it hands out on demand.
+`dropply-web` does all encryption in the browser and the key/password travels
+out-of-band (never in a URL, never sent to the server); `dropply-api` is what's
+left: a store that holds ciphertext it cannot decrypt, gated by a capability it
+hands out on demand.
 
 Goals:
 
 - **G1 — Blind by construction.** The server has no decrypt path and never
   receives a key. It stores and returns opaque bytes; a full database + R2 dump
-  reveals nothing without the fragment keys held only by recipients.
+  reveals nothing without the passwords / private keys held only by participants.
 - **G2 — Capability access, not accounts.** No user table, no login. A share is
   reachable only via its retrieval code, which mints a token scoped to exactly
   one session and bounded by that session's expiry.
 - **G3 — Bounded lifetime.** Shares expire; abandoned uploads are reclaimed.
   Storage must not accrete — an hourly cron is the garbage collector.
 - **G4 — Edge-native, dependency-light.** Runs as a single Worker. Auth
-  primitives (JWT, TOTP) are hand-rolled over Web Crypto so there is no Node
-  crypto and no auth library on the critical path.
+  primitives (HS256 JWT, constant-time password compare) are hand-rolled over
+  Web Crypto so there is no Node crypto and no auth library on the critical
+  path. Write/read entry points are per-IP rate-limited (chest 20/min,
+  retrieve 30/min).
 - **G5 — Two upload paths, one shape.** Small payloads and multi-gigabyte files
   both end as identical `files` rows keyed `${sessionId}/${fileId}`.
 
@@ -119,7 +122,8 @@ The canonical flow is create → upload → complete → retrieve → download. 
 below cites the handler in `src/routes/chest.ts` unless noted.
 
 ```
-POST /api/chest                          [TOTP gate if REQUIRE_TOTP]
+POST /api/chest                          [rate-limited 20/min; password gate if SHARE_PASSWORD]
+  → constantTimeEqual(body.password, SHARE_PASSWORD)   when the secret is set
   → generateUUID() = sessionId
   → createUploadJWT(sessionId)           upload JWT, 24h
   → insert sessions { id, uploadComplete: 0 }
@@ -128,25 +132,25 @@ POST /api/chest                          [TOTP gate if REQUIRE_TOTP]
 POST /api/chest/:sessionId/upload        [Bearer upload JWT, matched to :sessionId]
   → assert session exists & uploadComplete = 0
   → for each `files` File   → R2.put(`${sessionId}/${fileId}`, file.stream())
-  → for each `textItems`    → R2.put(`${sessionId}/${fileId}`, content)
+                              (rejects 413 when size > MAX_FILE_SIZE_MB)
   → Promise.all([ all R2 puts, batched files insert ])
   → { uploadedFiles: [{ fileId, filename, isText }] }
 
 POST /api/chest/:sessionId/complete      [Bearer upload JWT]  body: { fileIds, validityDays }
-  → assert (count of session's files) === fileIds.length   (see §9.2)
-  → retrievalCode = generateRetrievalCode()   (6-char CSPRNG)
+  → assert every fileId belongs to this session   (subset check, see §9.2)
+  → retrievalCode = generateRetrievalCode()   (8-char CSPRNG, rejection-sampled)
   → expiresAt = calculateExpiry(validityDays)
   → update session { retrievalCode, uploadComplete: 1, expiresAt }
   → { retrievalCode, expiryDate }
 
-GET /api/retrieve/:retrievalCode
+GET /api/retrieve/:retrievalCode         [rate-limited 30/min]
   → find session where retrievalCode = ? AND uploadComplete = 1 (not deleted)
   → reject if expired
   → list files (ordered by createdAt); reject if none
   → chestToken = createChestJWT(sessionId, expiresAt)
   → { files: [...], chestToken, expiryDate }
 
-GET /api/download/:fileId                [chest JWT via Bearer OR ?token=]
+GET /api/download/:fileId                [chest JWT via Authorization: Bearer only]
   → verifyChestJWT → payload.sessionId
   → join files ⨝ sessions where files.id = :fileId AND files.sessionId = payload.sessionId
   → reject if session expired
@@ -201,14 +205,13 @@ Design notes:
 
 ### 5.1 Direct multipart-form (`POST /chest/:sessionId/upload`)
 
-For smaller payloads and inline text. The handler iterates `formData`:
+For smaller payloads. The handler iterates `formData`:
 
 - Each `files` entry (a `File`) is streamed to R2 as `${sessionId}/${fileId}`
   (`value.stream()`, so the body never buffers in memory) and queued as a `files`
-  insert with `isText: 0`.
-- Each `textItems` entry (a JSON string `{ filename?, content }`) is stored as
-  text at the same key pattern with `isText: 1`; its size is the UTF-8 byte
-  length of the content.
+  insert. Files over `MAX_FILE_SIZE_MB` are rejected with `413` before any byte
+  hits R2. (The former `textItems` path was removed — text is encrypted
+  client-side and arrives as a regular file.)
 
 All R2 puts and the single batched `files` insert run under one
 `Promise.all` — the DB write is one statement, not one per file.
@@ -218,9 +221,11 @@ All R2 puts and the single batched `files` insert run under one
 Three endpoints wrap R2's own multipart API so multi-gigabyte files upload in
 resumable parts without ever passing through the Worker's memory as a whole:
 
-1. **`POST .../multipart/create`** — asserts `uploadComplete = 0`, calls
-   `R2_STORAGE.createMultipartUpload(${sessionId}/${fileId})`, then mints a
-   `multipart` JWT embedding the returned R2 `uploadId` plus the client-declared
+1. **`POST .../multipart/create`** — asserts `uploadComplete = 0`, rejects a
+   declared `fileSize` over `MAX_FILE_SIZE_MB` (`413`), calls
+   `R2_STORAGE.createMultipartUpload(${sessionId}/${fileId})`, inserts a
+   `multipart_uploads` tracking row, then mints a `multipart` JWT embedding the
+   returned R2 `uploadId` plus the client-declared
    `filename`/`mimeType`/`fileSize`. **No `files` row is written yet.**
 2. **`PUT .../multipart/:fileId/part/:partNumber`** — verifies the `multipart`
    token matches both `:sessionId` and `:fileId` (`403` otherwise), rejects an
@@ -228,11 +233,13 @@ resumable parts without ever passing through the Worker's memory as a whole:
    returns the part's `etag`. The client accumulates `{ partNumber, etag }`.
 3. **`POST .../multipart/:fileId/complete`** — sorts the parts by number,
    `resumeMultipartUpload(...).complete(sortedParts)`, and only then inserts the
-   `files` row from the JWT-carried metadata.
+   `files` row from the JWT-carried metadata and retires the
+   `multipart_uploads` tracking row.
 
 **Consequence (by design):** an abandoned multipart upload leaves an in-progress
-R2 upload with **no DB row** — invisible to retrieval, and reclaimed by the 48h
-stale-incomplete sweep (§7), which the JWT's 48h TTL is chosen to match.
+R2 upload with no `files` row — invisible to retrieval. Its `multipart_uploads`
+row lets the 48h stale-incomplete sweep (§7) **abort the R2 upload explicitly**
+(reclaiming the parts), matching the JWT's 48h TTL.
 
 ---
 
@@ -249,9 +256,9 @@ are ever truly deleted.
 | Column | Type | Notes |
 | --- | --- | --- |
 | `id` | text PK | UUID v4. |
-| `retrievalCode` | text | 6-char code; **unique index** `idx_sessions_retrieval_code`. Null until `complete`. |
+| `retrievalCode` | text | 8-char code (legacy 6-char rows still resolve); **unique index** `idx_sessions_retrieval_code`. Null until `complete`. |
 | `uploadComplete` | int | `0` = filling, `1` = sealed. Default `0`. |
-| `expiresAt` | timestamp | Nullable = permanent. Index `idx_sessions_expires_at`. |
+| `expiresAt` | timestamp | Nullable = permanent. Index `idx_sessions_expires_at`; composite `idx_sessions_upload_complete_created_at` serves the stale-incomplete sweep. |
 
 ### 6.2 `files`
 
@@ -265,7 +272,14 @@ are ever truly deleted.
 | `fileExtension` | text | Nullable (`getFileExtension`). |
 | `isText` | int | `1` for `textItems`, else `0`. |
 
-### 6.3 R2 key convention
+### 6.3 `multipart_uploads`
+
+Tracks in-flight R2 multipart uploads (migration `0001`): `fileId` (PK),
+`sessionId` (FK, cascade), `r2UploadId`, plus the shared `trackingFields` —
+completion and the cron's abort both retire a row by soft-deleting it. Index
+`idx_multipart_uploads_session_id`.
+
+### 6.4 R2 key convention
 
 Every blob is `${sessionId}/${fileId}`, everywhere — upload, multipart, download,
 and cleanup's `list({ prefix: "${sessionId}/" })` all rely on this. The session
@@ -290,8 +304,10 @@ Two cohorts are gathered, then merged and processed uniformly:
    48h window matches the `multipart` JWT TTL, so any abandoned multipart upload
    is reclaimed exactly when its token dies.
 
-For each session: `R2.list({ prefix })` → `R2.delete` every object
-(`Promise.all`), then soft-delete the `files` rows, then the `session`. The
+For each session: abort any pending R2 multipart uploads recorded in
+`multipart_uploads` (then mark those rows), `R2.list({ prefix })` → `R2.delete`
+every object (`Promise.all`), then soft-delete the `files` rows, then the
+`session`. The
 handler is **failure-tolerant**: every per-session error is pushed onto an
 `errors[]` accumulator and the loop continues; the function returns a
 `CleanupResult` tally rather than throwing, and `scheduled()` logs it.
@@ -302,18 +318,18 @@ unreachable in the up-to-59-minute window before the cron runs.
 
 ---
 
-## 8. Auxiliary services (TOTP, email, config)
+## 8. Auxiliary services (share password, email, config)
 
-### 8.1 TOTP gate (`src/lib/totp.ts`)
+### 8.1 Share-password gate
 
-Optional, off by default. When `REQUIRE_TOTP === 'true'`, `POST /chest` requires
-a 6-digit `totpToken` validated by `verifyAnyTOTP` against `TOTP_SECRETS`. The
-implementation is hand-rolled: base32 encode/decode, HMAC-SHA1, 30-second step,
-±1 window (so ±30s clock skew is tolerated). `parseTOTPSecrets` reads a
-`name:secret,name2:secret2` list into a map, and `verifyAnyTOTP` returns true if
-the code matches *any* configured secret — so multiple operators can each hold
-their own authenticator. `scripts/generate-secrets.sh` produces a secret + its
-`otpauth://` URI. It gates only *creation*, not retrieval/download.
+Optional, off by default. When the `SHARE_PASSWORD` secret is set,
+`POST /chest` requires a matching `password` in the request body, compared with
+a constant-time equality check (no early exit, no timing side channel). There
+is no dedicated verify endpoint — the frontend validates a password by
+attempting `createChest` and reacting to the `401`. It gates only *creation*,
+not retrieval/download. `scripts/generate-secrets.sh` produces a fresh
+`JWT_SECRET` + `SHARE_PASSWORD` pair. Combined with the per-IP rate limit
+(20/min) this bounds abuse of the paid R2/D1 surface.
 
 ### 8.2 Email share (`src/routes/email.ts`)
 
@@ -329,7 +345,7 @@ requires the recipient to hit `/retrieve`.
 ### 8.3 Public config (`src/routes/config.ts`)
 
 `GET /api/config` is the frontend's knob-discovery endpoint, returning
-`{ requireTOTP, emailShareEnabled, maxFileSize }`. `maxFileSize` is
+`{ requirePassword, emailShareEnabled, maxFileSize }`. `maxFileSize` is
 `MAX_FILE_SIZE_MB × 1024²` (default 100 MB) and is **advisory** — it tells the UI
 what to enforce; the server's hard ceiling is the 5 GB-per-file zod cap in
 `validationSchemas.ts`. `emailShareEnabled` is true only when both the flag and
@@ -345,30 +361,33 @@ capability tokens and input validation.
 ### 9.1 Validation
 
 All params/body/query pass zod (`src/lib/validationSchemas.ts` +
-`@hono/zod-validator`): UUIDs for `sessionId`/`fileId`, 6-char `[A-Z0-9]`
-retrieval codes, 6-digit TOTP, `validityDays` 1–365 (required), part numbers
-1–10000, ≤100 `fileIds` per complete, ≤10000 parts, a MIME-type regex, and the
-5 GB per-file cap.
+`@hono/zod-validator`): UUIDs for `sessionId`/`fileId`, 6–8-char `[A-Z0-9]`
+retrieval codes, an optional 1–256-char share `password`, `validityDays` 1–365
+(required), part numbers 1–10000, ≤100 `fileIds` per complete, ≤10000 parts, a
+MIME-type regex, and the 5 GB per-file cap (plus the runtime
+`MAX_FILE_SIZE_MB` 413 check).
 
-### 9.2 Ownership check is by count, not identity (known nuance)
+### 9.2 Ownership check is a subset assertion
 
-`POST /chest/:sessionId/complete` verifies files by **count only**: it selects
-the session's non-deleted files and checks `count === fileIds.length`. It does
-**not** assert that the provided `fileIds` are the session's files. Because the
-`upload` token already scopes writes to one session and files can only be
-attached to the session that created them, this is not exploitable across
-sessions — but it does mean `fileIds` is effectively a length assertion, not an
-identity check. Anyone changing `complete` should preserve or tighten this, not
-loosen it.
+`POST /chest/:sessionId/complete` selects the session's non-deleted files and
+rejects (`400`) if any submitted `fileId` is not among them — every `fileId`
+must belong to the session being sealed. (This tightened the earlier
+count-only check.) The `upload` token already scopes writes to one session, so
+this is defense in depth, not the sole boundary.
 
-### 9.3 Download token in the query string
+### 9.3 Download token is header-only
 
 `GET /download/:fileId` accepts the `chest` token via `Authorization: Bearer`
-**or** `?token=`. The query form exists so a plain `<a href>` / browser download
-works without a fetch wrapper — the trade-off is that the token appears in URLs
-(and thus potentially in logs/history). It is acceptable because the token is
-narrowly scoped (one session, read-only, expires with the share) and unlocks only
-ciphertext.
+**only** — the former `?token=` query form was removed so tokens never land in
+URLs, browser history, or access logs. The frontend downloads via `fetch` +
+Blob, so no plain `<a href>` path is needed.
+
+### 9.3b Rate limiting
+
+`src/lib/rate-limit.ts` is a per-IP fixed-window limiter (in-memory per
+isolate): `POST /chest` 20/min, `GET /retrieve/:code` 30/min → `429`. Retrieval
+throttling also slows retrieval-code guessing (8-char × 36-alphabet makes
+brute force impractical to begin with).
 
 ### 9.4 Open CORS
 
@@ -395,7 +414,7 @@ All runtime knobs are `vars` in `wrangler.jsonc` and typed in `CloudflareEnv`
 some sibling apps); handlers read `c.env.*` directly and coerce inline
 (`=== 'true'` for booleans, `Number.parseInt` for `MAX_FILE_SIZE_MB`). The full
 table is in the [README](README.md#configuration). Secrets (`JWT_SECRET`,
-`TOTP_SECRETS`, `RESEND_API_KEY`, `LIBSQL_AUTH_TOKEN`) belong in `.dev.vars`
+`SHARE_PASSWORD`, `RESEND_API_KEY`, `LIBSQL_AUTH_TOKEN`) belong in `.dev.vars`
 (local) or `wrangler secret put` (prod), never in committed `vars`.
 
 ### 10.2 Bindings
