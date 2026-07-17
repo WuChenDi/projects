@@ -25,7 +25,7 @@ Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
   `/api`; `GET /` is a static health JSON.
 - **No accounts, no auth library.** Access is capability tokens (hand-rolled
   HS256 JWT over Web Crypto). Optional share-password gate (`SHARE_PASSWORD`
-  secret, constant-time compare) + per-IP rate limits (chest 20/min,
+  secret; client sends an Argon2id hash, server verifies) + per-IP rate limits (chest 20/min,
   retrieve 30/min → 429).
 - **Dual DB driver** selected by `DB_TYPE`: `libsql` (Turso, default) or `d1`
   (the `DB` binding). Wired via `@cdlab/db/node` (Node entry — this is a plain
@@ -35,7 +35,7 @@ Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
 ## Share lifecycle (src/routes/chest.ts, retrieve.ts, download.ts)
 
 1. `POST /api/chest` — rate-limited 20/min; if `SHARE_PASSWORD` is set the body
-   must carry the matching `password` (constant-time compare, 401 otherwise) →
+   must carry `password` as an Argon2id hash (verified against SHARE_PASSWORD, 401 otherwise) →
    mint `sessionId` + `upload` JWT (24h), insert `sessions` row
    `uploadComplete: 0`. Returns `{ sessionId, uploadToken, expiresIn: 86400 }`.
 2. `POST /api/chest/:sessionId/upload` — Bearer upload JWT matched to `:sessionId`.

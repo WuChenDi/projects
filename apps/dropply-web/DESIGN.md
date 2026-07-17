@@ -193,7 +193,10 @@ encrypted header and reappears when the recipient decrypts locally. The server
 learns nothing from the upload beyond size and expiry.
 
 **Share-password gate.** When the server sets `SHARE_PASSWORD`,
-`config.requirePassword` is true and `createChest` must carry the password:
+`config.requirePassword` is true and `createChest` must carry the password —
+`api.ts` hashes it with `hashPasswordFn` (Argon2id) before sending, so the
+plaintext never leaves the tab; the API verifies the hash against
+`SHARE_PASSWORD`:
 
 - First share → a password dialog on the card; success caches it in
   `useAuthStore` (`sessionStorage`, tab-scoped).

@@ -1,3 +1,4 @@
+import { verifyPasswordFn } from '@cdlab/utils'
 import { zValidator } from '@hono/zod-validator'
 import { and, eq } from 'drizzle-orm'
 import { Hono } from 'hono'
@@ -37,23 +38,6 @@ import type {
 
 export const chestRoutes = new Hono<{ Bindings: CloudflareEnv }>()
 
-// Constant-time string compare: digest both sides so lengths match, then
-// XOR-compare the digest bytes.
-async function constantTimeEqual(a: string, b: string): Promise<boolean> {
-  const encoder = new TextEncoder()
-  const [digestA, digestB] = await Promise.all([
-    crypto.subtle.digest('SHA-256', encoder.encode(a)),
-    crypto.subtle.digest('SHA-256', encoder.encode(b)),
-  ])
-  const bytesA = new Uint8Array(digestA)
-  const bytesB = new Uint8Array(digestB)
-  let diff = 0
-  for (let i = 0; i < bytesA.length; i++) {
-    diff |= bytesA[i] ^ bytesB[i]
-  }
-  return diff === 0
-}
-
 // POST /chest - Create new chest
 chestRoutes.post(
   '/chest',
@@ -65,7 +49,9 @@ chestRoutes.post(
     const db = useDrizzle(c)
     const { password } = c.req.valid('json')
 
-    // Optional share-password gate
+    // Optional share-password gate. The client sends an Argon2id hash of the
+    // password (never the plaintext); we verify it against the configured
+    // SHARE_PASSWORD by re-hashing with the client-supplied salt.
     if (c.env.SHARE_PASSWORD) {
       if (!password) {
         return c.json<ApiResponse>(
@@ -77,7 +63,7 @@ chestRoutes.post(
         )
       }
 
-      const isValid = await constantTimeEqual(password, c.env.SHARE_PASSWORD)
+      const isValid = await verifyPasswordFn(password, c.env.SHARE_PASSWORD)
       if (!isValid) {
         return c.json<ApiResponse>(
           {

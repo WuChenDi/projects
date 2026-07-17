@@ -1,7 +1,12 @@
 import * as z from 'zod'
 
 export const createChestRequestSchema = z.object({
-  password: z.string().min(1).max(256).optional(),
+  // Argon2id hash of the share password produced client-side by hashPasswordFn:
+  // `hex(16B salt):hex(32B hash)` — the plaintext password is never sent.
+  password: z
+    .string()
+    .regex(/^[0-9a-f]{32}:[0-9a-f]{64}$/, 'Invalid password hash format')
+    .optional(),
 })
 
 export const completeUploadRequestSchema = z.object({
