@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "dropply-api",
   "main": "src/index.ts",
-  "compatibility_date": "2026-05-04",
+  "compatibility_date": "2026-07-16",
   "compatibility_flags": ["nodejs_compat"],
   // Secrets (JWT_SECRET, SHARE_PASSWORD — optional share-password gate, RESEND_API_KEY,
   // LIBSQL_AUTH_TOKEN) are NEVER set in `vars`. Locally they come from `.dev.vars`

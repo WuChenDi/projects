@@ -53,10 +53,10 @@
     "prepare": "turbo run build --filter=./packages/*"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.1",
+    "@biomejs/biome": "^2.5.4",
     "@cdlab/tsconfig": "workspace:*",
     "@types/node": "catalog:dev",
-    "turbo": "^2.10.4",
+    "turbo": "^2.10.5",
     "typescript": "catalog:dev"
   }
 }

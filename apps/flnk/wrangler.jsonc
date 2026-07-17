@@ -6,7 +6,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "flnk",
   "main": "src/worker/index.ts",
-  "compatibility_date": "2026-05-25",
+  "compatibility_date": "2026-07-16",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
     "binding": "ASSETS",

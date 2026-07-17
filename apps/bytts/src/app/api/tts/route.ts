@@ -37,7 +37,7 @@ async function refreshEndpoint() {
 
   // De-dupe concurrent refreshes in the same isolate: share one in-flight
   // promise so only a single endpoint fetch runs at a time.
-  if (refreshInFlight !== null) return refreshInFlight
+  if (refreshInFlight !== null) return await refreshInFlight
 
   refreshInFlight = (async () => {
     const ep = await getEndpoint()
@@ -62,7 +62,7 @@ async function refreshEndpoint() {
     refreshInFlight = null
   })
 
-  return refreshInFlight
+  return await refreshInFlight
 }
 
 async function getEndpoint() {
