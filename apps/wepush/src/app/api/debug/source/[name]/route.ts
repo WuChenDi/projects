@@ -61,10 +61,10 @@ async function callSource(
 ) {
   switch (name) {
     case 'weather':
-      return getBaseWeather(args.cityCode, args.ctx)
+      return await getBaseWeather(args.cityCode, args.ctx)
     case 'hitokoto':
-      return getHitokoto(args.ctx)
+      return await getHitokoto(args.ctx)
     case 'iciba':
-      return getCiba(args.ctx)
+      return await getCiba(args.ctx)
   }
 }

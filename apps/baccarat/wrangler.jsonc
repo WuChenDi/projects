@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "baccarat",
   "main": "src/index.ts",
-  "compatibility_date": "2026-05-04",
+  "compatibility_date": "2026-07-16",
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
     "BOT_TOKEN": "your-bot-token",
