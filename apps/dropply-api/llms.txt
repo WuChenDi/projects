@@ -2,9 +2,9 @@
 
 `dropply-api` is a zero-knowledge file-sharing backend running as a single Hono
 Cloudflare Worker. It stores **only ciphertext + metadata** — encryption happens
-in the browser (`dropply-web`), which keeps the key in the URL fragment and never
-sends it here. A share is a **session** (UUID owning one or more files) unlocked
-by a **6-char retrieval code**; access is a short-lived, session-scoped signed
+in the browser (`dropply-web`); keys/passwords travel out-of-band and are never
+sent here. A share is a **session** (UUID owning one or more files) unlocked
+by an **8-char retrieval code**; access is a short-lived, session-scoped signed
 JWT, not a login; expired/abandoned shares are swept hourly by a cron.
 
 Primary docs:
@@ -24,7 +24,9 @@ Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
   `prettyJSON` → `requestId` → open `cors()`. Five route groups mount under
   `/api`; `GET /` is a static health JSON.
 - **No accounts, no auth library.** Access is capability tokens (hand-rolled
-  HS256 JWT over Web Crypto). Optional TOTP gate (hand-rolled base32 + HMAC-SHA1).
+  HS256 JWT over Web Crypto). Optional share-password gate (`SHARE_PASSWORD`
+  secret, constant-time compare) + per-IP rate limits (chest 20/min,
+  retrieve 30/min → 429).
 - **Dual DB driver** selected by `DB_TYPE`: `libsql` (Turso, default) or `d1`
   (the `DB` binding). Wired via `@cdlab/db/node` (Node entry — this is a plain
   wrangler worker, NOT OpenNext, so use `/node` not `/web`).
@@ -32,30 +34,36 @@ Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
 
 ## Share lifecycle (src/routes/chest.ts, retrieve.ts, download.ts)
 
-1. `POST /api/chest` — optional TOTP gate → mint `sessionId` + `upload` JWT (24h),
-   insert `sessions` row `uploadComplete: 0`. Returns `{ sessionId, uploadToken, expiresIn: 86400 }`.
+1. `POST /api/chest` — rate-limited 20/min; if `SHARE_PASSWORD` is set the body
+   must carry the matching `password` (constant-time compare, 401 otherwise) →
+   mint `sessionId` + `upload` JWT (24h), insert `sessions` row
+   `uploadComplete: 0`. Returns `{ sessionId, uploadToken, expiresIn: 86400 }`.
 2. `POST /api/chest/:sessionId/upload` — Bearer upload JWT matched to `:sessionId`.
-   Stream each `files` File to R2, store each `textItems` JSON as text; R2 puts +
-   batched `files` insert run in one `Promise.all`.
-3. `POST /api/chest/:sessionId/complete` — Bearer upload JWT. Ownership check by
-   COUNT (`files count === fileIds.length`, NOT identity — see gotchas). Mint
-   6-char CSPRNG `retrievalCode`, set `expiresAt`, flip `uploadComplete: 1`.
-4. `GET /api/retrieve/:retrievalCode` — find complete + non-expired session,
-   return file list + `chest` JWT (tied to session expiry).
-5. `GET /api/download/:fileId` — `chest` JWT via `Authorization: Bearer` OR
-   `?token=`; join files⨝sessions, re-check expiry, stream R2 object with RFC 5987
+   Stream each `files` File to R2 (413 over `MAX_FILE_SIZE_MB`); R2 puts +
+   batched `files` insert run in one `Promise.all`. (No `textItems` path — text
+   is encrypted client-side and arrives as a file.)
+3. `POST /api/chest/:sessionId/complete` — Bearer upload JWT. Ownership subset
+   check (every `fileId` must belong to the session, 400 otherwise). Mint
+   8-char CSPRNG `retrievalCode` (rejection-sampled), set `expiresAt`, flip
+   `uploadComplete: 1`.
+4. `GET /api/retrieve/:retrievalCode` — rate-limited 30/min; find complete +
+   non-expired session, return file list + `chest` JWT (tied to session expiry).
+5. `GET /api/download/:fileId` — `chest` JWT via `Authorization: Bearer` header
+   ONLY; join files⨝sessions, re-check expiry, stream R2 object with RFC 5987
    `Content-Disposition`.
 
 ## Upload paths
 
-- **Direct form** (`/upload`) — small payloads + inline text; files stream via
+- **Direct form** (`/upload`) — small payloads; files stream via
   `value.stream()`, no full-body buffering.
-- **R2 native multipart** (large files): `.../multipart/create` (mint 48h
+- **R2 native multipart** (large files): `.../multipart/create` (413 over
+  `MAX_FILE_SIZE_MB`; insert a `multipart_uploads` tracking row; mint 48h
   `multipart` JWT embedding R2 `uploadId` + filename/mimeType/fileSize — returned
   in the response field named `uploadId`) → `PUT .../part/:n` (returns etag) →
   `.../multipart/:fileId/complete` (sort parts, R2 complete, THEN insert `files`
-  row from JWT metadata). The `files` row exists only after completion, so an
-  abandoned multipart upload has no DB row — reclaimed by the 48h sweep.
+  row from JWT metadata + retire the tracking row). The `files` row exists only
+  after completion; an abandoned upload is aborted via its `multipart_uploads`
+  row by the 48h sweep.
 
 ## Token model (src/lib/jwt.ts)
 
@@ -74,10 +82,13 @@ Both tables share `trackingFields` (`createdAt`, `updatedAt`, `isDeleted` soft
 delete — NEVER hard-delete; filter via `withNotDeleted` from `@cdlab/db/node`).
 
 - `sessions` — `retrievalCode` (unique idx), `uploadComplete` (0=filling,
-  1=sealed), `expiresAt` (nullable = permanent, indexed).
+  1=sealed), `expiresAt` (nullable = permanent, indexed); composite
+  `(uploadComplete, createdAt)` idx serves the stale sweep.
 - `files` — `sessionId` FK → `sessions.id` `onDelete: cascade` (indexed),
   `originalFilename`, `mimeType`, `fileSize`, `fileExtension`, `isText`. `id` is
   also the R2 object suffix.
+- `multipart_uploads` — `fileId` PK, `sessionId` FK (cascade, indexed),
+  `r2UploadId`; retired by soft delete on completion/abort.
 - R2 key everywhere: `${sessionId}/${fileId}`. Only R2 blobs are truly deleted.
 
 ## Cleanup (src/cron/cleanup.ts)
@@ -85,8 +96,9 @@ delete — NEVER hard-delete; filter via `withNotDeleted` from `@cdlab/db/node`)
 `triggers.crons: ["0 * * * *"]` (hourly) → `scheduled()` →
 `cleanupExpiredContent(env)`. Sweeps (a) expired sessions (`expiresAt < now`;
 NULL excluded) and (b) stale-incomplete (`uploadComplete=0`, `createdAt` >48h old
-— matches the multipart JWT TTL). Per session: `R2.list({prefix})` + delete, then
-soft-delete files then session. Failure-tolerant: per-session errors go into
+— matches the multipart JWT TTL). Per session: abort pending R2 multipart uploads
+via `multipart_uploads`, `R2.list({prefix})` + delete, then soft-delete files
+then session. Failure-tolerant: per-session errors go into
 `errors[]`, never throw. Cron has no Hono context → uses `useDrizzle({ env } as any)`.
 
 ## Response envelopes
@@ -101,27 +113,27 @@ soft-delete files then session. Failure-tolerant: per-session errors go into
 - Handlers read `c.env.*` directly (no central config object). Booleans are
   `=== 'true'`; `MAX_FILE_SIZE_MB` via `Number.parseInt`.
 - Vars: `DEPLOY_RUNTIME` (`cf`), `DB_TYPE` (`libsql`), `LIBSQL_URL`/`_AUTH_TOKEN`,
-  `MAX_FILE_SIZE_MB` (100, advisory — hard cap is 5GB in zod), `REQUIRE_TOTP`,
-  `TOTP_SECRETS` (`name:secret,...`), `JWT_SECRET`, `ENABLE_EMAIL_SHARE`,
-  `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_WEB_URL`.
+  `MAX_FILE_SIZE_MB` (100 — advisory for the UI, enforced 413 at upload;
+  absolute zod cap 5GB), `ENABLE_EMAIL_SHARE`, `RESEND_FROM_EMAIL`,
+  `RESEND_WEB_URL`.
 - `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_DATABASE_ID`/`CLOUDFLARE_API_TOKEN` are used
   ONLY by drizzle-kit's `d1-http` driver for remote migrations, not by the Worker
   runtime.
 - Bindings: `R2_STORAGE` (required, bucket `dropply`); `DB` (D1, COMMENTED OUT by
   default — uncomment + set `database_id` and `DB_TYPE=d1` to use D1).
-- Secrets (`JWT_SECRET`, `TOTP_SECRETS`, `RESEND_API_KEY`, `LIBSQL_AUTH_TOKEN`) go
-  in `.dev.vars` / `wrangler secret put`, never committed vars.
+- Secrets (`JWT_SECRET`, `SHARE_PASSWORD`, `RESEND_API_KEY`,
+  `LIBSQL_AUTH_TOKEN`) go in `.dev.vars` / `wrangler secret put`, never
+  committed vars.
 
 ## Gotchas for agents
 
 - **Use `@cdlab/db/node`, not `/web`** — this is a plain wrangler Hono worker, not
   OpenNext. `src/lib/db.ts` re-exports `@cdlab/db/node` (so `@/lib` surfaces
   `withNotDeleted` etc.).
-- **Ownership check is by COUNT, not identity** (`complete`): it asserts
-  `files count === fileIds.length`, never that the `fileIds` are the session's
-  files. Preserve or tighten — don't loosen. See DESIGN §9.2.
-- **The download token can arrive via `?token=`** (query string) for anchor
-  downloads — it will appear in URLs/logs. Keep it narrowly scoped.
+- **Ownership check is a subset assertion** (`complete`): every submitted
+  `fileId` must belong to the session (400 otherwise). See DESIGN §9.2.
+- **Download auth is header-only** — the `?token=` query form was removed;
+  never reintroduce it (tokens must not land in URLs/logs).
 - **CORS is intentionally open** — not a security boundary; access = the token.
 - **Never hard-delete** — soft-delete via `isDeleted`; only R2 blobs are deleted.
 - **Multipart `files` row is written only at completion** — abandoned uploads have
