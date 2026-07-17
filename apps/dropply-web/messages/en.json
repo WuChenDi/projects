@@ -70,8 +70,9 @@
     "footer": {
       "tagline": "Client-side encryption and zero-knowledge sharing. Your keys never leave your browser.",
       "trust": "No accounts · No tracking · Open source",
-      "learn": "Learn",
-      "howItWorks": "How it works",
+      "tool": "Tool",
+      "toolFile": "Upload a file",
+      "toolMessage": "Paste text",
       "project": "Project",
       "github": "GitHub",
       "copyright": "© 2025 Dropply",

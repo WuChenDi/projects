@@ -1,8 +1,12 @@
 'use client'
 
 import { Button } from '@cdlab/ui/components/button'
+import { IKFooter } from '@cdlab/ui/IK/IKFooter'
 import { GitHubIcon } from '@cdlab/ui/icon/GitHubIcon'
+import { FileText, Upload } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import type { useCryptoProcessor } from '@/hooks/useCryptoProcessor'
+import { InputModeEnum } from '@/types/crypto'
 
 const REPO_URL =
   'https://github.com/WuChenDi/projects/tree/main/apps/dropply-web'
@@ -10,8 +14,21 @@ const REPO_URL =
 const linkClass =
   'h-auto gap-1.5 p-0 text-foreground/80 no-underline hover:text-foreground hover:no-underline'
 
-export function AppFooter() {
+interface AppFooterProps {
+  crypto: ReturnType<typeof useCryptoProcessor>
+}
+
+export function AppFooter({ crypto }: AppFooterProps) {
   const t = useTranslations('landing.footer')
+
+  // Mirror nsio: footer tool links switch the input mode and scroll back up to
+  // the tool (the page scrolls inside the shared ScrollArea viewport).
+  const selectTool = (mode: InputModeEnum) => {
+    crypto.setInputMode(mode)
+    document
+      .querySelector('[data-slot="scroll-area-viewport"]')
+      ?.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <footer className="border-t border-border">
@@ -30,12 +47,27 @@ export function AppFooter() {
           <div className="flex flex-wrap gap-x-16 gap-y-10">
             <nav className="space-y-3">
               <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
-                {t('learn')}
+                {t('tool')}
               </p>
               <ul className="space-y-2">
                 <li>
-                  <Button asChild variant="link" className={linkClass}>
-                    <a href="#how-it-works">{t('howItWorks')}</a>
+                  <Button
+                    variant="link"
+                    className={linkClass}
+                    onClick={() => selectTool(InputModeEnum.FILE)}
+                  >
+                    <Upload className="size-4" />
+                    {t('toolFile')}
+                  </Button>
+                </li>
+                <li>
+                  <Button
+                    variant="link"
+                    className={linkClass}
+                    onClick={() => selectTool(InputModeEnum.MESSAGE)}
+                  >
+                    <FileText className="size-4" />
+                    {t('toolMessage')}
                   </Button>
                 </li>
               </ul>
@@ -62,8 +94,10 @@ export function AppFooter() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-2 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span>{t('copyright')}</span>
+        <div className="mt-10 flex flex-col gap-2 border-t border-border pt-6 text-xs! text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <div className="font-mono [&>footer]:w-auto [&>footer]:py-0 [&>footer]:text-xs [&>footer]:text-muted-foreground/70 [&>footer>div]:justify-start">
+            <IKFooter year={2025} />
+          </div>
           <span className="font-mono text-muted-foreground/70">
             {t('builtWith')}
           </span>
