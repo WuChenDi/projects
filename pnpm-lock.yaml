@@ -219,9 +219,6 @@ importers:
       '@cdlab/tsconfig':
         specifier: workspace:*
         version: link:packages/tsconfig
-      '@dotns/nsl':
-        specifier: ^0.1.10
-        version: 0.1.10
       '@types/node':
         specifier: catalog:dev
         version: 26.1.1
@@ -2442,36 +2439,6 @@ packages:
 
   '@dotenvx/primitives@0.8.0':
     resolution: {integrity: sha512-VYJy0uhFm9zTJ1TxBaW/pA8bjbOM/OttaNMwZ1RHG4JKyRG7DhSdiqD1ipQoAyoD22olUtxbP78W9xY3Wd11bg==}
-
-  '@dotns/nsl-darwin-arm64@0.1.10':
-    resolution: {integrity: sha512-/XGjJ0ifHVwMs9/aQjHBOYBXatDJCk5sminK8FOTBQdhtK5XG64Q3w/4I8FQMkLqUSIeIewjfh8vJzJv2vzWDQ==}
-    cpu: [arm64]
-    os: [darwin]
-
-  '@dotns/nsl-darwin-x64@0.1.10':
-    resolution: {integrity: sha512-6yvI5W5m5xApkT9wQGddtcviefbHL3/inlEA0f8rFZfrKEVjzh+8l4yySDC3dnPVb0lMq4rVz+coNvE68s1f6A==}
-    cpu: [x64]
-    os: [darwin]
-
-  '@dotns/nsl-linux-arm64@0.1.10':
-    resolution: {integrity: sha512-838BUltjK1PaNVJtTjkKhmIQa1i9H9p27Cbmy53WVwXUfyZsy2DpeYnbrGDGt16dHyTFHEG8tM3xNCfMGM1RBA==}
-    cpu: [arm64]
-    os: [linux]
-
-  '@dotns/nsl-linux-x64@0.1.10':
-    resolution: {integrity: sha512-42CspMUYXpzbe9MPRLyKCa1cWjv6SBhLu5C4UmC+0g0F+bWYib8bmWLio7tAXkvu01Qy1blY7nPuQ10Lh36mQg==}
-    cpu: [x64]
-    os: [linux]
-
-  '@dotns/nsl-win32-x64@0.1.10':
-    resolution: {integrity: sha512-xfeERi4F/oEFZ6TFoNfhq/LWkMvxLJZsABcaBT72u/TuLaMsYuzDJKnYZKadm3MeCapTpqvpdvehdiY+sUKEhA==}
-    cpu: [x64]
-    os: [win32]
-
-  '@dotns/nsl@0.1.10':
-    resolution: {integrity: sha512-8p5oqSoA8cRVM1buymLcgdq0aU0s6cqZNRzBAiQ2BsrUBu1AACik9u7N6RaeOjUzmN+G/UOdHNTNW6x6Y/iSKw==}
-    engines: {node: '>=16'}
-    hasBin: true
 
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
@@ -12428,29 +12395,6 @@ snapshots:
       yocto-spinner: 1.2.1
 
   '@dotenvx/primitives@0.8.0': {}
-
-  '@dotns/nsl-darwin-arm64@0.1.10':
-    optional: true
-
-  '@dotns/nsl-darwin-x64@0.1.10':
-    optional: true
-
-  '@dotns/nsl-linux-arm64@0.1.10':
-    optional: true
-
-  '@dotns/nsl-linux-x64@0.1.10':
-    optional: true
-
-  '@dotns/nsl-win32-x64@0.1.10':
-    optional: true
-
-  '@dotns/nsl@0.1.10':
-    optionalDependencies:
-      '@dotns/nsl-darwin-arm64': 0.1.10
-      '@dotns/nsl-darwin-x64': 0.1.10
-      '@dotns/nsl-linux-arm64': 0.1.10
-      '@dotns/nsl-linux-x64': 0.1.10
-      '@dotns/nsl-win32-x64': 0.1.10
 
   '@drizzle-team/brocli@0.10.2': {}
 
