@@ -32,6 +32,8 @@
     "@scure/base": "catalog:prod",
     "@scure/bip32": "catalog:prod",
     "@scure/bip39": "catalog:prod",
+    "@tanstack/react-form": "catalog:prod",
+    "@tanstack/react-query": "catalog:prod",
     "input-otp": "catalog:prod",
     "lucide-react": "catalog:prod",
     "next": "catalog:prod",

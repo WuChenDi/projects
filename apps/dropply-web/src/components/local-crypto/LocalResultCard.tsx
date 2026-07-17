@@ -12,6 +12,7 @@ import { Label } from '@cdlab/ui/components/label'
 import { IKAssetFailed, IKAssetLoading, IKAssetRenderer } from '@cdlab/ui/IK'
 import { cn } from '@cdlab/ui/lib/utils'
 import { copyToClipboard, formatFileSize } from '@cdlab/utils'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   CheckCircle,
   Copy,
@@ -28,8 +29,8 @@ import {
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { PocketChestAPI } from '@/lib'
 import { getFileIcon } from '@/lib/fileIcon'
+import { configQueryOptions } from '@/lib/queries'
 import { ShareTooLargeError, shareEncryptedBlob } from '@/lib/share-blob'
 import { useAuthStore } from '@/store/useAuthStore'
 import type { ProcessResult } from '@/types/crypto'
@@ -54,8 +55,8 @@ export function LocalResultCard({
   const [dialogOpen, setDialogOpen] = useState(false)
 
   // Share = upload this finished ciphertext and get a retrieval code + link.
+  const queryClient = useQueryClient()
   const [shareOpen, setShareOpen] = useState(false)
-  const [sharing, setSharing] = useState(false)
   const [share, setShare] = useState<{ code: string; url: string } | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -69,18 +70,38 @@ export function LocalResultCard({
   const [emailEnabled, setEmailEnabled] = useState(false)
   const [emailOpen, setEmailOpen] = useState(false)
 
-  const doShare = async (password?: string) => {
-    setSharing(true)
-    try {
-      const blob = new Blob([result.data], { type: 'application/octet-stream' })
-      const res = await shareEncryptedBlob(blob, password)
-      if (password) setSharePassword(password)
-      setShare(res)
+  // One mutation drives the whole share flow: it resolves the (cached) server
+  // config, applies the optional password gate, and uploads the ciphertext.
+  const shareMutation = useMutation({
+    mutationFn: async (password?: string) => {
+      const config = await queryClient.ensureQueryData(configQueryOptions)
+      setEmailEnabled(config.emailShareEnabled)
+      if (config.requirePassword && !password && !sharePassword) {
+        return { needPassword: true as const }
+      }
+      const pw = config.requirePassword
+        ? (password ?? sharePassword ?? undefined)
+        : undefined
+      const blob = new Blob([result.data], {
+        type: 'application/octet-stream',
+      })
+      const res = await shareEncryptedBlob(blob, config.maxFileSize, pw)
+      return { needPassword: false as const, share: res, usedPassword: pw }
+    },
+    onSuccess: (r) => {
+      if (r.needPassword) {
+        setPasswordInvalid(false)
+        setPasswordOpen(true)
+        return
+      }
+      if (r.usedPassword) setSharePassword(r.usedPassword)
+      setShare(r.share)
       setPasswordOpen(false)
       setPasswordInput('')
       setPasswordInvalid(false)
       setShareOpen(true)
-    } catch (err) {
+    },
+    onError: (err) => {
       if ((err as Error & { status?: number }).status === 401) {
         clearSharePassword()
         setPasswordInput('')
@@ -93,33 +114,16 @@ export function LocalResultCard({
       } else {
         toast.error(err instanceof Error ? err.message : t('share.failed'))
       }
-    } finally {
-      setSharing(false)
-    }
-  }
+    },
+  })
+  const sharing = shareMutation.isPending
 
-  const handleShare = async () => {
+  const handleShare = () => {
     if (share) {
       setShareOpen(true)
       return
     }
-    setSharing(true)
-    try {
-      const config = await new PocketChestAPI().getConfig()
-      setEmailEnabled(config.emailShareEnabled)
-      if (config.requirePassword && !sharePassword) {
-        setPasswordInvalid(false)
-        setPasswordOpen(true)
-        return
-      }
-      await doShare(
-        config.requirePassword ? (sharePassword ?? undefined) : undefined,
-      )
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('share.failed'))
-    } finally {
-      setSharing(false)
-    }
+    shareMutation.mutate(undefined)
   }
 
   const copyLink = async () => {
@@ -343,7 +347,9 @@ export function LocalResultCard({
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
                 onKeyDown={(e) =>
-                  e.key === 'Enter' && passwordInput && doShare(passwordInput)
+                  e.key === 'Enter' &&
+                  passwordInput &&
+                  shareMutation.mutate(passwordInput)
                 }
                 autoFocus
               />
@@ -351,7 +357,7 @@ export function LocalResultCard({
             <Button
               className="w-full"
               disabled={sharing || !passwordInput}
-              onClick={() => doShare(passwordInput)}
+              onClick={() => shareMutation.mutate(passwordInput)}
             >
               {sharing ? (
                 <Loader2 className="size-4 animate-spin" />

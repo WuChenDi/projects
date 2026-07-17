@@ -18,10 +18,10 @@ export class ShareTooLargeError extends Error {
  */
 export async function shareEncryptedBlob(
   blob: Blob,
+  maxFileSize: number,
   password?: string,
 ): Promise<{ code: string; url: string }> {
   const api = new PocketChestAPI()
-  const { maxFileSize } = await api.getConfig()
   if (blob.size > maxFileSize) {
     throw new ShareTooLargeError(maxFileSize)
   }

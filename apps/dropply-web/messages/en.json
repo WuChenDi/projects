@@ -216,6 +216,9 @@
     "messageHint": "This message will be included in the email",
     "sending": "Sending...",
     "sendEmail": "Send Email",
+    "recipientEmailRequired": "Recipient email is required",
+    "recipientEmailInvalid": "Enter a valid email address",
+    "sendFailed": "Failed to send email",
     "cancel": "Cancel",
     "securityNote": "The email contains only the retrieval code. The recipient still needs the decryption password or their private key to read the content."
   },
