@@ -1,19 +1,17 @@
 'use client'
 
-import { cn } from '@cdlab/ui/lib/utils'
+import { Tabs, TabsList, TabsTrigger } from '@cdlab/ui/components/tabs'
 import { FileText, KeyRound, Lock, Upload } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { useCryptoProcessor } from '@/hooks/useCryptoProcessor'
 import { useKeysStore } from '@/store/useKeysStore'
 import { InputModeEnum, ModeEnum } from '@/types/crypto'
+import type { EncryptionMode } from '@/types/keys'
 import { LocalInputPanel } from './LocalInputPanel'
 
 interface LocalCryptoPanelProps {
   crypto: ReturnType<typeof useCryptoProcessor>
 }
-
-const segItem =
-  'flex items-center gap-1.5 rounded-md px-3 py-1 text-sm transition-colors'
 
 /**
  * The single local encrypt/decrypt tool. Encrypt vs decrypt is derived from the
@@ -33,65 +31,39 @@ export function LocalCryptoPanel({ crypto }: LocalCryptoPanelProps) {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-3">
-        <div className="inline-flex rounded-lg border border-border p-0.5">
-          <button
-            type="button"
-            onClick={() => crypto.setInputMode(InputModeEnum.FILE)}
-            className={cn(
-              segItem,
-              crypto.inputMode === InputModeEnum.FILE
-                ? 'bg-background shadow-sm'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            <Upload className="size-4" />
-            {t('input.file')}
-          </button>
-          <button
-            type="button"
-            onClick={() => crypto.setInputMode(InputModeEnum.MESSAGE)}
-            className={cn(
-              segItem,
-              crypto.inputMode === InputModeEnum.MESSAGE
-                ? 'bg-background shadow-sm'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            <FileText className="size-4" />
-            {t('input.message')}
-          </button>
-        </div>
+        <Tabs
+          value={crypto.inputMode}
+          onValueChange={(v) => crypto.setInputMode(v as InputModeEnum)}
+        >
+          <TabsList>
+            <TabsTrigger value={InputModeEnum.FILE}>
+              <Upload className="size-4" />
+              {t('input.file')}
+            </TabsTrigger>
+            <TabsTrigger value={InputModeEnum.MESSAGE}>
+              <FileText className="size-4" />
+              {t('input.message')}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         {/* Encrypt: choose the mode. Decrypt: it's auto-detected — no toggle. */}
         {isEncrypt && (
-          <div className="inline-flex rounded-lg border border-border p-0.5">
-            <button
-              type="button"
-              onClick={() => crypto.setEncryptionMode('password')}
-              className={cn(
-                segItem,
-                crypto.encryptionMode === 'password'
-                  ? 'bg-background shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              <Lock className="size-4" />
-              {tk('modePassword')}
-            </button>
-            <button
-              type="button"
-              onClick={() => crypto.setEncryptionMode('publickey')}
-              className={cn(
-                segItem,
-                crypto.encryptionMode === 'publickey'
-                  ? 'bg-background shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              <KeyRound className="size-4" />
-              {tk('modePublicKey')}
-            </button>
-          </div>
+          <Tabs
+            value={crypto.encryptionMode}
+            onValueChange={(v) => crypto.setEncryptionMode(v as EncryptionMode)}
+          >
+            <TabsList>
+              <TabsTrigger value="password">
+                <Lock className="size-4" />
+                {tk('modePassword')}
+              </TabsTrigger>
+              <TabsTrigger value="publickey">
+                <KeyRound className="size-4" />
+                {tk('modePublicKey')}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         )}
       </div>
 
