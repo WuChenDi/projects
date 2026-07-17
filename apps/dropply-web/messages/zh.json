@@ -216,6 +216,9 @@
     "messageHint": "此留言将包含在邮件中",
     "sending": "发送中...",
     "sendEmail": "发送邮件",
+    "recipientEmailRequired": "请输入收件人邮箱",
+    "recipientEmailInvalid": "请输入有效的邮箱地址",
+    "sendFailed": "邮件发送失败",
     "cancel": "取消",
     "securityNote": "邮件仅包含提取码，接收方仍需解密密码或自己的私钥才能读取内容。"
   },

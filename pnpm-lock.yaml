@@ -761,6 +761,12 @@ importers:
       '@scure/bip39':
         specifier: catalog:prod
         version: 2.2.0
+      '@tanstack/react-form':
+        specifier: catalog:prod
+        version: 1.33.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@tanstack/react-query':
+        specifier: catalog:prod
+        version: 5.101.2(react@19.2.7)
       input-otp:
         specifier: catalog:prod
         version: 1.4.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
