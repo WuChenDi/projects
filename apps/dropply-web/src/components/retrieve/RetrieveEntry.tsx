@@ -99,7 +99,7 @@ export function RetrieveEntry({ crypto, initialCode }: RetrieveEntryProps) {
         <Download className="size-4" />
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>{t('open')}</DialogTitle>
             <DialogDescription>{t('openDesc')}</DialogDescription>

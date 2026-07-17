@@ -262,7 +262,7 @@ export function LocalResultCard({
       )}
 
       <Dialog open={shareOpen} onOpenChange={setShareOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t('share.title')}</DialogTitle>
             <DialogDescription>{t('share.desc')}</DialogDescription>
@@ -326,7 +326,7 @@ export function LocalResultCard({
           }
         }}
       >
-        <DialogContent className="max-w-sm">
+        <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>{t('share.passwordTitle')}</DialogTitle>
             <DialogDescription>{t('share.passwordDesc')}</DialogDescription>

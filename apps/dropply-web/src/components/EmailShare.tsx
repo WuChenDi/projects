@@ -96,7 +96,7 @@ export function EmailShare({
 
   return (
     <Dialog open={isVisible} onOpenChange={handleOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <div className="flex items-center gap-2">
             <Mail className="size-5 text-primary" />
