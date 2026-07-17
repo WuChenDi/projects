@@ -13,7 +13,7 @@
     "directory": "apps/dropply-api"
   },
   "scripts": {
-    "dev": "nsl run --name dropply:/api wrangler dev src/index.ts",
+    "dev": "nsl run --name dropply-api wrangler dev src/index.ts",
     "deploy": "wrangler deploy --minify",
     "build": "bun build src/index.ts --outdir dist --target browser",
     "typecheck": "tsc --noEmit",

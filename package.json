@@ -28,7 +28,7 @@
     "dev:byshot": "turbo dev --filter=./apps/byshot",
     "dev:bytts": "turbo dev --filter=./apps/bytts",
     "dev:clearify": "turbo dev --filter=./apps/clearify",
-    "dev:dropply": "pnpm --filter ./apps/dropply-web run dev",
+    "dev:dropply": "turbo dev --filter=./apps/dropply-*",
     "dev:flox": "turbo dev --filter=./apps/flox",
     "dev:live-user": "turbo dev --filter=./apps/live-user",
     "dev:repo-changelog": "turbo dev --filter=./apps/repo-changelog",
@@ -55,7 +55,6 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.1",
     "@cdlab/tsconfig": "workspace:*",
-    "@dotns/nsl": "^0.1.10",
     "@types/node": "catalog:dev",
     "turbo": "^2.10.4",
     "typescript": "catalog:dev"
