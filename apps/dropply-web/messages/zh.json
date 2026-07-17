@@ -70,8 +70,9 @@
     "footer": {
       "tagline": "客户端加密与零知识分享。你的密钥永不离开浏览器。",
       "trust": "无账户 · 无追踪 · 开源",
-      "learn": "了解",
-      "howItWorks": "工作原理",
+      "tool": "工具",
+      "toolFile": "上传文件",
+      "toolMessage": "粘贴文本",
       "project": "项目",
       "github": "GitHub",
       "copyright": "© 2025 Dropply",

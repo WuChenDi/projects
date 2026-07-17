@@ -65,7 +65,7 @@ function HomeContent() {
             </div>
           </main>
 
-          <AppFooter />
+          <AppFooter crypto={crypto} />
         </div>
       </ScrollArea>
     </div>
