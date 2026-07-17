@@ -29,8 +29,8 @@ often the key. `dropply-api` is built so it *structurally can't*:
 - **Nothing lingers.** Expired shares and abandoned uploads are swept hourly — R2
   objects are deleted, DB rows soft-deleted — so storage doesn't accrete.
 - **No auth library, no Node crypto.** JWT (HS256) is hand-rolled over Web
-  Crypto, and the optional share gate is a constant-time password check — zero
-  dependencies beyond the platform. Chest creation and retrieval are
+  Crypto; the optional share gate verifies a client-supplied Argon2id hash
+  (the plaintext password never crosses the wire) via `@cdlab/utils`. Chest creation and retrieval are
   per-IP rate-limited to keep abuse (and R2 spend) bounded.
 - **Two upload paths, one model.** Small payloads go through a direct multipart
   form; large files use R2 native multipart (create → part → complete) — both end
@@ -76,8 +76,8 @@ flowchart TD
 
 1. **Create** mints a `sessionId` (UUID) and an `upload` JWT, inserting a
    `sessions` row with `uploadComplete = 0`. If the `SHARE_PASSWORD` secret is
-   set, the request body must carry the matching `password` (compared in
-   constant time).
+   set, the request body must carry the `password` as an Argon2id hash
+   (hashed client-side; the server verifies it against `SHARE_PASSWORD`).
 2. **Upload** streams each `files` entry to R2 at `${sessionId}/${fileId}`
    (size-capped by `MAX_FILE_SIZE_MB` → 413); R2 puts and the batched `files`
    insert run in parallel.
@@ -153,7 +153,7 @@ All knobs are `vars` in [`wrangler.jsonc`](wrangler.jsonc); secrets belong in
 | `DB_TYPE` | `libsql` | Driver: `libsql` (Turso) or `d1` (the `DB` binding). |
 | `LIBSQL_URL` / `LIBSQL_AUTH_TOKEN` | — | LibSQL / Turso connection (used when `DB_TYPE=libsql`). |
 | `MAX_FILE_SIZE_MB` | `100` | Max file size reported by `GET /api/config` (advisory; the hard cap is 5 GB per file in zod). |
-| `SHARE_PASSWORD` | — | **Secret.** When set, `POST /api/chest` requires this password (constant-time check); unset keeps sharing open. |
+| `SHARE_PASSWORD` | — | **Secret.** Plaintext share password. When set, `POST /api/chest` requires the caller to prove it (client sends an Argon2id hash, server verifies); unset keeps sharing open. |
 | `JWT_SECRET` | — | **Secret.** HMAC key for the `upload` / `multipart` / `chest` JWTs. |
 | `ENABLE_EMAIL_SHARE` | `false` | Enable `POST /api/email/share` (also needs `RESEND_API_KEY`). |
 | `RESEND_API_KEY` | — | Resend API key. |

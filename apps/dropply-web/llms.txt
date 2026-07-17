@@ -63,7 +63,8 @@ Sharing uploads an already-encrypted result as-is. Flow:
    (fetched at share time, not on mount).
 2. Size check → `ShareTooLargeError` before any network write.
 3. `createChest(password?)` → `{ sessionId, uploadToken }`. When the server
-   sets `SHARE_PASSWORD`, the body must carry `password`; a 401 clears the
+   sets `SHARE_PASSWORD`, `api.ts` sends `password` as an Argon2id hash
+   (`hashPasswordFn` — plaintext never leaves the tab); a 401 clears the
    cached password (`useAuthStore`, sessionStorage `dropply-auth`) and
    re-prompts. There is NO dedicated verify endpoint.
 4. Upload the blob as **`share.enc` / `application/octet-stream`** — never the

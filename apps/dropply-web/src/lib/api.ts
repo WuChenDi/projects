@@ -1,3 +1,4 @@
+import { hashPasswordFn } from '@cdlab/utils'
 import type {
   ApiResponse,
   CompleteMultipartUploadResponse,
@@ -42,7 +43,9 @@ export class PocketChestAPI {
   }
 
   async createChest(password?: string) {
-    const body = password ? { password } : {}
+    // Hash the share password client-side (Argon2id) so the plaintext never
+    // travels over the wire; the API verifies it against SHARE_PASSWORD.
+    const body = password ? { password: await hashPasswordFn(password) } : {}
 
     const response = await fetch(`${this.baseUrl}/api/chest`, {
       method: 'POST',

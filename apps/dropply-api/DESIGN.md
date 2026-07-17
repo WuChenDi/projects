@@ -49,8 +49,9 @@ Goals:
 - **G3 — Bounded lifetime.** Shares expire; abandoned uploads are reclaimed.
   Storage must not accrete — an hourly cron is the garbage collector.
 - **G4 — Edge-native, dependency-light.** Runs as a single Worker. Auth
-  primitives (HS256 JWT, constant-time password compare) are hand-rolled over
-  Web Crypto so there is no Node crypto and no auth library on the critical
+  primitives (HS256 JWT hand-rolled over Web Crypto; the optional share gate
+  verifies a client-supplied Argon2id hash via `@cdlab/utils`) keep Node crypto
+  and an auth library off the critical
   path. Write/read entry points are per-IP rate-limited (chest 20/min,
   retrieve 30/min).
 - **G5 — Two upload paths, one shape.** Small payloads and multi-gigabyte files
@@ -323,10 +324,12 @@ unreachable in the up-to-59-minute window before the cron runs.
 ### 8.1 Share-password gate
 
 Optional, off by default. When the `SHARE_PASSWORD` secret is set,
-`POST /chest` requires a matching `password` in the request body, compared with
-a constant-time equality check (no early exit, no timing side channel). There
-is no dedicated verify endpoint — the frontend validates a password by
-attempting `createChest` and reacting to the `401`. It gates only *creation*,
+`POST /chest` requires the `password` field, which the frontend sends as an
+Argon2id hash (`hashPasswordFn`) — the plaintext never leaves the browser. The
+server verifies it with `verifyPasswordFn(clientHash, SHARE_PASSWORD)`, i.e. it
+re-hashes the configured `SHARE_PASSWORD` with the client-supplied salt and
+compares. There is no dedicated verify endpoint — the frontend validates a
+password by attempting `createChest` and reacting to the `401`. It gates only *creation*,
 not retrieval/download. `scripts/generate-secrets.sh` produces a fresh
 `JWT_SECRET` + `SHARE_PASSWORD` pair. Combined with the per-IP rate limit
 (20/min) this bounds abuse of the paid R2/D1 surface.
