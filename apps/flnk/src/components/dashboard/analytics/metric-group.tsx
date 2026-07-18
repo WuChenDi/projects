@@ -23,6 +23,7 @@ import { MetricRankList } from '@/components/dashboard/metric-rank-list'
 import { flagEmoji, regionName } from '@/lib/geo/country'
 import type { StatsParams } from '@/lib/platform/api'
 import { statsApi } from '@/lib/platform/api'
+import { queryKeys } from '@/lib/platform/query-keys'
 
 function MetricList({
   type,
@@ -36,7 +37,7 @@ function MetricList({
   const t = useTranslations('analytics')
   const locale = useLocale()
   const query = useQuery({
-    queryKey: ['metrics', type, params],
+    queryKey: queryKeys.metrics(type, params),
     queryFn: () => statsApi.metrics(type, params),
   })
   const rows = query.data?.metrics ?? []

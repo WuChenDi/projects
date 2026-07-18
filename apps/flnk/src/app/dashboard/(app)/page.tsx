@@ -23,6 +23,7 @@ import { dateLocale } from '@/lib/format/format'
 import { flagEmoji, regionName } from '@/lib/geo/country'
 import type { LogEvent } from '@/lib/platform/api'
 import { linkApi, statsApi } from '@/lib/platform/api'
+import { queryKeys } from '@/lib/platform/query-keys'
 
 const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000
 
@@ -64,11 +65,11 @@ export default function DashboardOverviewPage() {
   const startAt = useMemo(() => Date.now() - THIRTY_DAYS, [])
 
   const countQuery = useQuery({
-    queryKey: ['link-count'],
+    queryKey: queryKeys.linkCount(),
     queryFn: () => linkApi.count(),
   })
   const countersQuery = useQuery({
-    queryKey: ['overview-counters', startAt],
+    queryKey: queryKeys.counters({ startAt }),
     queryFn: () => statsApi.counters({ startAt }),
   })
   const viewsQuery = useQuery({
