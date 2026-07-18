@@ -172,6 +172,10 @@ function whereClause(
 // Sampling-weighted unique count (AE returns sampled rows; scale distinct).
 const VISITORS = `ROUND(COUNT(DISTINCT ${FIELD.ip}) * SUM(_sample_interval) / COUNT())`
 
+// Sampling-weighted unique referer count (excluding 'direct'), mirroring
+// VISITORS so both distinct-count metrics are comparable sample-scaled estimates.
+const REFERERS = `ROUND((COUNT(DISTINCT ${FIELD.referer}) - MAX(if(${FIELD.referer} = 'direct', 1, 0))) * SUM(_sample_interval) / COUNT())`
+
 export async function executeAeSql<T = Record<string, string>>(
   env: CloudflareEnv,
   sql: string,
@@ -205,7 +209,7 @@ export function countersSql(env: CloudflareEnv, q: StatsQuery): string {
   return `SELECT
       SUM(_sample_interval) AS visits,
       ${VISITORS} AS visitors,
-      COUNT(DISTINCT ${FIELD.referer}) - MAX(if(${FIELD.referer} = 'direct', 1, 0)) AS referers
+      ${REFERERS} AS referers
     FROM ${dataset(env)} ${whereClause(q)}`
 }
 
@@ -278,7 +282,7 @@ export function accessExportSql(env: CloudflareEnv, q: StatsQuery): string {
       ${FIELD.url} AS url,
       ${VISITORS} AS viewers,
       SUM(_sample_interval) AS views,
-      COUNT(DISTINCT ${FIELD.referer}) - MAX(if(${FIELD.referer} = 'direct', 1, 0)) AS referers
+      ${REFERERS} AS referers
     FROM ${dataset(env)} ${whereClause(q)}
     GROUP BY slug, url ORDER BY views DESC`
 }
