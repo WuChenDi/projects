@@ -25,6 +25,7 @@ import { LinkCard } from '@/components/dashboard/links/link-card'
 import { LinkDrawer } from '@/components/dashboard/links/link-drawer'
 import { LinksBulkBar } from '@/components/dashboard/links/links-bulk-bar'
 import { LinksFilterBar } from '@/components/dashboard/links/links-filter-bar'
+import { listViewClass } from '@/components/dashboard/list-view'
 import type { LinkRow } from '@/lib/platform/api'
 import { linkApi, statsApi } from '@/lib/platform/api'
 import { queryKeys } from '@/lib/platform/query-keys'
@@ -330,13 +331,7 @@ export function LinksView() {
       )}
 
       {query.isLoading ? (
-        <div
-          className={
-            view === 'grid'
-              ? 'grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3'
-              : 'space-y-2.5'
-          }
-        >
+        <div className={listViewClass(view)}>
           {['a', 'b', 'c', 'd', 'e', 'f'].map((k) => (
             <Skeleton key={k} className="h-20 w-full rounded-lg" />
           ))}
@@ -349,13 +344,7 @@ export function LinksView() {
           </Button>
         </IKEmpty>
       ) : (
-        <div
-          className={
-            view === 'grid'
-              ? 'grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3'
-              : 'space-y-2.5'
-          }
-        >
+        <div className={listViewClass(view)}>
           {visibleRows.map((link) => (
             <LinkCard
               key={link.id}

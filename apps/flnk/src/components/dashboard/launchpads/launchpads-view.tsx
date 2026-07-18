@@ -23,7 +23,6 @@ import {
 } from '@cdlab/ui/components/dropdown-menu'
 import { Input } from '@cdlab/ui/components/input'
 import { Skeleton } from '@cdlab/ui/components/skeleton'
-import { ToggleGroup, ToggleGroupItem } from '@cdlab/ui/components/toggle-group'
 import { IKEmpty } from '@cdlab/ui/IK/IKEmpty'
 import { cn } from '@cdlab/ui/lib/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -32,8 +31,6 @@ import {
   ExternalLink,
   Eye,
   Inbox,
-  LayoutGrid,
-  List,
   MousePointerClick,
   Pencil,
   Plus,
@@ -47,6 +44,10 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { LaunchpadPreview } from '@/components/dashboard/launchpads/launchpad-preview'
+import {
+  ListLayoutToggle,
+  listViewClass,
+} from '@/components/dashboard/list-view'
 import type { LinkRef } from '@/components/launchpad/launchpad-view'
 import {
   buildLaunchpadUrl,
@@ -140,30 +141,16 @@ export function LaunchpadsView() {
         </div>
 
         {/* View toggle stays visible at every breakpoint (mirrors Links). */}
-        <ToggleGroup
-          type="single"
+        <ListLayoutToggle
           value={view}
-          onValueChange={(v) => v && setView(v as 'list' | 'grid')}
-          variant="outline"
-          className="shrink-0"
-        >
-          <ToggleGroupItem value="list" aria-label={t('viewList')}>
-            <List className="size-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="grid" aria-label={t('viewGrid')}>
-            <LayoutGrid className="size-4" />
-          </ToggleGroupItem>
-        </ToggleGroup>
+          onChange={setView}
+          listLabel={t('viewList')}
+          gridLabel={t('viewGrid')}
+        />
       </div>
 
       {query.isLoading ? (
-        <div
-          className={
-            view === 'grid'
-              ? 'grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3'
-              : 'space-y-2.5'
-          }
-        >
+        <div className={listViewClass(view)}>
           {['a', 'b', 'c'].map((k) => (
             <Skeleton
               key={k}
@@ -182,13 +169,7 @@ export function LaunchpadsView() {
           </Button>
         </IKEmpty>
       ) : (
-        <div
-          className={
-            view === 'grid'
-              ? 'grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3'
-              : 'space-y-2.5'
-          }
-        >
+        <div className={listViewClass(view)}>
           {visible.map((row) => (
             <LaunchpadCard
               key={row.id}
