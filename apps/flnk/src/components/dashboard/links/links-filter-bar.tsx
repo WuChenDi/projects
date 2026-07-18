@@ -22,9 +22,10 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@cdlab/ui/components/toggle-group'
 import { endOfDay, startOfDay } from 'date-fns'
 import type { Locale } from 'date-fns/locale'
-import { LayoutGrid, List, Search, SlidersHorizontal, X } from 'lucide-react'
+import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { KeyboardEvent } from 'react'
+import { ListLayoutToggle } from '@/components/dashboard/list-view'
 import type { SortKey } from '@/lib/platform/api'
 import {
   hasActiveFilters,
@@ -243,20 +244,12 @@ export function LinksFilterBar({
         )}
 
         {/* View toggle stays visible at every breakpoint. */}
-        <ToggleGroup
-          type="single"
+        <ListLayoutToggle
           value={view}
-          onValueChange={(v) => v && setView(v as 'list' | 'grid')}
-          variant="outline"
-          className="shrink-0"
-        >
-          <ToggleGroupItem value="list" aria-label={t('viewList')}>
-            <List className="size-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="grid" aria-label={t('viewGrid')}>
-            <LayoutGrid className="size-4" />
-          </ToggleGroupItem>
-        </ToggleGroup>
+          onChange={setView}
+          listLabel={t('viewList')}
+          gridLabel={t('viewGrid')}
+        />
       </div>
 
       {allTags.length > 0 && (
