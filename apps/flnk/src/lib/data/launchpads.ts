@@ -6,7 +6,12 @@ import type {
   Link,
   NewLaunchpad,
 } from '@/database/schema'
-import { DEFAULT_LAUNCHPAD_CONFIG, launchpads, links } from '@/database/schema'
+import {
+  DEFAULT_LAUNCHPAD_CONFIG,
+  launchpads,
+  links,
+  user,
+} from '@/database/schema'
 import { getDb } from '@/lib/data/db'
 import { isExpired, normalizeSlug } from '@/lib/data/links'
 import type { RepoResult as RepoResultBase, SortKey } from '@/lib/format/types'
@@ -78,25 +83,55 @@ export async function getPublishedLaunchpadBySlug(
   return row
 }
 
+// Resolve a launchpad owner's email. Links are scoped by `createdBy` (= email)
+// but launchpads store `ownerId` (= user.id), so the public render must map one
+// to the other. Returns null when the user row is gone, so link refs resolve to
+// nothing rather than leaking cross-owner rows.
+export async function getOwnerEmail(
+  env: CloudflareEnv,
+  ownerId: string,
+): Promise<string | null> {
+  const db = await getDb(env)
+  const row =
+    (
+      await db
+        .select({ email: user.email })
+        .from(user)
+        .where(eq(user.id, ownerId))
+        .limit(1)
+    )[0] ?? null
+  return row?.email ?? null
+}
+
 // Batch-resolve link references (button/shortlink blocks store link IDs, never
 // copied URLs) to their rows, keyed by id. Skips soft-deleted links so a public
-// page never renders a button pointing at a removed short link.
+// page never renders a button pointing at a removed short link. Scoped to
+// `owner` (the launchpad owner's email, = links.createdBy) so a block
+// referencing another owner's linkId resolves to nothing — never leaking that
+// link's private title.
 export async function getLinksByIds(
   env: CloudflareEnv,
   ids: string[],
+  owner: string,
 ): Promise<Map<string, Link>> {
   if (ids.length === 0) return new Map()
   const db = await getDb(env)
-  // Chunk at 99 ids so `inArray(ids)` + the `isDeleted` predicate never exceeds
-  // the D1 100 bound-parameter cap.
+  // Chunk at 98 ids so `inArray(ids)` + the `isDeleted` and `createdBy`
+  // predicates never exceed the D1 100 bound-parameter cap.
   const rows: Link[] = []
-  for (let i = 0; i < ids.length; i += 99) {
-    const chunk = ids.slice(i, i + 99)
+  for (let i = 0; i < ids.length; i += 98) {
+    const chunk = ids.slice(i, i + 98)
     rows.push(
       ...(await db
         .select()
         .from(links)
-        .where(and(inArray(links.id, chunk), eq(links.isDeleted, 0)))),
+        .where(
+          and(
+            inArray(links.id, chunk),
+            eq(links.isDeleted, 0),
+            eq(links.createdBy, owner),
+          ),
+        )),
     )
   }
   return new Map(rows.map((row) => [row.id, row]))
