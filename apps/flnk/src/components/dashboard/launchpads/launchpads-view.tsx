@@ -54,9 +54,9 @@ import {
   formatNumber,
 } from '@/lib/format/format'
 import type { LaunchpadRow } from '@/lib/platform/api'
-import { launchpadApi, linkApi } from '@/lib/platform/api'
+import { launchpadApi } from '@/lib/platform/api'
 import { useLaunchpadsViewStore } from '@/stores/launchpads-view-store'
-import { buildLinkRefs } from './blocks'
+import { useLinkRefs } from './use-link-refs'
 
 const STATS_WINDOW_MS = 365 * 24 * 60 * 60 * 1000
 
@@ -75,11 +75,7 @@ export function LaunchpadsView() {
       launchpadApi.list({ limit: 100, offset: 0, sort: 'createdAt' }),
   })
 
-  const linksQuery = useQuery({
-    queryKey: ['links-all'],
-    queryFn: () => linkApi.list({ limit: 100, offset: 0, sort: 'createdAt' }),
-  })
-  const linkRefs = buildLinkRefs(linksQuery.data?.links ?? [])
+  const linkRefs = useLinkRefs()
 
   const remove = useMutation({
     mutationFn: (id: string) => launchpadApi.remove(id),
