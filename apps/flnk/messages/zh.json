@@ -745,7 +745,9 @@
     "subtitle": "外观、语言与系统状态。",
     "appearance": {
       "title": "外观",
-      "description": "在浅色与深色主题之间切换。"
+      "description": "在浅色与深色主题之间切换。",
+      "light": "浅色",
+      "dark": "深色"
     },
     "language": {
       "title": "语言",

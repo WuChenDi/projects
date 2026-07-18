@@ -745,7 +745,9 @@
     "subtitle": "Appearance, language, and system status.",
     "appearance": {
       "title": "Appearance",
-      "description": "Switch between light and dark themes."
+      "description": "Switch between light and dark themes.",
+      "light": "Light",
+      "dark": "Dark"
     },
     "language": {
       "title": "Language",

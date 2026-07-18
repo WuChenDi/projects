@@ -12,10 +12,10 @@ import {
 } from '@cdlab/ui/components/alert-dialog'
 import { Badge } from '@cdlab/ui/components/badge'
 import { Button } from '@cdlab/ui/components/button'
-import { Calendar } from '@cdlab/ui/components/calendar'
 import { Card } from '@cdlab/ui/components/card'
 import { Checkbox } from '@cdlab/ui/components/checkbox'
 import { CopyButton } from '@cdlab/ui/components/copy-button'
+import { DateRangePicker } from '@cdlab/ui/components/date-range-picker'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,9 +50,9 @@ import { IKEmpty } from '@cdlab/ui/IK/IKEmpty'
 import { cn } from '@cdlab/ui/lib/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { endOfDay, startOfDay } from 'date-fns'
+import { enUS, zhCN } from 'date-fns/locale'
 import {
   BarChart3,
-  CalendarDays,
   Calendar as CalendarIcon,
   CornerDownRight,
   ExternalLink,
@@ -139,6 +139,7 @@ export function LinksView() {
   const t = useTranslations('links')
   const tc = useTranslations('common')
   const locale = useLocale()
+  const dateLocale = locale === 'zh' ? zhCN : enUS
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -381,14 +382,6 @@ export function LinksView() {
     onError: (e: Error) => toast.error(e.message),
   })
 
-  const dateLabel =
-    startAt && endAt
-      ? `${formatDate(new Date(startAt).toISOString(), locale)} – ${formatDate(
-          new Date(endAt).toISOString(),
-          locale,
-        )}`
-      : t('dateRange')
-
   // Shared row pieces so the list (horizontal) and grid (vertical) layouts stay
   // in sync without duplicating markup.
   function renderShort(shortUrl: string, shortLabel: string) {
@@ -598,50 +591,23 @@ export function LinksView() {
 
   function dateRangePicker(mobile: boolean) {
     return (
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              mobile ? 'w-full justify-start' : 'hidden md:flex',
-              !(startAt && endAt) && 'text-muted-foreground',
-            )}
-          >
-            <CalendarDays className="size-4" />
-            {dateLabel}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="range"
-            numberOfMonths={2}
-            defaultMonth={startAt ? new Date(startAt) : undefined}
-            selected={{
-              from: startAt ? new Date(startAt) : undefined,
-              to: endAt ? new Date(endAt) : undefined,
-            }}
-            onSelect={(range) =>
-              setDateRange(
-                range?.from ? startOfDay(range.from).getTime() : null,
-                range?.to ? endOfDay(range.to).getTime() : null,
-              )
-            }
-          />
-          {(startAt || endAt) && (
-            <div className="border-t p-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-center"
-                onClick={() => setDateRange(null, null)}
-              >
-                <X className="size-4" />
-                {t('clearDate')}
-              </Button>
-            </div>
-          )}
-        </PopoverContent>
-      </Popover>
+      <DateRangePicker
+        value={{
+          from: startAt ? new Date(startAt) : undefined,
+          to: endAt ? new Date(endAt) : undefined,
+        }}
+        onChange={(range) =>
+          setDateRange(
+            range?.from ? startOfDay(range.from).getTime() : null,
+            range?.to ? endOfDay(range.to).getTime() : null,
+          )
+        }
+        presets={[]}
+        numberOfMonths={2}
+        locale={dateLocale}
+        placeholder={t('dateRange')}
+        className={mobile ? 'w-full' : 'hidden md:flex'}
+      />
     )
   }
 
