@@ -18,9 +18,10 @@ export const GET = withSession(async ({ user, request, env }) => {
   const statusParam = sp.get('status') as LinkStatus | null
   const status =
     statusParam && STATUSES.includes(statusParam) ? statusParam : undefined
-  // Per-owner isolation: always scope the list to the caller. A client-supplied
-  // `createdBy` is intentionally ignored so it can't read another owner's links.
-  const createdBy = user.email
+  // Per-owner isolation: always scope the list to the caller by owner id. A
+  // client-supplied owner is intentionally ignored so it can't read another
+  // owner's links.
+  const ownerId = user.id
   const startAt = Number(sp.get('startAt')) || undefined
   const endAt = Number(sp.get('endAt')) || undefined
   const untagged = sp.get('untagged') === '1'
@@ -41,7 +42,7 @@ export const GET = withSession(async ({ user, request, env }) => {
     offset,
     sort,
     status,
-    createdBy,
+    ownerId,
     startAt,
     endAt,
     untagged,
