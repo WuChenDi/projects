@@ -10,8 +10,8 @@ import {
 } from '@cdlab/ui/components/card'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslations } from 'next-intl'
-import { LocaleSwitcher } from '@/components/layout/locale-switcher'
-import { ThemeToggle } from '@/components/layout/theme-toggle'
+import { LocaleTabs } from '@/components/dashboard/settings/locale-tabs'
+import { ThemeTabs } from '@/components/dashboard/settings/theme-tabs'
 import { configApi } from '@/lib/platform/api'
 
 function StatusRow({ label, ok }: { label: string; ok: boolean }) {
@@ -47,7 +47,7 @@ export function SettingsView() {
           <CardDescription>{t('appearance.description')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <ThemeToggle />
+          <ThemeTabs />
         </CardContent>
       </Card>
 
@@ -57,7 +57,7 @@ export function SettingsView() {
           <CardDescription>{t('language.description')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <LocaleSwitcher />
+          <LocaleTabs />
         </CardContent>
       </Card>
 
