@@ -44,20 +44,20 @@ export interface ListParams {
   untagged?: boolean
 }
 
-export class ApiError extends Error {
+export class ApiClientError extends Error {
   readonly status: number
   constructor(message: string, status: number) {
     super(message)
-    this.name = 'ApiError'
+    this.name = 'ApiClientError'
     this.status = status
   }
 }
 
-// Turn a failed response into an ApiError: read the best-effort JSON body
+// Turn a failed response into an ApiClientError: read the best-effort JSON body
 // (`{ error?: string }`), falling back to the status text.
-async function parseError(res: Response): Promise<ApiError> {
+async function parseError(res: Response): Promise<ApiClientError> {
   const body = (await res.json().catch(() => ({}))) as { error?: string }
-  return new ApiError(body.error || res.statusText, res.status)
+  return new ApiClientError(body.error || res.statusText, res.status)
 }
 
 // Auth is a better-auth session cookie, sent automatically on same-origin
