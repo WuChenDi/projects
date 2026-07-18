@@ -5,7 +5,7 @@ import { SetTagsSchema } from '@/schemas/link'
 
 export const POST = withAuth(SetTagsSchema, async (data, { user, env }) => {
   const { id, tags } = data
-  const ok = await setLinkTags(env, id, tags, user.email)
+  const ok = await setLinkTags(env, id, tags, user.id)
   if (!ok) {
     return NextResponse.json({ error: 'Link not found' }, { status: 404 })
   }

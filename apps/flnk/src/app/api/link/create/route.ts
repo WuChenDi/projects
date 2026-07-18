@@ -7,7 +7,7 @@ export const POST = withAuth(
   CreateLinkSchema,
   async (data, { user, request, env }) => {
     const domain = new URL(request.url).hostname
-    const result = await createLink(env, data, domain, user.email)
+    const result = await createLink(env, data, domain, user.id, user.email)
     if (!result.ok) {
       return NextResponse.json(
         { error: result.error },
