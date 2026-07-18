@@ -261,6 +261,11 @@ export function LinksView() {
       toast.success(t('delete.success'))
       setToDelete(null)
       void queryClient.invalidateQueries({ queryKey: ['links'] })
+      // Deleting a link changes the total count and the overview/analytics
+      // stats — invalidate those key groups by prefix so every window drops.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.linkCount() })
+      void queryClient.invalidateQueries({ queryKey: ['stats', 'counters'] })
+      void queryClient.invalidateQueries({ queryKey: ['stats', 'metrics'] })
     },
     onError: (e: Error) => toast.error(e.message),
   })
@@ -354,6 +359,11 @@ export function LinksView() {
       setBulkConfirm(false)
       void queryClient.invalidateQueries({ queryKey: ['links'] })
       void queryClient.invalidateQueries({ queryKey: ['link-tags'] })
+      // Deleting links changes the total count and the overview/analytics
+      // stats — invalidate those key groups by prefix so every window drops.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.linkCount() })
+      void queryClient.invalidateQueries({ queryKey: ['stats', 'counters'] })
+      void queryClient.invalidateQueries({ queryKey: ['stats', 'metrics'] })
     },
     onError: (e: Error) => toast.error(e.message),
   })
