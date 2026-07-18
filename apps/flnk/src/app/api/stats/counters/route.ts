@@ -11,7 +11,7 @@ export const GET = withSession(
   async ({ user, request, env }) => {
     const q = {
       ...parseStatsQuery(new URL(request.url).searchParams),
-      ownerKey: user.email,
+      ownerKey: user.id,
     }
     try {
       const rows = await executeAeSql(env, countersSql(env, q))

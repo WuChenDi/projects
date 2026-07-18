@@ -13,7 +13,7 @@ export const GET = withSession(
   async ({ user, request, env }) => {
     const q = {
       ...parseStatsQuery(new URL(request.url).searchParams),
-      ownerKey: user.email,
+      ownerKey: user.id,
     }
     // Short ranges bucket by hour, longer ones by day.
     const span =
