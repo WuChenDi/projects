@@ -98,6 +98,17 @@ export function LaunchpadsView() {
     return rows.filter((r) => `${r.title} ${r.slug}`.toLowerCase().includes(q))
   }, [rows, search])
 
+  // One batched stats request for the whole page (keyed by the id set + window)
+  // instead of one query per card — kills the AE N+1 fan-out on mount.
+  const statsIds = useMemo(() => rows.map((r) => r.id), [rows])
+  const statsQuery = useQuery({
+    queryKey: ['launchpad-stats-batch', statsIds.join(','), STATS_WINDOW_MS],
+    queryFn: () =>
+      launchpadApi.statsBatch(statsIds, Date.now() - STATS_WINDOW_MS),
+    enabled: statsIds.length > 0,
+  })
+  const statsMap = statsQuery.data?.stats
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -188,6 +199,7 @@ export function LaunchpadsView() {
               row={row}
               view={view}
               linkRefs={linkRefs}
+              stats={statsMap?.[row.id]}
               onEdit={() => router.push(`/dashboard/launchpads/${row.id}`)}
               onDelete={() => setToDelete(row)}
             />
@@ -228,12 +240,14 @@ function LaunchpadCard({
   row,
   view,
   linkRefs,
+  stats,
   onEdit,
   onDelete,
 }: {
   row: LaunchpadRow
   view: 'list' | 'grid'
   linkRefs: Record<string, LinkRef>
+  stats?: { views: number; engagements: number }
   onEdit: () => void
   onDelete: () => void
 }) {
@@ -241,11 +255,6 @@ function LaunchpadCard({
   const tc = useTranslations('common')
   const locale = useLocale()
   const publicUrl = buildLaunchpadUrl(row.slug)
-
-  const stats = useQuery({
-    queryKey: ['launchpad-stats', row.id],
-    queryFn: () => launchpadApi.stats(row.id, Date.now() - STATS_WINDOW_MS),
-  })
 
   // Shared row pieces so the list (horizontal) and grid (vertical) layouts stay
   // in sync without duplicating markup.
@@ -331,11 +340,11 @@ function LaunchpadCard({
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
       <span className="flex items-center gap-1">
         <Eye className="size-3.5" />
-        {formatNumber(stats.data?.views ?? 0, locale)}
+        {formatNumber(stats?.views ?? 0, locale)}
       </span>
       <span className="flex items-center gap-1">
         <MousePointerClick className="size-3.5" />
-        {formatNumber(stats.data?.engagements ?? 0, locale)}
+        {formatNumber(stats?.engagements ?? 0, locale)}
       </span>
       <span className="flex items-center gap-1">
         <CalendarIcon className="size-3.5" />
