@@ -1,22 +1,17 @@
-import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
 import { getLaunchpadById } from '@/lib/data/launchpads'
-import { requireSession } from '@/lib/platform/auth'
+import { withSession } from '@/lib/platform/with-auth'
 
 // Fetch a single launchpad by id.
-export async function GET(request: Request): Promise<NextResponse> {
-  const auth = await requireSession(request)
-  if (!auth.ok) return auth.response
-
+export const GET = withSession(async ({ user, request, env }) => {
   const id = new URL(request.url).searchParams.get('id')
   if (!id) {
     return NextResponse.json({ error: 'id is required' }, { status: 400 })
   }
 
-  const { env } = getCloudflareContext()
-  const launchpad = await getLaunchpadById(env, id, auth.user.id)
+  const launchpad = await getLaunchpadById(env, id, user.id)
   if (!launchpad) {
     return NextResponse.json({ error: 'Launchpad not found' }, { status: 404 })
   }
   return NextResponse.json({ launchpad })
-}
+})

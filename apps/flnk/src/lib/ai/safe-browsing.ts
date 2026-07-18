@@ -8,9 +8,15 @@ export async function safeBrowsingHost(
   doh: string,
   host: string,
 ): Promise<boolean | null> {
+  // Own AbortController + timeout so a hung/slow DoH resolver can't stall the
+  // link write path (isUnsafeUrl awaits this). On abort the fetch rejects, the
+  // catch returns null ("inconclusive"), and the write proceeds.
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 2500)
   try {
     const res = await fetch(`${doh}?name=${encodeURIComponent(host)}&type=A`, {
       headers: { accept: 'application/dns-json' },
+      signal: controller.signal,
     })
     if (!res.ok) return null
     const data = (await res.json()) as { Answer?: { data: string }[] }
@@ -19,6 +25,8 @@ export async function safeBrowsingHost(
     )
   } catch {
     return null
+  } finally {
+    clearTimeout(timeout)
   }
 }
 

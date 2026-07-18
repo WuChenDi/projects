@@ -1,3 +1,4 @@
+import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { and, eq, sql } from 'drizzle-orm'
 import type { Link } from '@/database/schema'
 import { links } from '@/database/schema'
@@ -116,14 +117,19 @@ export async function resolveLink(
         .limit(1)
     )[0] ?? null
 
+  // Cache population runs in the background via waitUntil so the redirect
+  // response isn't blocked on the KV write.
+  const ctx = getCloudflareContext().ctx
   if (row && !isExpired(row.expiresAt)) {
-    await writeCache(env, domain, slug, row)
+    ctx.waitUntil(writeCache(env, domain, slug, row).catch(() => {}))
   } else if (!row) {
     // Slug doesn't exist — cache the miss so a flood of lookups for the same
     // non-existent slug doesn't keep hitting D1. Gated to validly-formatted
     // slugs: malformed scans can never match a stored row, so skipping them
     // avoids polluting KV with one tombstone per junk request.
-    if (!validateSlug(slug)) await writeNegativeCache(env, domain, slug)
+    if (!validateSlug(slug)) {
+      ctx.waitUntil(writeNegativeCache(env, domain, slug).catch(() => {}))
+    }
   }
   return row
 }
