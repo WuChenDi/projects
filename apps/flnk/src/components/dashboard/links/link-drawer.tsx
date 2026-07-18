@@ -48,6 +48,7 @@ import { TagCombobox } from '@/components/dashboard/links/tag-combobox'
 import { buildShortUrl, dateLocale } from '@/lib/format/format'
 import type { LinkRow } from '@/lib/platform/api'
 import { configApi, linkApi, uploadApi } from '@/lib/platform/api'
+import { queryKeys } from '@/lib/platform/query-keys'
 import type { CreateLinkInput } from '@/schemas/link'
 
 // QR defaults — kept in sync with the popover so an uncustomized link renders
@@ -306,6 +307,11 @@ function EditorForm({
       toast.success(isEdit ? t('updated') : t('created'))
       void queryClient.invalidateQueries({ queryKey: ['links'] })
       void queryClient.invalidateQueries({ queryKey: ['link-tags'] })
+      // Creating a link changes the total count and the overview/analytics
+      // stats — invalidate those key groups by prefix so every window drops.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.linkCount() })
+      void queryClient.invalidateQueries({ queryKey: ['stats', 'counters'] })
+      void queryClient.invalidateQueries({ queryKey: ['stats', 'metrics'] })
       onDone()
     },
     onError: (e: Error) => toast.error(e.message),
