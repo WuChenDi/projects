@@ -15,13 +15,11 @@ import {
 } from '@cdlab/ui/components/select'
 import { Skeleton } from '@cdlab/ui/components/skeleton'
 import { useQuery } from '@tanstack/react-query'
-import { format } from 'date-fns'
 import { Globe } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
-import { dateLocale } from '@/lib/format/format'
-import type { LogEvent } from '@/lib/platform/api'
+import { eventKey, localTime } from '@/lib/format/format'
 import { statsApi } from '@/lib/platform/api'
 
 // WebGL globe is client-only — skip SSR and lazy-load so it never blocks the page.
@@ -60,17 +58,6 @@ const WINDOWS: Record<string, number> = {
 const EVENTS_INTERVAL = 12_000
 const CHART_INTERVAL = 15_000
 const GLOBE_INTERVAL = 20_000
-
-const eventKey = (e: LogEvent) =>
-  `${e.timestamp}-${e.slug}-${e.city}-${e.browser}-${e.os}`
-
-// AE returns UTC "YYYY-MM-DD HH:MM:SS"; render as local time.
-function localTime(ts: string, locale: string): string {
-  const d = new Date(ts.replace(' ', 'T') + 'Z')
-  return Number.isNaN(d.getTime())
-    ? ts
-    : format(d, 'HH:mm', { locale: dateLocale(locale) })
-}
 
 export function RealtimeView() {
   const t = useTranslations('realtime')

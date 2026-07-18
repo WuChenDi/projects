@@ -2,6 +2,7 @@ import type { Locale } from 'date-fns'
 import { format } from 'date-fns'
 import { enUS, zhCN } from 'date-fns/locale'
 import type { LinkConfig } from '@/database/schema'
+import type { LogEvent } from '@/lib/platform/api'
 
 const DATE_LOCALES: Record<string, Locale> = { en: enUS, zh: zhCN }
 
@@ -51,6 +52,18 @@ export function formatDate(value: string | null, locale: string): string {
 // Locale-aware thousands grouping for counts.
 export function formatNumber(value: number, locale: string): string {
   return new Intl.NumberFormat(locale).format(value)
+}
+
+// Stable dedup key for a realtime log event.
+export const eventKey = (e: LogEvent) =>
+  `${e.timestamp}-${e.slug}-${e.city}-${e.browser}-${e.os}`
+
+// AE returns UTC "YYYY-MM-DD HH:MM:SS"; render as local time.
+export function localTime(ts: string, locale: string): string {
+  const d = new Date(`${ts.replace(' ', 'T')}Z`)
+  return Number.isNaN(d.getTime())
+    ? ts
+    : format(d, 'HH:mm', { locale: dateLocale(locale) })
 }
 
 // Short human summary of the advanced routing a link carries, for the table.
