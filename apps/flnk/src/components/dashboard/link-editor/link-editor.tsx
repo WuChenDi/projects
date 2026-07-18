@@ -26,103 +26,14 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CountrySelect } from '@/components/dashboard/link-editor/country-select'
+import {
+  buildPayload,
+  geoRow,
+  randomSlug,
+  useLinkForm,
+} from '@/components/dashboard/links/use-link-form'
 import type { LinkRow } from '@/lib/platform/api'
 import { configApi, linkApi, uploadApi } from '@/lib/platform/api'
-import type { CreateLinkInput } from '@/schemas/link'
-
-const SLUG_ALPHABET = '23456789abcdefghjkmnpqrstuvwxyz'
-function randomSlug(length = 6): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(length))
-  let out = ''
-  for (let i = 0; i < length; i++)
-    out += SLUG_ALPHABET[bytes[i]! % SLUG_ALPHABET.length]
-  return out
-}
-
-interface GeoRow {
-  id: string
-  country: string
-  url: string
-}
-
-function geoRow(country = '', url = ''): GeoRow {
-  return { id: crypto.randomUUID(), country, url }
-}
-
-interface FormState {
-  url: string
-  slug: string
-  comment: string
-  tags: string[]
-  expiresAt: number | null
-  maxVisits: number | null
-  password: string
-  apple: string
-  google: string
-  title: string
-  description: string
-  image: string
-  cloaking: boolean
-  redirectWithQuery: boolean
-  unsafe: boolean
-  geo: GeoRow[]
-}
-
-function initialState(existing?: LinkRow): FormState {
-  const c = existing?.config ?? {}
-  return {
-    url: existing?.url ?? '',
-    slug: existing?.slug ?? '',
-    comment: existing?.comment ?? '',
-    tags: existing?.tags ?? [],
-    expiresAt: existing?.expiresAt
-      ? new Date(existing.expiresAt).getTime()
-      : null,
-    maxVisits: c.maxVisits ?? null,
-    password: '',
-    apple: c.apple ?? '',
-    google: c.google ?? '',
-    title: c.title ?? '',
-    description: c.description ?? '',
-    image: c.image ?? '',
-    cloaking: c.cloaking ?? false,
-    redirectWithQuery: c.redirectWithQuery ?? false,
-    unsafe: c.unsafe ?? false,
-    geo: c.geo
-      ? Object.entries(c.geo).map(([country, url]) => geoRow(country, url))
-      : [],
-  }
-}
-
-function buildPayload(f: FormState): CreateLinkInput {
-  const config: CreateLinkInput['config'] = {}
-  if (f.apple) config.apple = f.apple
-  if (f.google) config.google = f.google
-  if (f.title) config.title = f.title
-  if (f.description) config.description = f.description
-  if (f.image) config.image = f.image
-  if (f.cloaking) config.cloaking = true
-  if (f.redirectWithQuery) config.redirectWithQuery = true
-  if (f.unsafe) config.unsafe = true
-  if (f.maxVisits) config.maxVisits = f.maxVisits
-  const geo = f.geo
-    .filter((g) => g.country.trim() && g.url.trim())
-    .reduce<Record<string, string>>((acc, g) => {
-      acc[g.country.trim().toUpperCase()] = g.url.trim()
-      return acc
-    }, {})
-  if (Object.keys(geo).length) config.geo = geo
-
-  return {
-    url: f.url.trim(),
-    slug: f.slug.trim() || undefined,
-    comment: f.comment.trim() || undefined,
-    tags: f.tags,
-    expiresAt: f.expiresAt ?? null,
-    config,
-    password: f.password.trim() || undefined,
-  }
-}
 
 export function LinkEditor({ existing }: { existing?: LinkRow }) {
   const t = useTranslations('links.form')
@@ -132,7 +43,7 @@ export function LinkEditor({ existing }: { existing?: LinkRow }) {
   const queryClient = useQueryClient()
   const isEdit = !!existing
 
-  const [form, setForm] = useState<FormState>(() => initialState(existing))
+  const { form, setForm, set } = useLinkForm({ existing, withMaxVisits: true })
   const [aiPending, setAiPending] = useState(false)
   const [ogAiPending, setOgAiPending] = useState(false)
   const [dateOpen, setDateOpen] = useState(false)
@@ -142,10 +53,6 @@ export function LinkEditor({ existing }: { existing?: LinkRow }) {
     staleTime: Number.POSITIVE_INFINITY,
   })
   const r2Enabled = config?.r2 ?? false
-
-  function set<K extends keyof FormState>(key: K, value: FormState[K]) {
-    setForm((s) => ({ ...s, [key]: value }))
-  }
 
   const save = useMutation({
     mutationFn: () => {

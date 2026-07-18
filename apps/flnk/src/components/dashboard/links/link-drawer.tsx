@@ -38,173 +38,28 @@ import { Switch } from '@cdlab/ui/components/switch'
 import { Textarea } from '@cdlab/ui/components/textarea'
 import { cn } from '@cdlab/ui/lib/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { addMonths, format } from 'date-fns'
+import { format } from 'date-fns'
 import { CalendarIcon, Plus, Sparkles, Trash2, Upload, X } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CountrySelect } from '@/components/dashboard/links/country-select'
 import { TagCombobox } from '@/components/dashboard/links/tag-combobox'
+import type {
+  QrCorner,
+  QrDot,
+  QrErrorLevel,
+} from '@/components/dashboard/links/use-link-form'
+import {
+  buildPayload,
+  geoRow,
+  randomSlug,
+  useLinkForm,
+} from '@/components/dashboard/links/use-link-form'
 import { buildShortUrl, dateLocale } from '@/lib/format/format'
 import type { LinkRow } from '@/lib/platform/api'
 import { configApi, linkApi, uploadApi } from '@/lib/platform/api'
 import { queryKeys } from '@/lib/platform/query-keys'
-import type { CreateLinkInput } from '@/schemas/link'
-
-// QR defaults — kept in sync with the popover so an uncustomized link renders
-// the same code in both places (and `buildPayload` can omit a default `qr`).
-type QrDot = 'dot' | 'square'
-type QrCorner = 'rounded' | 'square'
-type QrErrorLevel = 'L' | 'M' | 'Q' | 'H'
-const QR_DEFAULTS = {
-  fgColor: '#0f172a',
-  bgColor: '#ffffff',
-  dotStyle: 'dot' as QrDot,
-  cornerStyle: 'rounded' as QrCorner,
-  errorLevel: 'M' as QrErrorLevel,
-  margin: 2,
-}
-
-const SLUG_ALPHABET = '23456789abcdefghjkmnpqrstuvwxyz'
-function randomSlug(length = 6): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(length))
-  let out = ''
-  for (let i = 0; i < length; i++)
-    out += SLUG_ALPHABET[bytes[i]! % SLUG_ALPHABET.length]
-  return out
-}
-
-interface GeoRow {
-  id: string
-  country: string
-  url: string
-}
-
-function geoRow(country = '', url = ''): GeoRow {
-  return { id: crypto.randomUUID(), country, url }
-}
-
-// New links default to a one-month expiry; the user can clear it for a
-// permanent link.
-function defaultExpiry(): number {
-  return addMonths(new Date(), 1).getTime()
-}
-
-interface FormState {
-  url: string
-  slug: string
-  displayTitle: string
-  comment: string
-  tags: string[]
-  expiresAt: number | null
-  password: string
-  apple: string
-  google: string
-  title: string
-  description: string
-  image: string
-  cloaking: boolean
-  redirectWithQuery: boolean
-  unsafe: boolean
-  geo: GeoRow[]
-  qrFg: string
-  qrBg: string
-  qrDot: QrDot
-  qrCorner: QrCorner
-  qrError: QrErrorLevel
-  qrMargin: number
-  qrLogo: string
-}
-
-function initialState(existing?: LinkRow): FormState {
-  const c = existing?.config ?? {}
-  return {
-    url: existing?.url ?? '',
-    slug: existing?.slug ?? '',
-    displayTitle: existing?.title ?? '',
-    comment: existing?.comment ?? '',
-    tags: existing?.tags ?? [],
-    expiresAt: existing
-      ? existing.expiresAt
-        ? new Date(existing.expiresAt).getTime()
-        : null
-      : defaultExpiry(),
-    password: '',
-    apple: c.apple ?? '',
-    google: c.google ?? '',
-    title: c.title ?? '',
-    description: c.description ?? '',
-    image: c.image ?? '',
-    cloaking: c.cloaking ?? false,
-    redirectWithQuery: c.redirectWithQuery ?? false,
-    unsafe: c.unsafe ?? false,
-    geo: c.geo
-      ? Object.entries(c.geo).map(([country, url]) => geoRow(country, url))
-      : [],
-    qrFg: c.qr?.fgColor ?? QR_DEFAULTS.fgColor,
-    qrBg: c.qr?.bgColor ?? QR_DEFAULTS.bgColor,
-    qrDot: c.qr?.dotStyle ?? QR_DEFAULTS.dotStyle,
-    qrCorner: c.qr?.cornerStyle ?? QR_DEFAULTS.cornerStyle,
-    qrError: c.qr?.errorLevel ?? QR_DEFAULTS.errorLevel,
-    qrMargin: c.qr?.margin ?? QR_DEFAULTS.margin,
-    qrLogo: c.qr?.logo ?? '',
-  }
-}
-
-// A QR config is only persisted when it differs from the defaults — otherwise
-// every link would carry a redundant `qr` block.
-function isCustomQr(f: FormState): boolean {
-  return (
-    f.qrFg !== QR_DEFAULTS.fgColor ||
-    f.qrBg !== QR_DEFAULTS.bgColor ||
-    f.qrDot !== QR_DEFAULTS.dotStyle ||
-    f.qrCorner !== QR_DEFAULTS.cornerStyle ||
-    f.qrError !== QR_DEFAULTS.errorLevel ||
-    f.qrMargin !== QR_DEFAULTS.margin ||
-    f.qrLogo.trim() !== ''
-  )
-}
-
-function buildPayload(f: FormState): CreateLinkInput {
-  const config: CreateLinkInput['config'] = {}
-  if (f.apple) config.apple = f.apple
-  if (f.google) config.google = f.google
-  if (f.title) config.title = f.title
-  if (f.description) config.description = f.description
-  if (f.image) config.image = f.image
-  if (f.cloaking) config.cloaking = true
-  if (f.redirectWithQuery) config.redirectWithQuery = true
-  if (f.unsafe) config.unsafe = true
-  const geo = f.geo
-    .filter((g) => g.country.trim() && g.url.trim())
-    .reduce<Record<string, string>>((acc, g) => {
-      acc[g.country.trim().toUpperCase()] = g.url.trim()
-      return acc
-    }, {})
-  if (Object.keys(geo).length) config.geo = geo
-  if (isCustomQr(f)) {
-    config.qr = {
-      fgColor: f.qrFg,
-      bgColor: f.qrBg,
-      dotStyle: f.qrDot,
-      cornerStyle: f.qrCorner,
-      errorLevel: f.qrError,
-      margin: f.qrMargin,
-      ...(f.qrLogo.trim() ? { logo: f.qrLogo.trim() } : {}),
-    }
-  }
-
-  return {
-    url: f.url.trim(),
-    slug: f.slug.trim() || undefined,
-    title: f.displayTitle.trim() || undefined,
-    comment: f.comment.trim() || undefined,
-    tags: f.tags,
-    expiresAt: f.expiresAt ?? null,
-    config,
-    password: f.password.trim() || undefined,
-  }
-}
 
 // Inline create/edit surface: a right-side panel on desktop, full-screen on
 // small screens. Keeps the user on the links list instead of navigating away.
@@ -274,7 +129,12 @@ function EditorForm({
   const queryClient = useQueryClient()
   const isEdit = !!existing
 
-  const [form, setForm] = useState<FormState>(() => initialState(existing))
+  const { form, setForm, set } = useLinkForm({
+    existing,
+    withTitle: true,
+    withQr: true,
+    defaultExpiry: true,
+  })
   const [aiPending, setAiPending] = useState(false)
   const [ogAiPending, setOgAiPending] = useState(false)
   const [dateOpen, setDateOpen] = useState(false)
@@ -291,10 +151,6 @@ function EditorForm({
     queryFn: () => linkApi.tags(),
   })
   const tagSuggestions = tagsData?.tags.map((x) => x.tag) ?? []
-
-  function set<K extends keyof FormState>(key: K, value: FormState[K]) {
-    setForm((s) => ({ ...s, [key]: value }))
-  }
 
   const save = useMutation({
     mutationFn: () => {
