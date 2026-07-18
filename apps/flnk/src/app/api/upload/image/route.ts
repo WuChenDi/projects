@@ -1,5 +1,6 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
+import { isSlugOwnedBy } from '@/lib/data/links/repo'
 import { getR2, IMAGE_ALLOWED_TYPES, IMAGE_MAX_SIZE } from '@/lib/data/r2'
 import { requireSession } from '@/lib/platform/auth'
 import { newId } from '@/lib/platform/genid'
@@ -29,6 +30,9 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
   if (slug && validateSlug(slug)) {
     return NextResponse.json({ error: 'Invalid slug' }, { status: 400 })
+  }
+  if (slug && !(await isSlugOwnedBy(env, slug, auth.user.email))) {
+    return NextResponse.json({ error: 'Link not found' }, { status: 404 })
   }
   if (!IMAGE_ALLOWED_TYPES.has(file.type)) {
     return NextResponse.json(
