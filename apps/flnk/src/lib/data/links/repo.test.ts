@@ -38,6 +38,7 @@ async function freshDb(): Promise<LibSQLDatabase> {
     url TEXT NOT NULL,
     title TEXT NOT NULL DEFAULT '',
     comment TEXT NOT NULL DEFAULT '',
+    owner_id TEXT NOT NULL DEFAULT '',
     created_by TEXT NOT NULL DEFAULT '',
     tags TEXT NOT NULL DEFAULT '[]',
     config TEXT NOT NULL DEFAULT '{}',
