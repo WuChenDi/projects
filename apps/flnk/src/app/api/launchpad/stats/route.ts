@@ -27,9 +27,11 @@ export async function GET(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: 'Launchpad not found' }, { status: 404 })
   }
 
-  const q = parseStatsQuery(new URL(request.url).searchParams)
+  const q = {
+    ...parseStatsQuery(new URL(request.url).searchParams),
+    ownerKey: auth.user.id,
+  }
   q.filters.slug = launchpad.slug
-  q.ownerKey = auth.user.id
   try {
     const [totals, blocks, series] = await Promise.all([
       executeAeSql(env, launchpadStatsSql(env, q)),

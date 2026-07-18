@@ -13,7 +13,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (await checkRateLimit(env, 'backup', identity, 5, 300)) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
-  const key = await backupToR2(env)
+  const key = await backupToR2(env, auth.user.email)
   if (!key) {
     return NextResponse.json({ error: 'R2 not configured' }, { status: 503 })
   }
