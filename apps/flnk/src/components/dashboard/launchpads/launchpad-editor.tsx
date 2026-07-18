@@ -24,8 +24,8 @@ import type { LaunchpadConfig, LaunchpadStatus } from '@/database/schema'
 import { DEFAULT_LAUNCHPAD_CONFIG } from '@/database/schema'
 import { buildLaunchpadUrl } from '@/lib/format/format'
 import type { LaunchpadRow } from '@/lib/platform/api'
-import { launchpadApi, linkApi } from '@/lib/platform/api'
-import { buildLinkRefs } from './blocks'
+import { launchpadApi } from '@/lib/platform/api'
+import { useAllLinks, useLinkRefs } from './use-link-refs'
 
 interface EditorState {
   title: string
@@ -77,12 +77,9 @@ export function LaunchpadEditor({ id }: { id: string }) {
   }, [existing.data])
 
   // Links for the block pickers + preview reference resolution.
-  const linksQuery = useQuery({
-    queryKey: ['links-all'],
-    queryFn: () => linkApi.list({ limit: 100, offset: 0, sort: 'createdAt' }),
-  })
+  const linksQuery = useAllLinks()
   const links = linksQuery.data?.links ?? []
-  const linkRefs = buildLinkRefs(links)
+  const linkRefs = useLinkRefs()
 
   const dirty = JSON.stringify(form) !== snapshot.current
 

@@ -1,14 +1,9 @@
-import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
 import { searchLinks } from '@/lib/data/links'
-import { requireSession } from '@/lib/platform/auth'
 import { getConfig } from '@/lib/platform/env'
+import { withSession } from '@/lib/platform/with-auth'
 
-export async function GET(request: Request): Promise<NextResponse> {
-  const auth = await requireSession(request)
-  if (!auth.ok) return auth.response
-
-  const { env } = getCloudflareContext()
+export const GET = withSession(async ({ user, request, env }) => {
   const url = new URL(request.url)
   const q = (url.searchParams.get('q') || '').trim()
   if (!q) return NextResponse.json({ links: [] })
@@ -18,6 +13,6 @@ export async function GET(request: Request): Promise<NextResponse> {
     maxLimit,
     Math.max(1, Number(url.searchParams.get('limit')) || 20),
   )
-  const links = await searchLinks(env, q, { limit }, auth.user.email)
+  const links = await searchLinks(env, q, { limit }, user.email)
   return NextResponse.json({ links })
-}
+})

@@ -502,11 +502,13 @@ export interface ImportReport {
   failedItems: { slug: string; reason: string }[]
 }
 
-// Batch sizing for import. D1 caps bound parameters at 100 per query, so the
-// per-chunk existence select stays at 100 slugs and bulk inserts are split so
-// rows × columns stays under that cap.
-const IMPORT_CHUNK = 100
-const IMPORT_INSERT_BATCH = 8
+// Batch sizing for import. D1 caps bound parameters at 100 per query. The
+// per-chunk existence select binds up to IMPORT_CHUNK slugs plus the owner
+// (`createdBy`) predicate, so it stays at 99 slugs (+1 owner = 100). Bulk
+// inserts are split so rows × columns (13 incl. `createdBy`/`createdAt`) stays
+// under the cap.
+const IMPORT_CHUNK = 99
+const IMPORT_INSERT_BATCH = 7
 
 // Non-destructive import: existing active (slug,domain) is skipped, a
 // soft-deleted one is revived, otherwise inserted. Config (incl. passwordHash)
@@ -556,14 +558,17 @@ export async function importLinks(
     }
     if (pending.length === 0) continue
 
-    // One select per chunk: fetch every row (active or soft-deleted) holding
-    // any of the slugs, then match the domain in JS — the unique index covers
-    // deleted rows too, so skip/revive must see them.
+    // One select per chunk: fetch every row (active or soft-deleted) OWNED BY
+    // the importer holding any of the slugs, then match the domain in JS — the
+    // unique index covers deleted rows too, so skip/revive must see them. The
+    // owner filter is critical: a (slug,domain) owned by a different user must
+    // stay invisible here so import never revives or overwrites their row —
+    // it's treated as new and inserts a fresh owner-scoped row instead.
     const slugs = Array.from(new Set(pending.map((p) => p.slug)))
     const existingRows = await db
       .select()
       .from(links)
-      .where(inArray(links.slug, slugs))
+      .where(and(eq(links.createdBy, createdBy), inArray(links.slug, slugs)))
     const existingByKey = new Map(
       existingRows.map((r) => [keyOf(r.domain, r.slug), r]),
     )
@@ -593,6 +598,10 @@ export async function importLinks(
         url: item.url,
         title: item.title ?? '',
         comment: item.comment ?? '',
+        // Owner stamp: revive can only reach the importer's own soft-deleted
+        // rows (owner-scoped select above), and new rows must be owned by the
+        // importer — never leave `createdBy` at the schema default.
+        createdBy,
         config: (item.config ?? {}) as LinkConfig,
         tags: tagNamesByItem[idx]!.map((n) => tagIdByName.get(n)).filter(
           (id): id is string => !!id,
@@ -605,6 +614,9 @@ export async function importLinks(
       if (existing) {
         // Revive a soft-deleted row in place.
         await db.update(links).set(values).where(eq(links.id, existing.id))
+        // Clear any negative-cache tombstone left by resolve.ts so the revived
+        // slug isn't stuck 404-ing until the tombstone expires.
+        await purgeLink(env, domain, slug)
       } else {
         inserts.push(values)
       }
@@ -613,6 +625,10 @@ export async function importLinks(
 
     for (let j = 0; j < inserts.length; j += IMPORT_INSERT_BATCH) {
       await db.insert(links).values(inserts.slice(j, j + IMPORT_INSERT_BATCH))
+    }
+    // Purge tombstones for freshly inserted rows too (same reason as revive).
+    for (const row of inserts) {
+      await purgeLink(env, row.domain ?? '', row.slug)
     }
   }
   return report

@@ -63,17 +63,24 @@ const FILTERABLE: Dimension[] = [
   'timezone',
 ]
 
-export interface StatsQuery {
+// Range + drill-down filters parsed from request params (parseStatsQuery).
+// Carries NO owner scope — the caller must attach one to form a StatsQuery.
+export interface StatsFilters {
   startAt?: number // epoch ms
   endAt?: number // epoch ms
   filters: Partial<Record<Dimension, string>>
-  // Owner tenant key. When defined, results are restricted to points whose
-  // owner blob (blob20) matches — link scope filters by owner EMAIL, launchpad
-  // scope by owner USER.ID. Injected by the stats/* + logs/* + launchpad routes
-  // from the session; never parsed from request params. An undefined key is
-  // internal/unscoped only (adds no owner filter).
-  ownerKey?: string
 }
+
+// A runnable query is fail-closed by construction: it is EITHER scoped to a
+// single tenant (`ownerKey` set — link scope filters blob20 by owner EMAIL,
+// launchpad scope by owner USER.ID) OR explicitly opted out with
+// `unscoped: true` (the rare internal/cross-tenant call). There is no third
+// state, so forgetting the owner is a compile-time error, never a fail-open
+// all-tenants query. ownerKey is injected by the stats/* + logs/* + launchpad
+// routes from the session; never parsed from request params.
+export type StatsQuery =
+  | (StatsFilters & { ownerKey: string; unscoped?: never })
+  | (StatsFilters & { unscoped: true; ownerKey?: never })
 
 export class AnalyticsNotConfiguredError extends Error {
   constructor() {
@@ -118,12 +125,18 @@ function whereClause(
     const list = LAUNCHPAD_TYPES.map((t) => `'${t}'`).join(', ')
     conditions.push(`${FIELD.type} NOT IN (${list})`)
   }
-  // Owner tenant filter (fail-closed): every dashboard route sets ownerKey, so
-  // an unscoped query only happens on internal calls. Owner-key skew invariant:
-  // link scope filters blob20 by owner EMAIL, launchpad scope by owner USER.ID;
-  // this is safe because `scope` never mixes the two entity families in one
-  // query (there is no email<->id join anywhere).
-  if (query.ownerKey !== undefined) {
+  // Owner tenant filter (fail-closed): a scoped query MUST carry ownerKey; the
+  // only way to skip it is an explicit `unscoped: true` (internal/cross-tenant
+  // calls only). The StatsQuery type makes any other state unrepresentable, so
+  // reaching this without either is impossible — throw rather than silently
+  // return every tenant's data. Owner-key skew invariant: link scope filters
+  // blob20 by owner EMAIL, launchpad scope by owner USER.ID; safe because
+  // `scope` never mixes the two entity families in one query (there is no
+  // email<->id join anywhere).
+  if (query.unscoped !== true) {
+    if (query.ownerKey === undefined) {
+      throw new Error('analytics query missing owner scope (fail-closed)')
+    }
     conditions.push(`${FIELD.owner} = '${sanitize(query.ownerKey)}'`)
   }
   if (query.startAt) {
@@ -300,7 +313,7 @@ export function launchpadBlockStatsSql(
 }
 
 // Parse StatsQuery (range + drill-down filters) from request search params.
-export function parseStatsQuery(params: URLSearchParams): StatsQuery {
+export function parseStatsQuery(params: URLSearchParams): StatsFilters {
   const filters: Partial<Record<Dimension, string>> = {}
   for (const dim of FILTERABLE) {
     const v = params.get(dim)

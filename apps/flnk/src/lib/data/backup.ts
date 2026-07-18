@@ -1,4 +1,4 @@
-import { asc, eq } from 'drizzle-orm'
+import { and, asc, eq } from 'drizzle-orm'
 import type { Link } from '@/database/schema'
 import { links as linksTable } from '@/database/schema'
 import { getDb } from '@/lib/data/db'
@@ -54,9 +54,11 @@ type BackupLinkRow = Pick<
 
 // Stream active links for the daily backup: a column-scoped, id-ordered select
 // paged by limit/offset until a short page ends it, hard-capped at MAX_LINKS.
-// No count(*) and no tag-name join — the backup payload needs neither.
-async function fetchLinksForBackup(
+// No count(*) and no tag-name join — the backup payload needs neither. Scoped to
+// the caller's own links via `createdBy` (per-owner isolation).
+export async function fetchLinksForBackup(
   env: CloudflareEnv,
+  owner: string,
 ): Promise<{ links: BackupLinkRow[]; truncated: boolean }> {
   const db = await getDb(env)
   const all: BackupLinkRow[] = []
@@ -74,7 +76,7 @@ async function fetchLinksForBackup(
         createdAt: linksTable.createdAt,
       })
       .from(linksTable)
-      .where(eq(linksTable.isDeleted, 0))
+      .where(and(eq(linksTable.isDeleted, 0), eq(linksTable.createdBy, owner)))
       .orderBy(asc(linksTable.id))
       .limit(PAGE_SIZE)
       .offset(offset)
@@ -90,13 +92,25 @@ async function fetchLinksForBackup(
   }
 }
 
-// Write a JSON snapshot of all active links to R2 under backups/. Returns the
-// object key, or null when R2 is not configured.
-export async function backupToR2(env: CloudflareEnv): Promise<string | null> {
+// Derive a filesystem/key-safe R2 path segment from an owner email so each
+// owner's snapshots live under their own prefix and never collide. Lowercase,
+// then map every char outside [a-z0-9_-] to '_' (so `a@b.com` → `a_b_com`).
+// Deterministic and stable per owner.
+function ownerSlug(owner: string): string {
+  return owner.toLowerCase().replace(/[^a-z0-9_-]/g, '_')
+}
+
+// Write a JSON snapshot of the owner's active links to R2 under
+// backups/<ownerSlug>/. Returns the object key, or null when R2 is not
+// configured.
+export async function backupToR2(
+  env: CloudflareEnv,
+  owner: string,
+): Promise<string | null> {
   const r2 = getR2(env)
   if (!r2) return null
 
-  const { links, truncated } = await fetchLinksForBackup(env)
+  const { links, truncated } = await fetchLinksForBackup(env, owner)
   const payload = JSON.stringify({
     version: '1.0',
     exportedAt: new Date().toISOString(),
@@ -114,7 +128,8 @@ export async function backupToR2(env: CloudflareEnv): Promise<string | null> {
     })),
   })
 
-  const key = `backups/${new Date().toISOString().replace(/[:.]/g, '-')}.json`
+  const ts = new Date().toISOString().replace(/[:.]/g, '-')
+  const key = `backups/${ownerSlug(owner)}/${ts}.json`
   await r2.put(key, payload, {
     httpMetadata: { contentType: 'application/json' },
   })

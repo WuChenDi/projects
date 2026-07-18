@@ -586,6 +586,7 @@
     "subtitle": "查看链接的访问与互动数据。",
     "notConfigured": "尚未配置分析。设置 CLOUDFLARE_ACCOUNT_ID 与 CLOUDFLARE_API_TOKEN 以启用统计。",
     "clearFilters": "清除筛选",
+    "removeFilter": "移除筛选",
     "comingSoon": "敬请期待",
     "noData": "该时间范围内暂无数据",
     "range": {
