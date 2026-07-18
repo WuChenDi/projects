@@ -50,6 +50,13 @@
       "when": 1784120226693,
       "tag": "0006_dizzy_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1784371705383,
+      "tag": "0007_jazzy_malcolm_colcord",
+      "breakpoints": true
     }
   ]
 }
