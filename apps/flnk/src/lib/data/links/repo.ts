@@ -85,6 +85,31 @@ export async function getLinkById(
   return (await attachTagNames(db, [row]))[0]!
 }
 
+// Does the caller own a non-deleted link with this slug? Gates OG-image uploads
+// to slugs the caller actually owns. Slug is normalized to match stored rows.
+export async function isSlugOwnedBy(
+  env: CloudflareEnv,
+  slug: string,
+  createdBy: string,
+): Promise<boolean> {
+  const db = await getDb(env)
+  const normalized = normalizeSlug(slug, env)
+  const row = (
+    await db
+      .select({ id: links.id })
+      .from(links)
+      .where(
+        and(
+          eq(links.slug, normalized),
+          eq(links.createdBy, createdBy),
+          eq(links.isDeleted, 0),
+        ),
+      )
+      .limit(1)
+  )[0]
+  return !!row
+}
+
 // Batched id lookup for callers that don't need tag names (e.g. health check).
 // Returns raw rows (`tags` holds IDs). Owner-scoped: only the caller's own rows
 // are returned, so cross-owner ids resolve to nothing (no existence leak).
@@ -195,9 +220,12 @@ export async function listLinks(
   }
 }
 
-// Distinct non-empty link authors. Retained for completeness, but per-owner
-// isolation means the creators route now returns only the caller — it no longer
-// enumerates other owners' emails.
+// Distinct non-empty link authors across ALL owners (every user's email). This
+// is an ALL-OWNERS enumeration and is for the per-owner backup CRON ONLY, which
+// legitimately needs to iterate every owner server-side. It must NEVER back a
+// request-facing route — exposing it to a caller would leak other owners'
+// emails. Request-facing creator listing is the per-caller `/api/link/creators`
+// route, which returns only `[user.email]`.
 export async function listCreators(env: CloudflareEnv): Promise<string[]> {
   const db = await getDb(env)
   const rows = await db
@@ -375,16 +403,25 @@ async function insertLinkRow(
   }
 
   const db = await getDb(env)
-  const row = existing
-    ? // Revive a soft-deleted row holding this slug.
-      (
-        await db
-          .update(links)
-          .set(values)
-          .where(eq(links.id, existing.id))
-          .returning()
-      )[0]!
-    : (await db.insert(links).values(values).returning())[0]!
+  if (existing) {
+    // Revive a soft-deleted row holding this slug.
+    const row = (
+      await db
+        .update(links)
+        .set(values)
+        .where(eq(links.id, existing.id))
+        .returning()
+    )[0]!
+    return { ok: true, link: { ...row, tags: [] } }
+  }
+  // Fresh insert: let the unique index arbitrate uniqueness atomically (no
+  // check-then-insert race) — a concurrent create of the same (slug,domain)
+  // that slipped past the pre-check surfaces as an empty returning array, which
+  // we map to a clean 409 instead of a raw unique-constraint 500.
+  const row = (
+    await db.insert(links).values(values).onConflictDoNothing().returning()
+  )[0]
+  if (!row) return { ok: false, status: 409, error: 'Slug already exists' }
   return { ok: true, link: { ...row, tags: [] } }
 }
 
@@ -427,29 +464,44 @@ export async function updateLink(
     input.tags === undefined
       ? undefined
       : await tagNamesToIds(db, tagNames, createdBy)
-  const row = (
-    await db
-      .update(links)
-      .set({
-        slug,
-        domain,
-        url: input.url ?? current.url,
-        title: input.title ?? current.title,
-        comment: input.comment ?? current.comment,
-        config,
-        // Only rewrite the tag column when the caller supplied tags.
-        ...(tagIds !== undefined ? { tags: tagIds } : {}),
-        expiresAt:
-          input.expiresAt === undefined
-            ? current.expiresAt
-            : input.expiresAt
-              ? new Date(input.expiresAt)
-              : null,
-        updatedAt: new Date(),
-      })
-      .where(eq(links.id, current.id))
-      .returning()
-  )[0]!
+  // A concurrent writer may grab (slug,domain) between the `clash` pre-check and
+  // this update; the unique index then throws rather than returning empty (the
+  // INSERT-only `onConflictDoNothing` can't apply to UPDATE), so catch the
+  // constraint violation and surface it as the same clean 409, not a raw 500.
+  let row: LinkRow
+  try {
+    row = (
+      await db
+        .update(links)
+        .set({
+          slug,
+          domain,
+          url: input.url ?? current.url,
+          title: input.title ?? current.title,
+          comment: input.comment ?? current.comment,
+          config,
+          // Only rewrite the tag column when the caller supplied tags.
+          ...(tagIds !== undefined ? { tags: tagIds } : {}),
+          expiresAt:
+            input.expiresAt === undefined
+              ? current.expiresAt
+              : input.expiresAt
+                ? new Date(input.expiresAt)
+                : null,
+          updatedAt: new Date(),
+        })
+        .where(eq(links.id, current.id))
+        .returning()
+    )[0]!
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      err.message.includes('UNIQUE constraint failed')
+    ) {
+      return { ok: false, status: 409, error: 'Slug already exists' }
+    }
+    throw err
+  }
 
   if (keyChanged) await purgeLink(env, current.domain, current.slug)
   const link: Link = { ...row, tags: tagNames }

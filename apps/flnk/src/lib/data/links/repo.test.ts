@@ -20,7 +20,9 @@ const dbHolder = vi.hoisted(() => ({ db: null as LibSQLDatabase | null }))
 vi.mock('@/lib/data/db', () => ({ getDb: async () => dbHolder.db }))
 vi.mock('@/lib/data/links/cache', () => cacheMock)
 
-const { importLinks } = await import('@/lib/data/links/repo')
+const { createLink, importLinks, isSlugOwnedBy } = await import(
+  '@/lib/data/links/repo'
+)
 
 const env = {} as CloudflareEnv
 
@@ -217,5 +219,62 @@ describe('importLinks', () => {
       'mine.example',
       'shared',
     )
+  })
+})
+
+describe('createLink', () => {
+  it('returns 409 when an active link already holds the (slug,domain)', async () => {
+    await seed({
+      id: 'existing',
+      slug: 'dup',
+      url: 'https://keep.example',
+      createdBy: 'me@example.com',
+      isDeleted: 0,
+    })
+
+    const result = await createLink(
+      env,
+      { slug: 'dup', url: 'https://new.example' },
+      '',
+      'me@example.com',
+    )
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.status).toBe(409)
+    // The pre-existing row is untouched.
+    const row = (
+      await dbHolder.db!.select().from(links).where(eq(links.id, 'existing'))
+    )[0]!
+    expect(row.url).toBe('https://keep.example')
+  })
+})
+
+describe('isSlugOwnedBy', () => {
+  it('is true for own non-deleted slug, false for another owner and soft-deleted', async () => {
+    await seed({
+      id: 'own',
+      slug: 'mine',
+      url: 'https://a.example',
+      createdBy: 'me@example.com',
+      isDeleted: 0,
+    })
+    await seed({
+      id: 'their',
+      slug: 'theirs',
+      url: 'https://b.example',
+      createdBy: 'other@example.com',
+      isDeleted: 0,
+    })
+    await seed({
+      id: 'gone',
+      slug: 'dead',
+      url: 'https://c.example',
+      createdBy: 'me@example.com',
+      isDeleted: 1,
+    })
+
+    expect(await isSlugOwnedBy(env, 'mine', 'me@example.com')).toBe(true)
+    expect(await isSlugOwnedBy(env, 'theirs', 'me@example.com')).toBe(false)
+    expect(await isSlugOwnedBy(env, 'dead', 'me@example.com')).toBe(false)
   })
 })
