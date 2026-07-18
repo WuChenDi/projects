@@ -25,13 +25,16 @@ export function isExpired(expiresAt: Date | null): boolean {
 
 // Click-limit gate. For a link with `config.maxVisits`, reads the KV counter
 // `visits:{id}` and returns true once the cap is reached (caller treats it as
-// expired). Otherwise schedules a background increment via `waitUntil` so the
-// hot path pays only one KV read. No-op for links without `maxVisits`. KV is
-// eventually consistent, so the limit is approximate under concurrency.
+// expired). Otherwise, when `countVisit` is true, schedules a background
+// increment via `waitUntil` so the hot path pays only one KV read; when
+// `countVisit` is false (e.g. social crawlers) the cap is still enforced but no
+// visit is burned. No-op for links without `maxVisits`. KV is eventually
+// consistent, so the limit is approximate under concurrency.
 export async function visitLimitReached(
   env: CloudflareEnv,
   link: Link,
   ctx: { waitUntil: (p: Promise<unknown>) => void },
+  countVisit: boolean,
 ): Promise<boolean> {
   const max = link.config.maxVisits
   if (!max) return false
@@ -48,7 +51,9 @@ export async function visitLimitReached(
     ctx.waitUntil(env.KV.delete(key).catch(() => {}))
     return true
   }
-  ctx.waitUntil(env.KV.put(key, String(count + 1)).catch(() => {}))
+  if (countVisit) {
+    ctx.waitUntil(env.KV.put(key, String(count + 1)).catch(() => {}))
+  }
   return false
 }
 
