@@ -9,6 +9,7 @@ import type { Launchpad } from '@/database/schema'
 import { extractAccessLog, writeAccessLog } from '@/lib/analytics/analytics'
 import {
   getLinksByIds,
+  getOwnerEmail,
   getPublishedLaunchpadBySlug,
 } from '@/lib/data/launchpads'
 
@@ -55,7 +56,13 @@ async function resolveLinkRefs(
       for (const id of block.linkIds) ids.add(id)
     }
   }
-  const linkMap = await getLinksByIds(env, [...ids])
+  // Links are owner-scoped by createdBy (= email); the launchpad only carries
+  // ownerId (= user.id), so resolve the owner's email first. A missing user (or
+  // a linkId owned by someone else) resolves to nothing — no private title of a
+  // foreign link is ever rendered on the public page.
+  const ownerEmail = await getOwnerEmail(env, launchpad.ownerId)
+  if (!ownerEmail) return {}
+  const linkMap = await getLinksByIds(env, [...ids], ownerEmail)
   const refs: Record<string, LinkRef> = {}
   for (const [id, link] of linkMap) {
     refs[id] = { slug: link.slug, label: link.title || link.slug }
