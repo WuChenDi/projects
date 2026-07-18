@@ -23,7 +23,6 @@ import {
 } from '@cdlab/ui/components/dropdown-menu'
 import { Input } from '@cdlab/ui/components/input'
 import { Skeleton } from '@cdlab/ui/components/skeleton'
-import { ToggleGroup, ToggleGroupItem } from '@cdlab/ui/components/toggle-group'
 import { IKEmpty } from '@cdlab/ui/IK/IKEmpty'
 import { cn } from '@cdlab/ui/lib/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -32,8 +31,6 @@ import {
   ExternalLink,
   Eye,
   Inbox,
-  LayoutGrid,
-  List,
   MousePointerClick,
   Pencil,
   Plus,
@@ -47,6 +44,10 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { LaunchpadPreview } from '@/components/dashboard/launchpads/launchpad-preview'
+import {
+  ListLayoutToggle,
+  listViewClass,
+} from '@/components/dashboard/list-view'
 import type { LinkRef } from '@/components/launchpad/launchpad-view'
 import {
   buildLaunchpadUrl,
@@ -54,9 +55,9 @@ import {
   formatNumber,
 } from '@/lib/format/format'
 import type { LaunchpadRow } from '@/lib/platform/api'
-import { launchpadApi, linkApi } from '@/lib/platform/api'
+import { launchpadApi } from '@/lib/platform/api'
 import { useLaunchpadsViewStore } from '@/stores/launchpads-view-store'
-import { buildLinkRefs } from './blocks'
+import { useLinkRefs } from './use-link-refs'
 
 const STATS_WINDOW_MS = 365 * 24 * 60 * 60 * 1000
 
@@ -75,11 +76,7 @@ export function LaunchpadsView() {
       launchpadApi.list({ limit: 100, offset: 0, sort: 'createdAt' }),
   })
 
-  const linksQuery = useQuery({
-    queryKey: ['links-all'],
-    queryFn: () => linkApi.list({ limit: 100, offset: 0, sort: 'createdAt' }),
-  })
-  const linkRefs = buildLinkRefs(linksQuery.data?.links ?? [])
+  const linkRefs = useLinkRefs()
 
   const remove = useMutation({
     mutationFn: (id: string) => launchpadApi.remove(id),
@@ -97,6 +94,17 @@ export function LaunchpadsView() {
     if (!q) return rows
     return rows.filter((r) => `${r.title} ${r.slug}`.toLowerCase().includes(q))
   }, [rows, search])
+
+  // One batched stats request for the whole page (keyed by the id set + window)
+  // instead of one query per card — kills the AE N+1 fan-out on mount.
+  const statsIds = useMemo(() => rows.map((r) => r.id), [rows])
+  const statsQuery = useQuery({
+    queryKey: ['launchpad-stats-batch', statsIds.join(','), STATS_WINDOW_MS],
+    queryFn: () =>
+      launchpadApi.statsBatch(statsIds, Date.now() - STATS_WINDOW_MS),
+    enabled: statsIds.length > 0,
+  })
+  const statsMap = statsQuery.data?.stats
 
   return (
     <div className="space-y-4">
@@ -133,30 +141,16 @@ export function LaunchpadsView() {
         </div>
 
         {/* View toggle stays visible at every breakpoint (mirrors Links). */}
-        <ToggleGroup
-          type="single"
+        <ListLayoutToggle
           value={view}
-          onValueChange={(v) => v && setView(v as 'list' | 'grid')}
-          variant="outline"
-          className="shrink-0"
-        >
-          <ToggleGroupItem value="list" aria-label={t('viewList')}>
-            <List className="size-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="grid" aria-label={t('viewGrid')}>
-            <LayoutGrid className="size-4" />
-          </ToggleGroupItem>
-        </ToggleGroup>
+          onChange={setView}
+          listLabel={t('viewList')}
+          gridLabel={t('viewGrid')}
+        />
       </div>
 
       {query.isLoading ? (
-        <div
-          className={
-            view === 'grid'
-              ? 'grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3'
-              : 'space-y-2.5'
-          }
-        >
+        <div className={listViewClass(view)}>
           {['a', 'b', 'c'].map((k) => (
             <Skeleton
               key={k}
@@ -175,19 +169,14 @@ export function LaunchpadsView() {
           </Button>
         </IKEmpty>
       ) : (
-        <div
-          className={
-            view === 'grid'
-              ? 'grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3'
-              : 'space-y-2.5'
-          }
-        >
+        <div className={listViewClass(view)}>
           {visible.map((row) => (
             <LaunchpadCard
               key={row.id}
               row={row}
               view={view}
               linkRefs={linkRefs}
+              stats={statsMap?.[row.id]}
               onEdit={() => router.push(`/dashboard/launchpads/${row.id}`)}
               onDelete={() => setToDelete(row)}
             />
@@ -228,12 +217,14 @@ function LaunchpadCard({
   row,
   view,
   linkRefs,
+  stats,
   onEdit,
   onDelete,
 }: {
   row: LaunchpadRow
   view: 'list' | 'grid'
   linkRefs: Record<string, LinkRef>
+  stats?: { views: number; engagements: number }
   onEdit: () => void
   onDelete: () => void
 }) {
@@ -241,11 +232,6 @@ function LaunchpadCard({
   const tc = useTranslations('common')
   const locale = useLocale()
   const publicUrl = buildLaunchpadUrl(row.slug)
-
-  const stats = useQuery({
-    queryKey: ['launchpad-stats', row.id],
-    queryFn: () => launchpadApi.stats(row.id, Date.now() - STATS_WINDOW_MS),
-  })
 
   // Shared row pieces so the list (horizontal) and grid (vertical) layouts stay
   // in sync without duplicating markup.
@@ -331,11 +317,11 @@ function LaunchpadCard({
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
       <span className="flex items-center gap-1">
         <Eye className="size-3.5" />
-        {formatNumber(stats.data?.views ?? 0, locale)}
+        {formatNumber(stats?.views ?? 0, locale)}
       </span>
       <span className="flex items-center gap-1">
         <MousePointerClick className="size-3.5" />
-        {formatNumber(stats.data?.engagements ?? 0, locale)}
+        {formatNumber(stats?.engagements ?? 0, locale)}
       </span>
       <span className="flex items-center gap-1">
         <CalendarIcon className="size-3.5" />

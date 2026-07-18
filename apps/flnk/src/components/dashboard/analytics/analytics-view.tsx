@@ -26,6 +26,7 @@ import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { CountersCards } from '@/components/dashboard/analytics/counters'
 import { statsApi } from '@/lib/platform/api'
+import { queryKeys } from '@/lib/platform/query-keys'
 
 // Map lib is client-only (SVG, runtime topojson fetch) — skip SSR.
 const WorldMap = dynamic(
@@ -98,7 +99,7 @@ export function AnalyticsView() {
   )
 
   const counters = useQuery({
-    queryKey: ['counters', params],
+    queryKey: queryKeys.counters(params),
     queryFn: () => statsApi.counters(params),
   })
   const views = useQuery({
@@ -177,7 +178,11 @@ export function AnalyticsView() {
                 {t(`metrics.${dim}`)}:
               </span>
               {value}
-              <button type="button" onClick={() => removeFilter(dim)}>
+              <button
+                type="button"
+                aria-label={t('removeFilter')}
+                onClick={() => removeFilter(dim)}
+              >
                 <X className="size-3" />
               </button>
             </Badge>
