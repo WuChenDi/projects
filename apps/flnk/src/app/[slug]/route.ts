@@ -146,7 +146,7 @@ async function redirectTo(
     Promise.resolve().then(() =>
       writeAccessLog(
         env,
-        extractAccessLog(request, slug, link.url, cf, 'link', link.createdBy),
+        extractAccessLog(request, slug, link.url, cf, 'link', link.ownerId),
       ),
     ),
   )

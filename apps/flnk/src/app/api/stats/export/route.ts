@@ -12,7 +12,7 @@ export const GET = withSession(
   async ({ user, request, env }) => {
     const q = {
       ...parseStatsQuery(new URL(request.url).searchParams),
-      ownerKey: user.email,
+      ownerKey: user.id,
     }
 
     let rows: Record<string, string>[] = []

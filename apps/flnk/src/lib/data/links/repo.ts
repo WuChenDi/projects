@@ -64,13 +64,13 @@ async function findBySlugDomain(
   )
 }
 
-// Owner-scoped by-id lookup: when `createdBy` is supplied, a row owned by a
+// Owner-scoped by-id lookup: when `ownerId` is supplied, a row owned by a
 // different user is treated as not-found (returns null) so callers 404 rather
 // than 403 — never leaking that the id exists.
 export async function getLinkById(
   env: CloudflareEnv,
   id: string,
-  createdBy?: string,
+  ownerId?: string,
 ): Promise<Link | null> {
   const db = await getDb(env)
   const row = (
@@ -81,7 +81,7 @@ export async function getLinkById(
       .limit(1)
   )[0]
   if (!row) return null
-  if (createdBy !== undefined && row.createdBy !== createdBy) return null
+  if (ownerId !== undefined && row.ownerId !== ownerId) return null
   return (await attachTagNames(db, [row]))[0]!
 }
 
@@ -90,7 +90,7 @@ export async function getLinkById(
 export async function isSlugOwnedBy(
   env: CloudflareEnv,
   slug: string,
-  createdBy: string,
+  ownerId: string,
 ): Promise<boolean> {
   const db = await getDb(env)
   const normalized = normalizeSlug(slug, env)
@@ -101,7 +101,7 @@ export async function isSlugOwnedBy(
       .where(
         and(
           eq(links.slug, normalized),
-          eq(links.createdBy, createdBy),
+          eq(links.ownerId, ownerId),
           eq(links.isDeleted, 0),
         ),
       )
@@ -113,12 +113,12 @@ export async function isSlugOwnedBy(
 // Batched id lookup for callers that don't need tag names (e.g. health check).
 // Returns raw rows (`tags` holds IDs). Owner-scoped: only the caller's own rows
 // are returned, so cross-owner ids resolve to nothing (no existence leak).
-// Chunked at 99 ids per query so `inArray(ids)` + the `isDeleted`/`createdBy`
+// Chunked at 99 ids per query so `inArray(ids)` + the `isDeleted`/`ownerId`
 // predicates never exceed the D1 100 bound-parameter cap.
 export async function getLinkRowsByIds(
   env: CloudflareEnv,
   ids: string[],
-  createdBy: string,
+  ownerId: string,
 ): Promise<LinkRow[]> {
   if (ids.length === 0) return []
   const db = await getDb(env)
@@ -133,7 +133,7 @@ export async function getLinkRowsByIds(
           and(
             inArray(links.id, chunk),
             eq(links.isDeleted, 0),
-            eq(links.createdBy, createdBy),
+            eq(links.ownerId, ownerId),
           ),
         )),
     )
@@ -148,7 +148,7 @@ export interface ListOptions {
   offset: number
   sort?: SortKey
   status?: LinkStatus
-  createdBy?: string
+  ownerId?: string
   // createdAt range (epoch ms).
   startAt?: number
   endAt?: number
@@ -164,7 +164,7 @@ export interface ListOptions {
 function listConditions(opts: ListOptions) {
   const now = new Date()
   const conds = [eq(links.isDeleted, 0)]
-  if (opts.createdBy) conds.push(eq(links.createdBy, opts.createdBy))
+  if (opts.ownerId) conds.push(eq(links.ownerId, opts.ownerId))
   if (opts.startAt) conds.push(gte(links.createdAt, new Date(opts.startAt)))
   if (opts.endAt) conds.push(lte(links.createdAt, new Date(opts.endAt)))
   // `disabled` lives inside the config JSON; json_extract returns 1 for true,
@@ -220,20 +220,20 @@ export async function listLinks(
   }
 }
 
-// Distinct non-empty link authors across ALL owners (every user's email). This
-// is an ALL-OWNERS enumeration and is for the per-owner backup CRON ONLY, which
+// Distinct non-empty owner IDs (user.id) across ALL owners. This is an
+// ALL-OWNERS enumeration and is for the per-owner backup CRON ONLY, which
 // legitimately needs to iterate every owner server-side. It must NEVER back a
 // request-facing route — exposing it to a caller would leak other owners'
-// emails. Request-facing creator listing is the per-caller `/api/link/creators`
-// route, which returns only `[user.email]`.
+// identities. Request-facing creator listing is the per-caller
+// `/api/link/creators` route, which returns only `[user.email]`.
 export async function listCreators(env: CloudflareEnv): Promise<string[]> {
   const db = await getDb(env)
   const rows = await db
-    .selectDistinct({ createdBy: links.createdBy })
+    .selectDistinct({ ownerId: links.ownerId })
     .from(links)
     .where(eq(links.isDeleted, 0))
   return rows
-    .map((r) => r.createdBy)
+    .map((r) => r.ownerId)
     .filter((v) => v.length > 0)
     .sort((a, b) => a.localeCompare(b))
 }
@@ -242,13 +242,13 @@ export async function listCreators(env: CloudflareEnv): Promise<string[]> {
 // links" card. Owner-scoped so each user only ever counts their own links.
 export async function countLinks(
   env: CloudflareEnv,
-  createdBy: string,
+  ownerId: string,
 ): Promise<number> {
   const db = await getDb(env)
   const row = await db
     .select({ value: sql<number>`count(*)` })
     .from(links)
-    .where(and(eq(links.isDeleted, 0), eq(links.createdBy, createdBy)))
+    .where(and(eq(links.isDeleted, 0), eq(links.ownerId, ownerId)))
   return Number(row[0]?.value ?? 0)
 }
 
@@ -256,7 +256,7 @@ export async function searchLinks(
   env: CloudflareEnv,
   query: string,
   opts: { limit: number },
-  createdBy: string,
+  ownerId: string,
 ): Promise<Link[]> {
   const db = await getDb(env)
   const q = `%${query.trim()}%`
@@ -266,7 +266,7 @@ export async function searchLinks(
     .where(
       and(
         eq(links.isDeleted, 0),
-        eq(links.createdBy, createdBy),
+        eq(links.ownerId, ownerId),
         or(
           like(links.slug, q),
           like(links.url, q),
@@ -340,19 +340,21 @@ export async function createLink(
   env: CloudflareEnv,
   input: CreateLinkInput,
   requestDomain: string,
+  ownerId = '',
   createdBy = '',
 ): Promise<RepoResult> {
   const domain = input.domain?.trim() || requestDomain
   const config = await buildConfig(env, input, input.url)
   const tagNames = normalizeTagList(input.tags)
   const db = await getDb(env)
-  const tagIds = await tagNamesToIds(db, tagNames, createdBy)
+  const tagIds = await tagNamesToIds(db, tagNames, ownerId, createdBy)
   const baseValues: Omit<NewLink, 'slug'> = {
     id: newId(),
     domain,
     url: input.url,
     title: input.title ?? '',
     comment: input.comment ?? '',
+    ownerId,
     createdBy,
     config,
     tags: tagIds,
@@ -428,11 +430,11 @@ async function insertLinkRow(
 export async function updateLink(
   env: CloudflareEnv,
   input: EditLinkInput,
-  createdBy = '',
+  ownerId = '',
 ): Promise<RepoResult> {
   // Owner-scoped fetch: a cross-owner (or missing) id resolves to null → 404,
   // never 403, so existence isn't leaked.
-  const current = await getLinkById(env, input.id, createdBy)
+  const current = await getLinkById(env, input.id, ownerId)
   if (!current) return { ok: false, status: 404, error: 'Link not found' }
 
   const domain = input.domain?.trim() || current.domain
@@ -463,7 +465,7 @@ export async function updateLink(
   const tagIds =
     input.tags === undefined
       ? undefined
-      : await tagNamesToIds(db, tagNames, createdBy)
+      : await tagNamesToIds(db, tagNames, ownerId)
   // A concurrent writer may grab (slug,domain) between the `clash` pre-check and
   // this update; the unique index then throws rather than returning empty (the
   // INSERT-only `onConflictDoNothing` can't apply to UPDATE), so catch the
@@ -513,6 +515,7 @@ export async function upsertLink(
   env: CloudflareEnv,
   input: CreateLinkInput,
   requestDomain: string,
+  ownerId = '',
   createdBy = '',
 ): Promise<RepoResult> {
   const domain = input.domain?.trim() || requestDomain
@@ -524,19 +527,19 @@ export async function upsertLink(
       normalizeSlug(rawSlug, env),
     )
     if (existing && existing.isDeleted === 0) {
-      return updateLink(env, { ...input, id: existing.id }, createdBy)
+      return updateLink(env, { ...input, id: existing.id }, ownerId)
     }
   }
-  return createLink(env, input, requestDomain, createdBy)
+  return createLink(env, input, requestDomain, ownerId, createdBy)
 }
 
 export async function deleteLink(
   env: CloudflareEnv,
   id: string,
-  createdBy = '',
+  ownerId = '',
 ): Promise<RepoResult> {
   // Owner-scoped fetch: another owner's (or a missing) id → 404, not 403.
-  const current = await getLinkById(env, id, createdBy)
+  const current = await getLinkById(env, id, ownerId)
   if (!current) return { ok: false, status: 404, error: 'Link not found' }
   const db = await getDb(env)
   await db
@@ -556,9 +559,9 @@ export interface ImportReport {
 
 // Batch sizing for import. D1 caps bound parameters at 100 per query. The
 // per-chunk existence select binds up to IMPORT_CHUNK slugs plus the owner
-// (`createdBy`) predicate, so it stays at 99 slugs (+1 owner = 100). Bulk
-// inserts are split so rows × columns (13 incl. `createdBy`/`createdAt`) stays
-// under the cap.
+// (`ownerId`) predicate, so it stays at 99 slugs (+1 owner = 100). Bulk
+// inserts are split so rows × columns (14 incl. `ownerId`/`createdBy`/
+// `createdAt`) stays under the cap.
 const IMPORT_CHUNK = 99
 const IMPORT_INSERT_BATCH = 7
 
@@ -570,6 +573,7 @@ const IMPORT_INSERT_BATCH = 7
 export async function importLinks(
   env: CloudflareEnv,
   items: ImportLinkInput[],
+  ownerId = '',
   createdBy = '',
 ): Promise<ImportReport> {
   const db = await getDb(env)
@@ -620,7 +624,7 @@ export async function importLinks(
     const existingRows = await db
       .select()
       .from(links)
-      .where(and(eq(links.createdBy, createdBy), inArray(links.slug, slugs)))
+      .where(and(eq(links.ownerId, ownerId), inArray(links.slug, slugs)))
     const existingByKey = new Map(
       existingRows.map((r) => [keyOf(r.domain, r.slug), r]),
     )
@@ -630,6 +634,7 @@ export async function importLinks(
     const tagIdByName = await upsertTagIds(
       db,
       Array.from(new Set(tagNamesByItem.flat())),
+      ownerId,
       createdBy,
     )
 
@@ -652,7 +657,9 @@ export async function importLinks(
         comment: item.comment ?? '',
         // Owner stamp: revive can only reach the importer's own soft-deleted
         // rows (owner-scoped select above), and new rows must be owned by the
-        // importer — never leave `createdBy` at the schema default.
+        // importer — scope by `ownerId` (user.id), keep `createdBy` (email) for
+        // display; never leave `ownerId` at the schema default.
+        ownerId,
         createdBy,
         config: (item.config ?? {}) as LinkConfig,
         tags: tagNamesByItem[idx]!.map((n) => tagIdByName.get(n)).filter(

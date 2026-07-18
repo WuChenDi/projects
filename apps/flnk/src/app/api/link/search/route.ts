@@ -13,6 +13,6 @@ export const GET = withSession(async ({ user, request, env }) => {
     maxLimit,
     Math.max(1, Number(url.searchParams.get('limit')) || 20),
   )
-  const links = await searchLinks(env, q, { limit }, user.email)
+  const links = await searchLinks(env, q, { limit }, user.id)
   return NextResponse.json({ links })
 })

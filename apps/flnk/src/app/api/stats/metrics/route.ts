@@ -22,7 +22,7 @@ export const GET = withSession(
 
     const q = {
       ...parseStatsQuery(url.searchParams),
-      ownerKey: user.email,
+      ownerKey: user.id,
     }
     const limit = Math.min(
       50,
