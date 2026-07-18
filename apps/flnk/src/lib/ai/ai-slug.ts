@@ -8,6 +8,17 @@ const AI_TIMEOUT_MS = 10_000
 const DEFAULT_PROMPT =
   'You are a URL-to-slug converter. Given a URL, produce a short, human-readable slug derived from the URL and its purpose. Use only lowercase letters, numbers and single hyphens, at most three words. Return ONLY JSON: {"slug": "example-slug"}'
 
+// Workers AI `.run()` has no `signal` option, so bound it by racing against a
+// timer that rejects after `ms`. The timer is always cleared on settle so a fast
+// success never leaves a pending handle.
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error('AI request timed out')), ms)
+  })
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer))
+}
+
 // Untrusted-data guard: the target URL is attacker-controlled, so wrap it in an
 // explicit delimiter and instruct the model to treat its contents as data, not
 // instructions (defense against prompt injection via the URL).
@@ -111,10 +122,8 @@ export async function generateAiSlug(
   const { aiModel, aiPrompt } = getConfig(env)
   if (env.AI) {
     try {
-      const controller = new AbortController()
-      const timer = setTimeout(() => controller.abort(), AI_TIMEOUT_MS)
-      try {
-        const response = await env.AI.run(aiModel as keyof AiModels, {
+      const response = await withTimeout(
+        env.AI.run(aiModel as keyof AiModels, {
           messages: [
             { role: 'system', content: aiPrompt || DEFAULT_PROMPT },
             ...FEW_SHOT,
@@ -122,20 +131,19 @@ export async function generateAiSlug(
           ],
           stream: false,
           max_tokens: 64,
-        })
-        const slug = parseSlug(await readResponseText(response))
-        if (slug) {
-          try {
-            await env.KV?.put(cacheKey, slug, {
-              expirationTtl: CACHE_TTL_SECONDS,
-            })
-          } catch {
-            // cache write is best-effort
-          }
-          return { slug, method: 'ai' }
+        }),
+        AI_TIMEOUT_MS,
+      )
+      const slug = parseSlug(await readResponseText(response))
+      if (slug) {
+        try {
+          await env.KV?.put(cacheKey, slug, {
+            expirationTtl: CACHE_TTL_SECONDS,
+          })
+        } catch {
+          // cache write is best-effort
         }
-      } finally {
-        clearTimeout(timer)
+        return { slug, method: 'ai' }
       }
     } catch (error) {
       logger.warn(
