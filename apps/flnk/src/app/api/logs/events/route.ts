@@ -14,8 +14,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   const { env } = getCloudflareContext()
   const url = new URL(request.url)
-  const q = parseStatsQuery(url.searchParams)
-  q.ownerKey = auth.user.email
+  const q = { ...parseStatsQuery(url.searchParams), ownerKey: auth.user.email }
   const limit = Math.min(
     100,
     Math.max(1, Number(url.searchParams.get('limit')) || 50),
