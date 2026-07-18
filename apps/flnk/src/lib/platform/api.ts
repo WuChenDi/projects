@@ -168,6 +168,13 @@ export interface LaunchpadStats {
   series: { time: string; views: number }[]
 }
 
+// Batched per-launchpad totals keyed by id — ids the caller doesn't own are
+// simply omitted (default to 0 on the client).
+export interface LaunchpadStatsBatch {
+  configured: boolean
+  stats: Record<string, { views: number; engagements: number }>
+}
+
 export const launchpadApi = {
   list: (params: { limit: number; offset: number; sort: SortKey }) => {
     const sp = new URLSearchParams({
@@ -209,6 +216,11 @@ export const launchpadApi = {
         endAt ? `&endAt=${endAt}` : ''
       }`,
     ),
+  statsBatch: (ids: string[], startAt: number, endAt?: number) =>
+    request<LaunchpadStatsBatch>('/api/launchpad/stats-batch', {
+      method: 'POST',
+      body: JSON.stringify({ ids, startAt, endAt }),
+    }),
 }
 
 export interface StatsParams {
