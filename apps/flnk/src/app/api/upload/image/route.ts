@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { getR2, IMAGE_ALLOWED_TYPES, IMAGE_MAX_SIZE } from '@/lib/data/r2'
 import { requireSession } from '@/lib/platform/auth'
 import { newId } from '@/lib/platform/genid'
+import { checkRateLimit, clientIp } from '@/lib/platform/rate-limit'
 import { validateSlug } from '@/lib/redirect/slug'
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -10,6 +11,11 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (!auth.ok) return auth.response
 
   const { env } = getCloudflareContext()
+  const identity = auth.user.id || clientIp(request)
+  if (await checkRateLimit(env, 'upload-image', identity, 30, 300)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   const r2 = getR2(env)
   if (!r2) {
     return NextResponse.json({ error: 'R2 not configured' }, { status: 503 })
