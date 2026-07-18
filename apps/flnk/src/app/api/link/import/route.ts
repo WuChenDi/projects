@@ -11,7 +11,7 @@ export const POST = withAuth(
     if (await checkRateLimit(env, 'link-import', identity, 5, 300)) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
     }
-    const report = await importLinks(env, data.links, user.email)
+    const report = await importLinks(env, data.links, user.id, user.email)
     return NextResponse.json(report)
   },
   'Invalid import data',

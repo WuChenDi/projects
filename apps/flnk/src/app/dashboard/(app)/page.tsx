@@ -23,7 +23,7 @@ export default async function DashboardOverviewPage() {
     const { env } = getCloudflareContext()
     await queryClient.prefetchQuery({
       queryKey: queryKeys.linkCount(),
-      queryFn: async () => ({ total: await countLinks(env, user.email) }),
+      queryFn: async () => ({ total: await countLinks(env, user.id) }),
     })
   }
 

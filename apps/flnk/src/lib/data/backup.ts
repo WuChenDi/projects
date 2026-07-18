@@ -12,10 +12,10 @@ const MAX_LINKS = 50000
 // Page through listLinks until exhausted, hard-capped at MAX_LINKS. When the
 // cap is hit the result is flagged truncated and a warning is logged. Backs the
 // user-facing export, which needs tag names + title (via listLinks). Scoped to
-// the caller's own links via `createdBy` (per-owner isolation).
+// the caller's own links via `ownerId` (user.id, per-owner isolation).
 export async function fetchAllLinks(
   env: CloudflareEnv,
-  createdBy: string,
+  ownerId: string,
 ): Promise<{ links: Link[]; truncated: boolean }> {
   const all: Link[] = []
   let offset = 0
@@ -23,7 +23,7 @@ export async function fetchAllLinks(
     const { links, total } = await listLinks(env, {
       limit: PAGE_SIZE,
       offset,
-      createdBy,
+      ownerId,
     })
     all.push(...links)
     offset += PAGE_SIZE
@@ -55,7 +55,7 @@ type BackupLinkRow = Pick<
 // Stream active links for the daily backup: a column-scoped, id-ordered select
 // paged by limit/offset until a short page ends it, hard-capped at MAX_LINKS.
 // No count(*) and no tag-name join — the backup payload needs neither. Scoped to
-// the caller's own links via `createdBy` (per-owner isolation).
+// the caller's own links via `ownerId` (user.id, per-owner isolation).
 export async function fetchLinksForBackup(
   env: CloudflareEnv,
   owner: string,
@@ -76,7 +76,7 @@ export async function fetchLinksForBackup(
         createdAt: linksTable.createdAt,
       })
       .from(linksTable)
-      .where(and(eq(linksTable.isDeleted, 0), eq(linksTable.createdBy, owner)))
+      .where(and(eq(linksTable.isDeleted, 0), eq(linksTable.ownerId, owner)))
       .orderBy(asc(linksTable.id))
       .limit(PAGE_SIZE)
       .offset(offset)
@@ -92,10 +92,10 @@ export async function fetchLinksForBackup(
   }
 }
 
-// Derive a filesystem/key-safe R2 path segment from an owner email so each
-// owner's snapshots live under their own prefix and never collide. Lowercase,
-// then map every char outside [a-z0-9_-] to '_' (so `a@b.com` → `a_b_com`).
-// Deterministic and stable per owner.
+// Derive a filesystem/key-safe R2 path segment from an owner id (user.id) so
+// each owner's snapshots live under their own prefix and never collide.
+// Lowercase, then map every char outside [a-z0-9_-] to '_'. Deterministic and
+// stable per owner.
 function ownerSlug(owner: string): string {
   return owner.toLowerCase().replace(/[^a-z0-9_-]/g, '_')
 }

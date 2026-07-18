@@ -38,6 +38,7 @@ async function freshDb(): Promise<LibSQLDatabase> {
     url TEXT NOT NULL,
     title TEXT NOT NULL DEFAULT '',
     comment TEXT NOT NULL DEFAULT '',
+    owner_id TEXT NOT NULL DEFAULT '',
     created_by TEXT NOT NULL DEFAULT '',
     tags TEXT NOT NULL DEFAULT '[]',
     config TEXT NOT NULL DEFAULT '{}',
@@ -58,6 +59,7 @@ async function seed(row: Partial<NewLink> & { slug: string; url: string }) {
   await dbHolder.db!.insert(links).values({
     id: row.id ?? `seed-${row.slug}`,
     domain: '',
+    ownerId: '',
     createdBy: '',
     isDeleted: 0,
     ...row,
@@ -81,6 +83,7 @@ describe('importLinks', () => {
       id: 'victim-row',
       slug: 'vic',
       url: 'https://victim.example',
+      ownerId: 'user_victim',
       createdBy: 'victim@example.com',
       config: { passwordHash: 'VICTIM' },
       isDeleted: 1,
@@ -99,6 +102,7 @@ describe('importLinks', () => {
           config: { passwordHash: 'ATTACKER' },
         },
       ],
+      'user_attacker',
       'attacker@example.com',
     ).catch(() => {})
 
@@ -118,13 +122,17 @@ describe('importLinks', () => {
         { slug: 'new1', url: 'https://a.example' },
         { slug: 'new2', url: 'https://b.example' },
       ],
+      'user_me',
       'me@example.com',
     )
 
     expect(report.success).toBe(2)
     const rows = await dbHolder.db!.select().from(links)
     expect(rows).toHaveLength(2)
-    for (const row of rows) expect(row.createdBy).toBe('me@example.com')
+    for (const row of rows) {
+      expect(row.ownerId).toBe('user_me')
+      expect(row.createdBy).toBe('me@example.com')
+    }
 
     // H3: every inserted (domain,slug) clears the negative-cache tombstone.
     expect(cacheMock.purgeLink).toHaveBeenCalledTimes(2)
@@ -138,6 +146,7 @@ describe('importLinks', () => {
       id: 'mine',
       slug: 'rev',
       url: 'https://old.example',
+      ownerId: 'user_me',
       createdBy: 'me@example.com',
       isDeleted: 1,
     })
@@ -145,6 +154,7 @@ describe('importLinks', () => {
     const report = await importLinks(
       env,
       [{ slug: 'rev', url: 'https://new.example' }],
+      'user_me',
       'me@example.com',
     )
 
@@ -154,6 +164,7 @@ describe('importLinks', () => {
     )[0]!
     expect(row.isDeleted).toBe(0)
     expect(row.url).toBe('https://new.example')
+    expect(row.ownerId).toBe('user_me')
     expect(row.createdBy).toBe('me@example.com')
     expect(cacheMock.purgeLink).toHaveBeenCalledWith(env, '', 'rev')
   })
@@ -163,6 +174,7 @@ describe('importLinks', () => {
       id: 'active',
       slug: 'act',
       url: 'https://keep.example',
+      ownerId: 'user_me',
       createdBy: 'me@example.com',
       isDeleted: 0,
     })
@@ -170,6 +182,7 @@ describe('importLinks', () => {
     const report = await importLinks(
       env,
       [{ slug: 'act', url: 'https://overwrite.example' }],
+      'user_me',
       'me@example.com',
     )
 
@@ -190,6 +203,7 @@ describe('importLinks', () => {
       slug: 'shared',
       domain: 'other.example',
       url: 'https://other.example/x',
+      ownerId: 'user_other',
       createdBy: 'other@example.com',
     })
 
@@ -202,6 +216,7 @@ describe('importLinks', () => {
           url: 'https://mine.example/x',
         },
       ],
+      'user_me',
       'me@example.com',
     )
 
@@ -212,6 +227,7 @@ describe('importLinks', () => {
         .from(links)
         .where(and(eq(links.slug, 'shared'), eq(links.domain, 'mine.example')))
     )[0]!
+    expect(mine.ownerId).toBe('user_me')
     expect(mine.createdBy).toBe('me@example.com')
     expect(mine.id).not.toBe('other')
     expect(cacheMock.purgeLink).toHaveBeenCalledWith(
@@ -228,6 +244,7 @@ describe('createLink', () => {
       id: 'existing',
       slug: 'dup',
       url: 'https://keep.example',
+      ownerId: 'user_me',
       createdBy: 'me@example.com',
       isDeleted: 0,
     })
@@ -236,6 +253,7 @@ describe('createLink', () => {
       env,
       { slug: 'dup', url: 'https://new.example' },
       '',
+      'user_me',
       'me@example.com',
     )
 
@@ -255,6 +273,7 @@ describe('isSlugOwnedBy', () => {
       id: 'own',
       slug: 'mine',
       url: 'https://a.example',
+      ownerId: 'user_me',
       createdBy: 'me@example.com',
       isDeleted: 0,
     })
@@ -262,6 +281,7 @@ describe('isSlugOwnedBy', () => {
       id: 'their',
       slug: 'theirs',
       url: 'https://b.example',
+      ownerId: 'user_other',
       createdBy: 'other@example.com',
       isDeleted: 0,
     })
@@ -269,12 +289,13 @@ describe('isSlugOwnedBy', () => {
       id: 'gone',
       slug: 'dead',
       url: 'https://c.example',
+      ownerId: 'user_me',
       createdBy: 'me@example.com',
       isDeleted: 1,
     })
 
-    expect(await isSlugOwnedBy(env, 'mine', 'me@example.com')).toBe(true)
-    expect(await isSlugOwnedBy(env, 'theirs', 'me@example.com')).toBe(false)
-    expect(await isSlugOwnedBy(env, 'dead', 'me@example.com')).toBe(false)
+    expect(await isSlugOwnedBy(env, 'mine', 'user_me')).toBe(true)
+    expect(await isSlugOwnedBy(env, 'theirs', 'user_me')).toBe(false)
+    expect(await isSlugOwnedBy(env, 'dead', 'user_me')).toBe(false)
   })
 })

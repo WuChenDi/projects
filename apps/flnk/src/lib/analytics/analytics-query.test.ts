@@ -30,13 +30,13 @@ describe('sanitize', () => {
 
 describe('whereClause owner scoping (via countersSql)', () => {
   it('always filters by blob20 for a scoped query', () => {
-    const sql = countersSql(env, { filters: {}, ownerKey: 'a@b.com' })
-    expect(sql).toContain("blob20 = 'a@b.com'")
+    const sql = countersSql(env, { filters: {}, ownerKey: 'user_abc' })
+    expect(sql).toContain("blob20 = 'user_abc'")
   })
 
   it('sanitizes the ownerKey value', () => {
-    const sql = countersSql(env, { filters: {}, ownerKey: "a'b" })
-    expect(sql).toContain("blob20 = 'a\\'b'")
+    const sql = countersSql(env, { filters: {}, ownerKey: "user_a'b" })
+    expect(sql).toContain("blob20 = 'user_a\\'b'")
   })
 
   it('omits the owner filter only for an explicit unscoped query', () => {
@@ -56,7 +56,7 @@ describe('whereClause owner scoping (via countersSql)', () => {
 describe('whereClause lower-bound floor (via countersSql)', () => {
   it('clamps an endAt-only query to a lookback floor instead of scanning all history', () => {
     const endAt = 1_700_000_000_000
-    const sql = countersSql(env, { filters: {}, ownerKey: 'a@b.com', endAt })
+    const sql = countersSql(env, { filters: {}, ownerKey: 'user_abc', endAt })
     expect(sql).toContain(
       `timestamp <= toDateTime(${Math.floor(endAt / 1000)})`,
     )
@@ -69,7 +69,7 @@ describe('whereClause lower-bound floor (via countersSql)', () => {
     const endAt = 1_700_000_000_000
     const sql = countersSql(env, {
       filters: {},
-      ownerKey: 'a@b.com',
+      ownerKey: 'user_abc',
       startAt,
       endAt,
     })
@@ -82,7 +82,7 @@ describe('whereClause lower-bound floor (via countersSql)', () => {
   })
 
   it('falls back to the 7-day relative default when no range is given', () => {
-    const sql = countersSql(env, { filters: {}, ownerKey: 'a@b.com' })
+    const sql = countersSql(env, { filters: {}, ownerKey: 'user_abc' })
     expect(sql).toContain(`timestamp >= now() - INTERVAL '7' DAY`)
   })
 })

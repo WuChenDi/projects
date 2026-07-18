@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-// Rows the mock DB serves. `createdBy` is the per-owner scoping key.
+// Rows the mock DB serves. `ownerId` (user.id) is the per-owner scoping key.
 type Row = {
   id: number
   slug: string
@@ -10,7 +10,7 @@ type Row = {
   config: unknown
   expiresAt: Date | null
   createdAt: Date
-  createdBy: string
+  ownerId: string
 }
 
 const dataset: Row[] = [
@@ -23,7 +23,7 @@ const dataset: Row[] = [
     config: { passwordHash: 'secret-a' },
     expiresAt: null,
     createdAt: new Date('2026-01-01T00:00:00Z'),
-    createdBy: 'alice@example.com',
+    ownerId: 'user_alice',
   },
   {
     id: 2,
@@ -34,7 +34,7 @@ const dataset: Row[] = [
     config: {},
     expiresAt: null,
     createdAt: new Date('2026-01-02T00:00:00Z'),
-    createdBy: 'alice@example.com',
+    ownerId: 'user_alice',
   },
   {
     id: 3,
@@ -45,7 +45,7 @@ const dataset: Row[] = [
     config: { passwordHash: 'secret-b' },
     expiresAt: null,
     createdAt: new Date('2026-01-03T00:00:00Z'),
-    createdBy: 'bob@example.com',
+    ownerId: 'user_bob',
   },
 ]
 
@@ -76,8 +76,8 @@ function collectStrings(
 let capturedWhere: unknown
 
 // A chainable mock of the drizzle query builder. `.where` records the condition
-// and derives the owner filter from it (the only email-shaped string in the
-// condition is the `createdBy` param), so awaiting the chain returns ONLY that
+// and derives the owner filter from it (the only `user_`-prefixed string in the
+// condition is the `ownerId` param), so awaiting the chain returns ONLY that
 // owner's rows — mirroring what the real per-owner query would return. Only the
 // query chain is thenable; the `db` object itself is not (an async getDb would
 // otherwise unwrap a thenable db into its resolved rows).
@@ -89,7 +89,7 @@ function makeDb() {
     from: () => query,
     where: (cond: unknown) => {
       capturedWhere = cond
-      ownerFilter = collectStrings(cond).find((s) => s.includes('@'))
+      ownerFilter = collectStrings(cond).find((s) => s.startsWith('user_'))
       return query
     },
     orderBy: () => query,
@@ -103,7 +103,7 @@ function makeDb() {
     },
     then: (resolve: (rows: Row[]) => void) => {
       const rows = dataset
-        .filter((r) => r.createdBy === ownerFilter)
+        .filter((r) => r.ownerId === ownerFilter)
         .slice(off, off + lim)
       resolve(rows)
     },
@@ -132,29 +132,29 @@ beforeEach(() => {
 
 describe('fetchLinksForBackup', () => {
   it('returns only the given owner rows and scopes the where by that owner', async () => {
-    const { links } = await fetchLinksForBackup(env, 'alice@example.com')
+    const { links } = await fetchLinksForBackup(env, 'user_alice')
 
     expect(links.map((l) => l.id).sort()).toEqual([1, 2])
     expect(links.some((l) => l.slug === 'b1')).toBe(false)
     // The owner value was baked into the query's WHERE clause.
-    expect(collectStrings(capturedWhere)).toContain('alice@example.com')
+    expect(collectStrings(capturedWhere)).toContain('user_alice')
   })
 
   it('a different owner gets a disjoint row set', async () => {
-    const { links } = await fetchLinksForBackup(env, 'bob@example.com')
+    const { links } = await fetchLinksForBackup(env, 'user_bob')
 
     expect(links.map((l) => l.id)).toEqual([3])
-    expect(collectStrings(capturedWhere)).toContain('bob@example.com')
+    expect(collectStrings(capturedWhere)).toContain('user_bob')
   })
 })
 
 describe('backupToR2', () => {
   it('namespaces the R2 key per owner (sanitized, deterministic slug)', async () => {
-    const keyA = await backupToR2(env, 'alice@example.com')
-    const keyB = await backupToR2(env, 'bob@example.com')
+    const keyA = await backupToR2(env, 'user_alice')
+    const keyB = await backupToR2(env, 'user_bob')
 
-    expect(keyA).toMatch(/^backups\/alice_example_com\/.+\.json$/)
-    expect(keyB).toMatch(/^backups\/bob_example_com\/.+\.json$/)
+    expect(keyA).toMatch(/^backups\/user_alice\/.+\.json$/)
+    expect(keyB).toMatch(/^backups\/user_bob\/.+\.json$/)
     // One owner's snapshot can never overwrite/expose another's.
     expect(keyA?.split('/')[1]).not.toBe(keyB?.split('/')[1])
     expect(putMock.mock.calls[0]?.[0]).toBe(keyA)
@@ -162,7 +162,7 @@ describe('backupToR2', () => {
   })
 
   it('only serializes the owner rows into the payload', async () => {
-    await backupToR2(env, 'alice@example.com')
+    await backupToR2(env, 'user_alice')
 
     const payload = JSON.parse(putMock.mock.calls[0]?.[1] as string) as {
       count: number

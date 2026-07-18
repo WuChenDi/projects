@@ -19,12 +19,12 @@ export async function GET(request: Request): Promise<NextResponse> {
   // owner-checked here: a slug owned by another user is treated as not-found so
   // the full record (comment/config incl. passwordHash/tags) never leaks.
   let link = id
-    ? await getLinkById(env, id, auth.user.email)
+    ? await getLinkById(env, id, auth.user.id)
     : slug
       ? await resolveLink(env, domain, slug)
       : null
 
-  if (link && link.createdBy !== auth.user.email) link = null
+  if (link && link.ownerId !== auth.user.id) link = null
 
   if (!link) {
     return NextResponse.json({ error: 'Link not found' }, { status: 404 })

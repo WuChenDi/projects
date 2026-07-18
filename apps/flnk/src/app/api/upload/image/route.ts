@@ -31,7 +31,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (slug && validateSlug(slug)) {
     return NextResponse.json({ error: 'Invalid slug' }, { status: 400 })
   }
-  if (slug && !(await isSlugOwnedBy(env, slug, auth.user.email))) {
+  if (slug && !(await isSlugOwnedBy(env, slug, auth.user.id))) {
     return NextResponse.json({ error: 'Link not found' }, { status: 404 })
   }
   if (!IMAGE_ALLOWED_TYPES.has(file.type)) {

@@ -15,7 +15,7 @@ export const GET = withSession(
     const url = new URL(request.url)
     const q = {
       ...parseStatsQuery(url.searchParams),
-      ownerKey: user.email,
+      ownerKey: user.id,
     }
     const limit = Math.min(
       1000,
