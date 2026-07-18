@@ -12,16 +12,14 @@ import { ScrollArea } from '@cdlab/ui/components/scroll-area'
 import { Skeleton } from '@cdlab/ui/components/skeleton'
 import CountUp from '@cdlab/ui/reactbits/CountUp'
 import { useQuery } from '@tanstack/react-query'
-import { format } from 'date-fns'
 import { Globe, Link2, MousePointerClick, Share2, Users } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import { MetricRankList } from '@/components/dashboard/metric-rank-list'
-import { dateLocale } from '@/lib/format/format'
+import { eventKey, localTime } from '@/lib/format/format'
 import { flagEmoji, regionName } from '@/lib/geo/country'
-import type { LogEvent } from '@/lib/platform/api'
 import { linkApi, statsApi } from '@/lib/platform/api'
 import { queryKeys } from '@/lib/platform/query-keys'
 
@@ -43,17 +41,6 @@ const WorldMap = dynamic(
     ),
   { ssr: false, loading: () => <Skeleton className="h-[300px] w-full" /> },
 )
-
-const eventKey = (e: LogEvent) =>
-  `${e.timestamp}-${e.slug}-${e.city}-${e.browser}-${e.os}`
-
-// AE returns UTC "YYYY-MM-DD HH:MM:SS"; render as local time.
-function localTime(ts: string, locale: string): string {
-  const d = new Date(`${ts.replace(' ', 'T')}Z`)
-  return Number.isNaN(d.getTime())
-    ? ts
-    : format(d, 'HH:mm', { locale: dateLocale(locale) })
-}
 
 export default function DashboardOverviewPage() {
   const t = useTranslations('dashboard')
