@@ -28,8 +28,9 @@ interface AccessLog {
   // 'launchpad' for a `/m/<slug>` page view, 'launchpad_block' for a launchpad
   // block/button click. Append-only blob19 — legacy points lack it (read as '').
   type: string
-  // Owner key that scopes the data point: link points carry the owner EMAIL
-  // (link.createdBy), launchpad points the owner USER.ID (launchpad.ownerId).
+  // Owner key that scopes the data point: both link points (link.ownerId) and
+  // launchpad points (launchpad.ownerId) now carry the owner USER.ID — the two
+  // entity families share a single unified owner key.
   // Append-only blob20 (last free AE slot) — legacy points lack it (read as '').
   owner: string
   latitude: number
@@ -150,7 +151,7 @@ export async function writeAccessLog(
   try {
     const visitorId = await anonymizeIp(env, data.ip)
     env.ANALYTICS.writeDataPoint({
-      indexes: [data.slug],
+      indexes: [data.owner],
       blobs: [
         data.slug,
         data.url,
