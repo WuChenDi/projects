@@ -1,18 +1,13 @@
-import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
 import type { LinkStatus, SortKey } from '@/lib/data/links'
 import { listLinks } from '@/lib/data/links'
-import { requireSession } from '@/lib/platform/auth'
 import { getConfig } from '@/lib/platform/env'
+import { withSession } from '@/lib/platform/with-auth'
 
 const SORTS: readonly SortKey[] = ['createdAt', 'updatedAt', 'expiresAt']
 const STATUSES: readonly LinkStatus[] = ['active', 'disabled', 'expired']
 
-export async function GET(request: Request): Promise<NextResponse> {
-  const auth = await requireSession(request)
-  if (!auth.ok) return auth.response
-
-  const { env } = getCloudflareContext()
+export const GET = withSession(async ({ user, request, env }) => {
   const url = new URL(request.url)
   const sp = url.searchParams
   const maxLimit = getConfig(env).listQueryLimit
@@ -25,7 +20,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     statusParam && STATUSES.includes(statusParam) ? statusParam : undefined
   // Per-owner isolation: always scope the list to the caller. A client-supplied
   // `createdBy` is intentionally ignored so it can't read another owner's links.
-  const createdBy = auth.user.email
+  const createdBy = user.email
   const startAt = Number(sp.get('startAt')) || undefined
   const endAt = Number(sp.get('endAt')) || undefined
   const untagged = sp.get('untagged') === '1'
@@ -54,4 +49,4 @@ export async function GET(request: Request): Promise<NextResponse> {
     tagMatch,
   })
   return NextResponse.json(result)
-}
+})

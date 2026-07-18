@@ -1,13 +1,8 @@
-import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextResponse } from 'next/server'
 import { countLinks } from '@/lib/data/links'
-import { requireSession } from '@/lib/platform/auth'
+import { withSession } from '@/lib/platform/with-auth'
 
-export async function GET(request: Request): Promise<NextResponse> {
-  const auth = await requireSession(request)
-  if (!auth.ok) return auth.response
-
-  const { env } = getCloudflareContext()
-  const total = await countLinks(env, auth.user.email)
+export const GET = withSession(async ({ user, env }) => {
+  const total = await countLinks(env, user.email)
   return NextResponse.json({ total })
-}
+})
