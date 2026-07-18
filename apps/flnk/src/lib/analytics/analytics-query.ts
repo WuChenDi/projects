@@ -30,6 +30,11 @@ const FIELD = {
 // the link-oriented queries so the two never inflate each other.
 const LAUNCHPAD_TYPES = ['launchpad', 'launchpad_block'] as const
 
+// Default range window (days) — single source of truth for both the no-range
+// default and the endAt-only lower-bound floor, so neither can drift into an
+// unbounded full-history scan.
+const DEFAULT_LOOKBACK_DAYS = 7
+
 export type Dimension = keyof typeof FIELD
 export const METRIC_DIMENSIONS: Dimension[] = [
   'country',
@@ -139,19 +144,27 @@ function whereClause(
     }
     conditions.push(`${FIELD.owner} = '${sanitize(query.ownerKey)}'`)
   }
-  if (query.startAt) {
-    conditions.push(
-      `timestamp >= toDateTime(${Math.floor(query.startAt / 1000)})`,
-    )
-  }
   if (query.endAt) {
     conditions.push(
       `timestamp <= toDateTime(${Math.floor(query.endAt / 1000)})`,
     )
   }
-  // Default window: last 7 days when no explicit range is given.
-  if (!query.startAt && !query.endAt) {
-    conditions.push(`timestamp >= now() - INTERVAL '7' DAY`)
+  // A lower time bound is ALWAYS emitted so a request can never trigger an
+  // unbounded full-history scan: the explicit startAt if given, else a
+  // DEFAULT_LOOKBACK_DAYS floor anchored to endAt when only an upper bound is
+  // present, else the relative last-N-days default.
+  if (query.startAt) {
+    conditions.push(
+      `timestamp >= toDateTime(${Math.floor(query.startAt / 1000)})`,
+    )
+  } else if (query.endAt) {
+    conditions.push(
+      `timestamp >= toDateTime(${Math.floor(query.endAt / 1000) - DEFAULT_LOOKBACK_DAYS * 86400})`,
+    )
+  } else {
+    conditions.push(
+      `timestamp >= now() - INTERVAL '${DEFAULT_LOOKBACK_DAYS}' DAY`,
+    )
   }
   return `WHERE ${conditions.join(' AND ')}`
 }
