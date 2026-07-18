@@ -101,18 +101,22 @@ async function redirectTo(
   // destination, which answers 405.
   seeOther = false,
 ): Promise<Response> {
+  const ua = request.headers.get('user-agent') || ''
+
   // Click-limit expiry: over the maxVisits cap → persist the disable to D1
   // (so the cap survives KV cache expiry/rebuild), then purge the cache and
   // serve not-found. Increments the counter on the side-effect path when still
-  // under the cap.
-  if (await visitLimitReached(env, link, ctx)) {
+  // under the cap. Skipped for social crawlers: they fetch OG metadata without a
+  // real user click, so counting them would burn the cap (the increment is
+  // coupled to the cap check inside visitLimitReached, so the whole gate is
+  // bypassed — real user traffic still drives the persisted disable).
+  if (!isSocialCrawler(ua) && (await visitLimitReached(env, link, ctx))) {
     logger.info(`Slug visit limit reached: ${slug}`)
     await disableLinkOnVisitCap(env, link)
     await purgeLink(env, new URL(request.url).hostname, slug)
     return notFound(request, env)
   }
 
-  const ua = request.headers.get('user-agent') || ''
   const dest = resolveDestination(link, {
     ua,
     country: cf?.country,

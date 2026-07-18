@@ -25,6 +25,12 @@ export async function GET(
     return new Response('Not found', { status: 404 })
   }
 
+  // A paused (disabled) link 404s on the GET/POST redirect paths — the OG path
+  // must match, or it would leak the destination of a disabled link.
+  if (link.config.disabled) {
+    return new Response('Not found', { status: 404 })
+  }
+
   // Never expose the destination of a password-protected link via OG metadata.
   if (link.config.passwordHash) {
     return new Response('Not found', { status: 404 })
