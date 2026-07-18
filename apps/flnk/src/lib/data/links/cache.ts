@@ -28,6 +28,11 @@ export async function readCache(
     if (raw === null) return null
     if (raw === NEGATIVE_CACHE) return 'negative'
     const parsed = JSON.parse(raw) as Link
+    // The whole link row is serialized/parsed, so `ownerId` round-trips for free
+    // once resolve provides it. KV entries written before the ownerId change lack
+    // the field (parses as undefined); they self-heal within the 60s+ link cache
+    // TTL as the row is re-read from D1 and rewritten — acceptable under the
+    // clean analytics break.
     // JSON round-trips timestamps to strings — restore the Date shape.
     return {
       ...parsed,

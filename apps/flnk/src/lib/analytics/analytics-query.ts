@@ -77,8 +77,8 @@ export interface StatsFilters {
 }
 
 // A runnable query is fail-closed by construction: it is EITHER scoped to a
-// single tenant (`ownerKey` set — link scope filters blob20 by owner EMAIL,
-// launchpad scope by owner USER.ID) OR explicitly opted out with
+// single tenant (`ownerKey` set — blob20 is filtered by the owner USER.ID for
+// both link and launchpad scopes) OR explicitly opted out with
 // `unscoped: true` (the rare internal/cross-tenant call). There is no third
 // state, so forgetting the owner is a compile-time error, never a fail-open
 // all-tenants query. ownerKey is injected by the stats/* + logs/* + launchpad
@@ -134,10 +134,9 @@ function whereClause(
   // only way to skip it is an explicit `unscoped: true` (internal/cross-tenant
   // calls only). The StatsQuery type makes any other state unrepresentable, so
   // reaching this without either is impossible — throw rather than silently
-  // return every tenant's data. Owner-key skew invariant: link scope filters
-  // blob20 by owner EMAIL, launchpad scope by owner USER.ID; safe because
-  // `scope` never mixes the two entity families in one query (there is no
-  // email<->id join anywhere).
+  // return every tenant's data. blob20 carries the owner USER.ID for both link
+  // and launchpad scopes now, so the owner key is uniform across entity
+  // families — no email<->id skew to reconcile.
   if (query.unscoped !== true) {
     if (query.ownerKey === undefined) {
       throw new Error('analytics query missing owner scope (fail-closed)')
