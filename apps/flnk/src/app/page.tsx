@@ -12,7 +12,6 @@ import { cn } from '@cdlab/ui/lib/utils'
 import BlurText from '@cdlab/ui/reactbits/BlurText'
 import CountUp from '@cdlab/ui/reactbits/CountUp'
 import GradientText from '@cdlab/ui/reactbits/GradientText'
-import Threads from '@cdlab/ui/reactbits/Threads'
 import {
   ArrowRight,
   BarChart3,
@@ -32,6 +31,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { Faq } from '@/components/landing/faq'
+import { ThreadsBackdrop } from '@/components/landing/threads-backdrop'
 import { FlnkLogo, LocaleSwitcher, ThemeToggle } from '@/components/layout'
 import { getConfig } from '@/lib/platform/env'
 
@@ -195,7 +195,7 @@ export default async function LandingPage() {
                   'radial-gradient(ellipse 60% 70% at 50% 30%, #000 30%, transparent 75%)',
               }}
             >
-              <Threads
+              <ThreadsBackdrop
                 color={[0.45, 0.5, 0.72]}
                 amplitude={1.1}
                 distance={0.1}
@@ -432,7 +432,7 @@ export default async function LandingPage() {
                     'radial-gradient(ellipse 70% 80% at 50% 50%, #000 20%, transparent 70%)',
                 }}
               >
-                <Threads
+                <ThreadsBackdrop
                   color={[0.45, 0.5, 0.72]}
                   amplitude={1}
                   distance={0}
