@@ -84,6 +84,7 @@ import { TagInlineEditor } from '@/components/dashboard/links/tag-inline-editor'
 import { buildShortUrl, configBadges, formatDate } from '@/lib/format/format'
 import type { LinkRow, SortKey } from '@/lib/platform/api'
 import { linkApi, statsApi } from '@/lib/platform/api'
+import { queryKeys } from '@/lib/platform/query-keys'
 import {
   hasActiveFilters,
   useLinksFilterStore,
@@ -244,7 +245,7 @@ export function LinksView() {
     return { startAt: end - 30 * 24 * 60 * 60 * 1000, endAt: end }
   }, [])
   const clicksQuery = useQuery({
-    queryKey: ['link-clicks'],
+    queryKey: queryKeys.metrics('slug', { ...clicksWindow, filters: {} }, 50),
     queryFn: () =>
       statsApi.metrics('slug', { ...clicksWindow, filters: {} }, 50),
   })

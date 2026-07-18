@@ -586,6 +586,7 @@
     "subtitle": "Traffic and engagement for your links.",
     "notConfigured": "Analytics is not configured. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN to enable stats.",
     "clearFilters": "Clear filters",
+    "removeFilter": "Remove filter",
     "comingSoon": "Coming soon",
     "noData": "No data for this range",
     "range": {
