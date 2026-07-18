@@ -15,8 +15,10 @@ export async function GET(request: Request): Promise<NextResponse> {
   if (!auth.ok) return auth.response
 
   const { env } = getCloudflareContext()
-  const q = parseStatsQuery(new URL(request.url).searchParams)
-  q.ownerKey = auth.user.email
+  const q = {
+    ...parseStatsQuery(new URL(request.url).searchParams),
+    ownerKey: auth.user.email,
+  }
   // Short ranges bucket by hour, longer ones by day.
   const span =
     q.startAt && q.endAt ? q.endAt - q.startAt : Number.POSITIVE_INFINITY

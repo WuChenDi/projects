@@ -29,13 +29,7 @@ describe('sanitize', () => {
 })
 
 describe('whereClause owner scoping (via countersSql)', () => {
-  it('omits the owner filter when ownerKey is undefined', () => {
-    const sql = countersSql(env, { filters: {} })
-    expect(sql).not.toContain('blob20')
-    expect(sql).not.toContain('1=0')
-  })
-
-  it('filters by blob20 when ownerKey is defined', () => {
+  it('always filters by blob20 for a scoped query', () => {
     const sql = countersSql(env, { filters: {}, ownerKey: 'a@b.com' })
     expect(sql).toContain("blob20 = 'a@b.com'")
   })
@@ -43,5 +37,18 @@ describe('whereClause owner scoping (via countersSql)', () => {
   it('sanitizes the ownerKey value', () => {
     const sql = countersSql(env, { filters: {}, ownerKey: "a'b" })
     expect(sql).toContain("blob20 = 'a\\'b'")
+  })
+
+  it('omits the owner filter only for an explicit unscoped query', () => {
+    const sql = countersSql(env, { filters: {}, unscoped: true })
+    expect(sql).not.toContain('blob20')
+  })
+
+  it('is fail-closed: omitting both ownerKey and unscoped is a type error and throws', () => {
+    expect(() =>
+      // @ts-expect-error — a scoped query MUST carry ownerKey; omitting owner
+      // scope entirely is unrepresentable (the old fail-open all-tenants call).
+      countersSql(env, { filters: {} }),
+    ).toThrow()
   })
 })

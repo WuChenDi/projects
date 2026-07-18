@@ -13,8 +13,10 @@ export async function GET(request: Request): Promise<Response> {
   if (!auth.ok) return auth.response
 
   const { env } = getCloudflareContext()
-  const q = parseStatsQuery(new URL(request.url).searchParams)
-  q.ownerKey = auth.user.email
+  const q = {
+    ...parseStatsQuery(new URL(request.url).searchParams),
+    ownerKey: auth.user.email,
+  }
 
   let rows: Record<string, string>[] = []
   try {
