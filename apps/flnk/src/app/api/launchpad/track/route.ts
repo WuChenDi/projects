@@ -32,6 +32,15 @@ export async function POST(request: Request): Promise<Response> {
     return new Response(null, { status: 204 })
   }
 
+  // Only record clicks for a block that actually belongs to this launchpad. An
+  // arbitrary `blockId` is dropped (no Analytics write) so a third party can't
+  // inflate a victim's engagement points against blocks they don't own. Same
+  // benign 204 as a real click — the beacon leaks no validation detail.
+  const blockIds = new Set(launchpad.config.blocks.map((block) => block.id))
+  if (!blockIds.has(blockId)) {
+    return new Response(null, { status: 204 })
+  }
+
   ctx.waitUntil(
     Promise.resolve().then(() =>
       writeAccessLog(
