@@ -52,3 +52,37 @@ describe('whereClause owner scoping (via countersSql)', () => {
     ).toThrow()
   })
 })
+
+describe('whereClause lower-bound floor (via countersSql)', () => {
+  it('clamps an endAt-only query to a lookback floor instead of scanning all history', () => {
+    const endAt = 1_700_000_000_000
+    const sql = countersSql(env, { filters: {}, ownerKey: 'a@b.com', endAt })
+    expect(sql).toContain(
+      `timestamp <= toDateTime(${Math.floor(endAt / 1000)})`,
+    )
+    const floor = Math.floor(endAt / 1000) - 7 * 86400
+    expect(sql).toContain(`timestamp >= toDateTime(${floor})`)
+  })
+
+  it('uses the explicit startAt lower bound when both bounds are given', () => {
+    const startAt = 1_699_000_000_000
+    const endAt = 1_700_000_000_000
+    const sql = countersSql(env, {
+      filters: {},
+      ownerKey: 'a@b.com',
+      startAt,
+      endAt,
+    })
+    expect(sql).toContain(
+      `timestamp >= toDateTime(${Math.floor(startAt / 1000)})`,
+    )
+    expect(sql).not.toContain(
+      `timestamp >= toDateTime(${Math.floor(endAt / 1000) - 7 * 86400})`,
+    )
+  })
+
+  it('falls back to the 7-day relative default when no range is given', () => {
+    const sql = countersSql(env, { filters: {}, ownerKey: 'a@b.com' })
+    expect(sql).toContain(`timestamp >= now() - INTERVAL '7' DAY`)
+  })
+})
