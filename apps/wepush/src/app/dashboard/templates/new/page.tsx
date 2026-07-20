@@ -50,7 +50,7 @@ export default function NewTemplatePage() {
       <TemplateForm
         submitting={create.isPending}
         onSubmit={(value) => create.mutate(value)}
-        onCancel={() => router.push('/templates')}
+        onCancel={() => router.push('/dashboard/templates')}
       />
     </>
   )

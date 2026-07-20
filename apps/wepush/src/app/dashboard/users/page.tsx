@@ -109,7 +109,7 @@ export default function UsersPage() {
     onSuccess: (result) => {
       const action = {
         label: '查看批次',
-        onClick: () => router.push(`/logs/batches/${result.batchId}`),
+        onClick: () => router.push(`/dashboard/logs/batches/${result.batchId}`),
       }
       if (result.alreadyRunning) {
         toast.info('已有推送正在进行', { action })
