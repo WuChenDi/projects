@@ -1,7 +1,8 @@
+import type { ExecutionContext } from '@cloudflare/workers-types'
 import { eq } from 'drizzle-orm'
 import { userConfig } from '@/database/schema'
 import { getDb } from '@/lib/db'
-import { runPush } from './runner'
+import { startPush } from './runner'
 
 /**
  * Entry point invoked by the Worker `scheduled()` handler.
@@ -14,7 +15,10 @@ import { runPush } from './runner'
  * `env` is forwarded explicitly because `getCloudflareContext()` is only set up
  * by opennext's fetch wrapper, not in the `scheduled()` execution path.
  */
-export async function runScheduledPush(env: CloudflareEnv): Promise<void> {
+export async function runScheduledPush(
+  env: CloudflareEnv,
+  ctx: ExecutionContext,
+): Promise<void> {
   try {
     const db = await getDb(env)
     const configs = await db
@@ -27,10 +31,10 @@ export async function runScheduledPush(env: CloudflareEnv): Promise<void> {
       return
     }
 
-    // Sequential on purpose: each owner's runPush already self-throttles to its
-    // WeChat rate limit (sleeps between sends), and tenant count is expected to
-    // be small. If it ever grows enough to risk the Workers execution limit,
-    // switch to bounded concurrency or split across cron invocations / a queue.
+    // Fire each owner's push in the background via `startPush` (backed by
+    // `ctx.waitUntil`) so owners run concurrently under this invocation's
+    // budget instead of serially — later tenants can no longer be dropped.
+    const waitUntil = ctx.waitUntil.bind(ctx)
     for (const config of configs) {
       const userIds = Array.isArray(config.cronUserIds)
         ? config.cronUserIds
@@ -43,17 +47,17 @@ export async function runScheduledPush(env: CloudflareEnv): Promise<void> {
       }
 
       try {
-        const result = await runPush({
+        const result = await startPush({
           ownerId: config.ownerId,
           trigger: 'cron',
           userIds,
           env,
+          waitUntil,
         })
-        console.info('cron 推送完成', {
+        console.info('cron 推送已开始', {
           ownerId: config.ownerId,
           batchId: result.batchId,
-          successCount: result.successCount,
-          failedCount: result.failedCount,
+          alreadyRunning: result.alreadyRunning ?? false,
         })
       } catch (error) {
         console.error('cron 推送失败', {

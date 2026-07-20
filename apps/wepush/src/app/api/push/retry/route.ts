@@ -5,7 +5,7 @@ import * as z from 'zod'
 import { pushLogs, users } from '@/database/schema'
 import { requireOwner } from '@/lib/auth'
 import { getDb } from '@/lib/db'
-import { runPush } from '@/services/push/runner'
+import { startPush } from '@/services/push/runner'
 
 const bodySchema = z.object({ logId: z.string().min(1) }).strict()
 
@@ -49,10 +49,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: '原用户不存在或已删除' }, { status: 404 })
   }
 
-  const result = await runPush({
+  const result = await startPush({
     ownerId,
     trigger: 'manual',
     userIds: [user.id],
   })
-  return NextResponse.json(result)
+  return NextResponse.json(result, { status: 202 })
 }

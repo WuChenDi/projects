@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 import { pushBatches, pushLogs } from '@/database/schema'
 import { requireOwner } from '@/lib/auth'
 import { getDb } from '@/lib/db'
-import { runPush } from '@/services/push/runner'
+import { startPush } from '@/services/push/runner'
 
 export async function POST(
   request: NextRequest,
@@ -43,6 +43,6 @@ export async function POST(
     return NextResponse.json({ error: '没有失败记录可重推' }, { status: 400 })
   }
 
-  const result = await runPush({ ownerId, trigger: 'manual', userIds })
-  return NextResponse.json(result)
+  const result = await startPush({ ownerId, trigger: 'manual', userIds })
+  return NextResponse.json(result, { status: 202 })
 }
