@@ -36,9 +36,15 @@ import type { DryRunUserResult } from '@/lib/push-client'
 import { dryRunFromUi, runPushFromUi } from '@/lib/push-client'
 
 async function fetchUsers(): Promise<User[]> {
-  const res = await fetch('/api/users')
+  const res = await fetch('/api/users?limit=200&offset=0')
   if (!res.ok) throw new Error('Failed to load users')
-  return res.json()
+  const data = (await res.json()) as {
+    rows: User[]
+    total: number
+    limit: number
+    offset: number
+  }
+  return data.rows
 }
 
 async function patchUser(id: string, patch: Partial<User>): Promise<void> {

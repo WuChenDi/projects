@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import * as z from 'zod'
@@ -17,6 +17,12 @@ const customDateSchema = z.object({
   keyword: z.string().min(1).max(64),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/u, 'date 必须为 YYYY-MM-DD 格式'),
 })
+
+function parseInt(value: string | null, fallback: number): number {
+  if (!value) return fallback
+  const n = Number.parseInt(value, 10)
+  return Number.isFinite(n) ? n : fallback
+}
 
 const createSchema = z.object({
   name: z.string().max(64).default(''),
@@ -40,12 +46,26 @@ export async function GET(request: NextRequest) {
   const auth = await requireSession(request)
   if (!auth.ok) return auth.response
 
+  const sp = request.nextUrl.searchParams
+  const limit = Math.min(Math.max(parseInt(sp.get('limit'), 50), 1), 200)
+  const offset = Math.max(parseInt(sp.get('offset'), 0), 0)
+
   const db = await getDb()
+  const where = and(eq(users.ownerId, auth.user.id), eq(users.isDeleted, 0))
+
   const rows = await db
     .select()
     .from(users)
-    .where(and(eq(users.ownerId, auth.user.id), eq(users.isDeleted, 0)))
-  return NextResponse.json(rows)
+    .where(where)
+    .limit(limit)
+    .offset(offset)
+
+  const [{ count = 0 } = { count: 0 }] = await db
+    .select({ count: sql<number>`count(*)`.as('count') })
+    .from(users)
+    .where(where)
+
+  return NextResponse.json({ rows, total: Number(count), limit, offset })
 }
 
 export async function POST(request: NextRequest) {
