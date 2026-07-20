@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server'
 import * as schema from '@/database/schema'
 import { userConfig } from '@/database/schema'
 import { getDb } from '@/lib/db'
+import { hashToken } from '@/lib/token'
 
 // Built per-request: on Cloudflare Workers the D1 binding (and process.env vars)
 // are only populated inside a request, so the auth instance can't live at module
@@ -109,12 +110,15 @@ export async function requireOwner(request: Request): Promise<OwnerResult> {
   if (match) {
     const token = match[1].trim()
     if (token) {
+      // pushApiToken is stored as a SHA-256 digest, so look up by the digest of
+      // the presented raw token (never the raw value, never logged).
+      const digest = await hashToken(token)
       const db = await getDb()
       const rows = await db
         .select({ ownerId: userConfig.ownerId })
         .from(userConfig)
         .where(
-          and(eq(userConfig.pushApiToken, token), eq(userConfig.isDeleted, 0)),
+          and(eq(userConfig.pushApiToken, digest), eq(userConfig.isDeleted, 0)),
         )
         .limit(1)
       if (rows[0]) return { ok: true, ownerId: rows[0].ownerId }

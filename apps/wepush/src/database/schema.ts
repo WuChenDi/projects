@@ -139,9 +139,11 @@ export const userConfig = sqliteTable(
       .default([]),
     ...trackingFields,
   },
-  // pushApiToken doubles as a Bearer credential, so it must be unique — a
-  // collision could otherwise resolve to the wrong owner. (loadOrCreate always
-  // seeds a random token, so no two rows share the default empty string.)
+  // pushApiToken stores a SHA-256 digest of the Bearer credential (never the
+  // raw token); the raw token is shown to the owner only once at generation.
+  // It must be unique — a collision could otherwise resolve to the wrong owner.
+  // (loadOrCreate always seeds a random token's digest, so no two rows share
+  // the default empty string.)
   (table) => [
     uniqueIndex('uniq_user_config_push_api_token').on(table.pushApiToken),
   ],
