@@ -11,7 +11,10 @@ import {
 } from '@/database/schema'
 import { requireSession } from '@/lib/auth'
 import { getDb } from '@/lib/db'
-import { aggregateUserData } from '@/services/push/aggregate'
+import {
+  aggregateUserData,
+  buildSharedSources,
+} from '@/services/push/aggregate'
 import { renderTemplate } from '@/services/template/render'
 
 const bodySchema = z
@@ -69,11 +72,11 @@ export async function POST(request: NextRequest) {
           ),
         )
 
-  const ctx = {
+  const shared = await buildSharedSources({
     apiTimeout: configRow.apiTimeout,
     maxRetries: configRow.maxRetries,
     retryDelay: configRow.retryDelay,
-  }
+  })
 
   const results = []
 
@@ -142,7 +145,7 @@ export async function POST(request: NextRequest) {
           })),
           customDates: dates.map((d) => ({ keyword: d.keyword, date: d.date })),
         },
-        ctx,
+        shared,
       )
 
       const rendered = renderTemplate(templateRow, variables, {

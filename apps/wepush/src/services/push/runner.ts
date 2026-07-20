@@ -1,6 +1,12 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { and, eq, gte, inArray } from 'drizzle-orm'
-import type { Template, User, UserConfig } from '@/database/schema'
+import type {
+  CustomDate,
+  Festival,
+  Template,
+  User,
+  UserConfig,
+} from '@/database/schema'
 import {
   customDates as customDatesTable,
   festivals as festivalsTable,
@@ -19,8 +25,10 @@ import {
   sendTemplateMessage,
   WeChatError,
 } from '@/services/channels/wechat'
+import type { SourceContext } from '@/services/sources/types'
 import { renderTemplate } from '@/services/template/render'
-import { aggregateUserData } from './aggregate'
+import type { SharedSources } from './aggregate'
+import { aggregateUserData, buildSharedSources } from './aggregate'
 
 export type Trigger = 'manual' | 'api' | 'cron'
 
@@ -101,45 +109,80 @@ async function loadTargetUsers(
     )
 }
 
-async function loadUserExtras(db: DB, userId: string) {
+/**
+ * Bulk-load festivals + customDates for every target user in one query each,
+ * grouped by userId (PERF-02). Both are already owner-scoped transitively via
+ * the target userIds (which `loadTargetUsers` filtered by ownerId).
+ */
+async function preloadUserExtras(
+  db: DB,
+  ids: string[],
+): Promise<{
+  festivals: Map<string, Festival[]>
+  customDates: Map<string, CustomDate[]>
+}> {
+  const festivals = new Map<string, Festival[]>()
+  const customDates = new Map<string, CustomDate[]>()
+  if (ids.length === 0) return { festivals, customDates }
+
   const [fests, dates] = await Promise.all([
     db
       .select()
       .from(festivalsTable)
       .where(
-        and(eq(festivalsTable.userId, userId), eq(festivalsTable.isDeleted, 0)),
+        and(
+          inArray(festivalsTable.userId, ids),
+          eq(festivalsTable.isDeleted, 0),
+        ),
       ),
     db
       .select()
       .from(customDatesTable)
       .where(
         and(
-          eq(customDatesTable.userId, userId),
+          inArray(customDatesTable.userId, ids),
           eq(customDatesTable.isDeleted, 0),
         ),
       ),
   ])
-  return { festivals: fests, customDates: dates }
+
+  for (const f of fests) {
+    const list = festivals.get(f.userId)
+    if (list) list.push(f)
+    else festivals.set(f.userId, [f])
+  }
+  for (const d of dates) {
+    const list = customDates.get(d.userId)
+    if (list) list.push(d)
+    else customDates.set(d.userId, [d])
+  }
+  return { festivals, customDates }
 }
 
-async function loadTemplate(
+/**
+ * Bulk-load every distinct template referenced by the targets in one query,
+ * scoped to the owner (PERF-02). Blank codes are skipped; a missing code simply
+ * won't appear in the map, so `processUser` still fails that recipient.
+ */
+async function preloadTemplates(
   db: DB,
   ownerId: string,
-  code: string,
-): Promise<Template | undefined> {
-  if (!code) return undefined
+  codes: string[],
+): Promise<Map<string, Template>> {
+  const byCode = new Map<string, Template>()
+  if (codes.length === 0) return byCode
   const rows = await db
     .select()
     .from(templatesTable)
     .where(
       and(
         eq(templatesTable.ownerId, ownerId),
-        eq(templatesTable.code, code),
+        inArray(templatesTable.code, codes),
         eq(templatesTable.isDeleted, 0),
       ),
     )
-    .limit(1)
-  return rows[0]
+  for (const t of rows) byCode.set(t.code, t)
+  return byCode
 }
 
 /**
@@ -233,6 +276,23 @@ async function executePush(args: ExecuteArgs): Promise<void> {
   let successCount = 0
   let failedCount = 0
   try {
+    const sourceCtx: SourceContext = {
+      apiTimeout: config.apiTimeout,
+      maxRetries: config.maxRetries,
+      retryDelay: config.retryDelay,
+    }
+    // Batch-global reads hoisted out of the per-user loop (PERF-01 / PERF-02).
+    // Kept inside the try so a preload failure still finalizes the batch row.
+    const ids = targets.map((t) => t.id)
+    const codes = [
+      ...new Set(targets.map((t) => t.templateCode).filter(Boolean)),
+    ]
+    const [shared, extras, templatesByCode] = await Promise.all([
+      buildSharedSources(sourceCtx),
+      preloadUserExtras(db, ids),
+      preloadTemplates(db, config.ownerId, codes),
+    ])
+
     let accessToken: string | null = null
     let accessTokenError: string | undefined
     try {
@@ -258,6 +318,12 @@ async function executePush(args: ExecuteArgs): Promise<void> {
         config,
         accessToken,
         accessTokenError,
+        shared,
+        festivals: extras.festivals.get(user.id) ?? [],
+        customDates: extras.customDates.get(user.id) ?? [],
+        template: user.templateCode
+          ? templatesByCode.get(user.templateCode)
+          : undefined,
       })
       if (result.status === 'success') successCount++
       else failedCount++
@@ -309,16 +375,31 @@ interface ProcessArgs {
   config: UserConfig
   accessToken: string | null
   accessTokenError?: string
+  // Batch-global sources shared across every recipient (PERF-01).
+  shared: SharedSources
+  // Per-user rows bulk-preloaded before the send loop (PERF-02).
+  festivals: Festival[]
+  customDates: CustomDate[]
+  template: Template | undefined
 }
 
 async function processUser(args: ProcessArgs): Promise<PerUserResult> {
-  const { db, batchId, user, config, accessToken, accessTokenError } = args
+  const {
+    db,
+    batchId,
+    user,
+    config,
+    accessToken,
+    accessTokenError,
+    shared,
+    festivals,
+    customDates,
+    template,
+  } = args
   const logId = String(genid.nextId())
   const sentAt = new Date()
 
   try {
-    const { festivals, customDates } = await loadUserExtras(db, user.id)
-    const template = await loadTemplate(db, config.ownerId, user.templateCode)
     if (!template) {
       throw new Error(
         `未找到模板 (templateCode=${user.templateCode || '未设置'})`,
@@ -342,11 +423,7 @@ async function processUser(args: ProcessArgs): Promise<PerUserResult> {
           date: d.date,
         })),
       },
-      {
-        apiTimeout: config.apiTimeout,
-        maxRetries: config.maxRetries,
-        retryDelay: config.retryDelay,
-      },
+      shared,
     )
 
     const rendered = renderTemplate(template, variables, {
