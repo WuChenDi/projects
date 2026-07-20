@@ -98,11 +98,17 @@ export async function PATCH(
   const { festivals: fests, customDates: dates, ...userUpdates } = parsed.data
 
   if (Object.keys(userUpdates).length > 0) {
-    await db.update(users).set(userUpdates).where(eq(users.id, id))
+    await db
+      .update(users)
+      .set(userUpdates)
+      .where(and(eq(users.id, id), eq(users.ownerId, auth.user.id)))
   }
 
   if (fests) {
-    await db.delete(festivals).where(eq(festivals.userId, id))
+    await db
+      .update(festivals)
+      .set({ isDeleted: 1 })
+      .where(eq(festivals.userId, id))
     if (fests.length > 0) {
       await db
         .insert(festivals)
@@ -113,7 +119,10 @@ export async function PATCH(
   }
 
   if (dates) {
-    await db.delete(customDates).where(eq(customDates.userId, id))
+    await db
+      .update(customDates)
+      .set({ isDeleted: 1 })
+      .where(eq(customDates.userId, id))
     if (dates.length > 0) {
       await db
         .insert(customDates)
