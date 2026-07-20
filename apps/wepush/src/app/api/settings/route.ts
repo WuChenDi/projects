@@ -5,14 +5,7 @@ import * as z from 'zod'
 import { userConfig } from '@/database/schema'
 import { requireSession } from '@/lib/auth'
 import { getDb } from '@/lib/db'
-
-function randomToken() {
-  const bytes = new Uint8Array(24)
-  crypto.getRandomValues(bytes)
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-}
+import { generateToken, hashToken } from '@/lib/token'
 
 const patchSchema = z
   .object({
@@ -40,10 +33,18 @@ async function loadOrCreate(ownerId: string) {
 
   if (rows[0]) return rows[0]
 
-  await db.insert(userConfig).values({
-    ownerId,
-    pushApiToken: randomToken(),
-  })
+  // Seed the row with a digest of a throwaway token. The raw value is
+  // intentionally discarded — the owner regenerates from Settings to obtain a
+  // usable token — which keeps the unique index satisfied without ever exposing
+  // an un-revealed token. onConflictDoNothing guards the concurrent first
+  // GET/PATCH race (both would otherwise insert the same ownerId PK).
+  await db
+    .insert(userConfig)
+    .values({
+      ownerId,
+      pushApiToken: await hashToken(generateToken()),
+    })
+    .onConflictDoNothing()
 
   const fresh = await db
     .select()
@@ -101,7 +102,12 @@ export async function PATCH(request: NextRequest) {
   if (typeof wechatAppSecret === 'string' && wechatAppSecret.length > 0) {
     updates.wechatAppSecret = wechatAppSecret
   }
-  if (regeneratePushApiToken) updates.pushApiToken = randomToken()
+  // Persist only the digest; the raw token is revealed once in the response.
+  let rawToken = ''
+  if (regeneratePushApiToken) {
+    rawToken = generateToken()
+    updates.pushApiToken = await hashToken(rawToken)
+  }
 
   if (Object.keys(updates).length > 0) {
     await db
@@ -115,8 +121,11 @@ export async function PATCH(request: NextRequest) {
     .from(userConfig)
     .where(eq(userConfig.ownerId, ownerId))
     .limit(1)
-  // Reveal the new token only on the rotate response, so the UI can show /
-  // copy it once; subsequent GETs keep it masked.
-  if (regeneratePushApiToken) return NextResponse.json(fresh[0])
+  // Reveal the new raw token only on the rotate response, so the UI can show /
+  // copy it once; the row is otherwise masked (wechatAppSecret is never sent in
+  // cleartext), and subsequent GETs keep the token masked too.
+  if (regeneratePushApiToken) {
+    return NextResponse.json({ ...maskRow(fresh[0]!), pushApiToken: rawToken })
+  }
   return NextResponse.json(maskRow(fresh[0]!))
 }
