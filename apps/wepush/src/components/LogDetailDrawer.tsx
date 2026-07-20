@@ -14,6 +14,7 @@ import { Separator } from '@cdlab/ui/components/separator'
 import { Spinner } from '@cdlab/ui/components/spinner'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { retryLogFromUi } from '@/lib/push-client'
 
@@ -45,6 +46,7 @@ interface Props {
 
 export function LogDetailDrawer({ logId, onClose }: Props) {
   const qc = useQueryClient()
+  const router = useRouter()
   const { data: log, isLoading } = useQuery({
     queryKey: ['log', logId],
     queryFn: () => fetchLog(logId as string),
@@ -55,11 +57,15 @@ export function LogDetailDrawer({ logId, onClose }: Props) {
     mutationFn: (id: string) => retryLogFromUi(id),
     onSuccess: (result) => {
       void qc.invalidateQueries({ queryKey: ['logs'] })
-      const msg =
-        result.failedCount === 0
-          ? `重发完成（${result.successCount} 成功）`
-          : `重发结果：${result.successCount} 成功 / ${result.failedCount} 失败`
-      toast.success(msg)
+      const action = {
+        label: '查看批次',
+        onClick: () => router.push(`/logs/batches/${result.batchId}`),
+      }
+      if (result.alreadyRunning) {
+        toast.info('已有推送正在进行', { action })
+      } else {
+        toast.success('推送已开始，正在后台发送', { action })
+      }
       onClose()
     },
     onError: (e: Error) => toast.error(e.message),

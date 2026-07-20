@@ -12,17 +12,13 @@ export interface DryRunResponse {
   results: DryRunUserResult[]
 }
 
-export interface RunPushApiResult {
+// Run / retry / batch-retry now start the send in the background and return
+// immediately (HTTP 202) — the response carries only the batch id + status, no
+// per-user counts. Poll the batch page for progress.
+export interface PushStartResult {
   batchId: string
-  totalCount: number
-  successCount: number
-  failedCount: number
-  results: Array<{
-    userId: string
-    status: 'success' | 'failed'
-    logId: string
-    errorMessage?: string
-  }>
+  status: 'running'
+  alreadyRunning?: boolean
 }
 
 export interface RunPushOptions {
@@ -35,7 +31,7 @@ export interface RunPushOptions {
 // API consumers, who are scoped to the owner that owns the token.
 export async function runPushFromUi(
   options: RunPushOptions,
-): Promise<RunPushApiResult> {
+): Promise<PushStartResult> {
   const res = await fetch('/api/push/run', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -50,7 +46,7 @@ export async function runPushFromUi(
       .catch<{ error?: string }>(() => ({}))
     throw new Error(data?.error || `请求失败 (${res.status})`)
   }
-  return res.json<RunPushApiResult>()
+  return res.json<PushStartResult>()
 }
 
 export async function dryRunFromUi(
@@ -70,7 +66,7 @@ export async function dryRunFromUi(
   return res.json<DryRunResponse>()
 }
 
-export async function retryLogFromUi(logId: string): Promise<RunPushApiResult> {
+export async function retryLogFromUi(logId: string): Promise<PushStartResult> {
   const res = await fetch('/api/push/retry', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -82,12 +78,12 @@ export async function retryLogFromUi(logId: string): Promise<RunPushApiResult> {
       .catch<{ error?: string }>(() => ({}))
     throw new Error(data?.error || `请求失败 (${res.status})`)
   }
-  return res.json<RunPushApiResult>()
+  return res.json<PushStartResult>()
 }
 
 export async function retryBatchFromUi(
   batchId: string,
-): Promise<RunPushApiResult> {
+): Promise<PushStartResult> {
   const res = await fetch(`/api/batches/${batchId}/retry`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -99,5 +95,5 @@ export async function retryBatchFromUi(
       .catch<{ error?: string }>(() => ({}))
     throw new Error(data?.error || `请求失败 (${res.status})`)
   }
-  return res.json<RunPushApiResult>()
+  return res.json<PushStartResult>()
 }

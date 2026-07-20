@@ -71,29 +71,24 @@ export default function BatchDetailPage() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['batch', id],
     queryFn: () => fetchBatch(id),
+    // The batch is populated asynchronously in the background, so keep polling
+    // while it's still running to surface live progress.
+    refetchInterval: (query) =>
+      query.state.data?.batch?.status === 'running' ? 2000 : false,
   })
 
   const retry = useMutation({
     mutationFn: () => retryBatchFromUi(id),
     onSuccess: (result) => {
       void qc.invalidateQueries({ queryKey: ['batch', id] })
-      if (result.failedCount === 0) {
-        toast.success(`重推完成（${result.successCount} 成功）`, {
-          action: {
-            label: '查看批次',
-            onClick: () => router.push(`/logs/batches/${result.batchId}`),
-          },
-        })
+      const action = {
+        label: '查看批次',
+        onClick: () => router.push(`/logs/batches/${result.batchId}`),
+      }
+      if (result.alreadyRunning) {
+        toast.info('已有推送正在进行', { action })
       } else {
-        toast.warning(
-          `重推部分失败（${result.successCount} 成功 / ${result.failedCount} 失败）`,
-          {
-            action: {
-              label: '查看新批次',
-              onClick: () => router.push(`/logs/batches/${result.batchId}`),
-            },
-          },
-        )
+        toast.success('推送已开始，正在后台发送', { action })
       }
     },
     onError: (e: Error) => toast.error(e.message),

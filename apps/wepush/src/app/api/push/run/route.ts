@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import * as z from 'zod'
 import { requireOwner } from '@/lib/auth'
-import { runPush } from '@/services/push/runner'
+import { startPush } from '@/services/push/runner'
 
 const bodySchema = z
   .object({
@@ -24,10 +24,10 @@ export async function POST(request: NextRequest) {
   }
 
   const trigger = parsed.data.trigger ?? 'api'
-  const result = await runPush({
+  const result = await startPush({
     ownerId: auth.ownerId,
     trigger,
     userIds: parsed.data.userIds,
   })
-  return NextResponse.json(result)
+  return NextResponse.json(result, { status: 202 })
 }

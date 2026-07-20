@@ -1,4 +1,5 @@
-import { and, eq, inArray } from 'drizzle-orm'
+import { getCloudflareContext } from '@opennextjs/cloudflare'
+import { and, eq, gte, inArray } from 'drizzle-orm'
 import type { Template, User, UserConfig } from '@/database/schema'
 import {
   customDates as customDatesTable,
@@ -23,6 +24,10 @@ import { aggregateUserData } from './aggregate'
 
 export type Trigger = 'manual' | 'api' | 'cron'
 
+// A 'running' batch older than this is treated as a crashed run and no longer
+// blocks a new push for the same owner (ARC-03 concurrency guard).
+const STALE_RUN_MS = 15 * 60 * 1000
+
 export interface RunPushInput {
   // Tenant whose recipients / config / token drive this run. Every row written
   // and read is scoped to it.
@@ -33,6 +38,18 @@ export interface RunPushInput {
   // bindings without going through `getCloudflareContext()` (which is only
   // populated by opennext's fetch wrapper).
   env?: CloudflareEnv
+  // Background executor registrar. The cron path passes `ctx.waitUntil` (the
+  // `scheduled()` handler has no request context); request paths fall back to
+  // `getCloudflareContext().ctx.waitUntil`.
+  waitUntil?: (p: Promise<unknown>) => void
+}
+
+export interface StartPushResult {
+  batchId: string
+  status: 'running'
+  // Set when the concurrency guard short-circuited: a run for this owner was
+  // already in flight, so no new batch was created.
+  alreadyRunning?: boolean
 }
 
 export interface PerUserResult {
@@ -40,14 +57,6 @@ export interface PerUserResult {
   status: 'success' | 'failed'
   logId: string
   errorMessage?: string
-}
-
-export interface RunPushResult {
-  batchId: string
-  totalCount: number
-  successCount: number
-  failedCount: number
-  results: PerUserResult[]
 }
 
 async function loadConfig(db: DB, ownerId: string): Promise<UserConfig> {
@@ -133,14 +142,41 @@ async function loadTemplate(
   return rows[0]
 }
 
-export async function runPush(input: RunPushInput): Promise<RunPushResult> {
+/**
+ * Client entry point: create the batch synchronously, then run the send loop in
+ * the background via `waitUntil`. Returns as soon as the batch row exists — the
+ * HTTP connection is never held open for the throttled send loop (ARC-01).
+ */
+export async function startPush(input: RunPushInput): Promise<StartPushResult> {
   const db = await getDb(input.env)
   const { ownerId } = input
+
+  // ARC-03: refuse to start a second run while one is still in flight for this
+  // owner (cron + manual, or a double-click). A row older than STALE_RUN_MS is
+  // treated as crashed and does not block.
+  const staleThreshold = new Date(Date.now() - STALE_RUN_MS)
+  const [inFlight] = await db
+    .select({ id: pushBatches.id })
+    .from(pushBatches)
+    .where(
+      and(
+        eq(pushBatches.ownerId, ownerId),
+        eq(pushBatches.status, 'running'),
+        eq(pushBatches.isDeleted, 0),
+        gte(pushBatches.startedAt, staleThreshold),
+      ),
+    )
+    .limit(1)
+  if (inFlight) {
+    return { batchId: inFlight.id, status: 'running', alreadyRunning: true }
+  }
+
   const config = await loadConfig(db, ownerId)
   const targets = await loadTargetUsers(db, ownerId, input.userIds)
 
   const batchId = String(genid.nextId())
   const startedAt = new Date()
+  // Insert BEFORE scheduling so the concurrency guard above sees this run.
   await db.insert(pushBatches).values({
     id: batchId,
     ownerId,
@@ -152,84 +188,117 @@ export async function runPush(input: RunPushInput): Promise<RunPushResult> {
     startedAt,
   })
 
+  let waitUntil = input.waitUntil
+  if (!waitUntil) {
+    const { ctx } = getCloudflareContext()
+    waitUntil = ctx.waitUntil.bind(ctx)
+  }
+  waitUntil(
+    executePush({
+      db,
+      batchId,
+      ownerId,
+      trigger: input.trigger,
+      config,
+      targets,
+    }),
+  )
+
+  return { batchId, status: 'running' }
+}
+
+interface ExecuteArgs {
+  db: DB
+  batchId: string
+  ownerId: string
+  trigger: Trigger
+  config: UserConfig
+  targets: User[]
+}
+
+/**
+ * Background executor: the throttled per-user send loop. Always finalizes the
+ * batch row to a terminal status via `finally`, so a mid-loop throw can't leave
+ * status='running' forever (which would permanently trip the concurrency guard).
+ */
+async function executePush(args: ExecuteArgs): Promise<void> {
+  const { db, batchId, config, targets, trigger } = args
+
   console.info('推送批次开始', {
     batchId,
-    trigger: input.trigger,
+    trigger,
     total: targets.length,
   })
 
-  let accessToken: string | null = null
-  let accessTokenError: string | undefined
-  try {
-    accessToken = await getAccessToken({
-      appId: config.wechatAppId,
-      appSecret: config.wechatAppSecret,
-      apiTimeout: config.apiTimeout,
-      maxRetries: config.maxRetries,
-      retryDelay: config.retryDelay,
-    })
-  } catch (error) {
-    accessTokenError = error instanceof Error ? error.message : String(error)
-    console.error('获取微信 AccessToken 失败', { error: accessTokenError })
-  }
-
-  const results: PerUserResult[] = []
   let successCount = 0
   let failedCount = 0
-  let pushedInWindow = 0
-
-  for (let i = 0; i < targets.length; i++) {
-    const user = targets[i]
-    const result = await processUser({
-      db,
-      batchId,
-      user,
-      config,
-      accessToken,
-      accessTokenError,
-    })
-    results.push(result)
-    if (result.status === 'success') successCount++
-    else failedCount++
-
-    pushedInWindow++
-    if (pushedInWindow >= config.maxPushOneMinute && i < targets.length - 1) {
-      console.warn('达到节流上限，休眠', {
-        sleepMs: config.sleepTime,
+  try {
+    let accessToken: string | null = null
+    let accessTokenError: string | undefined
+    try {
+      accessToken = await getAccessToken({
+        appId: config.wechatAppId,
+        appSecret: config.wechatAppSecret,
+        apiTimeout: config.apiTimeout,
+        maxRetries: config.maxRetries,
+        retryDelay: config.retryDelay,
       })
-      await sleep(config.sleepTime)
-      pushedInWindow = 0
-    } else if (i < targets.length - 1) {
-      await sleep(Math.min(2000, config.sleepTime))
+    } catch (error) {
+      accessTokenError = error instanceof Error ? error.message : String(error)
+      console.error('获取微信 AccessToken 失败', { error: accessTokenError })
     }
-  }
 
-  const finishedAt = new Date()
-  const finalStatus: 'success' | 'partial' | 'failed' =
-    failedCount === 0 ? 'success' : successCount === 0 ? 'failed' : 'partial'
+    let pushedInWindow = 0
+    for (let i = 0; i < targets.length; i++) {
+      const user = targets[i]
+      const result = await processUser({
+        db,
+        batchId,
+        user,
+        config,
+        accessToken,
+        accessTokenError,
+      })
+      if (result.status === 'success') successCount++
+      else failedCount++
 
-  await db
-    .update(pushBatches)
-    .set({
-      status: finalStatus,
+      pushedInWindow++
+      if (pushedInWindow >= config.maxPushOneMinute && i < targets.length - 1) {
+        console.warn('达到节流上限，休眠', {
+          sleepMs: config.sleepTime,
+        })
+        await sleep(config.sleepTime)
+        pushedInWindow = 0
+      } else if (i < targets.length - 1) {
+        await sleep(Math.min(2000, config.sleepTime))
+      }
+    }
+  } finally {
+    const finishedAt = new Date()
+    // successCount === targets.length only when every target was processed AND
+    // sent — so a crash mid-loop resolves to partial/failed, never success.
+    const finalStatus: 'success' | 'partial' | 'failed' =
+      successCount === targets.length
+        ? 'success'
+        : successCount === 0
+          ? 'failed'
+          : 'partial'
+
+    await db
+      .update(pushBatches)
+      .set({
+        status: finalStatus,
+        successCount,
+        failedCount,
+        finishedAt,
+      })
+      .where(eq(pushBatches.id, batchId))
+
+    console.info('推送批次完成', {
+      batchId,
       successCount,
       failedCount,
-      finishedAt,
     })
-    .where(eq(pushBatches.id, batchId))
-
-  console.info('推送批次完成', {
-    batchId,
-    successCount,
-    failedCount,
-  })
-
-  return {
-    batchId,
-    totalCount: targets.length,
-    successCount,
-    failedCount,
-    results,
   }
 }
 

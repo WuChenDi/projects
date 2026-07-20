@@ -30,12 +30,13 @@ export default {
   async scheduled(
     _controller: ScheduledController,
     env: CloudflareEnv,
-    _ctx: ExecutionContext,
+    ctx: ExecutionContext,
   ): Promise<void> {
     // Note: don't try to seed opennext's `__cloudflare-context__` symbol here.
     // opennext defines it as a getter-only property backed by AsyncLocalStorage
     // — assigning to it throws. Instead we forward `env` explicitly so the
-    // cron path doesn't depend on `getCloudflareContext()`.
-    await runScheduledPush(env)
+    // cron path doesn't depend on `getCloudflareContext()`, and pass `ctx` so
+    // each owner's push can run in the background via `ctx.waitUntil`.
+    await runScheduledPush(env, ctx)
   },
 } satisfies ExportedHandler<CloudflareEnv>
