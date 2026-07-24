@@ -13,8 +13,11 @@ import type {
   ExecutionContext,
   ExportedHandler,
   ExportedHandlerFetchHandler,
+  MessageBatch,
   ScheduledController,
 } from '@cloudflare/workers-types'
+import { handlePushQueue } from '@/services/push/consumer'
+import type { PushQueueMessage } from '@/services/push/runner'
 import { runScheduledPush } from '@/services/push/scheduled'
 // @ts-expect-error: artifact only exists after `opennextjs-cloudflare build`
 import openNextWorker from '../../.open-next/worker.js'
@@ -39,4 +42,12 @@ export default {
     // each owner's push can run in the background via `ctx.waitUntil`.
     await runScheduledPush(env, ctx)
   },
-} satisfies ExportedHandler<CloudflareEnv>
+  async queue(
+    batch: MessageBatch<PushQueueMessage>,
+    env: CloudflareEnv,
+    _ctx: ExecutionContext,
+  ): Promise<void> {
+    // Drain per-recipient push jobs enqueued by `startPush` (the producer).
+    await handlePushQueue(batch, env)
+  },
+} satisfies ExportedHandler<CloudflareEnv, PushQueueMessage>
