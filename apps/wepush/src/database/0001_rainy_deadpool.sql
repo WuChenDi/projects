@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `uniq_push_logs_batch_user` ON `push_logs` (`batch_id`,`user_id`);
