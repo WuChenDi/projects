@@ -11,7 +11,6 @@ import {
   customDates as customDatesTable,
   festivals as festivalsTable,
   pushBatches,
-  pushLogs,
   templates as templatesTable,
   userConfig as userConfigTable,
   users as usersTable,
@@ -19,16 +18,11 @@ import {
 import type { DB } from '@/lib/db'
 import { getDb } from '@/lib/db'
 import { genid } from '@/lib/genid'
-import { sleep } from '@/lib/sleep'
-import {
-  getAccessToken,
-  sendTemplateMessage,
-  WeChatError,
-} from '@/services/channels/wechat'
-import type { SourceContext } from '@/services/sources/types'
+import { sendTemplateMessage } from '@/services/channels/wechat'
+import type { TemplateData } from '@/services/template/render'
 import { renderTemplate } from '@/services/template/render'
 import type { SharedSources } from './aggregate'
-import { aggregateUserData, buildSharedSources } from './aggregate'
+import { aggregateUserData } from './aggregate'
 
 export type Trigger = 'manual' | 'api' | 'cron'
 
@@ -36,20 +30,33 @@ export type Trigger = 'manual' | 'api' | 'cron'
 // blocks a new push for the same owner (ARC-03 concurrency guard).
 const STALE_RUN_MS = 15 * 60 * 1000
 
+// Free-plan Queues retain a delayed message for up to 24h. Realistic recipient
+// lists keep the staggered delay far below this, but clamp defensively so an
+// oversized list can never enqueue a message past its retention window.
+const MAX_DELAY_SECONDS = 82_800
+
+// Cloudflare `sendBatch` accepts at most 100 messages per call.
+const QUEUE_CHUNK_SIZE = 100
+
+// One queue job per recipient. Carries only owner-scoped identifiers; the
+// consumer re-loads the recipient/template/config so nothing stale is trusted.
+export interface PushQueueMessage {
+  batchId: string
+  ownerId: string
+  userId: string
+  templateCode: string
+}
+
 export interface RunPushInput {
   // Tenant whose recipients / config / token drive this run. Every row written
   // and read is scoped to it.
   ownerId: string
   trigger: Trigger
   userIds?: string[]
-  // Provided by the worker `scheduled()` handler so `getDb()` can resolve
-  // bindings without going through `getCloudflareContext()` (which is only
-  // populated by opennext's fetch wrapper).
+  // Provided by the worker `scheduled()` handler so `getDb()` / `PUSH_QUEUE` can
+  // resolve bindings without going through `getCloudflareContext()` (which is
+  // only populated by opennext's fetch wrapper).
   env?: CloudflareEnv
-  // Background executor registrar. The cron path passes `ctx.waitUntil` (the
-  // `scheduled()` handler has no request context); request paths fall back to
-  // `getCloudflareContext().ctx.waitUntil`.
-  waitUntil?: (p: Promise<unknown>) => void
 }
 
 export interface StartPushResult {
@@ -60,14 +67,18 @@ export interface StartPushResult {
   alreadyRunning?: boolean
 }
 
-export interface PerUserResult {
-  userId: string
-  status: 'success' | 'failed'
-  logId: string
-  errorMessage?: string
+// Rendered payload returned by `processUser` on a successful send. The queue
+// consumer turns this into the recipient's `success` push log.
+export interface SendResult {
+  renderedTitle: string
+  renderedDesc: string
+  variableSnapshot: TemplateData
+  // Non-fatal data-source warnings to record on the success log; undefined when
+  // every source resolved cleanly.
+  sourceWarning?: string
 }
 
-async function loadConfig(db: DB, ownerId: string): Promise<UserConfig> {
+export async function loadConfig(db: DB, ownerId: string): Promise<UserConfig> {
   const rows = await db
     .select()
     .from(userConfigTable)
@@ -79,7 +90,7 @@ async function loadConfig(db: DB, ownerId: string): Promise<UserConfig> {
   return rows[0]
 }
 
-async function loadTargetUsers(
+export async function loadTargetUsers(
   db: DB,
   ownerId: string,
   ids: string[] | undefined,
@@ -110,11 +121,12 @@ async function loadTargetUsers(
 }
 
 /**
- * Bulk-load festivals + customDates for every target user in one query each,
- * grouped by userId (PERF-02). Both are already owner-scoped transitively via
- * the target userIds (which `loadTargetUsers` filtered by ownerId).
+ * Bulk-load festivals + customDates for the given recipient ids in one query
+ * each, grouped by userId (PERF-02). Both are already owner-scoped transitively
+ * via the target userIds (which the caller filtered by ownerId). The queue
+ * consumer calls this with a single id per message.
  */
-async function preloadUserExtras(
+export async function preloadUserExtras(
   db: DB,
   ids: string[],
 ): Promise<{
@@ -160,11 +172,12 @@ async function preloadUserExtras(
 }
 
 /**
- * Bulk-load every distinct template referenced by the targets in one query,
- * scoped to the owner (PERF-02). Blank codes are skipped; a missing code simply
- * won't appear in the map, so `processUser` still fails that recipient.
+ * Load the given template codes in one query, scoped to the owner (PERF-02).
+ * Blank codes are skipped; a missing code simply won't appear in the map, so
+ * `processUser` still fails that recipient. The queue consumer calls this with a
+ * single code per message.
  */
-async function preloadTemplates(
+export async function preloadTemplates(
   db: DB,
   ownerId: string,
   codes: string[],
@@ -186,12 +199,15 @@ async function preloadTemplates(
 }
 
 /**
- * Client entry point: create the batch synchronously, then run the send loop in
- * the background via `waitUntil`. Returns as soon as the batch row exists — the
- * HTTP connection is never held open for the throttled send loop (ARC-01).
+ * Producer: create the batch synchronously, then fan out one queue message per
+ * recipient. Returns as soon as the messages are enqueued — the throttled send
+ * loop now lives in the queue consumer, so the HTTP connection is never held
+ * open for it (ARC-01). The 202 contract `{ batchId, status: 'running' }` is
+ * unchanged.
  */
 export async function startPush(input: RunPushInput): Promise<StartPushResult> {
-  const db = await getDb(input.env)
+  const env = input.env ?? getCloudflareContext().env
+  const db = await getDb(env)
   const { ownerId } = input
 
   // ARC-03: refuse to start a second run while one is still in flight for this
@@ -219,7 +235,7 @@ export async function startPush(input: RunPushInput): Promise<StartPushResult> {
 
   const batchId = String(genid.nextId())
   const startedAt = new Date()
-  // Insert BEFORE scheduling so the concurrency guard above sees this run.
+  // Insert BEFORE enqueuing so the concurrency guard above sees this run.
   await db.insert(pushBatches).values({
     id: batchId,
     ownerId,
@@ -231,162 +247,68 @@ export async function startPush(input: RunPushInput): Promise<StartPushResult> {
     startedAt,
   })
 
-  let waitUntil = input.waitUntil
-  if (!waitUntil) {
-    const { ctx } = getCloudflareContext()
-    waitUntil = ctx.waitUntil.bind(ctx)
+  // No recipients: nothing to enqueue, so no consumer message would ever
+  // finalize the batch. Close it out here (mirrors the old executor's 0-target
+  // behaviour) so it doesn't sit 'running' and trip the concurrency guard.
+  if (targets.length === 0) {
+    await db
+      .update(pushBatches)
+      .set({ status: 'success', finishedAt: new Date() })
+      .where(and(eq(pushBatches.id, batchId), eq(pushBatches.ownerId, ownerId)))
+    return { batchId, status: 'running' }
   }
-  waitUntil(
-    executePush({
-      db,
-      batchId,
-      ownerId,
-      trigger: input.trigger,
-      config,
-      targets,
+
+  // Stagger sends so the consumer honours the owner's WeChat rate limit: the
+  // i-th recipient waits `floor(i / maxPushOneMinute)` whole minutes. Guard
+  // against a 0/undefined knob to avoid divide-by-zero.
+  const perMinute = config.maxPushOneMinute >= 1 ? config.maxPushOneMinute : 1
+  const messages: MessageSendRequest<PushQueueMessage>[] = targets.map(
+    (user, i) => ({
+      body: {
+        batchId,
+        ownerId,
+        userId: user.id,
+        templateCode: user.templateCode,
+      },
+      delaySeconds: Math.min(Math.floor(i / perMinute) * 60, MAX_DELAY_SECONDS),
     }),
   )
+
+  const queue = env.PUSH_QUEUE
+  for (let i = 0; i < messages.length; i += QUEUE_CHUNK_SIZE) {
+    await queue.sendBatch(messages.slice(i, i + QUEUE_CHUNK_SIZE))
+  }
+
+  console.info('推送批次已入队', {
+    batchId,
+    trigger: input.trigger,
+    total: targets.length,
+  })
 
   return { batchId, status: 'running' }
 }
 
-interface ExecuteArgs {
-  db: DB
-  batchId: string
-  ownerId: string
-  trigger: Trigger
-  config: UserConfig
-  targets: User[]
-}
-
-/**
- * Background executor: the throttled per-user send loop. Always finalizes the
- * batch row to a terminal status via `finally`, so a mid-loop throw can't leave
- * status='running' forever (which would permanently trip the concurrency guard).
- */
-async function executePush(args: ExecuteArgs): Promise<void> {
-  const { db, batchId, config, targets, trigger } = args
-
-  console.info('推送批次开始', {
-    batchId,
-    trigger,
-    total: targets.length,
-  })
-
-  let successCount = 0
-  let failedCount = 0
-  try {
-    const sourceCtx: SourceContext = {
-      apiTimeout: config.apiTimeout,
-      maxRetries: config.maxRetries,
-      retryDelay: config.retryDelay,
-    }
-    // Batch-global reads hoisted out of the per-user loop (PERF-01 / PERF-02).
-    // Kept inside the try so a preload failure still finalizes the batch row.
-    const ids = targets.map((t) => t.id)
-    const codes = [
-      ...new Set(targets.map((t) => t.templateCode).filter(Boolean)),
-    ]
-    const [shared, extras, templatesByCode] = await Promise.all([
-      buildSharedSources(sourceCtx),
-      preloadUserExtras(db, ids),
-      preloadTemplates(db, config.ownerId, codes),
-    ])
-
-    let accessToken: string | null = null
-    let accessTokenError: string | undefined
-    try {
-      accessToken = await getAccessToken({
-        appId: config.wechatAppId,
-        appSecret: config.wechatAppSecret,
-        apiTimeout: config.apiTimeout,
-        maxRetries: config.maxRetries,
-        retryDelay: config.retryDelay,
-      })
-    } catch (error) {
-      accessTokenError = error instanceof Error ? error.message : String(error)
-      console.error('获取微信 AccessToken 失败', { error: accessTokenError })
-    }
-
-    let pushedInWindow = 0
-    for (let i = 0; i < targets.length; i++) {
-      const user = targets[i]
-      const result = await processUser({
-        db,
-        batchId,
-        user,
-        config,
-        accessToken,
-        accessTokenError,
-        shared,
-        festivals: extras.festivals.get(user.id) ?? [],
-        customDates: extras.customDates.get(user.id) ?? [],
-        template: user.templateCode
-          ? templatesByCode.get(user.templateCode)
-          : undefined,
-      })
-      if (result.status === 'success') successCount++
-      else failedCount++
-
-      pushedInWindow++
-      if (pushedInWindow >= config.maxPushOneMinute && i < targets.length - 1) {
-        console.warn('达到节流上限，休眠', {
-          sleepMs: config.sleepTime,
-        })
-        await sleep(config.sleepTime)
-        pushedInWindow = 0
-      } else if (i < targets.length - 1) {
-        await sleep(Math.min(2000, config.sleepTime))
-      }
-    }
-  } finally {
-    const finishedAt = new Date()
-    // successCount === targets.length only when every target was processed AND
-    // sent — so a crash mid-loop resolves to partial/failed, never success.
-    const finalStatus: 'success' | 'partial' | 'failed' =
-      successCount === targets.length
-        ? 'success'
-        : successCount === 0
-          ? 'failed'
-          : 'partial'
-
-    await db
-      .update(pushBatches)
-      .set({
-        status: finalStatus,
-        successCount,
-        failedCount,
-        finishedAt,
-      })
-      .where(eq(pushBatches.id, batchId))
-
-    console.info('推送批次完成', {
-      batchId,
-      successCount,
-      failedCount,
-    })
-  }
-}
-
 interface ProcessArgs {
-  db: DB
-  batchId: string
   user: User
   config: UserConfig
   accessToken: string | null
   accessTokenError?: string
   // Batch-global sources shared across every recipient (PERF-01).
   shared: SharedSources
-  // Per-user rows bulk-preloaded before the send loop (PERF-02).
+  // Per-user rows loaded for this recipient (PERF-02).
   festivals: Festival[]
   customDates: CustomDate[]
   template: Template | undefined
 }
 
-async function processUser(args: ProcessArgs): Promise<PerUserResult> {
+/**
+ * Send one recipient's template message. Returns the rendered payload on success
+ * and THROWS on any failure (missing template / no access token / WeChat error)
+ * — the queue consumer decides retry-vs-failed-log from the thrown error, so log
+ * writing and batch accounting stay out of the send core.
+ */
+export async function processUser(args: ProcessArgs): Promise<SendResult> {
   const {
-    db,
-    batchId,
     user,
     config,
     accessToken,
@@ -396,105 +318,63 @@ async function processUser(args: ProcessArgs): Promise<PerUserResult> {
     customDates,
     template,
   } = args
-  const logId = String(genid.nextId())
-  const sentAt = new Date()
 
-  try {
-    if (!template) {
-      throw new Error(
-        `未找到模板 (templateCode=${user.templateCode || '未设置'})`,
-      )
-    }
-
-    const { data: variables, errors: sourceErrors } = await aggregateUserData(
-      {
-        id: user.id,
-        name: user.name,
-        city: user.city,
-        weatherCityCode: user.weatherCityCode,
-        showColor: user.showColor,
-        festivals: festivals.map((f) => ({
-          name: f.name,
-          date: f.date,
-          isLunar: f.isLunar,
-        })),
-        customDates: customDates.map((d) => ({
-          keyword: d.keyword,
-          date: d.date,
-        })),
-      },
-      shared,
+  if (!template) {
+    throw new Error(
+      `未找到模板 (templateCode=${user.templateCode || '未设置'})`,
     )
+  }
 
-    const rendered = renderTemplate(template, variables, {
+  const { data: variables, errors: sourceErrors } = await aggregateUserData(
+    {
+      id: user.id,
+      name: user.name,
+      city: user.city,
+      weatherCityCode: user.weatherCityCode,
       showColor: user.showColor,
-    })
+      festivals: festivals.map((f) => ({
+        name: f.name,
+        date: f.date,
+        isLunar: f.isLunar,
+      })),
+      customDates: customDates.map((d) => ({
+        keyword: d.keyword,
+        date: d.date,
+      })),
+    },
+    shared,
+  )
 
-    if (!accessToken) {
-      throw new Error(accessTokenError || '微信 AccessToken 不可用')
-    }
-    const templateId = user.wechatTemplateId || config.defaultWechatTemplateId
-    await sendTemplateMessage(
-      {
-        appId: config.wechatAppId,
-        appSecret: config.wechatAppSecret,
-        apiTimeout: config.apiTimeout,
-        maxRetries: config.maxRetries,
-        retryDelay: config.retryDelay,
-      },
-      {
-        accessToken,
-        openId: user.wechatOpenId,
-        templateId,
-        data: rendered.wechatData,
-      },
-    )
+  const rendered = renderTemplate(template, variables, {
+    showColor: user.showColor,
+  })
 
-    await db.insert(pushLogs).values({
-      id: logId,
-      ownerId: config.ownerId,
-      batchId,
-      userId: user.id,
-      templateCode: user.templateCode,
-      status: 'success',
-      renderedTitle: rendered.title,
-      renderedDesc: rendered.desc,
-      variableSnapshot: variables,
-      errorMessage: Object.keys(sourceErrors).length
-        ? `数据源警告: ${JSON.stringify(sourceErrors)}`
-        : null,
-      sentAt,
-    })
+  if (!accessToken) {
+    throw new Error(accessTokenError || '微信 AccessToken 不可用')
+  }
+  const templateId = user.wechatTemplateId || config.defaultWechatTemplateId
+  await sendTemplateMessage(
+    {
+      appId: config.wechatAppId,
+      appSecret: config.wechatAppSecret,
+      apiTimeout: config.apiTimeout,
+      maxRetries: config.maxRetries,
+      retryDelay: config.retryDelay,
+    },
+    {
+      accessToken,
+      openId: user.wechatOpenId,
+      templateId,
+      data: rendered.wechatData,
+    },
+  )
 
-    return { userId: user.id, status: 'success', logId }
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    const errorPayload: Record<string, unknown> = {
-      name: error instanceof Error ? error.name : 'Unknown',
-    }
-    if (error instanceof WeChatError) {
-      errorPayload.code = error.code
-      errorPayload.payload = error.payload
-    } else if (error instanceof Error && error.stack) {
-      errorPayload.stack = error.stack
-    }
-
-    console.error(`用户 ${user.name} 推送失败`, { error: errorMessage })
-
-    await db.insert(pushLogs).values({
-      id: logId,
-      ownerId: config.ownerId,
-      batchId,
-      userId: user.id,
-      templateCode: user.templateCode,
-      status: 'failed',
-      renderedTitle: '',
-      renderedDesc: '',
-      variableSnapshot: {},
-      errorMessage,
-      errorPayload,
-      sentAt,
-    })
-    return { userId: user.id, status: 'failed', logId, errorMessage }
+  return {
+    renderedTitle: rendered.title,
+    renderedDesc: rendered.desc,
+    variableSnapshot: variables,
+    sourceWarning: Object.keys(sourceErrors).length
+      ? `数据源警告: ${JSON.stringify(sourceErrors)}`
+      : undefined,
   }
 }

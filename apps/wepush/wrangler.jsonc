@@ -40,6 +40,29 @@
       "database_id": "62137fc8-6c80-4907-9ac0-8a59f536621b"
     }
   ],
+  // Async push fan-out via Cloudflare Queues. The producer enqueues per-batch
+  // jobs (`PUSH_QUEUE`); the consumer drains them in small batches. Create the
+  // queues at deploy time: `wrangler queues create wepush-push` and
+  // `wrangler queues create wepush-push-dlq`. Modest consumer concurrency (2)
+  // because the WeChat rate limit is per owner.
+  "queues": {
+    "producers": [
+      {
+        "binding": "PUSH_QUEUE",
+        "queue": "wepush-push"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "wepush-push",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 3,
+        "dead_letter_queue": "wepush-push-dlq",
+        "max_concurrency": 2
+      }
+    ]
+  },
   // Scheduled push trigger — handled by the `scheduled()` handler in src/worker/index.ts.
   // Default: 23:30 UTC daily (≈ 07:30 Asia/Shanghai). Edit cron list to add more slots.
   // Disable cron at runtime via the /settings page (cronEnabled = false) — keep the

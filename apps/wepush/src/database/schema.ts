@@ -274,11 +274,14 @@ export const pushLogs = sqliteTable(
     sentAt: integer('sent_at', { mode: 'timestamp' }).notNull(),
     ...trackingFields,
   },
+  // Idempotency guard for at-least-once Queue redelivery: at most one log per
+  // recipient per batch, so the consumer can check-before-send.
   (table) => [
     index('idx_push_logs_owner_id').on(table.ownerId),
     index('idx_push_logs_batch_id').on(table.batchId),
     index('idx_push_logs_user_id').on(table.userId),
     index('idx_push_logs_sent_at').on(table.sentAt),
+    uniqueIndex('uniq_push_logs_batch_user').on(table.batchId, table.userId),
   ],
 )
 

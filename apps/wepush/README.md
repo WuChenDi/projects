@@ -72,23 +72,51 @@ WeChat `APP_ID` / `APP_SECRET` on `/dashboard/settings`.
 ## How a push runs
 
 ```
-POST /api/push/run  (or cron scheduled(), or the UI)
+POST /api/push/run  (or cron scheduled(), or the UI)   — producer (startPush)
   1. requireOwner: session cookie OR Bearer pushApiToken → ownerId
   2. loadConfig(ownerId) + loadTargetUsers(ownerId, userIds?)   scoped to tenant
   3. insert push_batch (status=running)
-  4. getAccessToken once per batch                              (WeChat token)
-  5. for each recipient:
+  4. enqueue one PUSH_QUEUE message per recipient, staggered
+       delaySeconds = floor(i / maxPushOneMinute) * 60      (WeChat rate limit)
+  5. return { batchId, status: 'running' }  HTTP 202        — connection closes
+
+queue() consumer (handlePushQueue)                        — throttled send loop
+  6. group messages by owner; getAccessToken once per owner per invocation
+  7. for each message:
        aggregateUserData  → weather + calendar + quotes → variables
        renderTemplate     → {{var.DATA}} substitution + colors
        sendTemplateMessage→ WeChat API
        insert push_log    (success | failed + snapshot + error payload)
-       throttle: sleep every maxPushOneMinute sends
-  6. update batch (success | partial | failed) + counts
+       rate-limited codes → msg.retry() with backoff; else msg.ack()
+  8. atomically bump batch counters; the last message finalizes the batch
+       (success | partial | failed)
 ```
 
-The cron path (`scheduled()`) fans out **per owner**: it scans every
-`user_config` with `cronEnabled` and runs one push for that owner's
-`cronUserIds`. Full model in [`DESIGN.md`](DESIGN.md).
+The HTTP request never holds the send loop open — the producer returns `202`
+as soon as the jobs are enqueued, and Cloudflare Queues drives the throttled
+send in the background. The cron path (`scheduled()`) fans out **per owner**: it
+scans every `user_config` with `cronEnabled` and enqueues one push for that
+owner's `cronUserIds`. Full model in [`DESIGN.md`](DESIGN.md).
+
+### Cloudflare Queues
+
+Async push fan-out runs over a Cloudflare Queue (`wepush-push`) with a dead-letter
+queue (`wepush-push-dlq`). The binding is config-only — it lives in
+`wrangler.jsonc` (committable, no secret). **Create both queues before deploying
+the binding**, or the deploy fails:
+
+```bash
+wrangler queues create wepush-push
+wrangler queues create wepush-push-dlq
+```
+
+Pipeline: **producer `startPush`** (inserts the batch, enqueues one staggered
+job per recipient) → **`wepush-push` queue** → **`queue()` consumer**
+(`handlePushQueue`, drains small batches and honours the per-owner WeChat rate
+limit). Free-plan Queues retain a delayed message for up to 24h, so the
+per-recipient `delaySeconds` stagger (and the consumer's retry backoff) stay
+well under that window. A batch left `running` past the stale threshold is
+swept closed by the daily `scheduled()` reaper.
 
 ## Template variables
 
