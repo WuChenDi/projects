@@ -57,10 +57,6 @@ export interface RunPushInput {
   // resolve bindings without going through `getCloudflareContext()` (which is
   // only populated by opennext's fetch wrapper).
   env?: CloudflareEnv
-  // Background executor registrar kept for signature compatibility with the cron
-  // path (`scheduled()` has no request context). The producer no longer needs it
-  // — enqueuing is awaited inline — but callers still pass it.
-  waitUntil?: (p: Promise<unknown>) => void
 }
 
 export interface StartPushResult {

@@ -12,3 +12,8 @@ GITHUB_CLIENT_SECRET="your-github-client-secret"
 # WEPUSH_LIBSQL_AUTH_TOKEN).
 LIBSQL_URL="your-libsql-url"
 LIBSQL_AUTH_TOKEN="your-libsql-auth-token"
+
+# The async push queue (PUSH_QUEUE) is config-only — its binding lives in
+# wrangler.jsonc, so there is NO secret var to set here. Create the queues once
+# before deploying: `wrangler queues create wepush-push` and
+# `wrangler queues create wepush-push-dlq`.
