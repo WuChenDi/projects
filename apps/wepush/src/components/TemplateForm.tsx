@@ -46,9 +46,10 @@ function structurePreview(text: string): string {
 }
 
 async function fetchUsers(): Promise<User[]> {
-  const res = await fetch('/api/users')
+  const res = await fetch('/api/users?limit=200&offset=0')
   if (!res.ok) throw new Error('Failed to load users')
-  return res.json<User[]>()
+  const data = (await res.json()) as { rows: User[] }
+  return data.rows
 }
 
 export function TemplateForm({
