@@ -2,6 +2,11 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // TypeScript 7 dropped the legacy compiler JS API; route type-checking
+  // through the TS CLI instead.
+  experimental: {
+    useTypeScriptCli: true,
+  },
   output: 'export',
   env: {
     BUILD_TIME: new Date().toLocaleString(),
