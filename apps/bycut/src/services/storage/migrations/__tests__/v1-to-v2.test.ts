@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, test } from 'vitest'
 import {
   DEFAULT_BLUR_INTENSITY,
   DEFAULT_CANVAS_SIZE,
