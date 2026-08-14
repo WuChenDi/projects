@@ -3,6 +3,7 @@
 import { IKEmpty } from '@cdlab/ui/IK'
 import { downloadFile } from '@cdlab/utils'
 import { CloudUpload } from 'lucide-react'
+import { stripExtension } from '@/lib'
 import type { ImageFile } from '@/types'
 import { ImageItem } from './ImageItem'
 
@@ -11,6 +12,7 @@ interface RightPanelProps {
   handleRemoveImage: (id: string) => void
   handleRetryImage: (id: string) => void
   handleCompareImage: (image: ImageFile) => void
+  handleRenameImage: (id: string, fileName: string) => void
 }
 
 export const RightPanel = ({
@@ -18,6 +20,7 @@ export const RightPanel = ({
   handleRemoveImage,
   handleRetryImage,
   handleCompareImage,
+  handleRenameImage,
 }: RightPanelProps) => {
   if (images.length === 0) {
     return (
@@ -41,11 +44,12 @@ export const RightPanel = ({
             if (!image.blob || !image.outputType) return
             downloadFile({
               data: image.blob,
-              filename: `${image.fileName.split('.')[0]}.${image.outputType}`,
+              filename: `${stripExtension(image.fileName)}.${image.outputType}`,
             })
           }}
           onRetry={handleRetryImage}
           onCompare={handleCompareImage}
+          onRename={handleRenameImage}
         />
       ))}
     </div>

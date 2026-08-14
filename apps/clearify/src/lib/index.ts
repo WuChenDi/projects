@@ -1,4 +1,5 @@
 export * from './canvas'
+export * from './filename'
 export * from './formatDefaults'
 export * from './genid'
 export * from './imageProcessing'

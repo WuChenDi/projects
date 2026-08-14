@@ -22,7 +22,7 @@ import {
   RightPanel,
 } from '@/components/pages/squish'
 import { useImageQueue } from '@/hooks/useImageQueue'
-import { DEFAULT_QUALITY_SETTINGS, genid } from '@/lib'
+import { DEFAULT_QUALITY_SETTINGS, genid, stripExtension } from '@/lib'
 import { useSquishStore } from '@/store/useSquishStore'
 import type {
   CompressionOptions as CompressionOptionsType,
@@ -136,6 +136,14 @@ export default function Squish() {
     [removeImage],
   )
 
+  // Handle renaming an image's output filename
+  const handleRenameImage = useCallback(
+    (id: string, fileName: string) => {
+      updateImage(id, { fileName })
+    },
+    [updateImage],
+  )
+
   // Handle retrying a failed image
   const handleRetryImage = useCallback(
     (id: string) => {
@@ -168,7 +176,7 @@ export default function Squish() {
       const img = completedImages[0]!
       downloadFile({
         data: img.blob!,
-        filename: `${img.fileName.split('.')[0]}.${img.outputType}`,
+        filename: `${stripExtension(img.fileName)}.${img.outputType}`,
       })
       toast.success('Downloaded 1 image')
       return
@@ -177,7 +185,7 @@ export default function Squish() {
     setIsDownloading(true)
     try {
       const files: ZipFileEntry[] = completedImages.map((img) => ({
-        path: `${img.fileName.split('.')[0]}.${img.outputType}`,
+        path: `${stripExtension(img.fileName)}.${img.outputType}`,
         data: img.blob!,
       }))
       await downloadFilesAsZip(files, 'clearify')
@@ -201,7 +209,7 @@ export default function Squish() {
         (img) => img.status === 'complete' && img.blob && img.outputType,
       )
       const files: ZipFileEntry[] = completedImages.map((img) => ({
-        path: `${img.fileName.split('.')[0]}.${img.outputType}`,
+        path: `${stripExtension(img.fileName)}.${img.outputType}`,
         data: img.blob!,
       }))
       await downloadFilesAsZip(files, 'clearify')
@@ -289,6 +297,7 @@ export default function Squish() {
                 handleRemoveImage={handleRemoveImage}
                 handleRetryImage={handleRetryImage}
                 handleCompareImage={handleCompareImage}
+                handleRenameImage={handleRenameImage}
               />
             </CardContent>
           </Card>
