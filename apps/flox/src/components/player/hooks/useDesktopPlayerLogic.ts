@@ -270,7 +270,7 @@ export function useDesktopPlayerLogic({
       changePlaybackSpeed: playbackControls.changePlaybackSpeed,
       handleCopyLink: (type: 'original' | 'proxy' = 'original') => {
         const urlToCopy = getCopyUrl(src, type)
-        utilities.handleCopyLink(urlToCopy)
+        void utilities.handleCopyLink(urlToCopy)
       },
       startSpeedMenuTimeout: controlsVisibility.startSpeedMenuTimeout,
       clearSpeedMenuTimeout: controlsVisibility.clearSpeedMenuTimeout,
