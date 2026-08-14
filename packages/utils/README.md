@@ -24,8 +24,8 @@ a human-readable byte size, hash a password. `@cdlab/utils` is the single home
 for those, so a fix or a hardening lands once and every consumer inherits it.
 
 - **Split by runtime, not bundled as one blob.** Browser-only helpers
-  (`clipboard`, `download`, `idb-store`) and universal ones (`format`, `logger`,
-  `np`, `password`) live side by side; tree-shaking drops what an app doesn't
+  (`clipboard`, `download`) and universal ones (`format`, `logger`, `np`,
+  `password`) live side by side; tree-shaking drops what an app doesn't
   import.
 - **No surprises in the bundle.** `jszip` is imported dynamically inside
   `downloadFilesAsZip` — apps that never zip never pay for it.
@@ -67,7 +67,6 @@ Consumers resolve the **built** `dist/index.mjs`, not `src/` — see
 | `clipboard` | `src/clipboard.ts` | browser | `copyToClipboard(message, opts?)` — Clipboard API with `execCommand('copy')` fallback; never throws. |
 | `download` | `src/download.ts` | browser | `downloadFile({ data, filename })` — single file from Blob/URL; `downloadFilesAsZip(files, prefix)` — ZIP via lazy `jszip`. |
 | `format` | `src/format.ts` | universal | `formatBytes({ bytes, decimals? })`; `formatFileSize(bytes)` (**deprecated**). |
-| `idb-store` | `src/idb-store.ts` | browser | `createIDBStore<T>(dbName, storeName?, version?)` → `get`/`set`/`remove`/`removeBatch`/`list`/`getAll`/`clear`; `deleteIDBDatabase(dbName)`. |
 | `logger` | `src/logger.ts` | universal | `logger` — `log`/`info`/`warn`/`error`/`debug`, each prefixed with a local-time timestamp. |
 | `np` | `src/np/index.ts` | universal | `plus`/`minus`/`times`/`divide`/`round`/`strip`/`digitLength`/`float2Fixed`/`enableBoundaryChecking`/`createCalculator`/`NumberCalculator`. |
 | `password` | `src/password.ts` | universal | `hashPasswordFn(password, salt?)` / `verifyPasswordFn(storedHash, attempt)` — Argon2id. |
@@ -127,8 +126,8 @@ This is a small utility grab-bag, not a framework. Known limits, by design:
   caller in the process.
 - **`logger` timestamps are `toLocaleString()`** — local timezone and
   locale-dependent, not ISO/UTC. Don't parse them; they're for humans.
-- **No DOM tests.** `download` and `idb-store` touch `document` / `indexedDB` and
-  are exercised in consuming apps, not here (see below).
+- **No DOM tests.** `download` touches `document` and is exercised in consuming
+  apps, not here (see below).
 
 ## Build, test & rebuild
 
@@ -146,7 +145,7 @@ pnpm --filter @cdlab/utils typecheck   # tsc --noEmit
 > automatically. There is no dev server (this is a library, not an app).
 
 Tests live under `test/**/*.test.ts` and cover `clipboard`, `format`, `logger`,
-`np`, and `password`; the DOM-bound `download` and `idb-store` have no unit tests.
+`np`, and `password`; the DOM-bound `download` has no unit tests.
 
 ## Design
 

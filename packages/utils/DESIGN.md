@@ -18,11 +18,10 @@ numbers are stable anchors — source doc-comments and reviews reference them as
 3. [clipboard](#3-clipboard)
 4. [download](#4-download)
 5. [format](#5-format)
-6. [idb-store](#6-idb-store)
-7. [logger](#7-logger)
-8. [np — numerical precision](#8-np--numerical-precision)
-9. [password](#9-password)
-10. [Build & consumption](#10-build--consumption)
+6. [logger](#6-logger)
+7. [np — numerical precision](#7-np--numerical-precision)
+8. [password](#8-password)
+9. [Build & consumption](#9-build--consumption)
 
 ---
 
@@ -47,19 +46,19 @@ made in a dozen places. `@cdlab/utils` centralizes them, and holds itself to:
 - **Not a framework or a kitchen sink.** Each module is a few functions; there is
   no plugin system, no config object, no DI.
 - **Not a hardened crypto library.** `password` uses Argon2id but compares hashes
-  with `===` (not constant-time) and uses a modest memory cost (§9). It is fit for
+  with `===` (not constant-time) and uses a modest memory cost (§8). It is fit for
   gating, not for adversarial timing-attack surfaces.
 - **Not a structured-logging library.** `logger` is a thin `console` wrapper with
-  human timestamps (§7) — no levels filtering, no transports, no JSON output.
-- **No isomorphic guarantees for the browser modules.** `clipboard`, `download`,
-  and `idb-store` require DOM / `window` / `indexedDB` and will throw in Node.
+  human timestamps (§6) — no levels filtering, no transports, no JSON output.
+- **No isomorphic guarantees for the browser modules.** `clipboard` and
+  `download` require DOM / `window` and will throw in Node.
 
 ---
 
 ## 2. Architecture
 
 The package is a build-only library. `src/index.ts` is a barrel that re-exports
-all seven modules; `tsdown` bundles it to `dist/index.mjs` (+ `dist/index.d.mts`).
+all six modules; `tsdown` bundles it to `dist/index.mjs` (+ `dist/index.d.mts`).
 Consumers import only from the package root — there are no deep subpath exports.
 
 ```
@@ -69,9 +68,9 @@ Consumers import only from the package root — there are no deep subpath export
   │  universal (Node + browser)      browser-only          │
   │  ─────────────────────────       ────────────          │
   │  format    (§5)                  clipboard  (§3)        │
-  │  logger    (§7)                  download   (§4)        │
-  │  np        (§8)                  idb-store  (§6)        │
-  │  password  (§9)                                         │
+  │  logger    (§6)                  download   (§4)        │
+  │  np        (§7)                                         │
+  │  password  (§8)                                         │
   └────────────────────────┬───────────────────────────────┘
                            │  tsdown (ESM, target ES2018)
                            ▼
@@ -81,8 +80,8 @@ Consumers import only from the package root — there are no deep subpath export
 **Module independence.** No module imports another. The barrel is `export *` per
 file, so tree-shaking in a consumer's bundler drops unused modules. The three
 runtime dependencies are partitioned: `password` → `@noble/hashes`, `download` →
-`date-fns` (static) + `jszip` (dynamic). `clipboard`, `format`, `logger`,
-`idb-store`, and `np` have **zero** runtime dependencies.
+`date-fns` (static) + `jszip` (dynamic). `clipboard`, `format`, `logger`, and
+`np` have **zero** runtime dependencies.
 
 **Barrel caveat.** `export * from './np'` re-exports the module's **named**
 exports (`plus`, `minus`, `NumberCalculator`, …) but not its `default` (`NP`)
@@ -91,7 +90,7 @@ functions from the package root; the aggregate `NP` object is a submodule-only
 convenience.
 
 **Runtime split.** Universal modules use only standard JS; browser modules touch
-`document` / `window` / `navigator` / `indexedDB`. `tsdown` targets `ES2018`; the
+`document` / `window` / `navigator`. `tsdown` targets `ES2018`; the
 TS compiler target is `ES6` via `@cdlab/tsconfig/utils.json → base.json`
 (`module: ESNext`, `moduleResolution: Bundler`, `types: ['node']`).
 
@@ -157,43 +156,7 @@ fixed so batch exports sort chronologically and never collide.
 
 ---
 
-## 6. idb-store
-
-**Entry:** `src/idb-store.ts` — `createIDBStore<T = ArrayBuffer>(dbName, storeName = 'blobs', version = 1)`
-returns an `IDBStore<T>`.
-
-### 6.1 Storage model
-
-A **bare key-value object store** — one object store (default `'blobs'`) per
-`(dbName, version)`, keys passed **out-of-line** (`store.put(value, key)`), no
-indexes, no key path. `onupgradeneeded` creates the store only if it's missing.
-The default value type is `ArrayBuffer` (the common blob-cache case), overridable
-via the generic `T`.
-
-### 6.2 Lazy self-healing connection
-
-The open `IDBDatabase` is memoized in a promise singleton (`dbPromise`) opened on
-first use. On an open **error**, `dbPromise` is reset to `null` so the next call
-re-opens — a transient failure doesn't wedge the store permanently.
-
-### 6.3 `withTransaction` (dual-mode helper)
-
-One helper wraps every operation. It opens a transaction in the requested mode,
-runs `fn(store)`, and resolves in one of two ways:
-
-- If `fn` **returns an `IDBRequest`** (reads), resolve with `req.result ?? null`
-  on `onsuccess`.
-- If `fn` **returns void** (writes/deletes), resolve on `tx.oncomplete`.
-
-Both `tx.onerror` and `tx.onabort` reject. `removeBatch` short-circuits on an
-empty array (no transaction). `list()` returns keys via `getAllKeys()`.
-
-`deleteIDBDatabase(dbName)` is a standalone helper wrapping
-`indexedDB.deleteDatabase`.
-
----
-
-## 7. logger
+## 6. logger
 
 **Entry:** `src/logger.ts` — a `logger` object with `log`/`info`/`warn`/`error`/`debug`.
 
@@ -205,12 +168,12 @@ human but must not be machine-parsed. The file carries eslint-disables for
 
 ---
 
-## 8. np — numerical precision
+## 7. np — numerical precision
 
 **Entry:** `src/np/index.ts`. Fixes IEEE-754 float errors (`0.1 + 0.2`,
 `1.0 - 0.9`, …) by scaling floats to integers, operating, then scaling back.
 
-### 8.1 Primitives
+### 7.1 Primitives
 
 - `digitLength(num)` — decimal-digit count, scientific-notation aware.
 - `float2Fixed(num)` — scales a float to an integer (`× 10^digitLength`).
@@ -223,14 +186,14 @@ human but must not be machine-parsed. The file carries eslint-disables for
 All ops accept **numbers or numeric strings** (`` `${number}` `` template-literal
 type) and are made **variadic** by `createOperation` (a `reduce` over the args).
 
-### 8.2 Chainable calculator
+### 7.2 Chainable calculator
 
 `NumberCalculator` (via `createCalculator(value)`) chains `plus`/`minus`/`times`/
 `divide`/`round`, each mutating internal state and returning `this`. `valueOf()`
 and `toString()` return the `strip`-corrected value, so a calculator interoperates
 in numeric contexts.
 
-### 8.3 Boundary checking (global mutable state — caveat)
+### 7.3 Boundary checking (global mutable state — caveat)
 
 `_boundaryCheckingState` is a **module-level mutable flag** (default `true`),
 toggled by `enableBoundaryChecking(flag)`. When on, `checkBoundary` emits a
@@ -239,7 +202,7 @@ never throws**, and the result may be inaccurate past that boundary. Because the
 flag is process-global, toggling it in one consumer affects all callers in the
 same process — a deliberate simplicity trade-off, not per-call configurable.
 
-### 8.4 Exports
+### 7.4 Exports
 
 Named: `strip`, `plus`, `minus`, `times`, `divide`, `round`, `digitLength`,
 `float2Fixed`, `enableBoundaryChecking`, `createCalculator`, `NumberCalculator`.
@@ -248,7 +211,7 @@ through the package-root barrel (§2).
 
 ---
 
-## 9. password
+## 8. password
 
 **Entry:** `src/password.ts`.
 
@@ -258,13 +221,13 @@ through the package-root barrel (§2).
 - `verifyPasswordFn(storedHash, passwordAttempt)` — splits, re-derives with the
   stored salt, and compares.
 
-### 9.1 Storage format
+### 8.1 Storage format
 
 A single string `` `${saltHex}:${hashHex}` `` — the caller persists exactly this;
 there is no side storage. `verify` splits on `:`; a value missing either half
 **throws** `Invalid hash format` (callers must guard input they don't control).
 
-### 9.2 Security caveats
+### 8.2 Security caveats
 
 - **Comparison is `attemptHash === originalHash`** — a plain string compare, not
   constant-time. Argon2's own cost dominates, but this is not a timing-hardened
@@ -276,16 +239,16 @@ there is no side storage. `verify` splits on `:`; a value missing either half
 
 ---
 
-## 10. Build & consumption
+## 9. Build & consumption
 
-### 10.1 Build
+### 9.1 Build
 
 `tsdown.config.ts`: single entry `./src/index.ts`, `format: ['esm']`, `dts: true`,
 `target: 'ES2018'`, `clean` only when not `--watch`. Output: `dist/index.mjs` +
 `dist/index.d.mts`. `package.json` maps `main`/`module`/`types` and the `.`
 export to those files; only `.` and `./package.json` are exported subpaths.
 
-### 10.2 Consumption & the rebuild rule
+### 9.2 Consumption & the rebuild rule
 
 Consumers add `"@cdlab/utils": "workspace:*"` and import from the root. **They
 resolve the committed `dist/`, not `src/`** — so a source edit is invisible to
@@ -293,15 +256,15 @@ other apps until a rebuild (`pnpm --filter @cdlab/utils build`, or `dev` for a
 watch). `prepack` runs `build`; the monorepo's `pnpm prepare` builds workspace
 packages in topological order after install. There is no dev server.
 
-### 10.3 Tests
+### 9.3 Tests
 
 `vitest.config.ts`: `@` → `src` alias, `include: ['test/**/*.test.ts']`. Present:
 `test/clipboard.test.ts`, `test/format.test.ts`, `test/logger.test.ts`,
-`test/password.test.ts`, `test/np/index.test.ts`. The DOM-bound `download` and
-`idb-store` have **no unit tests** — they are exercised in consuming apps.
+`test/password.test.ts`, `test/np/index.test.ts`. The DOM-bound `download` has
+**no unit tests** — it is exercised in consuming apps.
 `typecheck` is `tsc --noEmit` against `tsconfig.json`.
 
-### 10.4 No deployment
+### 9.4 No deployment
 
 This is a library: no deploy target, no server, no env vars, no bindings, no
 network. It ships as source-of-truth `dist/` inside the monorepo and is never

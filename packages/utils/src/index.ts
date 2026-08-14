@@ -1,7 +1,6 @@
 export * from './clipboard'
 export * from './download'
 export * from './format'
-export * from './idb-store'
 export * from './logger'
 export * from './np'
 export * from './password'
