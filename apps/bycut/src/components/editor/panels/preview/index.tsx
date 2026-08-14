@@ -379,8 +379,11 @@ function PreviewCanvas() {
             time: renderTime,
             targetCanvas: canvasRef.current,
           })
-          .then(() => {
+          .finally(() => {
             renderingRef.current = false
+          })
+          .catch((error) => {
+            console.error('Preview render failed:', error)
           })
       }
     }
