@@ -47,7 +47,7 @@ there for depth.
 | Package | What it is |
 | --- | --- |
 | [@cdlab/ui](./packages/ui) | Shared React + Tailwind v4 component library (no build step) |
-| [@cdlab/utils](./packages/utils) | Generic utilities — clipboard, download, format, idb-store, … |
+| [@cdlab/utils](./packages/utils) | Generic utilities — clipboard, download, format, logger, … |
 | [@cdlab/cipher](./packages/cipher) | Stream cipher — XChaCha20-Poly1305 + Argon2id + ECIES |
 | [@cdlab/db](./packages/db) | Dual-driver Drizzle factory (Cloudflare D1 / libSQL) |
 | [@cdlab/uncrypto](./packages/uncrypto) | Cross-runtime WebCrypto shim (Node / browser / Workers) |

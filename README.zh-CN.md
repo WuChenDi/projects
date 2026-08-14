@@ -46,7 +46,7 @@
 | 包 | 简介 |
 | --- | --- |
 | [@cdlab/ui](./packages/ui) | 共享 React + Tailwind v4 组件库(无构建步骤) |
-| [@cdlab/utils](./packages/utils) | 通用工具 —— 剪贴板、下载、格式化、idb-store 等 |
+| [@cdlab/utils](./packages/utils) | 通用工具 —— 剪贴板、下载、格式化、日志等 |
 | [@cdlab/cipher](./packages/cipher) | 流式密码库 —— XChaCha20-Poly1305 + Argon2id + ECIES |
 | [@cdlab/db](./packages/db) | 双驱动 Drizzle 工厂(Cloudflare D1 / libSQL) |
 | [@cdlab/uncrypto](./packages/uncrypto) | 跨运行时 WebCrypto 垫片(Node / 浏览器 / Workers) |

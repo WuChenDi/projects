@@ -23,8 +23,7 @@ Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
   exports besides `./package.json`).
 - **`dist/` is prebuilt and committed**; consumers resolve `dist/`, not `src/`.
 - **Runtime split**: universal (Node + browser) = `format`, `logger`, `np`,
-  `password`; browser-only (need DOM / `window` / `indexedDB`) = `clipboard`,
-  `download`, `idb-store`.
+  `password`; browser-only (need DOM / `window`) = `clipboard`, `download`.
 - Build target `ES2018` (tsdown); TS compile target `ES6` via
   `@cdlab/tsconfig/utils.json`.
 
@@ -35,7 +34,6 @@ Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
 | clipboard | src/clipboard.ts | `copyToClipboard(message, opts?)` |
 | download | src/download.ts | `downloadFile({ data, filename })`, `downloadFilesAsZip(files, prefix)` |
 | format | src/format.ts | `formatBytes({ bytes, decimals? })`, `formatFileSize` (deprecated) |
-| idb-store | src/idb-store.ts | `createIDBStore<T>(dbName, storeName?, version?)`, `deleteIDBDatabase(dbName)` |
 | logger | src/logger.ts | `logger` (`log`/`info`/`warn`/`error`/`debug`) |
 | np | src/np/index.ts | `plus`/`minus`/`times`/`divide`/`round`/`strip`/`digitLength`/`float2Fixed`/`enableBoundaryChecking`/`createCalculator`/`NumberCalculator` |
 | password | src/password.ts | `hashPasswordFn(password, salt?)`, `verifyPasswordFn(storedHash, attempt)` |
@@ -77,9 +75,9 @@ Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
   is submodule-only.
 - Import from the package root, not deep paths — only `.` and `./package.json` are
   exported.
-- Browser-only modules (`clipboard`, `download`, `idb-store`) throw in Node — do
-  not call them on a Node/Worker code path.
-- No tests exist for `download` or `idb-store` (DOM-bound); don't assume coverage.
+- Browser-only modules (`clipboard`, `download`) throw in Node — do not call
+  them on a Node/Worker code path.
+- No tests exist for `download` (DOM-bound); don't assume coverage.
 - Lint/format is Biome (single quotes, no semicolons, 2-space) — NOT ESLint (the
   `eslint-disable` comments in `logger.ts` are legacy, harmless).
 
