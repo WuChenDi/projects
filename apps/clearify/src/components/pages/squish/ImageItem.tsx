@@ -3,10 +3,10 @@
 import { Button } from '@cdlab/ui/components/button'
 import { cn } from '@cdlab/ui/lib/utils'
 import { formatFileSize } from '@cdlab/utils'
-import { ArrowRight, Download, Eye, RotateCcw, X } from 'lucide-react'
+import { ArrowRight, Download, Eye, Pencil, RotateCcw, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { IKAssetFailed } from '@/components/IK/IKAssetFailed'
 import { IKAssetLoading } from '@/components/IK/IKAssetLoading'
 import { IKAssetStatusRenderer } from '@/components/IK/IKAssetStatusRenderer'
@@ -18,6 +18,7 @@ interface ImageItemProps {
   onDownload: (image: ImageFile) => void
   onRetry: (id: string) => void
   onCompare: (image: ImageFile) => void
+  onRename: (id: string, fileName: string) => void
 }
 
 export const ImageItem = ({
@@ -26,7 +27,20 @@ export const ImageItem = ({
   onDownload,
   onRetry,
   onCompare,
+  onRename,
 }: ImageItemProps) => {
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [draftName, setDraftName] = useState(image.fileName)
+
+  const commitRename = useCallback(() => {
+    const trimmed = draftName.trim()
+    if (trimmed && trimmed !== image.fileName) {
+      onRename(image.id, trimmed)
+    } else {
+      setDraftName(image.fileName)
+    }
+    setIsRenaming(false)
+  }, [draftName, image.fileName, image.id, onRename])
   const renderLoading = useCallback(
     () => (
       <>
@@ -97,11 +111,43 @@ export const ImageItem = ({
               <X className="size-4" />
             </Button>
           </div>
-          <div className="absolute inset-x-0 bottom-0 w-full flex items-center justify-center p-2 text-xs text-white rounded border-t border-white/10 bg-black/40 backdrop-blur-[2px]">
-            <p className="truncate">{image.fileName}</p>
-          </div>
         </div>
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-2 flex items-center gap-1 text-xs">
+          {isRenaming ? (
+            <input
+              autoFocus
+              aria-label="File name"
+              value={draftName}
+              onChange={(e) => setDraftName(e.target.value)}
+              onBlur={commitRename}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  commitRename()
+                }
+                if (e.key === 'Escape') {
+                  setDraftName(image.fileName)
+                  setIsRenaming(false)
+                }
+              }}
+              className="min-w-0 flex-1 rounded border border-border/50 bg-transparent px-1.5 py-0.5 text-foreground outline-none"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                setIsRenaming(true)
+              }}
+              className="group/rename flex min-w-0 flex-1 items-center gap-1 text-left text-foreground/90"
+              title="Rename"
+            >
+              <span className="truncate">{image.fileName}</span>
+              <Pencil className="size-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/rename:opacity-100" />
+            </button>
+          )}
+        </div>
+        <div className="mt-1.5 flex items-center justify-between">
           <div className="text-xs text-muted-foreground/80">
             <span className="tabular-nums">
               {formatFileSize(image.originalSize)}
@@ -127,7 +173,15 @@ export const ImageItem = ({
         </div>
       </>
     ),
-    [image, onCompare, onDownload, onRemove],
+    [
+      image,
+      onCompare,
+      onDownload,
+      onRemove,
+      isRenaming,
+      draftName,
+      commitRename,
+    ],
   )
 
   const renderFailure = useCallback(
