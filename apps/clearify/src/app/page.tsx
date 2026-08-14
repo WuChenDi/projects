@@ -6,22 +6,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@cdlab/ui/components/accordion'
+import { Badge } from '@cdlab/ui/components/badge'
 import { Button } from '@cdlab/ui/components/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@cdlab/ui/components/card'
 import { IKPageContainer } from '@cdlab/ui/IK'
 import { GitHubIcon } from '@cdlab/ui/icon'
 import { cn } from '@cdlab/ui/lib/utils'
-import Aurora from '@cdlab/ui/reactbits/Aurora'
+import BlurText from '@cdlab/ui/reactbits/BlurText'
+import CountUp from '@cdlab/ui/reactbits/CountUp'
 import GradientText from '@cdlab/ui/reactbits/GradientText'
-import Particles from '@cdlab/ui/reactbits/Particles'
-import ShinyText from '@cdlab/ui/reactbits/ShinyText'
-import SplashCursor from '@cdlab/ui/reactbits/SplashCursor'
 import type { LucideIcon } from 'lucide-react'
 import {
   ArrowRight,
@@ -34,12 +26,12 @@ import {
   Lock,
   MousePointerClick,
   ShieldCheck,
-  Sparkles,
   Video,
 } from 'lucide-react'
 import Link from 'next/link'
 import type { ComponentType } from 'react'
 import { useRef } from 'react'
+import { ThreadsBackdrop } from '@/components/landing/threads-backdrop'
 import { Footer } from '@/components/layout/footer'
 
 const GITHUB_URL =
@@ -48,7 +40,6 @@ const GITHUB_URL =
 interface Task {
   id: string
   title: string
-  subtitle: string
   description: string
   icon: LucideIcon
   color: string
@@ -59,7 +50,6 @@ const tasks: Task[] = [
   {
     id: 'remove-background',
     title: 'Remove Image Background',
-    subtitle: 'AI-powered background removal',
     description:
       'Instantly remove backgrounds from any image using advanced AI. Perfect for portraits, product photos, and creating transparent images.',
     icon: Image,
@@ -69,7 +59,6 @@ const tasks: Task[] = [
   {
     id: 'squish',
     title: 'Image Squish',
-    subtitle: 'Smart image compression',
     description:
       'Compress images up to 90% while maintaining quality. Fast browser-based processing with support for multiple formats including JPEG, PNG, and WebP.',
     icon: FireExtinguisher,
@@ -79,7 +68,6 @@ const tasks: Task[] = [
   {
     id: 'compress',
     title: 'Video Compress',
-    subtitle: 'Efficient video compression',
     description:
       'Reduce video file sizes by up to 90% without quality loss. Fast browser-based compression with no uploads required.',
     icon: Video,
@@ -121,11 +109,11 @@ const features: {
 
 const formats = ['JPEG', 'PNG', 'WebP', 'AVIF', 'JXL', 'MP4', 'MOV', 'AVI']
 
-const stats = [
-  { value: '90%', label: 'Smaller files' },
-  { value: '0', label: 'Bytes uploaded' },
-  { value: '8+', label: 'Formats supported' },
-  { value: '100%', label: 'Free & open' },
+const stats: { to: number; suffix: string; label: string }[] = [
+  { to: 90, suffix: '%', label: 'Smaller files' },
+  { to: 0, suffix: '', label: 'Bytes uploaded' },
+  { to: 8, suffix: '+', label: 'Formats supported' },
+  { to: 100, suffix: '%', label: 'Free & open' },
 ]
 
 const steps: { icon: LucideIcon; title: string; description: string }[] = [
@@ -170,12 +158,58 @@ const faqs = [
     q: 'Does it work offline?',
     a: 'Yes. Once the page has loaded and cached, the tools keep working without a network connection.',
   },
+  {
+    q: "What if my browser doesn't support WebGPU?",
+    a: 'Background removal automatically falls back to a lighter model over WebAssembly (this also covers iOS Safari). It runs a bit slower than WebGPU, but still entirely on your device.',
+  },
+  {
+    q: 'Can I process multiple files at once?',
+    a: 'Remove Background and Image Squish both accept batch uploads and let you download everything as a single ZIP when done. Video Compress handles one video at a time.',
+  },
+  {
+    q: 'Is there a file size limit?',
+    a: "There's no hard limit — the real ceiling is your device's memory. Larger images and longer videos simply take more time to process, since everything runs on your CPU/GPU instead of a server.",
+  },
+  {
+    q: 'Does video compression keep the audio?',
+    a: "Yes, audio is re-encoded alongside the video by default. If your browser can't encode audio, Clearify warns you and outputs a muted file instead of failing.",
+  },
 ]
 
-// Decorative corner ticks (brutalist accent) for feature cards.
+// Left-aligned section heading with a numbered eyebrow (e.g. "01 — Why us").
+function SectionHeading({
+  index,
+  eyebrow,
+  title,
+  subtitle,
+  className,
+  children,
+}: {
+  index: string
+  eyebrow: string
+  title: string
+  subtitle: string
+  className?: string
+  children?: React.ReactNode
+}) {
+  return (
+    <div className={cn('max-w-2xl', className)}>
+      <p className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-primary">
+        {index} — {eyebrow}
+      </p>
+      <h2 className="mt-3 text-2xl font-bold tracking-tight md:text-3xl">
+        {title}
+      </h2>
+      <p className="mt-3 text-muted-foreground">{subtitle}</p>
+      {children}
+    </div>
+  )
+}
+
+// Animated corner brackets, drawn on every feature card. Decorative only.
 function CardCorners() {
   const base =
-    'pointer-events-none absolute size-2.5 border-white/25 transition-colors group-hover:border-white/50'
+    'pointer-events-none absolute size-2.5 border-foreground/20 transition-colors group-hover:border-primary/50'
   return (
     <>
       <span className={cn(base, 'left-0 top-0 border-l border-t')} />
@@ -194,317 +228,282 @@ export default function Home() {
   }
 
   return (
-    <>
-      {/* Fixed atmospheric background */}
-      <div className="fixed inset-0">
-        <Aurora
-          colorStops={['#4C00FF', '#97FFF4', '#FF3D9A']}
-          blend={3.3}
-          amplitude={0.3}
-          speed={1.3}
+    <IKPageContainer className="relative flex-col p-0 md:px-0">
+      {/* Hero */}
+      <section className="relative isolate overflow-hidden">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] opacity-40 dark:opacity-60"
+          style={{
+            maskImage:
+              'radial-gradient(ellipse 60% 70% at 50% 30%, #000 30%, transparent 75%)',
+            WebkitMaskImage:
+              'radial-gradient(ellipse 60% 70% at 50% 30%, #000 30%, transparent 75%)',
+          }}
+        >
+          <ThreadsBackdrop
+            color={[0.45, 0.5, 0.72]}
+            amplitude={1.1}
+            distance={0.1}
+            enableMouseInteraction={false}
+          />
+        </div>
+
+        <div className="mx-auto w-full max-w-6xl px-4 py-16 text-center md:px-6 md:py-24">
+          <GradientText
+            showBorder
+            colors={['#6366f1', '#a855f7', '#ec4899', '#a855f7', '#6366f1']}
+            className="mb-6 border border-border text-xs tracking-wide md:text-sm"
+          >
+            ✨ 100% on-device · No uploads
+          </GradientText>
+
+          <h1 className="sr-only">
+            Clearify — Powerful web-based tools for your image & video editing
+            needs
+          </h1>
+          <div
+            aria-hidden
+            className="mx-auto max-w-3xl text-balance text-3xl font-bold tracking-tight sm:text-4xl"
+          >
+            <BlurText
+              text="Powerful web-based tools for your image & video editing needs"
+              animateBy="words"
+              delay={120}
+              className="justify-center text-balance"
+            />
+          </div>
+
+          <p className="mx-auto mt-6 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+            Remove backgrounds, compress images and shrink videos — all in your
+            browser. Nothing is sent to a server, ever.
+          </p>
+
+          <div className="mt-9 flex items-center justify-center gap-3">
+            <Button size="lg" onClick={scrollToTools}>
+              Explore the tools
+              <ArrowRight className="size-4" />
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+                <GitHubIcon className="size-4" />
+                Star on GitHub
+              </a>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Clearify */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
+        <SectionHeading
+          index="01"
+          eyebrow="Why us"
+          title="Why Clearify"
+          subtitle="Privacy-first by design — speed and simplicity as a bonus."
         />
-      </div>
-      <div className="fixed inset-0">
-        <Particles
-          particleColors={['#ffffff', '#ffffff']}
-          particleCount={400}
-          particleSpread={10}
-          speed={0.05}
-          particleBaseSize={100}
-          moveParticlesOnHover={false}
-          alphaParticles={false}
-          disableRotation={false}
-        />
-      </div>
-      <SplashCursor />
-
-      <IKPageContainer className="relative">
-        <div className="w-full max-w-6xl mx-auto py-10 md:py-16 space-y-24 md:space-y-32">
-          {/* Hero */}
-          <section className="flex min-h-[70vh] flex-col items-center justify-center text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/30 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/80 backdrop-blur-md">
-              <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_2px_rgba(52,211,153,0.7)]" />
-              100% on-device · No uploads
-            </span>
-
-            <GradientText className="mt-6 text-5xl md:text-7xl font-bold bg-linear-to-r">
-              Clearify
-            </GradientText>
-
-            <div className="mt-5">
-              <ShinyText
-                text="Powerful web-based tools for your image & video editing needs"
-                disabled={false}
-                speed={3}
-                className="text-base md:text-xl text-gray-600 dark:text-gray-300"
-              />
-            </div>
-
-            <p className="mt-5 max-w-xl text-sm md:text-base text-muted-foreground">
-              Remove backgrounds, compress images and shrink videos — all in
-              your browser. Nothing is sent to a server, ever.
-            </p>
-
-            <div className="mt-9 flex flex-col sm:flex-row items-center gap-3">
-              <Button
-                size="lg"
-                onClick={scrollToTools}
-                className="border-none bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 px-7 text-white shadow-[0_8px_32px_rgba(31,38,135,0.35)] transition-transform hover:scale-[1.03]"
-              >
-                Explore the tools
-                <ArrowRight />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                asChild
-                className="border-white/20 bg-black/20 backdrop-blur-md hover:bg-black/30"
-              >
-                <a href={GITHUB_URL} target="_blank" rel="noreferrer">
-                  <GitHubIcon className="size-4" />
-                  Star on GitHub
-                </a>
-              </Button>
-            </div>
-
-            <div className="mt-8 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-              <Sparkles className="size-4 text-amber-500" />
-              All processing happens locally on your device.
-            </div>
-          </section>
-
-          {/* Stats */}
-          <section>
-            <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 backdrop-blur-[15px] sm:grid-cols-4">
-              {stats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="bg-black/30 px-4 py-8 text-center"
-                >
-                  <div className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-3xl font-bold text-transparent md:text-4xl">
-                    {stat.value}
-                  </div>
-                  <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Tools */}
-          <section ref={toolsRef} className="scroll-mt-6">
-            <div className="mb-10 text-center">
-              <h2 className="text-3xl md:text-4xl font-bold">
-                Pick a tool, get to work
-              </h2>
-              <p className="mt-3 text-muted-foreground">
-                Three focused utilities. No setup, no upload, no waiting.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {tasks.map((task) => (
-                <Card
-                  key={task.id}
-                  className="group relative ring-0 bg-black/20 shadow-[0_8px_32px_rgba(31,38,135,0.15)] backdrop-blur-[15px] transition-all duration-300 hover:-translate-y-1 hover:bg-black/30 hover:shadow-[0_16px_48px_rgba(31,38,135,0.3)]"
-                >
-                  <CardHeader>
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={cn(
-                          'p-3 rounded-xl text-white transition-transform duration-300 group-hover:scale-110',
-                          task.color,
-                        )}
-                      >
-                        <task.icon size={22} />
-                      </div>
-                      <div className="space-y-1">
-                        <CardTitle className="text-xl font-bold">
-                          {task.title}
-                        </CardTitle>
-                        {task.subtitle && (
-                          <CardDescription>{task.subtitle}</CardDescription>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex flex-col h-full">
-                    <p className="text-sm text-muted-foreground">
-                      {task.description}
-                    </p>
-                    <div className="mt-auto pt-6">
-                      <Link href={task.route} passHref>
-                        <Button
-                          className={cn(
-                            'w-full border-none text-white',
-                            task.color,
-                          )}
-                        >
-                          Try it now
-                          <ArrowRight className="transition-transform group-hover:translate-x-1" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-
-          {/* Why Clearify */}
-          <section>
-            <div className="mb-10 text-center">
-              <h2 className="text-3xl md:text-4xl font-bold">Why Clearify</h2>
-              <p className="mt-3 text-muted-foreground">
-                Privacy-first by design — speed and simplicity as a bonus.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {features.map((feature) => (
-                <div
-                  key={feature.title}
-                  className="group relative rounded-2xl border border-white/10 bg-black/20 p-6 backdrop-blur-[15px] transition-colors hover:border-white/20 hover:bg-black/30"
-                >
-                  <CardCorners />
-                  <div className="flex size-11 items-center justify-center rounded-xl bg-white/5 text-foreground ring-1 ring-inset ring-white/10">
-                    <feature.icon className="size-5" />
-                  </div>
-                  <h3 className="mt-4 font-semibold">{feature.title}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {feature.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* How it works */}
-          <section>
-            <div className="mb-10 text-center">
-              <h2 className="text-3xl md:text-4xl font-bold">How it works</h2>
-              <p className="mt-3 text-muted-foreground">
-                Three steps, zero servers.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              {steps.map((step, i) => (
-                <div
-                  key={step.title}
-                  className="relative rounded-2xl border border-white/10 bg-black/20 p-6 backdrop-blur-[15px]"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="flex size-11 items-center justify-center rounded-xl bg-white/5 text-foreground ring-1 ring-inset ring-white/10">
-                      <step.icon className="size-5" />
-                    </span>
-                    <span className="font-mono text-4xl font-bold text-white/10">
-                      0{i + 1}
-                    </span>
-                  </div>
-                  <h3 className="mt-4 font-semibold">{step.title}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {step.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Privacy + formats */}
-          <section>
-            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/25 p-8 md:p-12 text-center backdrop-blur-[15px]">
-              <div
-                className="pointer-events-none absolute -top-24 left-1/2 h-56 w-[40rem] max-w-full -translate-x-1/2 rounded-full opacity-50 blur-3xl"
-                style={{
-                  background:
-                    'radial-gradient(closest-side, rgba(76,0,255,0.4), rgba(255,61,154,0.2), transparent)',
-                }}
-              />
-              <div className="relative">
-                <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-white/5 text-foreground ring-1 ring-inset ring-white/15">
-                  <Lock className="size-6" />
-                </div>
-                <h2 className="mt-5 text-2xl md:text-3xl font-bold">
-                  Your files never leave your browser
-                </h2>
-                <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-                  There is no upload step. Files are decoded, transformed and
-                  encoded entirely on your machine, then handed straight back to
-                  you. Close the tab and nothing remains.
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {features.map((feature) => (
+            <div
+              key={feature.title}
+              className="group relative flex min-h-40 flex-col justify-between gap-6 border bg-gradient-to-b from-muted/40 to-transparent p-5 text-left transition-colors hover:border-primary/40"
+            >
+              <CardCorners />
+              <span className="inline-flex size-10 items-center justify-center rounded-lg border bg-background/60 text-foreground transition-colors group-hover:border-primary/40 group-hover:text-primary">
+                <feature.icon className="size-5" />
+              </span>
+              <div className="space-y-1.5">
+                <h3 className="font-semibold">{feature.title}</h3>
+                <p className="text-sm leading-snug text-muted-foreground">
+                  {feature.description}
                 </p>
-
-                <div className="mt-7 flex flex-wrap justify-center gap-2">
-                  {formats.map((format) => (
-                    <span
-                      key={format}
-                      className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-xs text-foreground/80"
-                    >
-                      {format}
-                    </span>
-                  ))}
-                </div>
               </div>
             </div>
-          </section>
+          ))}
+        </div>
+      </section>
 
-          {/* FAQ */}
-          <section className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] md:gap-12">
-            <div className="md:sticky md:top-6 md:self-start">
-              <h2 className="text-3xl md:text-4xl font-bold">
-                Frequently asked
-              </h2>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Everything you might wonder before dropping in a file.
+      {/* Tools */}
+      <section
+        ref={toolsRef}
+        className="mx-auto w-full max-w-6xl scroll-mt-20 px-4 py-16 md:px-6 md:py-20"
+      >
+        <SectionHeading
+          index="02"
+          eyebrow="Explore"
+          title="Pick a tool, get to work"
+          subtitle="Three focused utilities. No setup, no upload, no waiting."
+        />
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {tasks.map((task) => (
+            <Link
+              key={task.id}
+              href={task.route}
+              className="group relative flex min-h-48 flex-col justify-between gap-6 border bg-gradient-to-b from-muted/40 to-transparent p-5 text-left transition-colors hover:border-primary/40"
+            >
+              <CardCorners />
+              <span
+                className={cn(
+                  'inline-flex size-10 items-center justify-center rounded-lg text-white',
+                  task.color,
+                )}
+              >
+                <task.icon className="size-5" />
+              </span>
+              <div className="space-y-1.5">
+                <h3 className="font-semibold">{task.title}</h3>
+                <p className="text-sm leading-snug text-muted-foreground">
+                  {task.description}
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+                Try it now
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
+        <SectionHeading
+          index="03"
+          eyebrow="Process"
+          title="How it works"
+          subtitle="Three steps, zero servers."
+        />
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
+          {steps.map((step, i) => (
+            <div
+              key={step.title}
+              className="group relative rounded-xl border bg-card/60 p-6 transition-colors hover:border-primary/30"
+            >
+              <div className="flex items-center justify-between">
+                <span className="inline-flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <step.icon className="size-5" />
+                </span>
+                <span className="font-mono text-4xl font-bold text-muted-foreground/15">
+                  0{i + 1}
+                </span>
+              </div>
+              <h3 className="mt-4 font-semibold">{step.title}</h3>
+              <p className="mt-1.5 text-sm text-muted-foreground">
+                {step.description}
               </p>
             </div>
-            <Accordion
-              type="single"
-              collapsible
-              className="w-full border-t border-white/10"
-            >
-              {faqs.map((item) => (
-                <AccordionItem
-                  key={item.q}
-                  value={item.q}
-                  className="border-white/10"
-                >
-                  <AccordionTrigger className="text-left text-base">
-                    {item.q}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-sm leading-relaxed text-muted-foreground">
-                    {item.a}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </section>
-
-          {/* Bottom CTA */}
-          <section className="text-center">
-            <GradientText className="text-3xl md:text-5xl font-bold bg-linear-to-r">
-              Ready to clean up your media?
-            </GradientText>
-            <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-              Jump straight into any tool — it loads in the browser and works
-              offline once cached.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              {tasks.map((task) => (
-                <Link key={task.id} href={task.route} passHref>
-                  <Button className={cn('border-none text-white', task.color)}>
-                    <task.icon className="size-4" />
-                    {task.title}
-                  </Button>
-                </Link>
-              ))}
-            </div>
-          </section>
-
-          <Footer />
+          ))}
         </div>
-      </IKPageContainer>
-    </>
+      </section>
+
+      {/* Stats */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
+        <SectionHeading
+          index="04"
+          eyebrow="By the numbers"
+          title="Built to stay out of your way"
+          subtitle="Everything below happens without a server in sight."
+        />
+        <div className="mt-10 grid gap-6 sm:grid-cols-4">
+          {stats.map((stat) => (
+            <div key={stat.label} className="text-left">
+              <div className="flex items-baseline text-4xl font-bold tracking-tight md:text-5xl">
+                <CountUp to={stat.to} duration={2} />
+                {stat.suffix}
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Privacy */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-20">
+        <div className="relative isolate overflow-hidden rounded-xl border bg-card/60 px-6 py-14 text-center md:py-16">
+          <div className="mx-auto mb-4 inline-flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Lock className="size-5" />
+          </div>
+          <h2 className="mx-auto max-w-2xl text-balance text-2xl font-bold tracking-tight md:text-3xl">
+            Your files never leave your browser
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+            There is no upload step. Files are decoded, transformed and encoded
+            entirely on your machine, then handed straight back to you. Close
+            the tab and nothing remains.
+          </p>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-16 md:grid-cols-[minmax(0,1fr)_minmax(0,1.7fr)] md:gap-12 md:px-6 md:py-20">
+        <SectionHeading
+          index="05"
+          eyebrow="Support"
+          title="Frequently asked"
+          subtitle="Everything you might wonder before dropping in a file."
+          className="md:sticky md:top-6 md:self-start"
+        >
+          <div className="mt-6 flex flex-wrap gap-2">
+            {formats.map((format) => (
+              <Badge key={format} variant="secondary" className="font-normal">
+                {format}
+              </Badge>
+            ))}
+          </div>
+        </SectionHeading>
+        <Accordion type="single" collapsible className="border-t">
+          {faqs.map((item) => (
+            <AccordionItem key={item.q} value={item.q}>
+              <AccordionTrigger>{item.q}</AccordionTrigger>
+              <AccordionContent>{item.a}</AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </section>
+
+      {/* CTA */}
+      <section className="relative mx-auto w-full max-w-6xl border-t px-4 py-16 md:px-6 md:py-24">
+        <div className="relative isolate overflow-hidden rounded-xl border bg-card/60 px-6 py-14 text-center md:py-20">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 -z-10 opacity-30 dark:opacity-50"
+            style={{
+              maskImage:
+                'radial-gradient(ellipse 70% 80% at 50% 50%, #000 20%, transparent 70%)',
+              WebkitMaskImage:
+                'radial-gradient(ellipse 70% 80% at 50% 50%, #000 20%, transparent 70%)',
+            }}
+          >
+            <ThreadsBackdrop
+              color={[0.45, 0.5, 0.72]}
+              amplitude={1}
+              distance={0}
+              enableMouseInteraction={false}
+            />
+          </div>
+          <h2 className="mx-auto max-w-2xl text-balance text-2xl font-bold tracking-tight md:text-4xl">
+            Ready to clean up your media?
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+            Jump straight into any tool — it loads in the browser and works
+            offline once cached.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            {tasks.map((task) => (
+              <Button key={task.id} asChild variant="outline">
+                <Link href={task.route}>
+                  <task.icon className="size-4" />
+                  {task.title}
+                </Link>
+              </Button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
+        <Footer />
+      </div>
+    </IKPageContainer>
   )
 }

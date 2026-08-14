@@ -35,7 +35,7 @@ export function Footer() {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="mt-8 border-t border-white/10 pt-12">
+    <footer className="mt-8 border-t pb-10 pt-12">
       <div className="flex flex-col gap-10 md:flex-row md:justify-between">
         <div className="max-w-xs space-y-3">
           <span className="text-lg font-bold">Clearify</span>
@@ -81,21 +81,16 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="mt-10 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <span>
-          © {year}-PRESENT ·{' '}
-          <a
-            href={AUTHOR_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-foreground hover:underline"
-          >
-            wudi
-          </a>
-        </span>
-        <span className="font-mono text-muted-foreground/70">
-          Built with Next.js · Runs on-device
-        </span>
+      <div className="mt-10 flex justify-center border-t border-white/[0.08] pt-6 text-xs text-[#E6E6FF]/50">
+        Copyright (c) {year}-PRESENT All Rights Reserved. Powered by{' '}
+        <a
+          href={AUTHOR_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="hover:text-foreground hover:underline"
+        >
+          wudi
+        </a>
       </div>
     </footer>
   )
