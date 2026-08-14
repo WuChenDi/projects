@@ -29,8 +29,9 @@ Good TTS is either locked behind a paid cloud SDK or trapped in a native app.
 - **Bring your own backend** — the API manager lets you point at any
   OpenAI-format or Edge-format TTS endpoint, override a built-in's URL / key /
   limits, and switch providers from one picker.
-- **Your data stays local** — generated audio lives in IndexedDB, metadata in
-  localStorage. Nothing is uploaded; there is no database and no telemetry.
+- **Your data stays local** — the whole generation history, audio included,
+  lives in your browser's IndexedDB. Nothing is uploaded; there is no database
+  and no telemetry.
 - **One artifact** — a Next.js app deployed to Cloudflare Pages. The only
   server-side code is two Edge routes.
 
@@ -60,7 +61,7 @@ Generate voice (built-in Edge API)
   5. server: generateSsml() + escapeXml    SSML built server-side; text XML-escaped
   6. server: POST cognitiveservices/v1     → arrayBuffer as audio/mpeg
   7. client merges segment blobs → 1 Blob  updateHistory(COMPLETED, audioBlob)
-  8. blob → IndexedDB (id), meta → localStorage
+  8. history row (metadata + blob) → IndexedDB
 ```
 
 ```mermaid
@@ -72,7 +73,7 @@ flowchart TD
     R --> T["refreshEndpoint: cached MS token (HMAC sig)"]
     T --> U["generateSsml + escapeXml → cognitiveservices/v1"]
     U --> M["merge segment blobs → one audio/mpeg Blob"]
-    M --> H["blob → IndexedDB · metadata → localStorage"]
+    M --> H["history row (metadata + blob) → IndexedDB"]
 ```
 
 The **preview path** (`generateVoice(true)`) only synthesizes `text.slice(0,20)`,
@@ -151,12 +152,13 @@ No server database — all persistence is client-side.
 | Store | Backend | Key | Holds |
 | --- | --- | --- | --- |
 | `useApiStore` | localStorage | `bytts-custom-apis` | Custom providers + built-in overrides. |
-| `useHistoryStore` | localStorage | `bytts-results` | History metadata (blob stripped, `PROCESSING` items dropped). |
-| audio blobs | IndexedDB | `tts-history-data` | One `ArrayBuffer` per history item id. |
+| `useHistoryStore` | IndexedDB (`bytts/stores`) | `bytts-results` | Full history — metadata **and** audio `Blob` (`PROCESSING` items dropped). |
 
-On reload, `rehydrateBlobs` reloads each completed item's audio from IndexedDB;
-a missing blob flips the item to `FAILED` ("Audio data lost"). This split keeps
-localStorage under quota while surviving refreshes.
+History is persisted with [`@cdlab/zustand-idb`](https://www.npmjs.com/package/@cdlab/zustand-idb):
+IndexedDB stores values through the structured clone algorithm, so the audio
+`Blob` survives a reload as-is — no metadata/blob split, no rehydration
+bookkeeping. Hydration happens on the client only (`skipHydration` +
+`persist.rehydrate()`).
 
 ## Non-goals & limitations
 

@@ -5,7 +5,7 @@
 > prompt to `/api/generate`; the Worker resolves a model, runs it through a
 > per-model **adapter** onto the Cloudflare Workers AI binding (`env.AI.run`),
 > and streams a PNG back. There is no server-side database — generation history
-> is browser-local (IndexedDB blobs + localStorage metadata), and the optional
+> is browser-local (metadata and PNG blobs together in IndexedDB), and the optional
 > access password is Argon2id-hashed client-side so plaintext never crosses the
 > wire.
 
@@ -76,8 +76,8 @@ without an account or a server database, is the whole job.
                                    ASSETS (static output)
 
   browser-local (no server DB):
-    IndexedDB  text2img-images   — generated PNG blobs, keyed by result id
-    localStorage text2img-results — completed-result metadata (Zustand persist)
+    IndexedDB  text2img/stores   — row `text2img-results`: completed-result
+                                   metadata + PNG blobs (Zustand persist)
 ```
 
 The Worker has two surfaces, both unauthenticated by default:
@@ -228,35 +228,35 @@ change needed if it fits an existing group/type adapter.
 
 ## 6. Client history & storage
 
-There is **no server database**. History is split across two browser stores so
-that large / sensitive data never lands in localStorage.
+There is **no server database**. History lives in one browser store.
 
-### 6.1 The two stores
+### 6.1 The store
 
-- **IndexedDB** — `createIDBStore<Blob>('text2img-images')` (`src/lib/storage.ts`),
-  keyed by result id, holds the generated PNG blobs.
-- **localStorage** — the Zustand `persist` store keyed `'text2img-results'`
-  (`src/store/useImageStore.ts`) holds lightweight metadata.
+`src/store/useImageStore.ts` is a Zustand `persist` store with
+`storage: createIndexedDBStorage('text2img', 'stores')` (`@cdlab/zustand-idb`)
+and the row key `'text2img-results'`. IndexedDB persists values through the
+structured clone algorithm, so the PNG `Blob` is stored inside the result
+record — there is no metadata/blob split and no id → blob mapping.
 
 ### 6.2 `GenerationResult`
 
-`{ id, status(pending|completed|failed), params, imageUrl?, error?, generationTime? }`
-(`src/types/index.ts`). `imageUrl` is a session-only object URL, never persisted.
+`{ id, status(pending|completed|failed), params, blob?, imageUrl?, error?,
+generationTime? }` (`src/types/index.ts`). `blob` is persisted; `imageUrl` is a
+session-only object URL derived from it and is never persisted.
 
-### 6.3 Persist / rehydrate cycle
+### 6.3 Persist / hydrate cycle
 
 - **`partialize`** persists **only `COMPLETED`** results, and strips `imageUrl`,
   and from `params` the `password`, `image_b64`, and `mask_b64` fields — so no
-  secret or source-image bytes reach localStorage.
-- **`onRehydrateStorage`** → `rehydrateBlobs()` re-reads each blob from IndexedDB
-  and rebuilds an object URL. A blob missing from IndexedDB marks the record
-  `FAILED` with `'Data lost'`.
+  secret or source-image bytes are written.
+- **`skipHydration: true`** — IndexedDB is browser-only, so hydration is
+  triggered once on the client via `persist.rehydrate()`.
+- **`onRehydrateStorage`** rebuilds an object URL from each persisted blob.
 
 ### 6.4 Object-URL lifecycle
 
 Object URLs are created on completion / rehydrate and **revoked** on
-`removeResult` / `clearAll`, keeping them session-scoped and leak-free. The
-corresponding IndexedDB entry is removed alongside.
+`removeResult` / `clearAll`, keeping them session-scoped and leak-free.
 
 ---
 

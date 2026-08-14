@@ -1,7 +1,7 @@
 import { logger } from '@cdlab/utils'
+import { createIndexedDBStorage } from '@cdlab/zustand-idb'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { imageStore } from '@/lib/storage'
 import type { GenerationResult } from '@/types'
 import { GenerationStatus } from '@/types'
 
@@ -12,33 +12,30 @@ interface ImageStore {
   failResult: (id: string, error: string) => void
   removeResult: (id: string) => void
   clearAll: () => void
-  rehydrateBlobs: () => Promise<void>
 }
 
 export const useImageStore = create<ImageStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       results: [],
 
       addResult: (result) =>
         set((state) => ({ results: [result, ...state.results] })),
 
-      completeResult: (id, blob, generationTime) => {
-        imageStore.set(id, blob).catch((err) => logger.error(err))
-        const imageUrl = URL.createObjectURL(blob)
+      completeResult: (id, blob, generationTime) =>
         set((state) => ({
           results: state.results.map((r) =>
             r.id === id
               ? {
                   ...r,
                   status: GenerationStatus.COMPLETED,
-                  imageUrl,
+                  blob,
+                  imageUrl: URL.createObjectURL(blob),
                   generationTime,
                 }
               : r,
           ),
-        }))
-      },
+        })),
 
       failResult: (id, error) =>
         set((state) => ({
@@ -53,7 +50,6 @@ export const useImageStore = create<ImageStore>()(
           if (target?.imageUrl) {
             URL.revokeObjectURL(target.imageUrl)
           }
-          imageStore.remove(id).catch((err) => logger.error(err))
           return { results: state.results.filter((r) => r.id !== id) }
         }),
 
@@ -64,50 +60,18 @@ export const useImageStore = create<ImageStore>()(
               URL.revokeObjectURL(r.imageUrl)
             }
           }
-          imageStore.clear().catch((err) => logger.error(err))
           return { results: [] }
         }),
-
-      rehydrateBlobs: async () => {
-        const { results } = get()
-        const restoredMap = new Map<string, GenerationResult>()
-
-        await Promise.all(
-          results.map(async (result) => {
-            try {
-              const blob = await imageStore.get(result.id)
-              if (!blob) {
-                restoredMap.set(result.id, {
-                  ...result,
-                  status: GenerationStatus.FAILED,
-                  error: 'Data lost',
-                })
-                return
-              }
-              restoredMap.set(result.id, {
-                ...result,
-                imageUrl: URL.createObjectURL(blob),
-              })
-            } catch {
-              restoredMap.set(result.id, {
-                ...result,
-                status: GenerationStatus.FAILED,
-                error: 'Data lost',
-              })
-            }
-          }),
-        )
-
-        set((state) => ({
-          results: state.results.map((r) => restoredMap.get(r.id) ?? r),
-        }))
-      },
     }),
     {
       name: 'text2img-results',
+      // IndexedDB holds the image Blob itself, so no metadata/blob split.
+      storage: createIndexedDBStorage('text2img', 'stores'),
+      // IndexedDB is browser-only: hydrate on the client instead of during SSR.
+      skipHydration: true,
       // Only completed results are persisted. The object URL is session-only
-      // (rebuilt from IndexedDB on rehydrate), and large/sensitive params
-      // (password, source/mask base64) are stripped before hitting localStorage.
+      // (rebuilt from the blob on rehydrate), and large/sensitive params
+      // (password, source/mask base64) are stripped before being written.
       partialize: (state) => ({
         results: state.results
           .filter((r) => r.status === GenerationStatus.COMPLETED)
@@ -121,10 +85,17 @@ export const useImageStore = create<ImageStore>()(
           logger.error('Failed to rehydrate image store:', error)
           return
         }
-        state?.rehydrateBlobs().catch((err) => {
-          logger.error('Blob rehydration failed:', err)
+        if (!state) return
+        useImageStore.setState({
+          results: state.results.map((r) =>
+            r.blob ? { ...r, imageUrl: URL.createObjectURL(r.blob) } : r,
+          ),
         })
       },
     },
   ),
 )
+
+if (typeof window !== 'undefined') {
+  void useImageStore.persist.rehydrate()
+}

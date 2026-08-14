@@ -139,7 +139,7 @@ export default function Squish() {
   // Handle retrying a failed image
   const handleRetryImage = useCallback(
     (id: string) => {
-      void updateImage(id, { status: 'pending', error: undefined })
+      updateImage(id, { status: 'pending', error: undefined })
       addToQueue(id)
       toast.info('Retrying image processing...')
     },

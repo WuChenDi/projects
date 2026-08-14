@@ -27,6 +27,9 @@ export interface GenerationResult {
   id: string
   status: GenerationStatus
   params: GenerateParams
+  /** Generated image. Persisted as-is in IndexedDB. */
+  blob?: Blob
+  /** Session-only object URL, rebuilt from `blob` after rehydrate. */
   imageUrl?: string
   error?: string
   generationTime?: number

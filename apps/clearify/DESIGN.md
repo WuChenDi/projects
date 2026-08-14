@@ -70,8 +70,8 @@ WebAssembly image codecs, and WebCodecs can do the same work locally.
   │  /squish      jSquash WASM codecs (lazy per format)            │
   │  /compress    mediabunny  →  WebCodecs                         │
   │                                                                │
-  │  Zustand persist (localStorage)  ── metadata                   │
-  │  IndexedDB (@cdlab/utils IDB)    ── result blobs               │
+  │  Zustand persist → IndexedDB (@cdlab/zustand-idb)              │
+  │    metadata + result blobs in one row per store                │
   └───────────────────────────────────────────────────────────────┘
         │ outbound network (never your files):
         ├── Hugging Face Hub   model weights (/bg)
@@ -93,7 +93,7 @@ State is Zustand; drag-drop is `react-dropzone`; toasts are `sonner`; icons are
 **Shared lib (`src/lib/`).** Pure logic, re-exported from `index.ts`:
 `wasm.ts` (lazy jSquash loader), `imageProcessing.ts` (decode/encode/getFileType),
 `process.ts` (background-removal engine), `canvas.ts` + `resize.ts` (canvas
-helpers), `storage.ts` (IndexedDB stores), `formatDefaults.ts`, `genid.ts`
+helpers), `formatDefaults.ts`, `genid.ts`
 (snowflake ids via `@cdlab/driftflake`, `workerId: 1`).
 
 > **Dead code note.** `src/hooks/useImageProcessing.ts` (a local-`setState`
@@ -253,31 +253,27 @@ Two Zustand stores with `persist` middleware — `useBgStore`
 (`clearify-bg-images`) and `useSquishStore` (`clearify-squish-images`). `/compress`
 has no store.
 
-### 6.1 Two-tier storage
+### 6.1 One-tier storage
 
-Metadata and binary are split across two backends:
-
-| Tier | Backend | What |
-| --- | --- | --- |
-| Metadata | Zustand `persist` → localStorage | item id, sizes, status, outputType |
-| Blobs | IndexedDB (`@cdlab/utils` `createIDBStore`) | the result `ArrayBuffer` |
-
-Store keys: `clearify-bg-blobs`, `clearify-squish-blobs` (`lib/storage.ts`).
+Both stores persist through `createIndexedDBStorage('clearify', 'stores')`
+(`@cdlab/zustand-idb`), so metadata **and** the result `Blob` land in a single
+IndexedDB row — IndexedDB uses the structured clone algorithm, so no
+serialization split and no id → blob mapping is needed. The row key is the
+`persist` name: `clearify-bg-images`, `clearify-squish-images`.
 
 ### 6.2 What persists
 
-`partialize` writes **only `status:'complete'` items** and strips
-`file` / `preview` / `blob` / objectURLs before serializing — originals are never
-persisted, only compressed/matted results. On write, `updateImage` also pushes
-the blob's `ArrayBuffer` into IndexedDB keyed by item id.
+`partialize` writes **only `status:'complete'` items** and strips `file` /
+`error` and the session-only objectURLs (`preview`, `processedUrl`) — originals
+are never persisted, only compressed/matted results and their metadata.
 
-### 6.3 Rehydration & "Data lost"
+### 6.3 Hydration
 
-On store rehydrate, `onRehydrateStorage` calls `rehydrateBlobs()`, which reloads
-each completed item's `ArrayBuffer` from IndexedDB and rebuilds a fresh
-objectURL. **If the blob is missing** (IndexedDB cleared) the item is marked
-`status:'error', error:'Data lost'`. ObjectURLs are revoked on remove / clear /
-unmount throughout to avoid leaks.
+IndexedDB is browser-only, so both stores set `skipHydration: true` and call
+`persist.rehydrate()` once on the client. `onRehydrateStorage` then rebuilds a
+fresh objectURL from each persisted `Blob` (objectURLs cannot outlive the
+document). ObjectURLs are revoked on remove / clear / unmount throughout to
+avoid leaks.
 
 ---
 

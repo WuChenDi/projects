@@ -10,7 +10,7 @@ Preview: <https://text2img.cdlab.workers.dev/>
 The browser POSTs a prompt to a single Worker; the Worker calls the Cloudflare
 Workers AI binding (`env.AI.run`) and streams a PNG back. There is **no
 server-side database** — your generation history (image blobs + params) lives in
-*your* browser's IndexedDB / localStorage, and the optional access password is
+*your* browser's IndexedDB, and the optional access password is
 Argon2id-hashed client-side so the plaintext never crosses the wire.
 
 ## Why
@@ -25,9 +25,8 @@ Worker you deploy to your own account:
   more are reachable through the same UI. A per-model **adapter** normalizes the
   differently-shaped Workers AI inputs and outputs so the client never has to
   care which model it picked.
-- **Your history stays yours** — completed images are stored as blobs in
-  IndexedDB and their metadata in localStorage; nothing is uploaded or persisted
-  server-side.
+- **Your history stays yours** — completed results, blob and metadata alike,
+  are stored in IndexedDB; nothing is uploaded or persisted server-side.
 - **Optional gate, done right** — set `PASSWORDS` and the client Argon2id-hashes
   before POSTing; the server verifies the hash against its configured list, so
   the plaintext is never transmitted, logged, or persisted.
@@ -65,7 +64,7 @@ POST /api/generate  { prompt, model, params, password? }
                    ?? defaultModelConfig
   6. adapter.prepareInputs(data)  → env.AI.run(model.key)    Workers AI call
   7. adapter.processResponse(res) → PNG Response             normalize output
-  8. client: Blob → IndexedDB + object URL, history updated  timed, toasted
+  8. client: history record (Blob + metadata) → IndexedDB    timed, toasted
 ```
 
 ```mermaid
@@ -78,7 +77,7 @@ flowchart TD
     E --> F["adapter select: type → group → default"]
     F --> G["prepareInputs → env.AI.run"]
     G --> H["processResponse → image/png"]
-    H -->|"Blob"| I["IndexedDB + Zustand history"]
+    H -->|"Blob"| I["Zustand history → IndexedDB"]
 ```
 
 The per-model adapter (step 5–7) is the core design; every divergence between
@@ -176,9 +175,8 @@ src/
     utils.ts                 findModelById
     api.ts                   frontend fetch client (models / prompts)
     genid.ts                 GenidOptimized (ids + random seeds)
-    storage.ts               IndexedDB blob store (createIDBStore)
     hooks/useGeneration.ts   TanStack mutation: hash → POST → store
-  store/useImageStore.ts     Zustand + persist history (blobs in IDB)
+  store/useImageStore.ts     Zustand + persist history → IndexedDB (@cdlab/zustand-idb)
   components/page/           BasicSettings, AdvancedOptions, ImageUpload, ImageResult
   components/layout/         providers, theme, language selector
   i18n/                      next-intl routing / request / navigation
@@ -216,8 +214,8 @@ the workflow. Deploying requires a Workers AI (`AI`) binding.
 ## Design
 
 [`DESIGN.md`](DESIGN.md) is the authoritative spec — the model-adapter subsystem
-and its precedence rules, the client/server password split, the IndexedDB +
-localStorage history model and its rehydration, and the OpenNext deployment
+and its precedence rules, the client/server password split, the IndexedDB
+history model and its hydration, and the OpenNext deployment
 shape. Read it before changing adapter selection, the persisted-store shape, or
 the password flow.
 

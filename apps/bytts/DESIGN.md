@@ -4,8 +4,8 @@
 > free "Edge Read Aloud" speech pipeline (SSML in, `audio/mpeg` out) and gate an
 > optional password; everything else — voice / rate / pitch controls, long-text
 > splitting, generation history, and a pluggable provider registry — runs in the
-> browser with no server database. Persistence is split by size: audio blobs go
-> to IndexedDB, metadata to localStorage.
+> browser with no server database. History (metadata *and* audio blobs) is
+> persisted to IndexedDB in one place via `@cdlab/zustand-idb`.
 
 This is the authoritative design spec; the implementation follows it. Section
 numbers are stable anchors — reference them as `design §N`.
@@ -61,7 +61,7 @@ holding to these goals:
   user ─ text/voice ─►┌───────────────────────────────────────────┐
                       │ TTSForm ─ splitText ─ ttsRequest (mutation)│
                       │ useApiStore (providers)  useHistoryStore   │
-                      │ IndexedDB (blobs)  localStorage (metadata) │
+                      │ IndexedDB (history: metadata + blobs)      │
                       └───────┬──────────────────────┬────────────┘
                               │ POST /api/tts         │ POST <custom provider>
                               ▼                       ▼
@@ -234,22 +234,20 @@ the header is `Authorization`.
 
 ## 7. Client storage & history
 
-`src/store/useHistoryStore.ts` (Zustand + `persist`, key `bytts-results`) is a
-**split-storage** design so large audio never bloats localStorage:
+`src/store/useHistoryStore.ts` (Zustand + `persist`, row key `bytts-results`)
+persists the whole history — audio included — into IndexedDB:
 
 - **`HistoryItem`** = `{id, name?, timestamp, speaker, text, audioBlob?,
   requestInfo, status, error?}`. `status` is `StatusEnum` (PROCESSING /
   COMPLETED / FAILED, from `@cdlab/ui`).
-- **Metadata → localStorage.** `partialize` **strips `audioBlob`** and **drops
-  `PROCESSING` items** — an in-flight generation lost to a refresh vanishes rather
-  than persisting a hung entry.
-- **Blobs → IndexedDB.** `updateHistory` writes the blob's `ArrayBuffer` to
-  `dbStore.set(id, buf)` (`src/lib/storage.ts` = `createIDBStore(
-  'tts-history-data')` from `@cdlab/utils`).
-- **Rehydration.** `onRehydrateStorage` → `rehydrateBlobs` reloads each
-  `COMPLETED` item's buffer from IndexedDB and rebuilds the `Blob`; a missing
-  buffer flips the item to `FAILED` / `"Audio data lost"`. `isHydrated` guards the
-  async restore.
+- **One store, one place.** `storage: createIndexedDBStorage('bytts', 'stores')`
+  (`@cdlab/zustand-idb`) writes the state through the structured clone
+  algorithm, so the `Blob` is persisted as-is — no metadata/blob split and no
+  id → blob bookkeeping.
+- **`partialize`** drops `PROCESSING` items — an in-flight generation lost to a
+  refresh vanishes rather than persisting a hung entry.
+- **Hydration.** IndexedDB is browser-only, so the store sets
+  `skipHydration: true` and calls `persist.rehydrate()` once on the client.
 
 `HistorySection` object-URLs each blob into a waveform player, supports per-item
 download and download-all-as-ZIP (`@cdlab/utils` `downloadFile` /

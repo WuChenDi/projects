@@ -21,7 +21,8 @@ Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
 - **Two server surfaces, both Edge Runtime** (`export const runtime = 'edge'`):
   `POST /api/tts` (synthesis) and `GET|POST /api/config` (password). No other
   server code. No KV/D1/R2, no `wrangler.jsonc`.
-- **All persistence is client-side:** Zustand + localStorage + IndexedDB.
+- **All persistence is client-side:** Zustand + localStorage (providers) +
+  IndexedDB (history, via `@cdlab/zustand-idb`).
 - **Deploy target:** Cloudflare Pages via `@cloudflare/next-on-pages` (Pages
   Functions, not a raw Worker). `output: 'standalone'` is a Node fallback.
 - **Live:** https://bytts.pages.dev/
@@ -40,8 +41,8 @@ merge blobs → history.
    return `audio/mpeg`.
 5. Client merges segment blobs into one `Blob`; `updateHistory(COMPLETED,
    audioBlob)`.
-6. Blob → IndexedDB (`tts-history-data`, keyed by id); metadata → localStorage
-   (`bytts-results`).
+6. The whole history row (metadata + `Blob`) → IndexedDB `bytts/stores`, row
+   key `bytts-results`.
 
 **Preview** = `generateVoice(true)`: synthesizes `text.slice(0,20)`, plays via an
 object URL, writes **no** history.
@@ -65,8 +66,8 @@ object URL, writes **no** history.
   download-one / download-all-as-ZIP.
 - `src/components/PasswordGate.tsx` — client render gate (reads `/api/config`).
 - `src/store/useApiStore.ts` — providers (`bytts-custom-apis`).
-- `src/store/useHistoryStore.ts` — history split-storage (`bytts-results` + IDB).
-- `src/lib/storage.ts` — `createIDBStore('tts-history-data')`.
+- `src/store/useHistoryStore.ts` — history persisted to IndexedDB
+  (`createIndexedDBStorage('bytts', 'stores')`, row key `bytts-results`).
 - `src/lib/genid.ts` — `GenidOptimized({workerId:1})` (`@cdlab/driftflake`).
 - `public/speakers.json` — static ~290 edge voices for the picker.
 
@@ -110,9 +111,10 @@ object URL, writes **no** history.
   isolates); `refreshInFlight` de-dups concurrent refreshes. This is intentional.
 - The built-in voice depends on a reverse-engineered MS endpoint (hardcoded HMAC
   key, spoofed headers) — not official Azure. Flag as a durability/ToS risk.
-- History storage is SPLIT: blobs in IndexedDB, metadata in localStorage;
-  `partialize` strips blobs and drops `PROCESSING` items. Don't persist blobs to
-  localStorage.
+- History (metadata AND blobs) lives in IndexedDB via `@cdlab/zustand-idb` —
+  do NOT reintroduce a metadata/blob split or persist blobs to localStorage.
+  `partialize` only drops `PROCESSING` items; hydration is client-only
+  (`skipHydration` + `persist.rehydrate()`).
 - `build` forces the WEBPACK builder (`next build --webpack`) — do not switch to
   Turbopack. There is NO test script; there is NO `wrangler.jsonc`.
 

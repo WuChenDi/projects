@@ -3,7 +3,6 @@ export * from './formatDefaults'
 export * from './genid'
 export * from './imageProcessing'
 export * from './resize'
-export * from './storage'
 export * from './wasm'
 
 // Sample images from Unsplash
