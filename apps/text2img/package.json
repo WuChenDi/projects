@@ -27,6 +27,7 @@
     "@cdlab/driftflake": "catalog:prod",
     "@cdlab/ui": "workspace:*",
     "@cdlab/utils": "workspace:*",
+    "@cdlab/zustand-idb": "catalog:prod",
     "@tanstack/react-query": "catalog:prod",
     "class-variance-authority": "catalog:prod",
     "clsx": "catalog:prod",

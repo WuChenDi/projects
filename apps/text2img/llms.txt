@@ -5,7 +5,7 @@ Cloudflare Worker (Next.js App Router compiled through OpenNext). The browser
 POSTs a prompt to `/api/generate`; the Worker resolves a model, runs it through a
 per-model **adapter** onto the Cloudflare Workers AI binding (`env.AI.run`), and
 streams a PNG back. There is **no server-side database** — generation history is
-browser-local (IndexedDB blobs + localStorage metadata), and the optional access
+browser-local (metadata + PNG blobs together in IndexedDB), and the optional access
 password is Argon2id-hashed client-side.
 
 Primary docs:
@@ -82,17 +82,18 @@ Key invariants (do not "simplify" without reading DESIGN §4):
   at generate time (400). `findModelById` (src/lib/utils.ts) flattens groups.
 - Model `description` strings are Chinese-only display copy — not a contract.
 
-## Client storage (src/store/useImageStore.ts + src/lib/storage.ts)
+## Client storage (src/store/useImageStore.ts)
 
-No server DB. Two browser stores:
-- IndexedDB `text2img-images` (`createIDBStore<Blob>`) — PNG blobs by result id.
-- localStorage `text2img-results` — Zustand persist, metadata only.
+No server DB. ONE browser store: Zustand `persist` →
+`createIndexedDBStorage('text2img', 'stores')` (`@cdlab/zustand-idb`), row key
+`text2img-results`. The PNG `Blob` is persisted inside the result record
+(structured clone) — do NOT reintroduce a metadata/blob split.
 
 `partialize` persists ONLY completed results and STRIPS `imageUrl` + params
-`password`/`image_b64`/`mask_b64` (no secrets / source bytes in localStorage).
-`onRehydrateStorage` → `rehydrateBlobs()` re-reads blobs from IndexedDB and
-rebuilds object URLs; a missing blob → FAILED `'Data lost'`. Object URLs are
-session-only, revoked on remove/clearAll.
+`password`/`image_b64`/`mask_b64` (no secrets / source bytes written).
+`skipHydration: true` + `persist.rehydrate()` on the client;
+`onRehydrateStorage` rebuilds object URLs from the persisted blobs. Object URLs
+are session-only, revoked on remove/clearAll.
 
 ## Config & bindings (wrangler.jsonc, .env.example)
 

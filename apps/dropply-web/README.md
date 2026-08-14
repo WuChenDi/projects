@@ -163,9 +163,8 @@ src/
     share-blob.ts             model-A share: upload a finished ciphertext, return code + link
     keys.ts                   BIP39 → BIP32 (m/44'/0'/0'/0/0) → secp256k1; base58 public keys
     pin.ts                    Argon2id PIN hash/verify for the key manager
-    storage.ts                IndexedDB stores (result blobs, retrieve text)
   store/
-    useProcessStore.ts        encrypt/decrypt result history (persisted; blobs in IndexedDB)
+    useProcessStore.ts        encrypt/decrypt result history (persisted to IndexedDB, payloads included)
     useKeysStore.ts           key pairs + contact public keys ('dropply-keys', base64-obfuscated localStorage)
     useAuthStore.ts           cached share password ('dropply-auth', sessionStorage)
   i18n/                       next-intl routing/request/navigation (en, zh)

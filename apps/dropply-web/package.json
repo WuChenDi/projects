@@ -27,6 +27,7 @@
     "@cdlab/ui": "workspace:*",
     "@cdlab/uncrypto": "workspace:*",
     "@cdlab/utils": "workspace:*",
+    "@cdlab/zustand-idb": "catalog:prod",
     "@next/third-parties": "catalog:prod",
     "@noble/hashes": "catalog:prod",
     "@scure/base": "catalog:prod",

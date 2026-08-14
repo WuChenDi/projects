@@ -74,7 +74,7 @@ The canonical pipeline; the other two tools are variations on it.
 3. per image: file.arrayBuffer() → getFileType() → decode(src) → encode(out, {quality})
 4. decode/encode          → ensureWasmLoaded(format): lazy dynamic-import the @jsquash/* module (memoized)
 5. result ArrayBuffer      → Blob(image/<out>) → objectURL preview, status:'complete'
-6. updateImage            → persist the blob's bytes to IndexedDB (squishBlobStore)
+6. updateImage            → Zustand persist writes the item (Blob included) to IndexedDB
 7. download               → single: downloadFile; many: downloadFilesAsZip(files, 'clearify')
 ```
 
@@ -84,7 +84,7 @@ flowchart LR
     B --> C["useImageQueue (max 3)"]
     C --> D["decode → encode (jSquash WASM)"]
     D --> E["Blob + preview"]
-    E --> F["IndexedDB (squishBlobStore)"]
+    E --> F["IndexedDB (clearify/stores)"]
     E --> G["download single / ZIP"]
 ```
 
@@ -129,13 +129,14 @@ everything in local `useState` — single file, no store, no IndexedDB.
 
 ## Persistence & privacy
 
-- **Metadata → Zustand `persist` (localStorage)** — stores `clearify-bg-images`
-  and `clearify-squish-images` persist **only `status:'complete'` items** and
-  strip `file` / `preview` / `blob` / objectURLs before writing.
-- **Binary blobs → IndexedDB** (`clearify-bg-blobs`, `clearify-squish-blobs`)
-  via `@cdlab/utils` `createIDBStore`. On reload, `rehydrateBlobs()` reloads the
-  bytes and rebuilds objectURLs; a blob missing from IndexedDB marks its item
-  `status:'error', error:'Data lost'`.
+- **Everything → IndexedDB** — both stores (`clearify-bg-images`,
+  `clearify-squish-images`) persist through
+  [`@cdlab/zustand-idb`](https://www.npmjs.com/package/@cdlab/zustand-idb) into
+  the `clearify/stores` database. Only `status:'complete'` items are written,
+  with `file` / `error` / objectURLs stripped; the result `Blob` rides along in
+  the same row thanks to structured clone.
+- **On reload** the store hydrates on the client (`skipHydration` +
+  `persist.rehydrate()`) and rebuilds a fresh objectURL per persisted blob.
 - **Nothing leaves the device.** Outbound network is limited to model weights
   (Hugging Face Hub), sample images (Cloudinary), and Google Analytics — never
   your files.
@@ -184,12 +185,11 @@ src/
     imageProcessing.ts decode / encode / getFileType
     process.ts         background-removal engine (model cascade, WebGPU/iOS)
     canvas.ts, resize.ts   canvas helpers
-    storage.ts         IndexedDB stores via @cdlab/utils createIDBStore
     formatDefaults.ts  default quality per format
     genid.ts           snowflake ids (@cdlab/driftflake)
     index.ts           barrel + sample image URLs
   hooks/useImageQueue.ts   store-backed concurrency-3 queue (/squish)
-  store/                   useBgStore, useSquishStore (Zustand persist)
+  store/                   useBgStore, useSquishStore (Zustand persist → IndexedDB)
   types/                   bg, squish, compress, encoders type shapes
   components/pages/{bg,squish,compress}/   per-tool UI
 DESIGN.md            architecture + per-tool pipeline spec
@@ -200,7 +200,7 @@ llms.txt             agent-oriented usage guide
 
 [`DESIGN.md`](DESIGN.md) is the authoritative spec — the three processing
 pipelines and why their concurrency models differ, the WASM lazy-load and model
-fallback logic, the localStorage-metadata / IndexedDB-blob split, and the
+fallback logic, the IndexedDB-backed persistence layer, and the
 Cloudflare Pages build constraints. Read it before touching the queue, the model
 cascade, or the persistence layer.
 

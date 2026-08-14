@@ -90,12 +90,13 @@ Header dialog, no separate screen. `?code=` deep links auto-open it.
 3. Blobs wrapped as `File`s → `crypto.handleFileSelect` → auto-detect →
    decrypt mode. The user supplies the out-of-band password / private key.
 
-## Client storage (src/store/*, src/lib/storage.ts)
+## Client storage (src/store/*)
 
-- `useProcessStore` — `localStorage` `dropply-process-results` (completed
-  results' metadata only) + IndexedDB `dropply-process-data` (the ArrayBuffer
-  payloads). Rehydrate restores blobs + object URLs; a missing blob marks the
-  row FAILED ("Data lost"). Removing a row deletes its IDB blob.
+- `useProcessStore` — IndexedDB `dropply/stores`, row `dropply-process-results`
+  (`createIndexedDBStorage` from `@cdlab/zustand-idb`). Completed results only;
+  metadata AND payload `ArrayBuffer` live in the same row — do NOT reintroduce a
+  metadata/blob split. `skipHydration` + `persist.rehydrate()` on the client;
+  `onRehydrateStorage` rebuilds the `downloadUrl` object URLs.
 - `useKeysStore` — see Keys above.
 - `useAuthStore` — `{ sharePassword }` in sessionStorage `dropply-auth`
   (tab-scoped, not durable).

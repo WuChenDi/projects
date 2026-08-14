@@ -58,6 +58,9 @@ catalogs:
     '@cdlab/driftflake':
       specifier: ^2.0.0
       version: 2.0.0
+    '@cdlab/zustand-idb':
+      specifier: ^0.0.4
+      version: 0.0.4
     '@hono/zod-validator':
       specifier: ^0.9.0
       version: 0.9.0
@@ -536,6 +539,9 @@ importers:
       '@cdlab/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@cdlab/zustand-idb':
+        specifier: catalog:prod
+        version: 0.0.4(zustand@5.0.15(@types/react@19.2.18)(immer@11.1.11)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))
       '@tanstack/react-form':
         specifier: catalog:prod
         version: 1.33.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -600,6 +606,9 @@ importers:
       '@cdlab/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@cdlab/zustand-idb':
+        specifier: catalog:prod
+        version: 0.0.4(zustand@5.0.15(@types/react@19.2.18)(immer@11.1.11)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))
       '@huggingface/transformers':
         specifier: catalog:prod
         version: 4.2.0
@@ -746,6 +755,9 @@ importers:
       '@cdlab/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@cdlab/zustand-idb':
+        specifier: catalog:prod
+        version: 0.0.4(zustand@5.0.15(@types/react@19.2.18)(immer@11.1.11)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))
       '@next/third-parties':
         specifier: catalog:prod
         version: 16.3.0(next@16.3.0(@babel/core@7.29.7(supports-color@10.2.2))(@types/node@26.2.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
@@ -1090,6 +1102,9 @@ importers:
       '@cdlab/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@cdlab/zustand-idb':
+        specifier: catalog:prod
+        version: 0.0.4(zustand@5.0.15(@types/react@19.2.18)(immer@11.1.11)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))
       '@tanstack/react-query':
         specifier: catalog:prod
         version: 5.101.4(react@19.2.8)
@@ -2194,6 +2209,12 @@ packages:
   '@cdlab/driftflake@2.0.0':
     resolution: {integrity: sha512-dynIZgJ9eXoyK0l60X0Fkb6Kg1AvUiuh2W6ufePWf3j9ehJkMYKCmJGmcayfHLOM1i9cOWu1EVYkI52WXL7ijQ==}
     engines: {node: '>=20'}
+
+  '@cdlab/zustand-idb@0.0.4':
+    resolution: {integrity: sha512-W07XibojOLS4HXyZ5SwvA5vf1iC6LkHMOORobpo43ih64DvL4JvxsHNO7DvUFPUSw8YNcp4VGbHqubyisLzLMA==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      zustand: ^5.0.0
 
   '@clack/core@1.4.3':
     resolution: {integrity: sha512-/kr3UWNtdJfxZtPgDqUOmG2pvwlmcLGheex5yiZKdwbzZJxhV+HMNR9QNmyY5cGwTNV6LrR7Jtp+KjhUAP1qBQ==}
@@ -12805,6 +12826,10 @@ snapshots:
       fontkitten: 1.0.3
 
   '@cdlab/driftflake@2.0.0': {}
+
+  '@cdlab/zustand-idb@0.0.4(zustand@5.0.15(@types/react@19.2.18)(immer@11.1.11)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))':
+    dependencies:
+      zustand: 5.0.15(@types/react@19.2.18)(immer@11.1.11)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))
 
   '@clack/core@1.4.3':
     dependencies:

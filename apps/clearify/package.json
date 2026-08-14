@@ -24,6 +24,7 @@
     "@cdlab/driftflake": "catalog:prod",
     "@cdlab/ui": "workspace:*",
     "@cdlab/utils": "workspace:*",
+    "@cdlab/zustand-idb": "catalog:prod",
     "@huggingface/transformers": "catalog:prod",
     "@jsquash/avif": "^2.1.1",
     "@jsquash/jpeg": "^1.6.0",

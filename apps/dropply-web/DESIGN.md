@@ -241,17 +241,18 @@ contracts live in `src/types/index.ts`.
 
 | Store | Shape | Persistence | Security rule |
 | --- | --- | --- | --- |
-| `useProcessStore` | `ProcessResult[]` history | `localStorage` `dropply-process-results` (metadata) + IndexedDB `dropply-process-data` (the `ArrayBuffer` payloads) | `partialize` keeps only **completed** results; payload bytes never enter `localStorage`. |
+| `useProcessStore` | `ProcessResult[]` history | IndexedDB `dropply/stores`, row `dropply-process-results` (metadata **and** `ArrayBuffer` payloads) via `@cdlab/zustand-idb` | `partialize` keeps only **completed** results; payload bytes never enter `localStorage`. |
 | `useKeysStore` | own `KeyPair[]` (mnemonic + note), contact `PublicKey[]`, `passwordHash` | `localStorage` `dropply-keys` via base64-obfuscating `keys-storage.ts` | Only mnemonics persist (private keys re-derived); PIN stored as Argon2id hash. See §4 caveat. |
 | `useAuthStore` | `{ sharePassword }` | **`sessionStorage`** `dropply-auth` | The share password is **tab-scoped**, not durable — closing the tab forgets it. |
 
-**Rehydration.** `useProcessStore` restores result payloads from IndexedDB on
-hydrate, rebuilding `downloadUrl` object URLs; a missing blob marks that row
-`FAILED ("Data lost")` rather than crashing. `isHydrated` gates the history UI.
+**Hydration.** IndexedDB is browser-only, so `useProcessStore` sets
+`skipHydration: true` and calls `persist.rehydrate()` on the client. Payload
+bytes come back with the row (structured clone); `onRehydrateStorage` only
+rebuilds the session-only `downloadUrl` object URLs.
 
 **History.** `HistoryDialog` (header icon, shown only when history is
-non-empty) lists past results from the same store; removing a result also
-deletes its IndexedDB blob.
+non-empty) lists past results from the same store; removing a result drops its
+payload with the row.
 
 ---
 
@@ -273,8 +274,7 @@ deletes its IndexedDB blob.
   server password clears it immediately.
 - **Result history is plaintext-adjacent.** Decrypt results (plaintext bytes)
   persist to IndexedDB so history survives reload — deliberate UX; users who
-  decrypt secrets on shared machines should remove those rows (which deletes
-  the IDB blob).
+  decrypt secrets on shared machines should remove those rows.
 - **Static-export caveat.** `nodejs_compat` in `wrangler.jsonc` serves the
   build path only — **do not assume Node APIs exist** in the client bundle.
 

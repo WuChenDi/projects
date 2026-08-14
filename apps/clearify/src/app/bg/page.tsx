@@ -173,7 +173,7 @@ export default function BG() {
         if (abortRef.current) break
 
         try {
-          await updateImage(image.id, { status: 'processing' })
+          updateImage(image.id, { status: 'processing' })
 
           const result = await processImages([image.file!])
           if (abortRef.current) {
@@ -187,7 +187,7 @@ export default function BG() {
             const processedBlob = result[0]!
             const processedUrl = URL.createObjectURL(processedBlob)
 
-            await updateImage(image.id, {
+            updateImage(image.id, {
               status: 'complete',
               processedBlob,
               processedUrl,
@@ -199,7 +199,7 @@ export default function BG() {
           const errorMessage =
             error instanceof Error ? error.message : 'Unknown error'
 
-          await updateImage(image.id, {
+          updateImage(image.id, {
             status: 'error',
             error: errorMessage,
           })

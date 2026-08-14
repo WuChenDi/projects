@@ -51,10 +51,9 @@ Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
   `.jxl` by extension.
 - `src/lib/process.ts` — background-removal engine: model cascade + WebGPU/iOS
   handling.
-- `src/lib/storage.ts` — IndexedDB stores (`clearify-bg-blobs`,
-  `clearify-squish-blobs`) via `@cdlab/utils` `createIDBStore`.
 - `src/lib/formatDefaults.ts` — `DEFAULT_QUALITY_SETTINGS` (avif 50, jpeg/jxl/webp 75).
-- `src/store/{useBgStore,useSquishStore}.ts` — Zustand `persist` metadata stores.
+- `src/store/{useBgStore,useSquishStore}.ts` — Zustand `persist` stores backed
+  by IndexedDB (`createIndexedDBStorage('clearify', 'stores')`).
 - `src/types/{squish,compress,bg,encoders}.ts` — `OutputType`, `ConversionSettings`, etc.
 - `src/hooks/useImageProcessing.ts` — DEAD CODE, not imported by any page.
 
@@ -66,8 +65,7 @@ Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
 3. per image: `file.arrayBuffer()` → `getFileType` → `decode` → `encode({quality})`.
 4. `decode`/`encode` call `ensureWasmLoaded(format)` first (lazy `@jsquash/*`).
 5. `Blob(image/<out>)` → objectURL; `updateImage(status:'complete', blob, …)`.
-6. `updateImage` also persists the blob's bytes to IndexedDB.
-7. download: single `downloadFile`; many `downloadFilesAsZip(files, 'clearify')`.
+6. download: single `downloadFile`; many `downloadFilesAsZip(files, 'clearify')`.
 
 ## /bg model cascade (process.ts)
 
@@ -90,11 +88,13 @@ Part of the `@cdlab/projects-monorepo`; run all commands from the repo root with
 
 ## Persistence
 
-- Zustand `persist` (localStorage keys `clearify-bg-images`,
-  `clearify-squish-images`): `partialize` keeps ONLY `status:'complete'` items,
-  strips `file`/`preview`/`blob`/objectURLs.
-- Blobs live in IndexedDB. `rehydrateBlobs()` reloads bytes + rebuilds
-  objectURLs on reload; missing blob → `status:'error', error:'Data lost'`.
+- Zustand `persist` → IndexedDB `clearify/stores` (`@cdlab/zustand-idb`), row
+  keys `clearify-bg-images` / `clearify-squish-images`. `partialize` keeps ONLY
+  `status:'complete'` items and strips `file`/`error`/objectURLs; the result
+  `Blob` is persisted in the same row (structured clone) — do NOT reintroduce a
+  metadata/blob split.
+- `skipHydration: true` + `persist.rehydrate()` on the client;
+  `onRehydrateStorage` rebuilds objectURLs from the persisted blobs.
 
 ## Config & bindings
 

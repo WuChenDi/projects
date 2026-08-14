@@ -25,6 +25,7 @@
     "@cdlab/ui": "workspace:*",
     "@cdlab/uncrypto": "workspace:*",
     "@cdlab/utils": "workspace:*",
+    "@cdlab/zustand-idb": "catalog:prod",
     "@tanstack/react-form": "catalog:prod",
     "@tanstack/react-query": "catalog:prod",
     "lucide-react": "catalog:prod",

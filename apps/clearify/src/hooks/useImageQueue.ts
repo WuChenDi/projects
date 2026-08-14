@@ -41,7 +41,7 @@ export function useImageQueue(
       const currentOutputType = outputTypeRef.current
 
       try {
-        await updateImage(image.id, { status: 'processing' })
+        updateImage(image.id, { status: 'processing' })
 
         if (!image.file) {
           throw new Error('Source file unavailable')
@@ -74,7 +74,7 @@ export function useImageQueue(
         })
         const preview = URL.createObjectURL(blob)
 
-        await updateImage(image.id, {
+        updateImage(image.id, {
           status: 'complete',
           preview,
           blob,
@@ -83,7 +83,7 @@ export function useImageQueue(
         })
       } catch (error) {
         logger.error('Error processing image:', error)
-        await updateImage(image.id, {
+        updateImage(image.id, {
           status: 'error',
           error:
             error instanceof Error ? error.message : 'Failed to process image',
@@ -122,7 +122,7 @@ export function useImageQueue(
     const idsToProcess = imagesToProcess.map((img) => img.id)
 
     for (const image of imagesToProcess) {
-      void updateImage(image.id, { status: 'queued' })
+      updateImage(image.id, { status: 'queued' })
       void processImage(image).then(() => {
         setQueue((q) => [...q])
       })
