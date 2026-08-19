@@ -59,7 +59,7 @@ export function AdvancedOptions({
             id="width"
             min={256}
             max={2048}
-            step={64}
+            step={1}
             value={[width]}
             onValueChange={(values) => setWidth(values[0])}
           />
@@ -74,7 +74,7 @@ export function AdvancedOptions({
             id="height"
             min={256}
             max={2048}
-            step={64}
+            step={1}
             value={[height]}
             onValueChange={(values) => setHeight(values[0])}
           />
