@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Workspace layout:
 
-- `apps/*` — 18 deployable products (Next.js, Nuxt, Cloudflare Workers)
+- `apps/*` — 16 deployable products (Next.js, Nuxt, Cloudflare Workers)
 - `packages/*` — 6 shared libraries (`ui`, `utils`, `cipher`, `uncrypto`, `db`, `tsconfig`)
 
 Apps fall into three runtime families with different toolchains:
@@ -16,7 +16,7 @@ Apps fall into three runtime families with different toolchains:
 | Family                        | Apps                                                                                                                             | Build tool                      | Deploy target                                                                                        |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | **Next.js (App Router)**      | `bycut`, `byplay`, `byshot`, `bytts`, `clearify`, `dropply-web`, `flnk`, `flox`, `text2img`, `values`, `vidl`, `wepush` | `next build` (some `--webpack`) | Cloudflare Pages (`@cloudflare/next-on-pages`); `text2img`, `wepush`, and `flnk` use `@opennextjs/cloudflare` |
-| **Cloudflare Workers (Hono)** | `baccarat`, `byplay-log`, `dropply-api`, `live-user`                                                                            | `wrangler deploy --minify`      | Cloudflare Workers + Durable Objects / D1                                                            |
+| **Cloudflare Workers (Hono)** | `byplay-log`, `dropply-api`, `live-user`                                                                            | `wrangler deploy --minify`      | Cloudflare Workers + Durable Objects / D1                                                            |
 | **Nuxt 4 (Vue 3)**            | `repo-changelog`                                                                                                                 | `nuxt build`/`generate`         | Vercel                                                                                               |
 
 ## Commands
@@ -40,7 +40,7 @@ pnpm dev:dropply                             # filters apps/dropply-* (web + api
 pnpm --filter @cdlab/<name> dev|build|typecheck|lint
 pnpm --filter ./apps/<dir> dev|build         # path-based filter
 
-# Cloudflare Workers (baccarat, byplay-log, dropply-api, live-user)
+# Cloudflare Workers (byplay-log, dropply-api, live-user)
 pnpm --filter @cdlab/<worker> dev         # nsl run wrangler dev
 pnpm --filter @cdlab/<worker> deploy      # wrangler deploy --minify
 pnpm --filter @cdlab/<worker> cf-typegen  # regenerate CloudflareBindings type
@@ -58,7 +58,7 @@ pnpm --filter @cdlab/cipher test:watch
 pnpm --filter @cdlab/utils  exec vitest run path/to.test.ts -t "name"
 
 # Explicit deploys (CI does NOT auto-deploy)
-pnpm deploy:baccarat | deploy:dropply-api | deploy:live-user | deploy:flnk | deploy:text2img | deploy:wepush
+pnpm deploy:dropply-api | deploy:live-user | deploy:flnk | deploy:text2img | deploy:wepush
 ```
 
 Drizzle's `DB_TYPE` env var (`libsql` default, or `d1`) selects the dialect at config time — see `apps/dropply-api/drizzle.config.ts`. `LIBSQL_URL` defaults to `file:./src/database/data.db`.
@@ -66,16 +66,6 @@ Drizzle's `DB_TYPE` env var (`libsql` default, or `d1`) selects the dialect at c
 ## Architecture
 
 ### Cloudflare Workers (Hono backends)
-
-#### `baccarat` — Telegram Baccarat bot
-
-Entry: `src/index.ts`. Hono app with one webhook endpoint (`POST /webhook`) and a Durable Object `BaccaratGameRoom` per chat for game state isolation.
-
-- `src/durable-objects/game-room.ts` — DO with embedded SQLite (`new_sqlite_classes`). Routes by URL path (`/start-game`, `/place-bet`, `/process-game`, `/get-status`, `/stop-game`, `/enable-auto`, `/game-history`, `/game-detail`, `/health`). Lazy-inits `GameEngine` on first request via `initEngine()`.
-- `src/game/game-engine.ts` — State machine: `idle → betting → processing → revealing → finished`. Uses Telegram dice rolls (1–6) for card dealing. `MessageSender` queues all bot messages to respect Telegram rate limits.
-- `src/lib/storage.ts` — Wraps DO `state.storage` (KV + SQL) for game records.
-- `src/handlers/commands.ts` — Grammy command registration (a `Bot` is constructed **per request** in the webhook handler — DO NOT reuse Bot instances across requests).
-- `src/types.ts` — `createConfig(env)` parses timing knobs from env vars (`BETTING_DURATION_MS`, `AUTO_GAME_INTERVAL_MS`, `DICE_ANIMATION_WAIT_MS`, etc.) so timings are tunable per-deploy without code changes.
 
 #### `dropply-api` — End-to-end encrypted file sharing API
 

@@ -23,7 +23,6 @@
 
 | 应用 | 简介 | 线上 |
 | --- | --- | --- |
-| [baccarat](./apps/baccarat) | Telegram 百家乐游戏机器人(Hono + Durable Objects) | — |
 | [bycut](./apps/bycut) | 浏览器视频编辑器 —— 基于时间线,零上传 | [↗](https://bycut.pages.dev/) |
 | [byplay](./apps/byplay) | 在线 HLS / MP4 播放器 | [↗](https://byplay.pages.dev/) |
 | [byplay-log](./apps/byplay-log) | ByPlay 播放日志采集服务 | — |
@@ -92,7 +91,7 @@ dev 名是去掉 scope 的包名 —— 即目录名(如 `values`、`flnk`)。�
 ## 目录结构
 
 ```
-apps/         18 个可部署产品(Next.js · Nuxt · Hono/Workers)
+apps/         16 个可部署产品(Next.js · Nuxt · Hono/Workers)
 packages/     6 个共享库(ui · utils · cipher · uncrypto · db · tsconfig)
 ```
 

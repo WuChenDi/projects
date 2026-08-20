@@ -24,7 +24,6 @@ there for depth.
 
 | App | What it is | Live |
 | --- | --- | --- |
-| [baccarat](./apps/baccarat) | Telegram baccarat game bot (Hono + Durable Objects) | — |
 | [bycut](./apps/bycut) | Browser video editor — timeline-based, zero uploads | [↗](https://bycut.pages.dev/) |
 | [byplay](./apps/byplay) | Online HLS / MP4 player | [↗](https://byplay.pages.dev/) |
 | [byplay-log](./apps/byplay-log) | ByPlay playback-log ingest service | — |
@@ -96,7 +95,7 @@ dev URL, and deploy command.
 ## Layout
 
 ```
-apps/         18 deployable products (Next.js · Nuxt · Hono/Workers)
+apps/         16 deployable products (Next.js · Nuxt · Hono/Workers)
 packages/     6 shared libraries (ui · utils · cipher · uncrypto · db · tsconfig)
 ```
 
