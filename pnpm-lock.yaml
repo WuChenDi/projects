@@ -232,28 +232,6 @@ importers:
         specifier: catalog:dev
         version: 7.0.2
 
-  apps/baccarat:
-    dependencies:
-      grammy:
-        specifier: ^1.45.1
-        version: 1.45.1(supports-color@10.2.2)
-      hono:
-        specifier: catalog:prod
-        version: 4.13.1
-    devDependencies:
-      '@cdlab/tsconfig':
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
-      '@cloudflare/workers-types':
-        specifier: catalog:dev
-        version: 5.20260813.1
-      '@types/node':
-        specifier: catalog:dev
-        version: 26.2.0
-      wrangler:
-        specifier: catalog:dev
-        version: 4.122.0(@cloudflare/workers-types@5.20260813.1)
-
   apps/bycut:
     dependencies:
       '@cdlab/driftflake':
@@ -2633,9 +2611,6 @@ packages:
 
   '@formatjs/intl-localematcher@0.8.13':
     resolution: {integrity: sha512-kHEAFOkeJSPNi7c5PaKaRjxcBrJwzzt81ifUu+8uve1EDW/VJl83KsxmqgqNZLzcFEhSliZGvx3+pk/RH0IOmg==}
-
-  '@grammyjs/types@4.0.0':
-    resolution: {integrity: sha512-Z8lDLTvOlo12e5Vnly/vQh3JC9ppaitS1dGZ3w068gNitOd/y8tTSiib+Xm38aBGbtYGmUZwOc6afYrLs2CSTg==}
 
   '@hono/node-server@1.19.14':
     resolution: {integrity: sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw==}
@@ -8343,10 +8318,6 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
-  grammy@1.45.1:
-    resolution: {integrity: sha512-Y4VL/hqJMZZxwlUr5ZgM68CFu2iIeEkNLR1cY3+Ww68CIvWARDsoXFix7+31rmyC0+7L85ZI+Pq3E5JSG5+nLQ==}
-    engines: {node: ^12.20.0 || >=14.13.1}
-
   guid-typescript@1.0.9:
     resolution: {integrity: sha512-Y8T4vYhEfwJOTbouREvG+3XDsjr8E3kIr7uf+JZ0BYloFsttiHU0WfvANVsR7TxNUJa/WpCnw/Ino/p+DeBhBQ==}
 
@@ -13184,8 +13155,6 @@ snapshots:
   '@formatjs/intl-localematcher@0.8.13':
     dependencies:
       '@formatjs/fast-memoize': 3.1.7
-
-  '@grammyjs/types@4.0.0': {}
 
   '@hono/node-server@1.19.14(hono@4.13.0)':
     dependencies:
@@ -18731,16 +18700,6 @@ snapshots:
   gopd@1.2.0: {}
 
   graceful-fs@4.2.11: {}
-
-  grammy@1.45.1(supports-color@10.2.2):
-    dependencies:
-      '@grammyjs/types': 4.0.0
-      abort-controller: 3.0.0
-      debug: 4.4.3(supports-color@10.2.2)
-      node-fetch: 2.7.0
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
 
   guid-typescript@1.0.9: {}
 
