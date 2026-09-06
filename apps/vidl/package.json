@@ -31,7 +31,7 @@
     "cmdk": "catalog:prod",
     "date-fns": "catalog:prod",
     "lucide-react": "catalog:prod",
-    "mux.js": "^6.3.0",
+    "mux.js": "^7.1.0",
     "next": "catalog:prod",
     "next-intl": "catalog:prod",
     "next-themes": "catalog:prod",

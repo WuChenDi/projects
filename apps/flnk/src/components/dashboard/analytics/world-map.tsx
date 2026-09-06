@@ -19,18 +19,12 @@ import { formatNumber } from '@/lib/format/format'
 import { ALPHA2_TO_NUMERIC } from '@/lib/geo/iso-numeric'
 import type { GeoPoint } from '@/lib/platform/api'
 
-// Hover/pressed reuse a distinct accent fill so any country lights up under the
-// cursor, regardless of its choropleth shade.
-const HOVER = {
-  fill: 'var(--accent)',
-  stroke: 'var(--background)',
-  outline: 'none',
-}
-const DEFAULT_FILL = {
-  fill: 'var(--muted)',
-  stroke: 'var(--background)',
-  outline: 'none',
-}
+// Hover reuses a distinct accent fill so any country lights up under the cursor,
+// regardless of its choropleth shade. v5 dropped the `{default, hover, pressed}`
+// style object, so the hover state is a CSS rule instead — it outranks the SVG
+// presentation attributes below without re-rendering every geography.
+const GEOGRAPHY_CLASS =
+  'outline-none hover:fill-[var(--accent)] hover:[fill-opacity:1]'
 
 interface CountryMetric {
   name: string // ISO alpha-2 code (e.g. "US")
@@ -81,24 +75,26 @@ export function WorldMap({
             zoom={position.zoom}
             minZoom={1}
             maxZoom={8}
-            onMoveEnd={setPosition}
+            onMoveEnd={({ coordinates, zoom }) =>
+              setPosition((prev) => ({
+                coordinates: coordinates ?? prev.coordinates,
+                zoom: zoom ?? prev.zoom,
+              }))
+            }
           >
             <Geographies geography="/world-110m.json">
               {({ geographies }) =>
                 geographies.map((geo) => {
-                  const count = byNumeric.get(geo.id) ?? 0
+                  const count = byNumeric.get(String(geo.id)) ?? 0
                   // Non-linear (sqrt) ramp so low-traffic countries still read.
-                  const fill =
+                  const shade =
                     count > 0
                       ? {
                           fill: 'var(--primary)',
                           fillOpacity:
                             0.2 + 0.7 * Math.sqrt(count / maxCountry),
-                          stroke: 'var(--background)',
-                          outline: 'none',
                         }
-                      : DEFAULT_FILL
-                  const style = { default: fill, hover: HOVER, pressed: HOVER }
+                      : { fill: 'var(--muted)' }
                   // Only shaded countries carry a tooltip; skip the empty ones
                   // so the map doesn't wire up hundreds of idle listeners.
                   if (count === 0) {
@@ -106,14 +102,21 @@ export function WorldMap({
                       <Geography
                         key={geo.rsmKey}
                         geography={geo}
-                        style={style}
+                        className={GEOGRAPHY_CLASS}
+                        stroke="var(--background)"
+                        {...shade}
                       />
                     )
                   }
                   return (
                     <Tooltip key={geo.rsmKey}>
                       <TooltipTrigger asChild>
-                        <Geography geography={geo} style={style} />
+                        <Geography
+                          geography={geo}
+                          className={GEOGRAPHY_CLASS}
+                          stroke="var(--background)"
+                          {...shade}
+                        />
                       </TooltipTrigger>
                       <TooltipContent>
                         <span className="font-medium">
